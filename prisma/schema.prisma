@@ -1,0 +1,768 @@
+datasource db {
+    provider = "postgresql" // or other supported DB providers
+    url      = env("DATABASE_URL")
+}
+
+generator client {
+    provider = "prisma-client-js"
+}
+
+model UserProfile {
+    id                          String                        @id @default(uuid())
+    uniqueIdentifier            String                        @unique
+    subscription                UserProfileSubscription?      @relation(name: "UserProfileToSubscription") // Removed onDelete from here
+    firstName                   String
+    lastName                    String
+    email                       String                        @unique
+    country                     String
+    city                        String
+    personalNum                 String
+    createdAt                   DateTime                      @default(now())
+    updatedAt                   DateTime                      @updatedAt
+    connectedAccounts           ConnectedAccounts?
+    leadPreferences             LeadPreferences?
+    savedSearches               SavedSearch[]
+    notificationPreferences     NotificationPreferences?
+    integrations                Integration[]
+    companyInfo                 CompanyInfo?
+    aIKnowledgebase             AIKnowledgebase?
+    billingHistory              BillingHistoryItem[]
+    paymentDetails              PaymentDetails?
+    twoFactorAuth               TwoFactorAuth?
+    teamMembers                 TeamMember[]
+    activityLog                 ActivityLog[]
+    securitySettings            SecuritySettings?
+    userProfileSubscriptionId   String?
+    CompanyCampaignsUserProfile CompanyCampaignsUserProfile[]
+    CampaignAnalytics           CampaignAnalytics[]
+    LeadList                    LeadList[]
+    KanbanState                 KanbanState[]
+    KanbanTask                  KanbanTask[]
+
+    @@index([email], name: "idx_email")
+    @@index([uniqueIdentifier], name: "idx_uniqueIdentifier")
+}
+
+model ConnectedAccounts {
+    id            String       @id @default(uuid())
+    userProfileId String?      @unique
+    userProfile   UserProfile? @relation(fields: [userProfileId], references: [id], onDelete: SetNull)
+
+    oauthData OAuthData[] @relation("OAuthDataConnectedAccounts")
+
+    @@index([userProfileId], name: "idx_connected_accounts_user")
+}
+
+model OAuthData {
+    id              String        @id @default(uuid())
+    provider        OAuthProvider
+    userId          String
+    username        String?
+    pageId          String?
+    companyId       String?
+    handle          String?
+    accessToken     String
+    refreshToken    String?
+    expiresIn       Int
+    tokenType       String
+    scope           String?
+    lastRefreshedAt DateTime?
+
+    connectedAccountId String
+    connectedAccounts  ConnectedAccounts @relation(fields: [connectedAccountId], references: [id], name: "OAuthDataConnectedAccounts")
+
+    @@index([provider, userId], name: "idx_oauth_provider_user")
+}
+
+enum OAuthProvider {
+    FACEBOOK
+    INSTAGRAM
+    LINKEDIN
+    TWITTER
+}
+
+model UserProfileSubscription {
+    id                   String             @id @default(uuid())
+    stripeSubscriptionID String
+    name                 String
+    type                 SubscriptionType
+    status               SubscriptionStatus
+    price                String
+    aiCredits            AICredits?
+    leads                LeadCredits?
+    skipTraces           SkipTraceCredits?
+    renewalDate          DateTime
+    createdAt            DateTime
+    planDetails          String
+    userProfileId        String             @unique
+    userProfile          UserProfile        @relation(fields: [userProfileId], references: [id], name: "UserProfileToSubscription", map: "FK_UserProfile_Subscription", onDelete: Cascade)
+
+    @@index([userProfileId], name: "idx_userProfile_subscription")
+}
+
+model LeadPreferences {
+    id                String      @id @default(uuid())
+    preferredLocation Json
+    industry          String
+    minLeadQuality    Int
+    maxBudget         Float
+    userProfileId     String      @unique
+    userProfile       UserProfile @relation(fields: [userProfileId], references: [id])
+}
+
+model SavedSearch {
+    id             String      @id @default(uuid())
+    name           String
+    searchCriteria Json
+    createdAt      DateTime
+    userProfile    UserProfile @relation(fields: [userProfileId], references: [id])
+    userProfileId  String
+}
+
+model Integration {
+    id            String            @id @default(uuid())
+    platform      String
+    apiKey        String
+    status        IntegrationStatus
+    userProfile   UserProfile       @relation(fields: [userProfileId], references: [id])
+    userProfileId String
+}
+
+model TwoFactorAuth {
+    id            String           @id @default(uuid())
+    isEnabled     Boolean
+    methods       TwoFactorMethods
+    lastEnabledAt DateTime?
+    userProfile   UserProfile      @relation(fields: [userProfileId], references: [id])
+    userProfileId String           @unique
+    TeamMember    TeamMember[]
+}
+
+model UserPermissions {
+    id                    String     @id @default(uuid())
+    canGenerateLeads      Boolean
+    canStartCampaigns     Boolean
+    canViewReports        Boolean
+    canManageTeam         Boolean
+    canManageSubscription Boolean
+    canAccessAI           Boolean
+    canMoveCompanyTasks   Boolean
+    canEditCompanyProfile Boolean
+    teamMemberId          String     @unique
+    teamMember            TeamMember @relation(fields: [teamMemberId], references: [id])
+}
+
+model NotificationPreferences {
+    id                       String       @id @default(uuid())
+    emailNotifications       Boolean
+    smsNotifications         Boolean
+    notifyForNewLeads        Boolean
+    notifyForCampaignUpdates Boolean
+    userProfile              UserProfile  @relation(fields: [userProfileId], references: [id], onDelete: Cascade)
+    userProfileId            String       @unique
+    TeamMember               TeamMember[]
+
+    @@index([userProfileId], name: "idx_notifications_user")
+}
+
+model TeamMember {
+    id                        String                   @id @default(uuid())
+    firstName                 String
+    lastName                  String
+    email                     String                   @unique
+    role                      TeamMemberRole
+    permissions               UserPermissions?
+    notificationPreferences   NotificationPreferences? @relation(fields: [notificationPreferencesId], references: [id])
+    twoFactorAuth             TwoFactorAuth?           @relation(fields: [twoFactorAuthId], references: [id])
+    activityLog               ActivityLog[]
+    userProfile               UserProfile              @relation(fields: [userProfileId], references: [id])
+    userProfileId             String
+    notificationPreferencesId String?
+    twoFactorAuthId           String?
+}
+
+model ActivityLog {
+    id             String       @id @default(uuid())
+    action         String
+    timestamp      DateTime
+    performedBy    String
+    taskTracking   TaskTracking @relation(fields: [taskTrackingId], references: [id])
+    userProfile    UserProfile  @relation(fields: [userProfileId], references: [id])
+    userProfileId  String
+    TeamMember     TeamMember?  @relation(fields: [teamMemberId], references: [id])
+    teamMemberId   String?
+    taskTrackingId String
+    userAgent      String?
+}
+
+model TaskTracking {
+    id              String         @id @default(uuid())
+    totalTasks      Int
+    tasksAssigned   Int
+    tasksCompleted  Int
+    tasksInProgress Int
+    assignedTasks   Json
+    taskHistory     TaskActivity[]
+    ActivityLog     ActivityLog[]
+}
+
+model TaskActivity {
+    id             String       @id @default(uuid())
+    action         String
+    timestamp      DateTime
+    performedBy    String
+    taskTrackingId String
+    taskTracking   TaskTracking @relation(fields: [taskTrackingId], references: [id])
+}
+
+model SecuritySettings {
+    id                String      @id @default(uuid())
+    passwordHash      String
+    lastLoginTime     DateTime?
+    passwordUpdatedAt DateTime?
+    userProfileId     String      @unique
+    userProfile       UserProfile @relation(fields: [userProfileId], references: [id], onDelete: Cascade)
+
+    @@index([userProfileId], name: "idx_security_user")
+}
+
+model CompanyInfo {
+    id                            String                      @id @default(uuid())
+    companyName                   String
+    assets                        Json
+    webhook                       String?
+    socialMediaTags               Json
+    companyLogo                   String
+    GHLID                         String
+    forwardingNumber              String
+    outreachEmail                 String
+    explainerVideo                String?
+    campaigns                     CompanyCampaignsUserProfile @relation(fields: [companyCampaignsUserProfileId], references: [id])
+    campaignAnalytics             CampaignAnalytics[]
+    leads                         LeadTypeGlobal[]
+    leadLists                     LeadList[]
+    kanbanTasks                   KanbanState                 @relation(fields: [kanbanStateId], references: [id])
+    userProfileId                 String                      @unique
+    userProfile                   UserProfile                 @relation(fields: [userProfileId], references: [id])
+    companyCampaignsUserProfileId String
+    kanbanStateId                 String
+}
+
+model CompanyCampaignsUserProfile {
+    id              String                @id @default(uuid())
+    textCampaigns   TextCampaign[]
+    emailCampaigns  EmailCampaign[]
+    socialCampaigns SocialMediaCampaign[]
+    callCampaigns   CallCampaign[]
+    userProfileId   String
+    userProfile     UserProfile           @relation(fields: [userProfileId], references: [id])
+    CompanyInfo     CompanyInfo[]
+}
+
+model CampaignAnalytics {
+    id             String       @id @default(uuid())
+    campaignId     String
+    type           CampaignType
+    deliveredCount Int
+    openedCount    Int
+    bouncedCount   Int
+    failedCount    Int
+    userProfileId  String
+    userProfile    UserProfile  @relation(fields: [userProfileId], references: [id], onDelete: Cascade)
+    CompanyInfo    CompanyInfo? @relation(fields: [companyInfoId], references: [id], onDelete: Cascade)
+    companyInfoId  String?
+
+    @@index([campaignId], name: "idx_campaignId")
+    @@index([userProfileId], name: "idx_campaign_user")
+    @@index([type], name: "idx_campaign_type") // New index added
+}
+
+enum CampaignType {
+    email
+    text
+    call
+    social
+}
+
+model LeadTypeGlobal {
+    id            String       @id @default(uuid())
+    firstName     String
+    lastName      String
+    email         String
+    phone         String
+    summary       String
+    bed           Int
+    bath          Int
+    sqft          Int
+    status        LeadStatus
+    leadScore     Int          @default(0)
+    followUp      DateTime?
+    lastUpdate    DateTime
+    address1      String
+    campaignID    String?
+    socials       SocialLinks?
+    companyInfo   CompanyInfo  @relation(fields: [companyInfoId], references: [id], onDelete: Cascade)
+    companyInfoId String
+    LeadList      LeadList?    @relation(fields: [leadListId], references: [id])
+    leadListId    String?
+
+    @@index([companyInfoId], name: "idx_companyInfoId")
+    @@index([email], name: "idx_leadEmail")
+    @@index([leadScore], name: "idx_leadScore") // New index added
+}
+
+enum LeadStatus {
+    New_Lead
+    Contacted
+    Closed
+    Lost
+}
+
+model SocialLinks {
+    id        String         @id @default(uuid())
+    facebook  String?
+    linkedin  String?
+    instagram String?
+    twitter   String?
+    leadId    String         @unique
+    lead      LeadTypeGlobal @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+    @@index([leadId], name: "idx_social_leadId")
+}
+
+model LeadList {
+    id             String           @id @default(uuid())
+    listName       String
+    uploadDate     DateTime
+    leads          LeadTypeGlobal[]
+    records        Int
+    phone          Int
+    dataLink       String
+    socials        SocialsCount     @relation(fields: [socialsCountId], references: [id])
+    emails         Int
+    userProfileId  String
+    userProfile    UserProfile      @relation(fields: [userProfileId], references: [id], onDelete: Cascade)
+    CompanyInfo    CompanyInfo?     @relation(fields: [companyInfoId], references: [id], onDelete: Cascade)
+    companyInfoId  String?
+    socialsCountId String
+
+    @@index([userProfileId], name: "idx_leadlist_user")
+}
+
+model SocialsCount {
+    id        String     @id @default(uuid())
+    facebook  Int?
+    linkedin  Int?
+    instagram Int?
+    twitter   Int?
+    LeadList  LeadList[]
+}
+
+model KanbanState {
+    id            String         @id @default(uuid())
+    tasks         KanbanTask[]
+    columns       KanbanColumn[]
+    draggedTask   String?
+    userProfileId String
+    userProfile   UserProfile    @relation(fields: [userProfileId], references: [id])
+    CompanyInfo   CompanyInfo[]
+}
+
+model KanbanTask {
+    id            String       @id @default(uuid())
+    title         String
+    description   String?
+    status        String
+    priority      Priority
+    dueDate       DateTime?
+    assignedTo    String?
+    kanbanStateId String
+    kanbanState   KanbanState  @relation(fields: [kanbanStateId], references: [id])
+    // Add the following lines for the relation to UserProfile
+    userProfileId String? // Foreign key to UserProfile
+    userProfile   UserProfile? @relation(fields: [userProfileId], references: [id])
+}
+
+model KanbanColumn {
+    id            String      @id @default(uuid())
+    title         String
+    kanbanStateId String
+    kanbanState   KanbanState @relation(fields: [kanbanStateId], references: [id])
+}
+
+enum Priority {
+    low
+    medium
+    high
+}
+
+// Enums for statuses, call types, and message types
+enum CampaignStatus {
+    delivered
+    delivering
+    failed
+    pending
+    completed
+    missed
+    queued
+    read
+    unread
+}
+
+enum CallType {
+    inboundPhoneCall
+    outboundPhoneCall
+    webCall
+}
+
+enum MessageType {
+    TYPE_SMS
+    TYPE_EMAIL
+}
+
+// TextCampaign Message Model
+model TextMessage {
+    id             String       @id @default(uuid())
+    type           Int // E.g., 1 for SMS, 3 for EMAIL
+    messageType    MessageType
+    locationId     String
+    contactId      String
+    conversationId String
+    dateAdded      DateTime
+    body           String?
+    direction      String // 'inbound' or 'outbound'
+    status         String // Use enums if needed
+    contentType    String
+    meta           Json?
+    source         String? // E.g., 'workflow', 'bulk_actions'
+    userId         String?
+    textCampaignId String
+    textCampaign   TextCampaign @relation(fields: [textCampaignId], references: [id])
+
+    // Relation to attachments
+    attachments TextMessageAttachment[]
+}
+
+model TextMessageAttachment {
+    id            String      @id @default(uuid())
+    url           String // URL or file path of the attachment
+    textMessageId String
+    textMessage   TextMessage @relation(fields: [textMessageId], references: [id])
+}
+
+// Email Campaign Message Model
+model EmailMessage {
+    id               String   @id @default(uuid())
+    altId            String?
+    threadId         String
+    locationId       String
+    contactId        String
+    conversationId   String
+    dateAdded        DateTime
+    subject          String?
+    body             String
+    direction        String // 'inbound' or 'outbound'
+    status           String // Use enums if needed
+    contentType      String
+    provider         String // 'Leadconnector', 'Gmail', etc.
+    from             String
+    replyToMessageId String?
+    source           String?
+
+    emailCampaignId String
+    emailCampaign   EmailCampaign @relation(fields: [emailCampaignId], references: [id])
+
+    // Relations to other models
+    attachments EmailAttachment[]
+    recipients  EmailRecipient[]
+}
+
+model EmailAttachment {
+    id             String       @id @default(uuid())
+    url            String
+    emailMessageId String
+    emailMessage   EmailMessage @relation(fields: [emailMessageId], references: [id])
+}
+
+model EmailRecipient {
+    id             String       @id @default(uuid())
+    email          String
+    type           String // 'to', 'cc', 'bcc'
+    emailMessageId String
+    emailMessage   EmailMessage @relation(fields: [emailMessageId], references: [id])
+}
+
+// Call Campaign Details Model
+model CallDetail {
+    id                 String    @id @default(uuid())
+    orgId              String
+    type               CallType
+    phoneCallProvider  String // 'twilio', 'vonage', 'vapi'
+    phoneCallTransport String // 'sip', 'pstn'
+    status             String // Use enums if needed
+    endedReason        String?
+    messages           Json // Store as JSON for now
+    destination        Json?
+    createdAt          DateTime
+    updatedAt          DateTime
+    startedAt          DateTime?
+    endedAt            DateTime?
+    cost               Float
+    costBreakdown      Json
+    transcript         String
+    recordingUrl       String?
+    stereoRecordingUrl String?
+    artifact           Json?
+    analysis           Json?
+    assistantId        String?
+
+    callCampaignId String
+    callCampaign   CallCampaign @relation(fields: [callCampaignId], references: [id])
+}
+
+// Social Media Campaign Action Model
+model SocialAction {
+    id           String  @id @default(uuid())
+    status       String // 'pending', 'successful', 'failed'
+    attempt      Int
+    successful   Int
+    failed       Int
+    viewLink     String
+    type         String // Store action type as a string (Twitter, LinkedIn, Instagram actions)
+    replyMessage String?
+
+    socialMediaCampaignId String
+    socialMediaCampaign   SocialMediaCampaign @relation(fields: [socialMediaCampaignId], references: [id])
+}
+
+// Campaign Models
+model TextCampaign {
+    id                            String                      @id @default(uuid())
+    phoneNumber                   String
+    message                       String
+    sentAt                        DateTime
+    status                        CampaignStatus // Use enum for status
+    companyCampaignsUserProfileId String
+    companyCampaignsUserProfile   CompanyCampaignsUserProfile @relation(fields: [companyCampaignsUserProfileId], references: [id])
+    name                          String
+    goal                          String?
+    startDate                     DateTime
+    endDate                       DateTime?
+    aiVoice                       String?
+    aiScript                      String?
+    updatedAt                     DateTime?
+    aiAvatarAgent                 String?
+
+    // Relation to messages
+    messages TextMessage[]
+}
+
+model EmailCampaign {
+    id                            String                      @id @default(uuid())
+    senderEmail                   String
+    recipientCount                Int
+    sentCount                     Int
+    deliveredCount                Int
+    status                        CampaignStatus
+    companyCampaignsUserProfileId String
+    companyCampaignsUserProfile   CompanyCampaignsUserProfile @relation(fields: [companyCampaignsUserProfileId], references: [id])
+    name                          String
+    goal                          String?
+    startDate                     DateTime
+    endDate                       DateTime?
+    aiVoice                       String?
+    aiScript                      String?
+    updatedAt                     DateTime?
+    aiAvatarAgent                 String?
+
+    // Relation to emails
+    emails EmailMessage[]
+}
+
+model CallCampaign {
+    id                            String                      @id @default(uuid())
+    callerNumber                  String
+    receiverNumber                String
+    duration                      Int
+    callType                      CallType
+    status                        CampaignStatus
+    companyCampaignsUserProfileId String
+    companyCampaignsUserProfile   CompanyCampaignsUserProfile @relation(fields: [companyCampaignsUserProfileId], references: [id])
+    name                          String
+    goal                          String?
+    startDate                     DateTime
+    endDate                       DateTime?
+    aiVoice                       String?
+    aiScript                      String?
+    updatedAt                     DateTime?
+    aiAvatarAgent                 String?
+
+    // Relation to call details
+    callDetails CallDetail[]
+}
+
+model SocialMediaCampaign {
+    id                            String                      @id @default(uuid())
+    platform                      String
+    senderHandle                  String
+    receiverHandle                String
+    hashtags                      Json
+    status                        CampaignStatus
+    companyCampaignsUserProfileId String
+    companyCampaignsUserProfile   CompanyCampaignsUserProfile @relation(fields: [companyCampaignsUserProfileId], references: [id])
+    name                          String
+    goal                          String?
+    startDate                     DateTime
+    endDate                       DateTime?
+    aiVoice                       String?
+    aiScript                      String?
+    updatedAt                     DateTime?
+    aiAvatarAgent                 String?
+
+    // Relation to social actions
+    actions SocialAction[]
+}
+
+model AIKnowledgebase {
+    id                  String      @id @default(uuid())
+    emailTemplate       String?
+    salesScript         String?
+    assignedAssistantID String
+    assignedSquadID     String
+    recordings          Recording   @relation(fields: [recordingId], references: [id])
+    aiAvatar            AIAvatar?   @relation(fields: [aIAvatarId], references: [id])
+    background          Background? @relation(fields: [backgroundId], references: [id])
+    userProfileId       String      @unique
+    userProfile         UserProfile @relation(fields: [userProfileId], references: [id])
+    recordingId         String
+    aIAvatarId          String?
+    backgroundId        String?
+}
+
+model BillingHistoryItem {
+    id            String        @id @default(uuid())
+    invoice       String
+    amount        String
+    date          DateTime
+    status        BillingStatus
+    userProfileId String
+    userProfile   UserProfile   @relation(fields: [userProfileId], references: [id])
+}
+
+model PaymentDetails {
+    id            String      @id @default(uuid())
+    cardType      String
+    cardLastFour  String
+    expiry        String
+    userProfileId String      @unique
+    userProfile   UserProfile @relation(fields: [userProfileId], references: [id])
+}
+
+model AICredits {
+    id             String                  @id @default(uuid())
+    allotted       Int
+    used           Int
+    resetInDays    Int
+    subscription   UserProfileSubscription @relation(fields: [subscriptionId], references: [id])
+    subscriptionId String                  @unique
+}
+
+model LeadCredits {
+    id             String                  @id @default(uuid())
+    allotted       Int
+    used           Int
+    resetInDays    Int
+    subscription   UserProfileSubscription @relation(fields: [subscriptionId], references: [id])
+    subscriptionId String                  @unique
+}
+
+model SkipTraceCredits {
+    id             String                  @id @default(uuid())
+    allotted       Int
+    used           Int
+    resetInDays    Int
+    subscription   UserProfileSubscription @relation(fields: [subscriptionId], references: [id])
+    subscriptionId String                  @unique
+}
+
+model Recording {
+    id              String            @id @default(uuid())
+    customVoiceID   String
+    voiceClone      VoiceClone?       @relation(fields: [voiceCloneId], references: [id])
+    voicemailFile   String
+    AIKnowledgebase AIKnowledgebase[]
+    voiceCloneId    String?
+}
+
+model VoiceClone {
+    id            String      @id @default(uuid())
+    audioFile     String
+    clonedVoiceID String
+    Recording     Recording[]
+}
+
+model AIAvatar {
+    id               String            @id @default(uuid())
+    avatarKandidFile String
+    avatarMotionFile String
+    videoDetails     VideoDetails      @relation(fields: [videoDetailsId], references: [id])
+    AIKnowledgebase  AIKnowledgebase[]
+    videoDetailsId   String
+}
+
+model VideoDetails {
+    id          String     @id @default(uuid())
+    title       String
+    description String
+    ctaText     String
+    ctaLink     String
+    AIAvatar    AIAvatar[]
+}
+
+model Background {
+    id                  String            @id @default(uuid())
+    backgroundVideoFile String
+    backgroundMusic     String
+    colorScheme         ColorScheme       @relation(fields: [colorSchemeId], references: [id])
+    AIKnowledgebase     AIKnowledgebase[]
+    colorSchemeId       String
+}
+
+model ColorScheme {
+    id             String       @id @default(uuid())
+    primaryColor   String
+    secondaryColor String
+    accentColor    String?
+    Background     Background[]
+}
+
+enum SubscriptionType {
+    monthly
+    yearly
+}
+
+enum SubscriptionStatus {
+    active
+    inactive
+}
+
+enum BillingStatus {
+    Paid
+    Unpaid
+}
+
+enum IntegrationStatus {
+    connected
+    disconnected
+}
+
+enum TeamMemberRole {
+    admin
+    member
+}
+
+enum TwoFactorMethods {
+    sms
+    email
+    authenticatorApp
+}
