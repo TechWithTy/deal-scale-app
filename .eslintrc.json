@@ -1,0 +1,18 @@
+{
+	"extends": [
+		"next/core-web-vitals",
+		"eslint:recommended",
+		"plugin:deno/recommended"
+	],
+	"plugins": ["@typescript-eslint", "deno"],
+	"env": {
+		"browser": true,
+		"es2021": true
+	},
+	"rules": {
+		"@typescript-eslint/no-unused-vars": ["warn", { "args": "none" }],
+		"import/no-unresolved": "off", // Disabled to prevent errors with Deno module URLs
+		"import/named": "off",
+		"no-console": ["warn", { "allow": ["warn", "error"] }]
+	}
+}
