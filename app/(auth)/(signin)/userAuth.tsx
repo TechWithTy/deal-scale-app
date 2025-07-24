@@ -1,5 +1,3 @@
-import MainUserAuthForm from "@/components/forms/steppers/user-auth-forms/MainUserAuthForm";
-import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useState } from "react";
 import { TestUsers } from "./_components/TestUsers";
@@ -27,7 +25,7 @@ export default function AuthForm({ isSignUp, setIsSignUp }: AuthFormProps) {
 				</p>
 			</div>
 
-			<MainUserAuthForm />
+			{/* <MainUserAuthForm /> */}
 
 			{process.env.NODE_ENV === "development" && (
 				<>
