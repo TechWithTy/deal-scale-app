@@ -1,16 +1,13 @@
 "use client";
 
-import { Button, buttonVariants } from "@/components/ui/button";
-import { cn } from "@/lib/_utils";
 import { FlameIcon } from "lucide-react";
-import Link from "next/link";
 import { useState } from "react";
-import QuoteSection from "./QuoteSection";
-import AuthToggle from "./authToggle";
-import Carousel from "./carousel";
-import AuthForm from "./userAuth";
 import { APP_TESTING_MODE } from "@/constants/data";
-import { TestUsers } from "./_components/TestUsers";
+import { TestUsers } from "@/app/(auth)/(signin)/_components/TestUsers";
+import AuthForm from "@/app/(auth)/(signin)/userAuth";
+import AuthToggle from "@/app/(auth)/(signin)/authToggle";
+import Carousel from "@/app/(auth)/(signin)/carousel";
+import QuoteSection from "@/app/(auth)/(signin)/QuoteSection";
 
 export default function AuthenticationPage() {
 	const [isSignUp, setIsSignUp] = useState(false);
@@ -27,24 +24,22 @@ export default function AuthenticationPage() {
 				</div>
 
 				<Carousel />
-
 				<QuoteSection />
 			</div>
 
 			<div className="flex h-full flex-col items-center p-4 lg:p-8">
 				<AuthForm isSignUp={isSignUp} setIsSignUp={setIsSignUp} />
-				{!isSignUp && APP_TESTING_MODE && (
-					<>
-						<div className="relative mt-4 flex w-full max-w-md items-center py-4">
-							<div className="flex-grow border-border border-t" />
-							<span className="flex-shrink px-4 text-muted-foreground text-sm">
-								Or use test accounts
-							</span>
-							<div className="flex-grow border-border border-t" />
-						</div>
-						<TestUsers />
-					</>
-				)}
+
+				<>
+					<div className="relative mt-4 flex w-full max-w-md items-center py-4">
+						<div className="flex-grow border-border border-t" />
+						<span className="flex-shrink px-4 text-muted-foreground text-sm">
+							Or use test accounts
+						</span>
+						<div className="flex-grow border-border border-t" />
+					</div>
+					<TestUsers />
+				</>
 			</div>
 		</div>
 	);

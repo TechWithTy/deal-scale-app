@@ -1,6 +1,9 @@
+"use client";
+
 import Link from "next/link";
 import { useState } from "react";
 import { TestUsers } from "./_components/TestUsers";
+import { APP_TESTING_MODE } from "@/constants/data";
 
 // Define the props type
 interface AuthFormProps {
@@ -27,7 +30,7 @@ export default function AuthForm({ isSignUp, setIsSignUp }: AuthFormProps) {
 
 			{/* <MainUserAuthForm /> */}
 
-			{process.env.NODE_ENV === "development" && (
+			{APP_TESTING_MODE && (
 				<>
 					<div className="relative flex items-center py-4">
 						<div className="flex-grow border-border border-t" />

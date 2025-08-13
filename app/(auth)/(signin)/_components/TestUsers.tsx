@@ -15,6 +15,7 @@ import { toast } from "sonner";
 import { users } from "@/lib/mock-db";
 import { uuid } from "uuidv4";
 import type { User as UserType } from "@/types/user";
+import { signIn } from "next-auth/react";
 
 // Extend the User type to ensure password is required for test users
 type TestUser = Omit<UserType, "password"> & {
@@ -30,24 +31,12 @@ export function TestUsers() {
 
 	const handleLogin = async (user: TestUser) => {
 		try {
-			const response = await fetch("/api/auth/callback/credentials", {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify({
-					email: user.email,
-					password: user.password,
-					redirect: false,
-				}),
+			await signIn("credentials", {
+				email: user.email,
+				password: user.password,
+				callbackUrl: "/dashboard",
+				redirect: true,
 			});
-
-			if (response.ok) {
-				router.push("/dashboard");
-			} else {
-				const error = await response.json();
-				toast.error(error.message || "Login failed");
-			}
 		} catch (error) {
 			toast.error("An error occurred during login");
 			console.error("Login error:", error);
@@ -94,6 +83,7 @@ export function TestUsers() {
 						</CardContent>
 						<CardFooter>
 							<Button
+								type="button"
 								onClick={() => handleLogin(user)}
 								className="w-full"
 								variant={theme === "dark" ? "outline" : "default"}
