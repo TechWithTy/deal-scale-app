@@ -143,10 +143,10 @@ const generateCallCampaign = (): CallCampaign => {
 };
 
 // Generate 100 entries of CallCampaign data
-const generateCallCampaignData = (): CallCampaign[] => {
+export const generateCallCampaignData = (): CallCampaign[] => {
 	return Array.from({ length: 100 }, generateCallCampaign);
 };
 
 // Example of generating 100 entries
-export const mockCallCampaignData =
+export const mockCallCampaignData: CallCampaign[] | false =
 	APP_TESTING_MODE && generateCallCampaignData();

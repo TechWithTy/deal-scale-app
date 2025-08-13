@@ -27,9 +27,10 @@ export function generateMockAssistantVoice(): AssistantVoice {
 }
 
 // Generate an array of mock AssistantVoice data
-function generateMockVoices(count: number): AssistantVoice[] {
+export function generateMockVoices(count: number): AssistantVoice[] {
 	return Array.from({ length: count }, () => generateMockAssistantVoice());
 }
 
 // Example: Generate 10 mock voices
-export const mockVoices = APP_TESTING_MODE && generateMockVoices(20);
+export const mockVoices: AssistantVoice[] | false =
+	APP_TESTING_MODE && generateMockVoices(20);

@@ -138,8 +138,10 @@ const PropertySearch: React.FC<PropertySearchProps> = ({
 				title="Leads Search"
 				description="Quickly search for properties by location, filters, and more."
 				creditsRemaining={
-					mockUserProfile.subscription.aiCredits.allotted -
-					mockUserProfile.subscription.aiCredits.used
+					mockUserProfile
+						? mockUserProfile.subscription.aiCredits.allotted -
+							mockUserProfile.subscription.aiCredits.used
+						: undefined
 				}
 			/>
 			<form onSubmit={handleFormSubmit(onSubmit)}>

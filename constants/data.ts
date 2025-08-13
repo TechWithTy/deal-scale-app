@@ -14,7 +14,20 @@ import type {
 // =====================================================================
 //
 
-export const APP_TESTING_MODE = true;
+// Resolve testing mode from env. Supports Vite and Next.js. Defaults to false.
+const viteEnv =
+	typeof import.meta !== "undefined" && (import.meta as any)?.env
+		? ((import.meta as any).env.VITE_APP_TESTING_MODE ??
+			(import.meta as any).env.APP_TESTING_MODE)
+		: undefined;
+const nodeEnv =
+	typeof process !== "undefined" && (process as any)?.env
+		? (process.env.NEXT_PUBLIC_APP_TESTING_MODE ?? process.env.APP_TESTING_MODE)
+		: undefined;
+export const APP_TESTING_MODE =
+	String(viteEnv ?? nodeEnv ?? "")
+		.toLowerCase()
+		.trim() === "true";
 
 //
 // Mock Data Generation
@@ -44,7 +57,7 @@ export function generateMockLeads(count: number): LeadTypeGlobal[] {
 				phone: faker.phone.number(),
 				address: streetAddress,
 				domain: faker.internet.domainName(),
-				social: `https://linkedin.com/in/${faker.internet.userName()}`,
+				social: `https://linkedin.com/in/${faker.internet.username()}`,
 			},
 			address1: {
 				fullStreetLine: streetAddress,
@@ -72,10 +85,10 @@ export function generateMockLeads(count: number): LeadTypeGlobal[] {
 				probability: 0.8,
 			}),
 			socials: {
-				facebook: `https://facebook.com/${faker.internet.userName()}`,
-				linkedin: `https://linkedin.com/in/${faker.internet.userName()}`,
-				instagram: `https://instagram.com/${faker.internet.userName()}`,
-				twitter: `https://twitter.com/${faker.internet.userName()}`,
+				facebook: `https://facebook.com/${faker.internet.username()}`,
+				linkedin: `https://linkedin.com/in/${faker.internet.username()}`,
+				instagram: `https://instagram.com/${faker.internet.username()}`,
+				twitter: `https://twitter.com/${faker.internet.username()}`,
 			},
 		};
 

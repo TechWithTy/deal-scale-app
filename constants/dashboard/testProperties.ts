@@ -1,4 +1,5 @@
 import { v4 as uuidv4 } from "uuid";
+import { APP_TESTING_MODE } from "../data";
 
 export const emptyAgentProperty = {
 	id: uuidv4(),
@@ -48,3 +49,6 @@ export const emptyAgentProperty = {
 	year_built: 1990,
 	zip_code: "92126",
 };
+
+export const mockEmptyAgentProperty: typeof emptyAgentProperty | false =
+	APP_TESTING_MODE && emptyAgentProperty;

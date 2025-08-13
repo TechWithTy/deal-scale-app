@@ -45,5 +45,5 @@ export const generateSampleSocialMediaCampaigns = (
 	});
 };
 
-export const mockSocialMediaCampaigns =
+export const mockSocialMediaCampaigns: SocialMediaCampaign[] | false =
 	APP_TESTING_MODE && generateSampleSocialMediaCampaigns();

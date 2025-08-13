@@ -45,3 +45,19 @@ export const generateTwitterOAuthData = (): TwitterOAuthData => ({
 	id: faker.string.uuid(), // Twitter user ID
 	handle: `@${faker.internet.username()}`, // Twitter handle
 });
+
+// Aggregate generator to assemble a connected accounts object with optional providers
+export const generateConnectedAccounts = () => ({
+	facebook: faker.datatype.boolean()
+		? { ...generateFacebookOAuthData(), platform: "facebook" }
+		: undefined,
+	linkedin: faker.datatype.boolean()
+		? { ...generateLinkedInOAuthData(), platform: "linkedin" }
+		: undefined,
+	instagram: faker.datatype.boolean()
+		? { ...generateInstagramOAuthData(), platform: "instagram" }
+		: undefined,
+	twitter: faker.datatype.boolean()
+		? { ...generateTwitterOAuthData(), platform: "twitter" }
+		: undefined,
+});

@@ -4,6 +4,8 @@ export type ScriptLine = {
 	text: string;
 };
 
+import { APP_TESTING_MODE } from "../../../data";
+
 export const scriptCloneTextDefault: ScriptLine[] = [
 	{
 		title: "Confident & Warm Opening",
@@ -46,3 +48,11 @@ export const scriptCloneTextDefault: ScriptLine[] = [
 		text: "[Questioning Tone] What's your biggest operational headache right now? [Surprised Delight] Really? That's exactly what we specialize in! [Concern] How long has this been affecting your team? [Relief/Solution] Well, you're going to love what I'm about to show you. [Confident Close] Shall we get started?",
 	},
 ];
+
+// Generator in case consumers prefer a fresh copy each time
+export const generateDefaultScriptLines = (): ScriptLine[] =>
+	scriptCloneTextDefault.map((line) => ({ ...line }));
+
+// Typed mock constant guarded by APP_TESTING_MODE
+export const mockScriptCloneTextDefault: ScriptLine[] | false =
+	APP_TESTING_MODE && scriptCloneTextDefault;

@@ -48,9 +48,9 @@ const PropertyListView: React.FC<PropertyListProps> = ({ properties }) => {
 	});
 
 	// ...existing hooks and state
-	const availableListNames = MockUserProfile.companyInfo.leadLists.map(
-		(list) => list.listName,
-	);
+	const availableListNames: string[] = MockUserProfile
+		? MockUserProfile.companyInfo.leadLists.map((list) => list.listName)
+		: [];
 	const openSkipTraceDialog = () => {
 		useModalStore.getState().openModal("skipTrace", {
 			properties: filteredProperties.filter((p) =>

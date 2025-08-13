@@ -4,6 +4,7 @@ import type {
 	RentCastProperty,
 	PropertyRentCastMetadata,
 } from "@/types/_dashboard/property";
+import { APP_TESTING_MODE } from "../data";
 import type {
 	PropertyFeatures,
 	TaxAssessment,
@@ -350,3 +351,7 @@ export const generateMockRentCastPropertiesForCreation = (
 ): RentCastProperty[] => {
 	return Array.from({ length: count }, generateMockRentCastPropertyForCreation);
 };
+
+// Guarded mock array export
+export const mockRentCastProperties: RentCastProperty[] | false =
+	APP_TESTING_MODE && generateMockRentCastProperties(100);

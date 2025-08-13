@@ -34,7 +34,8 @@ export function generateMockLeadLists(count: number): LeadList[] {
 	return leadLists;
 }
 
-export const mockLeadListData = APP_TESTING_MODE && generateMockLeadLists(100);
+export const mockLeadListData: LeadList[] | false =
+	APP_TESTING_MODE && generateMockLeadLists(100);
 
 export const leadListData: LeadList[] = [
 	{

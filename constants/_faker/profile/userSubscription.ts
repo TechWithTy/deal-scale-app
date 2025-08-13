@@ -179,5 +179,5 @@ const generateMockSubscriptions = (): UserProfileSubscription[] => {
 };
 
 // Usage of mock data for testing
-export const mockSubscriptions =
+export const mockSubscriptions: UserProfileSubscription[] | false =
 	APP_TESTING_MODE && generateMockSubscriptions();

@@ -1,10 +1,9 @@
 import type { TeamMember } from "@/types/userProfile";
-import { faker } from "@faker-js/faker";
 import { APP_TESTING_MODE } from "../../../data";
 
 // Fixed array of mock team members for consistent IDs and profiles
 
-export const mockTeamMembers: TeamMember[] = [
+const TEAM_MEMBERS: TeamMember[] = [
 	{
 		id: "7d8824fd-603f-4805-9fbc-f5b22e54a610",
 		firstName: "Jane",
@@ -61,3 +60,9 @@ export const mockTeamMembers: TeamMember[] = [
 	},
 	// Add more fixed team members as needed
 ];
+
+export const generateMockTeamMembers = (): TeamMember[] =>
+	TEAM_MEMBERS.map((m) => ({ ...m }));
+
+export const mockTeamMembers: TeamMember[] | false =
+	APP_TESTING_MODE && TEAM_MEMBERS;

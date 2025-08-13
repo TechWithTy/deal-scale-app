@@ -38,5 +38,5 @@ export const generateSampleTextMessageCampaigns = (
 	return Array.from({ length: count }, generateSampleTextMessageCampaign);
 };
 
-export const mockTextCampaigns =
+export const mockTextCampaigns: GHLTextMessageCampaign[] | false =
 	APP_TESTING_MODE && generateSampleTextMessageCampaigns();

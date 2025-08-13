@@ -1,8 +1,9 @@
 import { faker } from "@faker-js/faker";
 import type { AssistantVoice } from "@/types/vapiAi/api/assistant/create";
+import { APP_TESTING_MODE } from "../../../data";
 
-export const mockAssistantVoices: AssistantVoice[] = [
-	{
+export function generateMockAssistantVoice(): AssistantVoice {
+	return {
 		id: faker.string.uuid(),
 		name: `${faker.person.firstName()} ${faker.person.lastName()}`.trim(),
 		fillerInjectionEnabled: faker.datatype.boolean(),
@@ -22,6 +23,12 @@ export const mockAssistantVoices: AssistantVoice[] = [
 				numberToDigitsCutoff: faker.number.int({ min: 5, max: 100 }),
 			},
 		},
-	},
-	// Add more mock voices as needed
-];
+	};
+}
+
+export function generateMockAssistantVoices(count: number): AssistantVoice[] {
+	return Array.from({ length: count }, () => generateMockAssistantVoice());
+}
+
+export const mockAssistantVoices: AssistantVoice[] | false =
+	APP_TESTING_MODE && generateMockAssistantVoices(10);

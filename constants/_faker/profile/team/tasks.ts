@@ -77,4 +77,5 @@ export const generateTaskTracking = (taskCount: number): TaskTracking => {
 	};
 };
 
-export const mockTrackingData = APP_TESTING_MODE && generateTaskTracking(10); // Generates tracking for 10 tasks
+export const mockTrackingData: TaskTracking | false =
+	APP_TESTING_MODE && generateTaskTracking(10); // Generates tracking for 10 tasks

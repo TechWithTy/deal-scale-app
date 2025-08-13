@@ -17,7 +17,7 @@ import { faker } from "@faker-js/faker";
 import { APP_TESTING_MODE } from "../../data";
 import type { CallType } from "@/types/vapiAi/api/calls/_enums";
 // Mock Data for CallCampaignAnalytics
-const generateMockCallCampaignAnalytics = (): CallCampaignAnalytics => {
+export const generateMockCallCampaignAnalytics = (): CallCampaignAnalytics => {
 	const callType: CallType = faker.helpers.arrayElement<CallType>([
 		"inboundPhoneCall",
 		"outboundPhoneCall",
@@ -201,5 +201,5 @@ const generateMockCallCampaignAnalytics = (): CallCampaignAnalytics => {
 };
 
 // Example usage:
-export const mockCallCampaignAnalytics =
+export const mockCallCampaignAnalytics: CallCampaignAnalytics | false =
 	APP_TESTING_MODE && generateMockCallCampaignAnalytics();

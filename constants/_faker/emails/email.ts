@@ -57,7 +57,7 @@ export const generateSampleEmails = (count = 10): GetEmailByIdResponse[] => {
 	return Array.from({ length: count }, generateSampleEmail);
 };
 
-export const mockGeneratedSampleEmails =
+export const mockGeneratedSampleEmails: GetEmailByIdResponse[] | false =
 	APP_TESTING_MODE && generateSampleEmails();
 
 export const sampleEmail: GetEmailByIdResponse = {

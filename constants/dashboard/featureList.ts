@@ -1,4 +1,5 @@
 import { PhoneCall, TrendingUp, UserCheck } from "lucide-react";
+import { APP_TESTING_MODE } from "../data";
 
 export const SubscriptionFeatures = [
 	{
@@ -20,3 +21,6 @@ export const SubscriptionFeatures = [
 		icon: TrendingUp,
 	},
 ];
+
+export const mockSubscriptionFeatures: typeof SubscriptionFeatures | false =
+	APP_TESTING_MODE && SubscriptionFeatures;

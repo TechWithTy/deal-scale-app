@@ -46,4 +46,5 @@ export const generateSampleTextMessages = (count = 100): TextMessage[] => {
 	return Array.from({ length: count }, generateSampleTextMessage);
 };
 
-export const mockTexts = APP_TESTING_MODE && generateSampleTextMessages();
+export const mockTexts: TextMessage[] | false =
+	APP_TESTING_MODE && generateSampleTextMessages();

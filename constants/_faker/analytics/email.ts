@@ -6,7 +6,7 @@ import type {
 import { faker } from "@faker-js/faker";
 
 // Function to generate mock emails for the email campaign
-const generateMockEmails = (): GetEmailByIdResponse[] => {
+export const generateMockEmails = (): GetEmailByIdResponse[] => {
 	return Array.from({ length: faker.number.int({ min: 5, max: 20 }) }, () => ({
 		id: faker.string.uuid(), // Unique email ID
 		threadId: faker.string.uuid(), // Unique thread ID
@@ -62,40 +62,41 @@ const generateMockEmails = (): GetEmailByIdResponse[] => {
 };
 
 // Function to generate mock EmailCampaignAnalytics
-const generateMockEmailCampaignAnalytics = (): EmailCampaignAnalytics => {
-	const emails = generateMockEmails(); // Generate mock emails for the campaign
+export const generateMockEmailCampaignAnalytics =
+	(): EmailCampaignAnalytics => {
+		const emails = generateMockEmails(); // Generate mock emails for the campaign
 
-	return {
-		id: faker.string.uuid(),
-		name: faker.lorem.words(3), // Campaign name
-		senderEmail: faker.internet.email(), // Sender's email address
-		recipientCount: faker.number.int({ min: 100, max: 1000 }), // Total number of recipients
-		sentCount: faker.number.int({ min: 50, max: 1000 }), // Number of emails sent
-		deliveredCount: faker.number.int({ min: 40, max: 900 }), // Number of delivered emails
-		openedCount: faker.number.int({ min: 10, max: 800 }), // Number of emails opened by recipients
-		bouncedCount: faker.number.int({ min: 0, max: 50 }), // Number of bounced emails
-		failedCount: faker.number.int({ min: 0, max: 10 }), // Number of failed emails
-		emails, // The array of emails associated with the campaign
-		workflowID: faker.helpers.maybe(() => faker.string.uuid()), // Optional workflow ID
-		funnelID: faker.helpers.maybe(() => faker.string.uuid()), // Optional funnel ID
-		scriptID: faker.helpers.maybe(() => faker.string.uuid()), // Optional script ID
-		status: faker.helpers.arrayElement([
-			"delivered",
-			"delivering",
-			"failed",
-			"pending",
-			"completed",
-			"missed",
-			"queued",
-			"read",
-			"unread",
-		]), // Random campaign status
-		startDate: faker.date.past().toISOString(), // Start date of the campaign
-		endDate: faker.helpers.maybe(() => faker.date.recent().toISOString()), // Optional end date
-		updatedAt: faker.date.recent().toISOString(), // Last updated time
+		return {
+			id: faker.string.uuid(),
+			name: faker.lorem.words(3), // Campaign name
+			senderEmail: faker.internet.email(), // Sender's email address
+			recipientCount: faker.number.int({ min: 100, max: 1000 }), // Total number of recipients
+			sentCount: faker.number.int({ min: 50, max: 1000 }), // Number of emails sent
+			deliveredCount: faker.number.int({ min: 40, max: 900 }), // Number of delivered emails
+			openedCount: faker.number.int({ min: 10, max: 800 }), // Number of emails opened by recipients
+			bouncedCount: faker.number.int({ min: 0, max: 50 }), // Number of bounced emails
+			failedCount: faker.number.int({ min: 0, max: 10 }), // Number of failed emails
+			emails, // The array of emails associated with the campaign
+			workflowID: faker.helpers.maybe(() => faker.string.uuid()), // Optional workflow ID
+			funnelID: faker.helpers.maybe(() => faker.string.uuid()), // Optional funnel ID
+			scriptID: faker.helpers.maybe(() => faker.string.uuid()), // Optional script ID
+			status: faker.helpers.arrayElement([
+				"delivered",
+				"delivering",
+				"failed",
+				"pending",
+				"completed",
+				"missed",
+				"queued",
+				"read",
+				"unread",
+			]), // Random campaign status
+			startDate: faker.date.past().toISOString(), // Start date of the campaign
+			endDate: faker.helpers.maybe(() => faker.date.recent().toISOString()), // Optional end date
+			updatedAt: faker.date.recent().toISOString(), // Last updated time
+		};
 	};
-};
 
 // Example usage:
-export const mockEmailCampaignAnalytics =
+export const mockEmailCampaignAnalytics: EmailCampaignAnalytics | false =
 	APP_TESTING_MODE && generateMockEmailCampaignAnalytics();

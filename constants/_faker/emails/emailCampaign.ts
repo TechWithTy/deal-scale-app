@@ -34,11 +34,11 @@ export const generateSampleEmailCampaign = (): EmailCampaign => {
 };
 
 // Generate an array of sample email campaigns
-const generateSampleEmailCampaigns = (count = 100): EmailCampaign[] => {
+export const generateSampleEmailCampaigns = (count = 100): EmailCampaign[] => {
 	return Array.from({ length: count }, generateSampleEmailCampaign);
 };
 
-export const mockGeneratedSampleEmailCampaigns =
+export const mockGeneratedSampleEmailCampaigns: EmailCampaign[] | false =
 	APP_TESTING_MODE && generateSampleEmailCampaigns();
 
 export const sampleEmailCampaign: EmailCampaign = {

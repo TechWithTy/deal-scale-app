@@ -36,7 +36,7 @@ const paymentDetails: PaymentDetails = {
 };
 
 // Export the mocks if APP_TESTING_MODE is true
-export const mockBillingHistory: BillingHistoryItem[] =
+export const mockBillingHistory: BillingHistoryItem[] | false =
 	APP_TESTING_MODE && billingHistory;
-export const mockPaymentDetails: PaymentDetails =
+export const mockPaymentDetails: PaymentDetails | false =
 	APP_TESTING_MODE && paymentDetails;

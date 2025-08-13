@@ -3,6 +3,7 @@
 // fetchFakeMapMarkers({ bounds: { ... } }).then(setMarkers)
 
 import type { Coordinate } from "@/types/_dashboard/maps";
+import { APP_TESTING_MODE } from "../../../data";
 
 export interface FetchFakeMapMarkersParams {
 	// Optionally accept bounds or shape info for realism
@@ -30,6 +31,9 @@ function randomLatLng(bounds: {
 export function fetchFakeMapMarkers(
 	params: FetchFakeMapMarkersParams,
 ): Promise<Coordinate[]> {
+	// If testing mode is off, do not generate any mock markers
+	if (!APP_TESTING_MODE) return Promise.resolve([]);
+
 	const {
 		bounds = { north: 40.8, south: 40.6, east: -73.8, west: -74.1 }, // NYC area as default
 		count = 10,

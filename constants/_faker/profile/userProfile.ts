@@ -11,16 +11,30 @@ import { mockSocialMediaCampaigns } from "@/constants/_faker/social/socialCampai
 import { mockTextCampaigns } from "@/constants/_faker/texts/textCampaign";
 import { mockLeadListData } from "@/constants/dashboard/leadList";
 import { APP_TESTING_MODE, mockGeneratedLeads } from "@/constants/data";
-import type { EmailCampaignAnalytics } from "@/types/goHighLevel/email";
-import type { TextMessageCampaignAnalytics } from "@/types/goHighLevel/text";
+import type {
+	EmailCampaign,
+	EmailCampaignAnalytics,
+} from "@/types/goHighLevel/email";
+import type {
+	GHLTextMessageCampaign,
+	TextMessageCampaignAnalytics,
+} from "@/types/goHighLevel/text";
 import type { AIKnowledgebase, UserProfile } from "@/types/userProfile";
+import type { UserProfileSubscription } from "./userSubscription";
 import type { CallCampaignAnalytics } from "@/types/vapiAi/api/calls/get";
+import type { LeadTypeGlobal } from "@/types/_dashboard/leads";
+import type { LeadList } from "@/types/_dashboard/leadList";
+import type {
+	CallCampaign,
+	SocialMediaCampaign,
+} from "@/types/_dashboard/campaign";
 import { faker } from "@faker-js/faker"; // Import Faker.js for random data generation
-import { mockKanbanState } from "../kanban";
+import { generateKanbanState, mockKanbanState } from "../kanban";
 import { mockTeamMembers } from "./team/members";
-import { mockTrackingData } from "./team/tasks";
+import { generateTaskTracking, mockTrackingData } from "./team/tasks";
 import { mockSubscriptions } from "./userSubscription";
 import { generateMockAssistantVoice } from "../_api/vapi/assistant";
+import { generateConnectedAccounts } from "./connectedAccounts";
 
 // Updated aIKnowledgebase object with Faker.js dynamic values
 
@@ -64,188 +78,196 @@ const aIKnowledgebase: AIKnowledgebase = {
 	},
 };
 
-export const connectedAccounts = {
-	facebook: faker.datatype.boolean()
-		? {
-				accessToken: faker.string.alphanumeric(32),
-				refreshToken: faker.string.alphanumeric(32),
-				expiresIn: faker.number.int({ min: 3600, max: 7200 }),
-				tokenType: "Bearer",
-				scope: "public_profile,email",
-				platform: "facebook",
-				profileId: faker.string.uuid(),
-				pageId: faker.helpers.maybe(() => faker.string.uuid()), // Optional Page ID
-			}
-		: undefined, // Not connected if false
-
-	instagram: faker.datatype.boolean()
-		? {
-				accessToken: faker.string.alphanumeric(32),
-				refreshToken: faker.string.alphanumeric(32),
-				expiresIn: faker.number.int({ min: 3600, max: 7200 }),
-				tokenType: "Bearer",
-				scope: "user_profile,user_media",
-				platform: "instagram",
-				id: faker.string.uuid(),
-				username: faker.internet.username(),
-			}
-		: undefined, // Not connected if false
-
-	linkedIn: faker.datatype.boolean()
-		? {
-				accessToken: faker.string.alphanumeric(32),
-				refreshToken: faker.string.alphanumeric(32),
-				expiresIn: faker.number.int({ min: 3600, max: 7200 }),
-				tokenType: "Bearer",
-				scope: "r_liteprofile,r_emailaddress",
-				platform: "linkedin",
-				id: faker.string.uuid(),
-				companyId: faker.helpers.maybe(() => faker.string.uuid()), // Optional company ID
-			}
-		: undefined, // Not connected if false
-
-	twitter: faker.datatype.boolean()
-		? {
-				accessToken: faker.string.alphanumeric(32),
-				refreshToken: faker.string.alphanumeric(32),
-				expiresIn: faker.number.int({ min: 3600, max: 7200 }),
-				tokenType: "Bearer",
-				scope: "tweet.read,users.read",
-				platform: "twitter",
-				id: faker.string.uuid(),
-				handle: faker.internet.username(),
-			}
-		: undefined, // Not connected if false
+// connected accounts will be generated lazily inside generateMockUserProfile
+const fallbackSubscription: UserProfileSubscription = {
+	id: "0",
+	stripeSubscriptionID: "",
+	name: "None",
+	type: "monthly",
+	status: "inactive",
+	price: "$0",
+	aiCredits: { allotted: 0, used: 0, resetInDays: 0 },
+	leads: { allotted: 0, used: 0, resetInDays: 0 },
+	skipTraces: { allotted: 0, used: 0, resetInDays: 0 },
+	renewalDate: "",
+	createdAt: "",
+	planDetails: "",
 };
-// Mocking a user profile with Faker.js
-export const mockUserProfile: UserProfile = {
-	id: faker.string.uuid(), // Generates a UUID, // Generate unique ID
-	subscription: mockSubscriptions[1],
-	firstName: faker.person.firstName(),
-	lastName: faker.person.lastName(),
-	email: faker.internet.email(),
-	state: faker.location.state(),
-	city: faker.location.city(),
-	createdAt: faker.date.past(),
-	updatedAt: faker.date.recent(),
-	country: faker.location.country(),
-	personalNum: "3325436201",
-	connectedAccounts: connectedAccounts,
-	leadPreferences: {
-		preferredLocation: [faker.location.city(), faker.location.city()],
-		industry: "Real Estate", // Static or use faker.commerce.department()
-		minLeadQuality: faker.number.int({ min: 60, max: 100 }),
-		maxBudget: faker.number.int({ min: 1000, max: 10000 }),
-	},
-	savedSearches: [
-		{
-			id: faker.string.uuid(),
-			name: "High-Quality Leads", // Static or faker.commerce.productName()
-			searchCriteria: {
-				quality: "high",
-				location: faker.location.city(),
+
+export const generateMockUserProfile = (): UserProfile => {
+	const subs = (
+		Array.isArray(mockSubscriptions) ? mockSubscriptions : []
+	) as UserProfileSubscription[];
+	const subscription = subs[1] ?? subs[0] ?? fallbackSubscription;
+
+	const safeLeads = (
+		Array.isArray(mockGeneratedLeads) ? mockGeneratedLeads : []
+	) as LeadTypeGlobal[];
+	const safeLeadLists = (
+		Array.isArray(mockLeadListData) ? mockLeadListData : []
+	) as LeadList[];
+	const safeTextCampaigns = (
+		Array.isArray(mockTextCampaigns) ? mockTextCampaigns : []
+	) as GHLTextMessageCampaign[];
+	const safeEmailCampaigns = (
+		Array.isArray(mockGeneratedSampleEmailCampaigns)
+			? mockGeneratedSampleEmailCampaigns
+			: []
+	) as EmailCampaign[];
+	const safeSocialCampaigns = (
+		Array.isArray(mockSocialMediaCampaigns) ? mockSocialMediaCampaigns : []
+	) as SocialMediaCampaign[];
+	const safeCallCampaigns = (
+		Array.isArray(mockCallCampaignData) ? mockCallCampaignData : []
+	) as CallCampaign[];
+	const safeTeamMembers = (
+		Array.isArray(mockTeamMembers) ? mockTeamMembers : []
+	) as unknown[];
+	const safeKanban = mockKanbanState || generateKanbanState(0);
+	const safeTracking = mockTrackingData || generateTaskTracking(0);
+	const analytics = [
+		mockCallCampaignAnalytics,
+		mockTextMessageCampaignAnalytics,
+		mockEmailCampaignAnalytics,
+	].filter(Boolean) as (
+		| EmailCampaignAnalytics
+		| CallCampaignAnalytics
+		| TextMessageCampaignAnalytics
+	)[];
+
+	const connectedAccounts = generateConnectedAccounts();
+
+	// Mocking a user profile with Faker.js
+	return {
+		id: faker.string.uuid(), // Generates a UUID, // Generate unique ID
+		subscription: subscription,
+		firstName: faker.person.firstName(),
+		lastName: faker.person.lastName(),
+		email: faker.internet.email(),
+		state: faker.location.state(),
+		city: faker.location.city(),
+		createdAt: faker.date.past(),
+		updatedAt: faker.date.recent(),
+		country: faker.location.country(),
+		personalNum: "3325436201",
+		connectedAccounts: connectedAccounts,
+		leadPreferences: {
+			preferredLocation: [faker.location.city(), faker.location.city()],
+			industry: "Real Estate", // Static or use faker.commerce.department()
+			minLeadQuality: faker.number.int({ min: 60, max: 100 }),
+			maxBudget: faker.number.int({ min: 1000, max: 10000 }),
+		},
+		savedSearches: [
+			{
+				id: faker.string.uuid(),
+				name: "High-Quality Leads", // Static or faker.commerce.productName()
+				searchCriteria: {
+					quality: "high",
+					location: faker.location.city(),
+				},
+				createdAt: faker.date.recent(),
+				updatedAt: faker.date.recent(),
+				priority: faker.datatype.boolean(),
 			},
-			createdAt: faker.date.recent(),
-			updatedAt: faker.date.recent(),
-			priority: faker.datatype.boolean(),
+		],
+		notificationPreferences: {
+			emailNotifications: faker.datatype.boolean(),
+			smsNotifications: faker.datatype.boolean(),
+			notifyForNewLeads: faker.datatype.boolean(),
+			notifyForCampaignUpdates: faker.datatype.boolean(),
 		},
-	],
-	notificationPreferences: {
-		emailNotifications: faker.datatype.boolean(),
-		smsNotifications: faker.datatype.boolean(),
-		notifyForNewLeads: faker.datatype.boolean(),
-		notifyForCampaignUpdates: faker.datatype.boolean(),
-	},
-	integrations: [
-		{
-			platform: "Salesforce", // Static
-			apiKey: faker.string.uuid(), // Random UUID
-			status: faker.helpers.arrayElement(["connected", "disconnected"]), // Random status
+		integrations: [
+			{
+				platform: "Salesforce", // Static
+				apiKey: faker.string.uuid(), // Random UUID
+				status: faker.helpers.arrayElement(["connected", "disconnected"]), // Random status
+			},
+		],
+
+		companyInfo: {
+			companyName: faker.company.name(),
+			webhook: faker.internet.url(),
+			socialMediaTags: faker.lorem
+				.words(3)
+				.split(" ")
+				.map((word) => `#${word}`),
+			companyLogo: faker.image.avatarGitHub(), // Static, can be a URL or file path
+			GHLID: { locationId: faker.string.uuid() }, // Random location ID
+			assets: {
+				logo: faker.image.avatar(), // Generates a random logo image URL (300x300 size)
+				favicon: faker.image.urlLoremFlickr(), // Generates a random favicon image URL (64x64 size)
+				banner: faker.image.urlLoremFlickr(), // Generates a random banner image URL (1200x300 size)
+				ghlAssets: Array.from({ length: 5 }, () =>
+					faker.image.urlLoremFlickr(),
+				), // Generates an array of 5 random image URLs
+			},
+
+			campaigns: {
+				textCampaigns: safeTextCampaigns,
+				emailCampaigns: safeEmailCampaigns,
+				socialCampaigns: safeSocialCampaigns,
+				callCampaigns: safeCallCampaigns,
+			},
+			KanbanTasks: safeKanban,
+			forwardingNumber: "3325436201",
+			outreachEmail: faker.internet.email(),
+			explainerVideo: faker.internet.url(),
+			campaignAnalytics: [...analytics] as (
+				| EmailCampaignAnalytics
+				| CallCampaignAnalytics
+				| TextMessageCampaignAnalytics
+			)[],
+			leads: safeLeads,
+			leadLists: safeLeadLists, // Assuming lead lists are generated or static
 		},
-	],
 
-	companyInfo: {
-		companyName: faker.company.name(),
-		webhook: faker.internet.url(),
-		socialMediaTags: faker.lorem
-			.words(3)
-			.split(" ")
-			.map((word) => `#${word}`),
-		companyLogo: faker.image.avatarGitHub(), // Static, can be a URL or file path
-		GHLID: { locationId: faker.string.uuid() }, // Random location ID
-		assets: {
-			logo: faker.image.avatar(), // Generates a random logo image URL (300x300 size)
-			favicon: faker.image.urlLoremFlickr(), // Generates a random favicon image URL (64x64 size)
-			banner: faker.image.urlLoremFlickr(), // Generates a random banner image URL (1200x300 size)
-			ghlAssets: Array.from({ length: 5 }, () => faker.image.urlLoremFlickr()), // Generates an array of 5 random image URLs
+		aIKnowledgebase: aIKnowledgebase,
+
+		billingHistory: [
+			{
+				invoice: faker.string.uuid(),
+				amount: faker.finance.amount(),
+				status: faker.helpers.arrayElement(["Paid", "Unpaid"]),
+				date: faker.date.past(),
+			},
+		],
+		paymentDetails: {
+			cardLastFour: faker.finance.creditCardNumber().slice(-4), // Extracts the last 4 digits
+			expiry: faker.date
+				.future()
+				.toLocaleDateString("en-US", { month: "2-digit", year: "2-digit" }), // Outputs in MM/YY format
+			cardType: faker.finance.creditCardIssuer(), // Card issuer (Visa, MasterCard, etc.)
 		},
 
-		campaigns: {
-			textCampaigns: mockTextCampaigns, // Assuming these arrays are populated elsewhere
-			emailCampaigns: mockGeneratedSampleEmailCampaigns,
-			socialCampaigns: mockSocialMediaCampaigns,
-			callCampaigns: mockCallCampaignData,
+		twoFactorAuth: {
+			methods: {
+				sms: faker.datatype.boolean(),
+				email: faker.datatype.boolean(),
+				authenticatorApp: faker.datatype.boolean(),
+			},
 		},
-		KanbanTasks: mockKanbanState,
-		forwardingNumber: "3325436201",
-		outreachEmail: faker.internet.email(),
-		explainerVideo: faker.internet.url(),
-		campaignAnalytics: [
-			mockCallCampaignAnalytics,
-			mockTextMessageCampaignAnalytics,
-			mockEmailCampaignAnalytics,
-		] as (
-			| EmailCampaignAnalytics
-			| CallCampaignAnalytics
-			| TextMessageCampaignAnalytics
-		)[],
-		leads: mockGeneratedLeads,
-		leadLists: mockLeadListData, // Assuming lead lists are generated or static
-	},
 
-	aIKnowledgebase: aIKnowledgebase,
+		teamMembers: safeTeamMembers as any,
 
-	billingHistory: [
-		{
-			invoice: faker.string.uuid(),
-			amount: faker.finance.amount(),
-			status: faker.helpers.arrayElement(["Paid", "Unpaid"]),
-			date: faker.date.past(),
+		activityLog: [
+			{
+				action: faker.helpers.arrayElement(["created", "updated", "deleted"]),
+				timestamp: faker.date.recent(),
+				performedBy: faker.person.firstName(),
+				taskTracking: safeTracking,
+				userAgent: faker.system.networkInterface() + faker.internet.userAgent(),
+			},
+		],
+
+		securitySettings: {
+			lastLoginTime: faker.date.recent(),
+			password: faker.string.uuid(),
+			passwordUpdatedAt: faker.date.past(),
 		},
-	],
-	paymentDetails: {
-		cardLastFour: faker.finance.creditCardNumber().slice(-4), // Extracts the last 4 digits
-		expiry: faker.date
-			.future()
-			.toLocaleDateString("en-US", { month: "2-digit", year: "2-digit" }), // Outputs in MM/YY format
-		cardType: faker.finance.creditCardIssuer(), // Card issuer (Visa, MasterCard, etc.)
-	},
-
-	twoFactorAuth: {
-		methods: {
-			sms: faker.datatype.boolean(),
-			email: faker.datatype.boolean(),
-			authenticatorApp: faker.datatype.boolean(),
-		},
-	},
-
-	teamMembers: mockTeamMembers,
-
-	activityLog: [
-		{
-			action: faker.helpers.arrayElement(["created", "updated", "deleted"]),
-			timestamp: faker.date.recent(),
-			performedBy: faker.person.firstName(),
-			taskTracking: mockTrackingData,
-			userAgent: faker.system.networkInterface() + faker.internet.userAgent(),
-		},
-	],
-
-	securitySettings: {
-		lastLoginTime: faker.date.recent(),
-		password: faker.string.uuid(),
-		passwordUpdatedAt: faker.date.past(),
-	},
+	};
 };
 
-export const MockUserProfile = APP_TESTING_MODE && mockUserProfile;
+export const mockUserProfile: UserProfile | false =
+	APP_TESTING_MODE && generateMockUserProfile();
+
+export const MockUserProfile: UserProfile | false = mockUserProfile;

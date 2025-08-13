@@ -90,9 +90,10 @@ const Modal = ({
 
 export const WebhookModal: React.FC = () => {
 	const { isWebhookModalOpen, closeWebhookModal } = useModalStore();
-	const [webhookUrl, setWebhookUrl] = useState(
-		mockUserProfile.companyInfo.webhook,
-	);
+	const defaultWebhook = mockUserProfile
+		? mockUserProfile.companyInfo.webhook
+		: "";
+	const [webhookUrl, setWebhookUrl] = useState(defaultWebhook);
 	const [webhookPayload] = useState(`{
   "phone": "0000000000",
   "email": "test@example.com",
@@ -142,7 +143,7 @@ export const WebhookModal: React.FC = () => {
 				<WebhookUrlInput
 					webhookUrl={webhookUrl}
 					setWebhookUrl={setWebhookUrl}
-					placeholder={mockUserProfile.companyInfo.webhook ?? ""}
+					placeholder={defaultWebhook}
 					className="dark:bg-gray-800 dark:text-gray-200"
 				/>
 				<WebhookPayloadSection

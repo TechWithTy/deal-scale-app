@@ -42,6 +42,17 @@ export const generateMockTasks = (count: number): KanbanTask[] => {
 	const priorities: Priority[] = ["low", "medium", "high"];
 	const workflowStatuses = ["pending", "running", "success", "error"] as const;
 
+	// When APP_TESTING_MODE is false, mockGeneratedLeads can be falsy.
+	// Coalesce to a safe empty array and use a runtime guard before selecting.
+	const safeLeads = (
+		Array.isArray(mockGeneratedLeads) ? mockGeneratedLeads : []
+	) as Array<{ id: string }>;
+
+	// Coalesce lead lists as well, since mockLeadListData may be false when testing mode is off
+	const safeLeadLists = (
+		Array.isArray(mockLeadListData) ? mockLeadListData : []
+	) as Array<{ id: string }>;
+
 	function randomPrompt(): MCPPrompt {
 		return {
 			text: faker.lorem.sentence(),
@@ -119,9 +130,10 @@ export const generateMockTasks = (count: number): KanbanTask[] => {
 			appointmentTime: faker.date.future().toISOString().split("T")[1], // Future time in HH:mm:ss format	,
 			dueDate,
 			assignedToTeamMember,
-			...(Math.random() > 0.5
-				? { leadId: faker.helpers.arrayElement(mockGeneratedLeads).id }
-				: { leadListId: faker.helpers.arrayElement(mockLeadListData).id }),
+			// Only pick a leadId if we actually have leads; otherwise fall back to a leadListId
+			...(safeLeads.length > 0 && Math.random() > 0.5
+				? { leadId: faker.helpers.arrayElement(safeLeads).id }
+				: { leadListId: faker.helpers.arrayElement(safeLeadLists).id }),
 			mcpWorkflow: maybeWorkflow(),
 		};
 	});
@@ -146,4 +158,5 @@ export const generateKanbanState = (taskCount: number): KanbanState => {
 };
 
 // Example usage: Generate a Kanban state with 10 tasks
-export const mockKanbanState = APP_TESTING_MODE && generateKanbanState(10);
+export const mockKanbanState: KanbanState | false =
+	APP_TESTING_MODE && generateKanbanState(10);

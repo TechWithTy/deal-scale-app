@@ -308,3 +308,6 @@ export const detailed_properties_saved: Property[] = [
 	// ... You can continue this pattern for all other hardcoded properties.
 	// For brevity, only the first two are converted here.
 ];
+
+export const mockDetailedPropertiesSaved: Property[] | false =
+	APP_TESTING_MODE && detailed_properties_saved;

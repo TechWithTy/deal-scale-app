@@ -85,4 +85,5 @@ export const generateActions = (count = 100): SocialAction[] => {
 	return Array.from({ length: count }, generateRandomAction);
 };
 
-export const mockSocialActions = APP_TESTING_MODE && generateActions();
+export const mockSocialActions: SocialAction[] | false =
+	APP_TESTING_MODE && generateActions();

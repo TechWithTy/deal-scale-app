@@ -7,7 +7,7 @@ import type {
 import { faker } from "@faker-js/faker";
 
 // Mock Data for TextMessageCampaignAnalytics
-const generateMockTextMessageCampaignAnalytics =
+export const generateMockTextMessageCampaignAnalytics =
 	(): TextMessageCampaignAnalytics => {
 		const messageType: MessageType = "TYPE_SMS"; // Since this is an SMS campaign
 
@@ -79,5 +79,6 @@ const generateMockTextMessageCampaignAnalytics =
 	};
 
 // Example usage:
-export const mockTextMessageCampaignAnalytics =
-	APP_TESTING_MODE && generateMockTextMessageCampaignAnalytics();
+export const mockTextMessageCampaignAnalytics:
+	| TextMessageCampaignAnalytics
+	| false = APP_TESTING_MODE && generateMockTextMessageCampaignAnalytics();

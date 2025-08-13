@@ -1,5 +1,6 @@
 import type { SocialAction } from "@/types/_dashboard/campaign";
 import type { EmailCampaign } from "@/types/goHighLevel/email";
+import { APP_TESTING_MODE } from "../data";
 
 // Instagram-specific actions exampleSocialMediaActions: Added missing 'viewLink'
 export const exampleSocialMediaActions: {
@@ -129,6 +130,10 @@ export const exampleSocialMediaActions: {
 	],
 };
 
+// Guarded mock export for social media actions
+export const mockSocialMediaActions: typeof exampleSocialMediaActions | false =
+	APP_TESTING_MODE && exampleSocialMediaActions;
+
 export const exampleCampaignsData = {
 	emails: [
 		{
@@ -203,3 +208,7 @@ export const exampleCampaignsData = {
 		},
 	] as EmailCampaign[],
 };
+
+// Guarded mock export for email campaigns
+export const mockEmailCampaigns: EmailCampaign[] | false =
+	APP_TESTING_MODE && (exampleCampaignsData.emails as EmailCampaign[]);
