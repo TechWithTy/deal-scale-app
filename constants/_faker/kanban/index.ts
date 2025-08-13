@@ -6,7 +6,7 @@ import type {
 	Status,
 } from "@/types/_dashboard/kanban";
 import { faker } from "@faker-js/faker";
-import { APP_TESTING_MODE, mockGeneratedLeads } from "../../data";
+import { NEXT_PUBLIC_APP_TESTING_MODE, mockGeneratedLeads } from "../../data";
 
 // Default column structure with status-based `id`
 export const defaultCols: KanbanColumn[] = [
@@ -42,7 +42,7 @@ export const generateMockTasks = (count: number): KanbanTask[] => {
 	const priorities: Priority[] = ["low", "medium", "high"];
 	const workflowStatuses = ["pending", "running", "success", "error"] as const;
 
-	// When APP_TESTING_MODE is false, mockGeneratedLeads can be falsy.
+	// When NEXT_PUBLIC_APP_TESTING_MODE is false, mockGeneratedLeads can be falsy.
 	// Coalesce to a safe empty array and use a runtime guard before selecting.
 	const safeLeads = (
 		Array.isArray(mockGeneratedLeads) ? mockGeneratedLeads : []
@@ -159,4 +159,4 @@ export const generateKanbanState = (taskCount: number): KanbanState => {
 
 // Example usage: Generate a Kanban state with 10 tasks
 export const mockKanbanState: KanbanState | false =
-	APP_TESTING_MODE && generateKanbanState(10);
+	NEXT_PUBLIC_APP_TESTING_MODE && generateKanbanState(10);

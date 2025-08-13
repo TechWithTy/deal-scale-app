@@ -1,4 +1,4 @@
-import { APP_TESTING_MODE } from "@/constants/data";
+import { NEXT_PUBLIC_APP_TESTING_MODE } from "@/constants/data";
 import type {
 	EmailCampaignAnalytics,
 	GetEmailByIdResponse,
@@ -99,4 +99,4 @@ export const generateMockEmailCampaignAnalytics =
 
 // Example usage:
 export const mockEmailCampaignAnalytics: EmailCampaignAnalytics | false =
-	APP_TESTING_MODE && generateMockEmailCampaignAnalytics();
+	NEXT_PUBLIC_APP_TESTING_MODE && generateMockEmailCampaignAnalytics();

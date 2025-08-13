@@ -6,7 +6,7 @@ import {
 } from "@/types/_dashboard/property";
 import type { LeadLocationPhone } from "@/types/_dashboard/maps"; // This type is still valid for agent phones
 import { faker } from "@faker-js/faker";
-import { APP_TESTING_MODE } from "../data";
+import { NEXT_PUBLIC_APP_TESTING_MODE } from "../data";
 
 // Helper function to generate random phone numbers with extensions
 const generatePhones = (): LeadLocationPhone[] => {
@@ -181,7 +181,7 @@ export const generateFakeProperties = (count: number): Property[] => {
 };
 
 export const MockInHouseLeadAgrigator: Property[] | false =
-	APP_TESTING_MODE && generateFakeProperties(100);
+	NEXT_PUBLIC_APP_TESTING_MODE && generateFakeProperties(100);
 
 // Hardcoded properties updated to the new RealtorProperty structure
 export const detailed_properties_saved: Property[] = [
@@ -310,4 +310,4 @@ export const detailed_properties_saved: Property[] = [
 ];
 
 export const mockDetailedPropertiesSaved: Property[] | false =
-	APP_TESTING_MODE && detailed_properties_saved;
+	NEXT_PUBLIC_APP_TESTING_MODE && detailed_properties_saved;

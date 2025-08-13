@@ -28,7 +28,7 @@ import { BoardColumn, BoardContainer } from "./board-column";
 import NewSectionDialog from "./new-section-dialog";
 import { TaskCard } from "./task-card";
 
-// mockUserProfile can be undefined when APP_TESTING_MODE is false; provide a safe fallback
+// mockUserProfile can be undefined when NEXT_PUBLIC_APP_TESTING_MODE is false; provide a safe fallback
 const defaultCols = (mockUserProfile?.companyInfo.KanbanTasks.columns ??
 	([] as KanbanColumn[])) satisfies (KanbanColumn | null)[];
 

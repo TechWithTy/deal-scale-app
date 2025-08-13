@@ -17,7 +17,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { defaultCols } from "@/constants/_faker/kanban";
 
-// Guard against APP_TESTING_MODE being off, which makes mockKanbanState falsy
+// Guard against NEXT_PUBLIC_APP_TESTING_MODE being off, which makes mockKanbanState falsy
 const safeKanbanState: KanbanState = (mockKanbanState as
 	| KanbanState
 	| false) || {

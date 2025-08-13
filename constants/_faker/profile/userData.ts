@@ -1,4 +1,4 @@
-import { APP_TESTING_MODE } from "@/constants/data";
+import { NEXT_PUBLIC_APP_TESTING_MODE } from "@/constants/data";
 import { faker } from "@faker-js/faker";
 
 // Define the type for each billing history item
@@ -35,8 +35,8 @@ const paymentDetails: PaymentDetails = {
 		.toLocaleDateString("en-US", { month: "2-digit", year: "numeric" }), // Format as MM/YYYY (e.g., 08/2028)
 };
 
-// Export the mocks if APP_TESTING_MODE is true
+// Export the mocks if NEXT_PUBLIC_APP_TESTING_MODE is true
 export const mockBillingHistory: BillingHistoryItem[] | false =
-	APP_TESTING_MODE && billingHistory;
+	NEXT_PUBLIC_APP_TESTING_MODE && billingHistory;
 export const mockPaymentDetails: PaymentDetails | false =
-	APP_TESTING_MODE && paymentDetails;
+	NEXT_PUBLIC_APP_TESTING_MODE && paymentDetails;

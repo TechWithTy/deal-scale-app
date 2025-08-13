@@ -1,4 +1,4 @@
-import { APP_TESTING_MODE } from "@/constants/data";
+import { NEXT_PUBLIC_APP_TESTING_MODE } from "@/constants/data";
 import type {
 	MessageType,
 	TextMessage,
@@ -81,4 +81,5 @@ export const generateMockTextMessageCampaignAnalytics =
 // Example usage:
 export const mockTextMessageCampaignAnalytics:
 	| TextMessageCampaignAnalytics
-	| false = APP_TESTING_MODE && generateMockTextMessageCampaignAnalytics();
+	| false =
+	NEXT_PUBLIC_APP_TESTING_MODE && generateMockTextMessageCampaignAnalytics();

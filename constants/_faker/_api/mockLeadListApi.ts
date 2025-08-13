@@ -1,5 +1,5 @@
 import { faker } from "@faker-js/faker";
-import { APP_TESTING_MODE } from "../../data";
+import { NEXT_PUBLIC_APP_TESTING_MODE } from "../../data";
 
 // * Represents the structure of a lead list in the database
 export interface LeadList {
@@ -11,7 +11,7 @@ export interface LeadList {
 // * Lazily generate a large set of mock lead lists only in testing mode
 let cachedLeadLists: LeadList[] | null = null;
 function getAllLeadLists(): LeadList[] {
-	if (!APP_TESTING_MODE) return [];
+	if (!NEXT_PUBLIC_APP_TESTING_MODE) return [];
 	if (cachedLeadLists) return cachedLeadLists;
 	cachedLeadLists = Array.from({ length: 100 }, () => ({
 		id: faker.string.uuid(),
@@ -32,7 +32,7 @@ export const fetchFakeLeadLists = async (
 	await new Promise((resolve) => setTimeout(resolve, 500));
 
 	// If testing mode is off, return empty results
-	if (!APP_TESTING_MODE) {
+	if (!NEXT_PUBLIC_APP_TESTING_MODE) {
 		return { items: [], hasMore: false };
 	}
 

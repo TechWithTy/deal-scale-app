@@ -1,4 +1,4 @@
-import { APP_TESTING_MODE } from "../../data";
+import { NEXT_PUBLIC_APP_TESTING_MODE } from "../../data";
 
 export interface UserProfileSubscription {
 	id: string;
@@ -180,4 +180,4 @@ const generateMockSubscriptions = (): UserProfileSubscription[] => {
 
 // Usage of mock data for testing
 export const mockSubscriptions: UserProfileSubscription[] | false =
-	APP_TESTING_MODE && generateMockSubscriptions();
+	NEXT_PUBLIC_APP_TESTING_MODE && generateMockSubscriptions();

@@ -1,4 +1,4 @@
-import { APP_TESTING_MODE } from "@/constants/data";
+import { NEXT_PUBLIC_APP_TESTING_MODE } from "@/constants/data";
 import {
 	type SocialMediaCampaign,
 	campaignStatusesGB,
@@ -46,4 +46,4 @@ export const generateSampleSocialMediaCampaigns = (
 };
 
 export const mockSocialMediaCampaigns: SocialMediaCampaign[] | false =
-	APP_TESTING_MODE && generateSampleSocialMediaCampaigns();
+	NEXT_PUBLIC_APP_TESTING_MODE && generateSampleSocialMediaCampaigns();

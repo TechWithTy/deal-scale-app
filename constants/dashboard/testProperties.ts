@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from "uuid";
-import { APP_TESTING_MODE } from "../data";
+import { NEXT_PUBLIC_APP_TESTING_MODE } from "../data";
 
 export const emptyAgentProperty = {
 	id: uuidv4(),
@@ -51,4 +51,4 @@ export const emptyAgentProperty = {
 };
 
 export const mockEmptyAgentProperty: typeof emptyAgentProperty | false =
-	APP_TESTING_MODE && emptyAgentProperty;
+	NEXT_PUBLIC_APP_TESTING_MODE && emptyAgentProperty;

@@ -1,5 +1,5 @@
 // import { number, string } from 'zod';
-import { APP_TESTING_MODE } from "@/constants/data";
+import { NEXT_PUBLIC_APP_TESTING_MODE } from "@/constants/data";
 import type { EndedReason } from "@/types/vapiAi/api/calls/_enums";
 import type { GetCallResponse } from "@/types/vapiAi/api/calls/get";
 import { faker } from "@faker-js/faker";
@@ -393,4 +393,4 @@ export const generateCallData = (): GetCallResponse[] => {
 };
 
 export const mockIndividualCallData: GetCallResponse[] | false =
-	APP_TESTING_MODE && generateCallData();
+	NEXT_PUBLIC_APP_TESTING_MODE && generateCallData();

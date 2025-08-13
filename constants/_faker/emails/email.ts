@@ -1,4 +1,4 @@
-import { APP_TESTING_MODE } from "@/constants/data";
+import { NEXT_PUBLIC_APP_TESTING_MODE } from "@/constants/data";
 import type { GetEmailByIdResponse } from "@/types/goHighLevel/email";
 import { faker } from "@faker-js/faker";
 
@@ -52,13 +52,13 @@ const generateSampleEmail = (): GetEmailByIdResponse => {
 	};
 };
 
-// Generate an array of sample emails APP_TESTING_MODE
+// Generate an array of sample emails NEXT_PUBLIC_APP_TESTING_MODE
 export const generateSampleEmails = (count = 10): GetEmailByIdResponse[] => {
 	return Array.from({ length: count }, generateSampleEmail);
 };
 
 export const mockGeneratedSampleEmails: GetEmailByIdResponse[] | false =
-	APP_TESTING_MODE && generateSampleEmails();
+	NEXT_PUBLIC_APP_TESTING_MODE && generateSampleEmails();
 
 export const sampleEmail: GetEmailByIdResponse = {
 	id: "email-123",

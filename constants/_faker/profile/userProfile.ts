@@ -10,7 +10,10 @@ import {
 import { mockSocialMediaCampaigns } from "@/constants/_faker/social/socialCampaigns";
 import { mockTextCampaigns } from "@/constants/_faker/texts/textCampaign";
 import { mockLeadListData } from "@/constants/dashboard/leadList";
-import { APP_TESTING_MODE, mockGeneratedLeads } from "@/constants/data";
+import {
+	NEXT_PUBLIC_APP_TESTING_MODE,
+	mockGeneratedLeads,
+} from "@/constants/data";
 import type {
 	EmailCampaign,
 	EmailCampaignAnalytics,
@@ -267,8 +270,7 @@ export const generateMockUserProfile = (): UserProfile => {
 	};
 };
 
-export const mockUserProfile: UserProfile | undefined = APP_TESTING_MODE
-	? generateMockUserProfile()
-	: undefined;
+export const mockUserProfile: UserProfile | undefined =
+	NEXT_PUBLIC_APP_TESTING_MODE ? generateMockUserProfile() : undefined;
 
 export const MockUserProfile: UserProfile | undefined = mockUserProfile;

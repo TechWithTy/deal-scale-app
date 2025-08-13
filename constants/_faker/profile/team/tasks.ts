@@ -4,7 +4,7 @@ import type {
 	TaskTracking,
 } from "@/types/_dashboard/kanban";
 import { faker } from "@faker-js/faker";
-import { APP_TESTING_MODE } from "../../../data";
+import { NEXT_PUBLIC_APP_TESTING_MODE } from "../../../data";
 
 // Generate mock TaskActivity logs using Faker.js
 const generateMockTaskActivity = (): TaskActivity[] => {
@@ -78,4 +78,4 @@ export const generateTaskTracking = (taskCount: number): TaskTracking => {
 };
 
 export const mockTrackingData: TaskTracking | false =
-	APP_TESTING_MODE && generateTaskTracking(10); // Generates tracking for 10 tasks
+	NEXT_PUBLIC_APP_TESTING_MODE && generateTaskTracking(10); // Generates tracking for 10 tasks

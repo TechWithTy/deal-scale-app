@@ -1,5 +1,5 @@
 import type { TeamMember } from "@/types/userProfile";
-import { APP_TESTING_MODE } from "../../../data";
+import { NEXT_PUBLIC_APP_TESTING_MODE } from "../../../data";
 
 // Fixed array of mock team members for consistent IDs and profiles
 
@@ -65,7 +65,7 @@ export const generateMockTeamMembers = (): TeamMember[] =>
 	TEAM_MEMBERS.map((m) => ({ ...m }));
 
 // Always export an array so callers can safely use array methods without union type guards
-// When APP_TESTING_MODE is off, return an empty array instead of false
-export const mockTeamMembers: TeamMember[] = APP_TESTING_MODE
+// When NEXT_PUBLIC_APP_TESTING_MODE is off, return an empty array instead of false
+export const mockTeamMembers: TeamMember[] = NEXT_PUBLIC_APP_TESTING_MODE
 	? TEAM_MEMBERS
 	: [];

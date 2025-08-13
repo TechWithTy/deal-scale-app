@@ -2,7 +2,7 @@ import { v4 as uuidv4 } from "uuid";
 import { faker } from "@faker-js/faker";
 import { createRentCastProperty } from "@/types/_dashboard/property";
 import { generateMockRentCastProperty } from "./mockRentCast";
-import { APP_TESTING_MODE } from "../data";
+import { NEXT_PUBLIC_APP_TESTING_MODE } from "../data";
 import type {
 	RentCastOffMarketProperty,
 	PropertyType as RentCastPropertyType,
@@ -145,4 +145,4 @@ export { generateMockProperty, generateMockProperties, type PropertyImage };
 // Guarded mock array export for mapped RentCast properties
 export const mockRentCastMappedProperties:
 	| ReturnType<typeof generateMockProperties>
-	| false = APP_TESTING_MODE && generateMockProperties(100);
+	| false = NEXT_PUBLIC_APP_TESTING_MODE && generateMockProperties(100);

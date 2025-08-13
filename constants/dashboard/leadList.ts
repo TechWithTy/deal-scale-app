@@ -1,7 +1,7 @@
 import type { LeadList } from "@/types/_dashboard/leadList";
 import { faker } from "@faker-js/faker";
 import {
-	APP_TESTING_MODE,
+	NEXT_PUBLIC_APP_TESTING_MODE,
 	generateMockLeads,
 	staticMockLeadData,
 } from "../data";
@@ -35,7 +35,7 @@ export function generateMockLeadLists(count: number): LeadList[] {
 }
 
 export const mockLeadListData: LeadList[] | false =
-	APP_TESTING_MODE && generateMockLeadLists(100);
+	NEXT_PUBLIC_APP_TESTING_MODE && generateMockLeadLists(100);
 
 export const leadListData: LeadList[] = [
 	{

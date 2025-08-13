@@ -9,7 +9,7 @@ import {
 	type CallInfo,
 	campaignStatusesGB,
 } from "../../../types/_dashboard/campaign";
-import { APP_TESTING_MODE } from "../../data";
+import { NEXT_PUBLIC_APP_TESTING_MODE } from "../../data";
 
 // Helper function to generate a phone number in the +1-XXX-XXX-XXXX format
 const generatePhoneNumber = (): string => {
@@ -149,4 +149,4 @@ export const generateCallCampaignData = (): CallCampaign[] => {
 
 // Example of generating 100 entries
 export const mockCallCampaignData: CallCampaign[] | false =
-	APP_TESTING_MODE && generateCallCampaignData();
+	NEXT_PUBLIC_APP_TESTING_MODE && generateCallCampaignData();

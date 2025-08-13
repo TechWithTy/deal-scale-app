@@ -4,7 +4,7 @@ export type ScriptLine = {
 	text: string;
 };
 
-import { APP_TESTING_MODE } from "../../../data";
+import { NEXT_PUBLIC_APP_TESTING_MODE } from "../../../data";
 
 export const scriptCloneTextDefault: ScriptLine[] = [
 	{
@@ -53,6 +53,6 @@ export const scriptCloneTextDefault: ScriptLine[] = [
 export const generateDefaultScriptLines = (): ScriptLine[] =>
 	scriptCloneTextDefault.map((line) => ({ ...line }));
 
-// Typed mock constant guarded by APP_TESTING_MODE
+// Typed mock constant guarded by NEXT_PUBLIC_APP_TESTING_MODE
 export const mockScriptCloneTextDefault: ScriptLine[] | false =
-	APP_TESTING_MODE && scriptCloneTextDefault;
+	NEXT_PUBLIC_APP_TESTING_MODE && scriptCloneTextDefault;

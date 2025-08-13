@@ -1,4 +1,4 @@
-import { APP_TESTING_MODE } from "@/constants/data";
+import { NEXT_PUBLIC_APP_TESTING_MODE } from "@/constants/data";
 import { campaignStatusesGB } from "@/types/_dashboard/campaign";
 import type { GHLTextMessageCampaign } from "@/types/goHighLevel/text";
 import { faker } from "@faker-js/faker";
@@ -39,4 +39,4 @@ export const generateSampleTextMessageCampaigns = (
 };
 
 export const mockTextCampaigns: GHLTextMessageCampaign[] | false =
-	APP_TESTING_MODE && generateSampleTextMessageCampaigns();
+	NEXT_PUBLIC_APP_TESTING_MODE && generateSampleTextMessageCampaigns();

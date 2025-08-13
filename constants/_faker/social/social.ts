@@ -1,6 +1,6 @@
 import { faker } from "@faker-js/faker";
 
-import { APP_TESTING_MODE } from "@/constants/data";
+import { NEXT_PUBLIC_APP_TESTING_MODE } from "@/constants/data";
 import type {
 	BaseAction,
 	InstagramAction,
@@ -86,4 +86,4 @@ export const generateActions = (count = 100): SocialAction[] => {
 };
 
 export const mockSocialActions: SocialAction[] | false =
-	APP_TESTING_MODE && generateActions();
+	NEXT_PUBLIC_APP_TESTING_MODE && generateActions();

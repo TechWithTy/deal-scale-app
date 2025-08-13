@@ -14,7 +14,7 @@ import type {
 	CostBreakdown,
 } from "@/types/vapiAi/api/calls/get";
 import { faker } from "@faker-js/faker";
-import { APP_TESTING_MODE } from "../../data";
+import { NEXT_PUBLIC_APP_TESTING_MODE } from "../../data";
 import type { CallType } from "@/types/vapiAi/api/calls/_enums";
 // Mock Data for CallCampaignAnalytics
 export const generateMockCallCampaignAnalytics = (): CallCampaignAnalytics => {
@@ -202,4 +202,4 @@ export const generateMockCallCampaignAnalytics = (): CallCampaignAnalytics => {
 
 // Example usage:
 export const mockCallCampaignAnalytics: CallCampaignAnalytics | false =
-	APP_TESTING_MODE && generateMockCallCampaignAnalytics();
+	NEXT_PUBLIC_APP_TESTING_MODE && generateMockCallCampaignAnalytics();

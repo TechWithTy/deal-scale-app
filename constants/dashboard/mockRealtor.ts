@@ -5,7 +5,7 @@ import type {
 	PropertyMedia,
 	RealtorProperty,
 } from "../../types/_dashboard/realtor_on_market";
-import { APP_TESTING_MODE } from "../data";
+import { NEXT_PUBLIC_APP_TESTING_MODE } from "../data";
 
 // Constants
 const STATUS_TYPES = ["active", "pending", "sold", "off_market"] as const;
@@ -341,4 +341,4 @@ export const generateMockRealtorProperties = (
 
 // Guarded mock array export
 export const mockRealtorProperties: RealtorProperty[] | false =
-	APP_TESTING_MODE && generateMockRealtorProperties(100);
+	NEXT_PUBLIC_APP_TESTING_MODE && generateMockRealtorProperties(100);

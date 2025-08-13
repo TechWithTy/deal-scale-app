@@ -10,7 +10,7 @@ export interface UsageData {
 	subscription: UserProfileSubscription;
 }
 
-// Fallback when mockUserProfile is unavailable (e.g., APP_TESTING_MODE is false)
+// Fallback when mockUserProfile is unavailable (e.g., NEXT_PUBLIC_APP_TESTING_MODE is false)
 const defaultSubscription: UserProfileSubscription = {
 	id: "0",
 	stripeSubscriptionID: "",

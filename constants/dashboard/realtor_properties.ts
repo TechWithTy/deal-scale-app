@@ -2,7 +2,7 @@ import { faker } from "@faker-js/faker";
 import { v4 as uuidv4 } from "uuid";
 import { createRealtorProperty } from "@/types/_dashboard/property";
 import { generateMockRealtorProperty } from "./mockRealtor";
-import { APP_TESTING_MODE } from "../data";
+import { NEXT_PUBLIC_APP_TESTING_MODE } from "../data";
 
 // Types for property-related data
 interface AgentPhone {
@@ -250,4 +250,4 @@ export {
 // Guarded mock array export for mapped Realtor properties
 export const mockRealtorMappedProperties:
 	| ReturnType<typeof generateMockProperties>
-	| false = APP_TESTING_MODE && generateMockProperties(100);
+	| false = NEXT_PUBLIC_APP_TESTING_MODE && generateMockProperties(100);

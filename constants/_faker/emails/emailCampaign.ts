@@ -1,4 +1,4 @@
-import { APP_TESTING_MODE } from "@/constants/data";
+import { NEXT_PUBLIC_APP_TESTING_MODE } from "@/constants/data";
 import { campaignStatusesGB } from "@/types/_dashboard/campaign";
 import type { EmailCampaign } from "@/types/goHighLevel/email";
 import { faker } from "@faker-js/faker";
@@ -39,7 +39,7 @@ export const generateSampleEmailCampaigns = (count = 100): EmailCampaign[] => {
 };
 
 export const mockGeneratedSampleEmailCampaigns: EmailCampaign[] | false =
-	APP_TESTING_MODE && generateSampleEmailCampaigns();
+	NEXT_PUBLIC_APP_TESTING_MODE && generateSampleEmailCampaigns();
 
 export const sampleEmailCampaign: EmailCampaign = {
 	id: "campaign-001",

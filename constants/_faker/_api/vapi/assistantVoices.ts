@@ -1,6 +1,6 @@
 import { faker } from "@faker-js/faker";
 import type { AssistantVoice } from "@/types/vapiAi/api/assistant/create";
-import { APP_TESTING_MODE } from "../../../data";
+import { NEXT_PUBLIC_APP_TESTING_MODE } from "../../../data";
 
 export function generateMockAssistantVoice(): AssistantVoice {
 	return {
@@ -31,4 +31,4 @@ export function generateMockAssistantVoices(count: number): AssistantVoice[] {
 }
 
 export const mockAssistantVoices: AssistantVoice[] | false =
-	APP_TESTING_MODE && generateMockAssistantVoices(10);
+	NEXT_PUBLIC_APP_TESTING_MODE && generateMockAssistantVoices(10);

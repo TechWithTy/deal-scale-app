@@ -2,7 +2,7 @@
 
 import { FlameIcon } from "lucide-react";
 import { useState } from "react";
-import { APP_TESTING_MODE } from "@/constants/data";
+import { NEXT_PUBLIC_APP_TESTING_MODE } from "@/constants/data";
 import { TestUsers } from "@/app/(auth)/(signin)/_components/TestUsers";
 import AuthForm from "@/app/(auth)/(signin)/userAuth";
 import AuthToggle from "@/app/(auth)/(signin)/authToggle";
@@ -29,7 +29,7 @@ export default function AuthenticationPage() {
 
 			<div className="flex h-full flex-col items-center p-4 lg:p-8">
 				<AuthForm isSignUp={isSignUp} setIsSignUp={setIsSignUp} />
-				{APP_TESTING_MODE && (
+				{1 && (
 					<>
 						<div className="relative mt-4 flex w-full max-w-md items-center py-4">
 							<div className="flex-grow border-border border-t" />

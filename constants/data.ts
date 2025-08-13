@@ -18,13 +18,14 @@ import type {
 const viteEnv =
 	typeof import.meta !== "undefined" && (import.meta as any)?.env
 		? ((import.meta as any).env.VITE_APP_TESTING_MODE ??
-			(import.meta as any).env.APP_TESTING_MODE)
+			(import.meta as any).env.NEXT_PUBLIC_APP_TESTING_MODE)
 		: undefined;
 const nodeEnv =
 	typeof process !== "undefined" && (process as any)?.env
-		? (process.env.NEXT_PUBLIC_APP_TESTING_MODE ?? process.env.APP_TESTING_MODE)
+		? (process.env.NEXT_PUBLIC_APP_TESTING_MODE ??
+			process.env.NEXT_PUBLIC_APP_TESTING_MODE)
 		: undefined;
-export const APP_TESTING_MODE =
+export const NEXT_PUBLIC_APP_TESTING_MODE =
 	String(viteEnv ?? nodeEnv ?? "")
 		.toLowerCase()
 		.trim() === "true";
@@ -98,7 +99,7 @@ export function generateMockLeads(count: number): LeadTypeGlobal[] {
 	return leads;
 }
 
-export const mockGeneratedLeads = APP_TESTING_MODE
+export const mockGeneratedLeads = NEXT_PUBLIC_APP_TESTING_MODE
 	? generateMockLeads(100)
 	: [];
 

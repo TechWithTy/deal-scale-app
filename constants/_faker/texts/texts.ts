@@ -1,6 +1,6 @@
 import type { TextMessage } from "@/types/goHighLevel/text";
 import { faker } from "@faker-js/faker";
-import { APP_TESTING_MODE } from "../../data";
+import { NEXT_PUBLIC_APP_TESTING_MODE } from "../../data";
 
 // Generate a single sample TextMessage
 export const generateSampleTextMessage = (): TextMessage => {
@@ -47,4 +47,4 @@ export const generateSampleTextMessages = (count = 100): TextMessage[] => {
 };
 
 export const mockTexts: TextMessage[] | false =
-	APP_TESTING_MODE && generateSampleTextMessages();
+	NEXT_PUBLIC_APP_TESTING_MODE && generateSampleTextMessages();

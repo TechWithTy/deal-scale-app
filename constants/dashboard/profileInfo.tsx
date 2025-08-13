@@ -1,4 +1,4 @@
-import { APP_TESTING_MODE } from "../data";
+import { NEXT_PUBLIC_APP_TESTING_MODE } from "../data";
 
 export const exampleLinkedPropertyData = {
 	totalProperties: 3,
@@ -80,19 +80,19 @@ export const saleHistoryData = [
 // Guarded mock variants
 export const mockExampleLinkedPropertyData:
 	| typeof exampleLinkedPropertyData
-	| false = APP_TESTING_MODE && exampleLinkedPropertyData;
+	| false = NEXT_PUBLIC_APP_TESTING_MODE && exampleLinkedPropertyData;
 
 export const mockForeclosureData: typeof foreclosureData | false =
-	APP_TESTING_MODE && foreclosureData;
+	NEXT_PUBLIC_APP_TESTING_MODE && foreclosureData;
 
 export const mockLiensData: typeof liensData | false =
-	APP_TESTING_MODE && liensData;
+	NEXT_PUBLIC_APP_TESTING_MODE && liensData;
 
 export const mockMortgageData: typeof mortgageData | false =
-	APP_TESTING_MODE && mortgageData;
+	NEXT_PUBLIC_APP_TESTING_MODE && mortgageData;
 
 export const mockSaleData: typeof saleData | false =
-	APP_TESTING_MODE && saleData;
+	NEXT_PUBLIC_APP_TESTING_MODE && saleData;
 
 export const mockSaleHistoryData: typeof saleHistoryData | false =
-	APP_TESTING_MODE && saleHistoryData;
+	NEXT_PUBLIC_APP_TESTING_MODE && saleHistoryData;
