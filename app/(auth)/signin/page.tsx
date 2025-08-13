@@ -29,7 +29,7 @@ export default function AuthenticationPage() {
 
 			<div className="flex h-full flex-col items-center p-4 lg:p-8">
 				<AuthForm isSignUp={isSignUp} setIsSignUp={setIsSignUp} />
-				{1 && (
+				{NEXT_PUBLIC_APP_TESTING_MODE && (
 					<>
 						<div className="relative mt-4 flex w-full max-w-md items-center py-4">
 							<div className="flex-grow border-border border-t" />
