@@ -11,7 +11,7 @@ import { Heading } from "@/components/ui/heading";
 import { Separator } from "@/components/ui/separator";
 import { mockUserProfile } from "@/constants/_faker/profile/userProfile";
 import { cn } from "@/lib/_utils";
-import type { TeamMember } from "@/types/userProfile";
+import type { TeamMember, UserProfile } from "@/types/userProfile";
 import { HelpCircle, Plus } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react"; // Import useState and useEffect for state management
@@ -28,9 +28,11 @@ async function fetchEmployees(page: number, pageLimit: number) {
 		`https://api.slingacademy.com/v1/sample-data/users?offset=${offset}&limit=${pageLimit}`,
 	);
 	const employeeRes = await res.json();
+	// mockUserProfile is now UserProfile | undefined; use directly
+	const profile: UserProfile | undefined = mockUserProfile;
 	return {
 		totalUsers: employeeRes.total_users,
-		employees: mockUserProfile.teamMembers, // Example from your mock data
+		employees: profile?.teamMembers ?? [],
 		pageCount: Math.ceil(employeeRes.total_users / pageLimit),
 	};
 }

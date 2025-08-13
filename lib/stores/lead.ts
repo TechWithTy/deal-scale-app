@@ -21,7 +21,7 @@ interface LeadState {
 
 // Create Zustand store for lead management
 export const useLeadStore = create<LeadState>((set, get) => ({
-	leads: MockUserProfile.companyInfo.leads, // Initial leads data
+	leads: MockUserProfile?.companyInfo.leads ?? [], // Initial leads data (fallback to empty when undefined)
 	// * Export filtered leads to Excel file
 	exportFilteredLeadsToFile: async () => {
 		try {
@@ -48,7 +48,7 @@ export const useLeadStore = create<LeadState>((set, get) => ({
 			toast.error("Failed to export filtered leads.");
 		}
 	},
-	filteredLeads: MockUserProfile.companyInfo.leads, // Start with no filter applied, showing all leads
+	filteredLeads: MockUserProfile?.companyInfo.leads ?? [], // Start with no filter applied, showing all leads (fallback when undefined)
 
 	// Filter leads by status (New Lead, Contacted, Closed, Lost)
 	filterByStatus: (status) => {

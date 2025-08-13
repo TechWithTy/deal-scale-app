@@ -32,8 +32,8 @@ interface CampaignState {
 // Create Zustand store
 export const useCampaignStore = create<CampaignState>((set, get) => ({
 	currentCampaignType: "call", // Default to 'call'
-	currentCampaign: MockUserProfile.companyInfo.campaigns.callCampaigns, // Default campaign data (calls)
-	filteredCampaigns: MockUserProfile.companyInfo.campaigns.callCampaigns, // Start with no filter applied, showing all campaigns
+	currentCampaign: MockUserProfile?.companyInfo.campaigns.callCampaigns ?? [], // Default campaign data (calls)
+	filteredCampaigns: MockUserProfile?.companyInfo.campaigns.callCampaigns ?? [], // Start with no filter applied, showing all campaigns
 
 	// Action to set the current campaign type and update the campaign data accordingly
 	setCampaignType: (type) => {
@@ -47,16 +47,20 @@ export const useCampaignStore = create<CampaignState>((set, get) => ({
 		// Update `currentCampaign` and `filteredCampaigns` based on selected type
 		switch (type) {
 			case "email":
-				campaignData = MockUserProfile.companyInfo.campaigns.emailCampaigns; // Email campaign data
+				campaignData =
+					MockUserProfile?.companyInfo.campaigns.emailCampaigns ?? []; // Email campaign data
 				break;
 			case "call":
-				campaignData = MockUserProfile.companyInfo.campaigns.callCampaigns; // Call campaign data
+				campaignData =
+					MockUserProfile?.companyInfo.campaigns.callCampaigns ?? []; // Call campaign data
 				break;
 			case "text":
-				campaignData = MockUserProfile.companyInfo.campaigns.textCampaigns; // Text message campaign data
+				campaignData =
+					MockUserProfile?.companyInfo.campaigns.textCampaigns ?? []; // Text message campaign data
 				break;
 			case "social":
-				campaignData = MockUserProfile.companyInfo.campaigns.socialCampaigns; // Social media campaign data
+				campaignData =
+					MockUserProfile?.companyInfo.campaigns.socialCampaigns ?? []; // Social media campaign data
 				break;
 			default:
 				campaignData = [];

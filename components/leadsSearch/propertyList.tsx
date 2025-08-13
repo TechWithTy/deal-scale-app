@@ -49,7 +49,7 @@ const PropertyListView: React.FC<PropertyListProps> = ({ properties }) => {
 	});
 
 	// ...existing hooks and state
-	const availableListNames = MockUserProfile.companyInfo.leadLists.map(
+	const availableListNames = (MockUserProfile?.companyInfo.leadLists ?? []).map(
 		(list) => list.listName,
 	);
 	const openSkipTraceDialog = () => {

@@ -64,5 +64,8 @@ const TEAM_MEMBERS: TeamMember[] = [
 export const generateMockTeamMembers = (): TeamMember[] =>
 	TEAM_MEMBERS.map((m) => ({ ...m }));
 
-export const mockTeamMembers: TeamMember[] | false =
-	APP_TESTING_MODE && TEAM_MEMBERS;
+// Always export an array so callers can safely use array methods without union type guards
+// When APP_TESTING_MODE is off, return an empty array instead of false
+export const mockTeamMembers: TeamMember[] = APP_TESTING_MODE
+	? TEAM_MEMBERS
+	: [];

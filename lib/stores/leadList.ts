@@ -17,8 +17,8 @@ interface LeadListState {
 
 // Create Zustand store for lead list management
 export const useLeadListStore = create<LeadListState>((set, get) => ({
-	leadLists: MockUserProfile.companyInfo.leadLists, // Initialize with an empty array of lead lists
-	filteredLeadLists: MockUserProfile.companyInfo.leadLists, // Start with no filter applied, showing all lead lists
+	leadLists: MockUserProfile?.companyInfo.leadLists ?? [], // Fallback to empty when profile is unavailable
+	filteredLeadLists: MockUserProfile?.companyInfo.leadLists ?? [], // Start with no filter applied, showing all lead lists
 
 	// Filter lead lists by records range
 	filterByRecordsRange: (range) => {

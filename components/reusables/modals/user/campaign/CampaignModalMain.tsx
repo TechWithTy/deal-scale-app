@@ -99,7 +99,7 @@ const CampaignModalMain = () => {
 	const customizationForm = useForm<z.infer<typeof FormSchema>>({
 		resolver: zodResolver(FormSchema),
 		defaultValues: {
-			primaryPhoneNumber: mockUserProfile.personalNum || "",
+			primaryPhoneNumber: mockUserProfile?.personalNum ?? "",
 			areaMode: areaMode || "leadList",
 			selectedLeadListId: selectedLeadListId || "",
 		},

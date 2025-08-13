@@ -28,8 +28,9 @@ import { BoardColumn, BoardContainer } from "./board-column";
 import NewSectionDialog from "./new-section-dialog";
 import { TaskCard } from "./task-card";
 
-const defaultCols = mockUserProfile.companyInfo.KanbanTasks
-	.columns satisfies (KanbanColumn | null)[];
+// mockUserProfile can be undefined when APP_TESTING_MODE is false; provide a safe fallback
+const defaultCols = (mockUserProfile?.companyInfo.KanbanTasks.columns ??
+	([] as KanbanColumn[])) satisfies (KanbanColumn | null)[];
 
 export type ColumnId = (typeof defaultCols)[number]["id"];
 

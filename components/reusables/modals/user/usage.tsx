@@ -10,11 +10,27 @@ export interface UsageData {
 	subscription: UserProfileSubscription;
 }
 
+// Fallback when mockUserProfile is unavailable (e.g., APP_TESTING_MODE is false)
+const defaultSubscription: UserProfileSubscription = {
+	id: "0",
+	stripeSubscriptionID: "",
+	name: "None",
+	type: "monthly",
+	status: "inactive",
+	price: "$0",
+	aiCredits: { allotted: 0, used: 0, resetInDays: 0 },
+	leads: { allotted: 0, used: 0, resetInDays: 0 },
+	skipTraces: { allotted: 0, used: 0, resetInDays: 0 },
+	renewalDate: "",
+	createdAt: "",
+	planDetails: "",
+};
+
 // Simulate fetching real subscription data (replace with actual API call)
 const fetchSubscriptionData = async (): Promise<UserProfileSubscription> => {
 	return new Promise((resolve) => {
 		setTimeout(() => {
-			resolve(mockUserProfile.subscription);
+			resolve(mockUserProfile?.subscription ?? defaultSubscription);
 		}, 1000);
 	});
 };

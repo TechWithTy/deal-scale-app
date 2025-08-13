@@ -267,7 +267,8 @@ export const generateMockUserProfile = (): UserProfile => {
 	};
 };
 
-export const mockUserProfile: UserProfile | false =
-	APP_TESTING_MODE && generateMockUserProfile();
+export const mockUserProfile: UserProfile | undefined = APP_TESTING_MODE
+	? generateMockUserProfile()
+	: undefined;
 
-export const MockUserProfile: UserProfile | false = mockUserProfile;
+export const MockUserProfile: UserProfile | undefined = mockUserProfile;

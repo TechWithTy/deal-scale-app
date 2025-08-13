@@ -18,40 +18,37 @@ export interface InitialProfileData {
 export const extractInitialDataFromUserProfile = (
 	profile?: UserProfile, // Accepting profile as optional
 ): InitialProfileData => {
-	// Fallback to an empty profile-like structure if profile is undefined
-	const fallbackProfile: UserProfile = mockUserProfile;
-
-	// Use fallback profile if profile is undefined
-	const userProfile = profile || fallbackProfile;
+	// Use provided profile or the mock fallback (may be undefined)
+	const userProfile = profile ?? mockUserProfile;
 
 	return {
-		firstName: userProfile.firstName,
-		lastName: userProfile.lastName,
-		email: userProfile.email,
-		personalNum: userProfile.personalNum, // Extract personalNum from preferred location
-		city: userProfile.city,
-		state: userProfile.country,
+		firstName: userProfile?.firstName,
+		lastName: userProfile?.lastName,
+		email: userProfile?.email,
+		personalNum: userProfile?.personalNum, // Extract personalNum from preferred location
+		city: userProfile?.city,
+		state: userProfile?.country,
 
 		// Two-Factor Authentication settings
 		twoFactorAuth: {
 			methods: {
-				sms: userProfile.twoFactorAuth?.methods?.sms || false,
-				email: userProfile.twoFactorAuth?.methods?.email || false,
+				sms: userProfile?.twoFactorAuth?.methods?.sms || false,
+				email: userProfile?.twoFactorAuth?.methods?.email || false,
 				authenticatorApp:
-					userProfile.twoFactorAuth?.methods?.authenticatorApp || false,
+					userProfile?.twoFactorAuth?.methods?.authenticatorApp || false,
 			},
 		},
 
 		// Notification settings
 		notifications: {
 			emailNotifications:
-				userProfile.notificationPreferences?.emailNotifications || false,
+				userProfile?.notificationPreferences?.emailNotifications || false,
 			smsNotifications:
-				userProfile.notificationPreferences?.smsNotifications || false,
+				userProfile?.notificationPreferences?.smsNotifications || false,
 			notifyForNewLeads:
-				userProfile.notificationPreferences?.notifyForNewLeads || false,
+				userProfile?.notificationPreferences?.notifyForNewLeads || false,
 			notifyForCampaignUpdates:
-				userProfile.notificationPreferences?.notifyForCampaignUpdates || false,
+				userProfile?.notificationPreferences?.notifyForCampaignUpdates || false,
 		},
 	};
 };

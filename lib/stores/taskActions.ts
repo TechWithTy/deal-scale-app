@@ -15,6 +15,16 @@ export type KanbanTask = BaseKanbanTask & {
 import { v4 as uuid } from "uuid";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { defaultCols } from "@/constants/_faker/kanban";
+
+// Guard against APP_TESTING_MODE being off, which makes mockKanbanState falsy
+const safeKanbanState: KanbanState = (mockKanbanState as
+	| KanbanState
+	| false) || {
+	tasks: [],
+	columns: defaultCols,
+	draggedTask: null,
+};
 
 export const initialTasks: KanbanTask[] = [
 	{
@@ -156,8 +166,8 @@ interface Actions {
 export const useTaskStore = create<KanbanState & Actions>()(
 	persist(
 		(set) => ({
-			tasks: mockKanbanState.tasks,
-			columns: mockKanbanState.columns,
+			tasks: safeKanbanState.tasks,
+			columns: safeKanbanState.columns,
 			draggedTask: null,
 			// ! Updated to accept assignment, lead/link info, dueDate, appointmentDate, and appointmentTime
 			addTask: (

@@ -18,7 +18,10 @@ export function LeadListDropdown({
 	selectedLeadListId,
 	setSelectedLeadListId,
 }: LeadListDropdownProps) {
-	const selectedList = mockLeadListData.find(
+	// Ensure we always operate on an array; mockLeadListData can be false when testing is off
+	const lists = Array.isArray(mockLeadListData) ? mockLeadListData : [];
+
+	const selectedList = lists.find(
 		(l) => String(l.id) === String(selectedLeadListId),
 	);
 
@@ -39,7 +42,7 @@ export function LeadListDropdown({
 					</Button>
 				</DropdownMenuTrigger>
 				<DropdownMenuContent>
-					{mockLeadListData.map((list) => (
+					{lists.map((list) => (
 						<DropdownMenuItem
 							key={list.id}
 							onSelect={() => setSelectedLeadListId(Number(list.id))}

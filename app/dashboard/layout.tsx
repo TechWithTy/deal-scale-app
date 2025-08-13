@@ -44,20 +44,26 @@ export default async function DashboardLayout({
 	// const response = await fetchUserProfileData("data.user.id", "ActivityLog");
 
 	// console.log(`Table Fetch ${data.user.id}`, response);
+
+	// Narrow the possibly false-y mock to a usable value
+	const user = MockUserProfile || null;
+
 	return (
 		<div className="flex">
 			{/* Pass only a valid UserProfile or null to Sidebar */}
-			<Sidebar user={MockUserProfile} />
+			<Sidebar user={user} />
 			<main className="w-full flex-1 overflow-hidden">
 				<Header />
 				{children}
 			</main>
 			<AiUsageModal />
-			<BillingModalMain
-				billingHistory={mockUserProfile.billingHistory}
-				paymentDetails={mockUserProfile.paymentDetails}
-				subscription={mockUserProfile.subscription}
-			/>
+			{user && (
+				<BillingModalMain
+					billingHistory={user.billingHistory}
+					paymentDetails={user.paymentDetails}
+					subscription={user.subscription}
+				/>
+			)}
 			<InviteEmployeeModal />
 			<SecurityModal />
 			<WebhookModal />

@@ -25,7 +25,7 @@ interface LeadSearchState {
 
 export const useLeadSearchStore = create<LeadSearchState>((set, get) => ({
 	filters: initialFilters,
-	savedSearches: mockUserProfile.savedSearches || [],
+	savedSearches: mockUserProfile?.savedSearches ?? [],
 
 	setFilters: (filters) =>
 		set((state) => ({ filters: { ...state.filters, ...filters } })),

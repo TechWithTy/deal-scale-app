@@ -23,8 +23,10 @@ import WalkThroughModal from "../../leadsSearch/search/WalkthroughModal";
 import { Heading } from "@/components/ui/heading";
 import { HelpCircle } from "lucide-react";
 const creditsRemaining =
-	mockUserProfile.subscription.aiCredits.allotted -
-	mockUserProfile.subscription.aiCredits.used;
+	mockUserProfile && "subscription" in mockUserProfile
+		? mockUserProfile.subscription.aiCredits.allotted -
+			mockUserProfile.subscription.aiCredits.used
+		: 0;
 
 const CampaignHeader: React.FC = () => {
 	const [activeIndex, setActiveIndex] = useState(0); // Track the currently animated card
@@ -86,14 +88,18 @@ const CampaignHeader: React.FC = () => {
 	};
 
 	// Assume you have these arrays from your campaign data
-	const socialCampaigns: SocialMediaCampaign[] =
-		MockUserProfile.companyInfo.campaigns.socialCampaigns; // Replace with actual data
-	const textCampaigns: GHLTextMessageCampaign[] =
-		MockUserProfile.companyInfo.campaigns.textCampaigns; // Replace with actual data
-	const emailCampaigns: EmailCampaign[] =
-		MockUserProfile.companyInfo.campaigns.emailCampaigns; // Replace with actual data
-	const callCampaigns: CallCampaign[] =
-		MockUserProfile.companyInfo.campaigns.callCampaigns; // Replace with actual data
+	const socialCampaigns: SocialMediaCampaign[] = MockUserProfile
+		? MockUserProfile.companyInfo.campaigns.socialCampaigns
+		: []; // Replace with actual data
+	const textCampaigns: GHLTextMessageCampaign[] = MockUserProfile
+		? MockUserProfile.companyInfo.campaigns.textCampaigns
+		: []; // Replace with actual data
+	const emailCampaigns: EmailCampaign[] = MockUserProfile
+		? MockUserProfile.companyInfo.campaigns.emailCampaigns
+		: []; // Replace with actual data
+	const callCampaigns: CallCampaign[] = MockUserProfile
+		? MockUserProfile.companyInfo.campaigns.callCampaigns
+		: []; // Replace with actual data
 
 	// Calculate total campaigns, conversations, and actions
 	const totalSocialCampaigns = socialCampaigns.length;

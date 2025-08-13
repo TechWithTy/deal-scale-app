@@ -12,7 +12,7 @@ export const useUsageData = () => {
 	useEffect(() => {
 		// todo: Replace with real API call
 		setTimeout(() => {
-			setData(mockUserProfile.subscription);
+			setData(mockUserProfile?.subscription ?? null);
 			setLoading(false);
 		}, 1000);
 	}, []);
