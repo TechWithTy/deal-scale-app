@@ -7,6 +7,7 @@ import type { NavItem } from "@/types";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { type Dispatch, type SetStateAction, useState } from "react";
+import { signOut } from "next-auth/react";
 import {
 	Tooltip,
 	TooltipContent,
@@ -34,9 +35,11 @@ export function DashboardNav({
 		event.preventDefault();
 		setLoading(true);
 
-		// await signOut();
-
-		setLoading(false);
+		try {
+			await signOut({ callbackUrl: "/signin", redirect: true });
+		} finally {
+			setLoading(false);
+		}
 	};
 
 	if (!items?.length) {
