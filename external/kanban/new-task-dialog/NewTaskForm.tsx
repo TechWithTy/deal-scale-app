@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { CreateKanbanTaskSchema } from "@/types/zod/kanban-task";
-import { useTaskStore } from "@/lib/stores/taskActions";
+import { useTaskStore } from "../store";
 import { AssignmentTypeDropdown } from "./AssignmentTypeDropdown";
 import { LeadDropdown } from "./LeadDropdown";
 import { LeadListDropdown } from "./LeadListDropdown";
@@ -57,9 +57,10 @@ export function NewTaskForm({ setFormValid }: NewTaskFormProps) {
 			typeof dueDate !== "string"
 		)
 			return;
+
 		const getString = (val: FormDataEntryValue | undefined) =>
 			typeof val === "string" ? val : "";
-		const assignedToTeamMember = assignedUserId;
+
 		const leadId =
 			assignType === "lead" && selectedLeadId
 				? String(selectedLeadId)
@@ -81,12 +82,12 @@ export function NewTaskForm({ setFormValid }: NewTaskFormProps) {
 				}))
 			: undefined;
 
-		// Build candidate payload and validate with Zod
+		// Build candidate payload for validation
 		const candidate = {
 			title: getString(title),
 			description: getString(description),
 			status: "TODO",
-			assignedToTeamMember: getString(assignedToTeamMember),
+			assignedToTeamMember: assignedUserId || undefined,
 			dueDate: getString(dueDate),
 			appointmentDate:
 				typeof appointmentDate === "string" && appointmentDate.length > 0
@@ -113,12 +114,11 @@ export function NewTaskForm({ setFormValid }: NewTaskFormProps) {
 			return;
 		}
 
-		// Call store with correct parameter order: title, description, assignedToTeamMember, dueDate, appointmentDate, appointmentTime, leadId, leadListId, youtubeUrl, outputVideoUrl, attachments
 		addTask(
 			parsed.data.title,
 			parsed.data.description ?? "",
 			parsed.data.assignedToTeamMember ?? "",
-			parsed.data.dueDate,
+			parsed.data.dueDate ?? "",
 			parsed.data.appointmentDate,
 			parsed.data.appointmentTime,
 			parsed.data.leadId,

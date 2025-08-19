@@ -153,6 +153,9 @@ interface Actions {
 		appointmentTime?: string,
 		leadId?: string,
 		leadListId?: string,
+		youtubeUrl?: string,
+		outputVideoUrl?: string,
+		attachments?: { filename: string; url: string }[],
 	) => void;
 	addCol: (title: string) => void;
 	dragTask: (id: string | null) => void;
@@ -161,6 +164,29 @@ interface Actions {
 	setTasks: (updatedTask: KanbanTask[]) => void;
 	setCols: (cols: KanbanColumn[]) => void;
 	updateCol: (id: string, newName: string) => void;
+	// Update existing task
+	updateTask: (
+		id: string,
+		updates: Partial<
+			Pick<
+				KanbanTask,
+				| "title"
+				| "description"
+				| "status"
+				| "priority"
+				| "dueDate"
+				| "appointmentDate"
+				| "appointmentTime"
+				| "assignedToTeamMember"
+				| "leadId"
+				| "leadListId"
+			>
+		> & {
+			attachments?: { filename: string; url: string }[];
+			youtubeUrl?: string;
+			outputVideoUrl?: string;
+		},
+	) => void;
 }
 
 export const useTaskStore = create<KanbanState & Actions>()(
@@ -179,6 +205,9 @@ export const useTaskStore = create<KanbanState & Actions>()(
 				appointmentTime,
 				leadId,
 				leadListId,
+				youtubeUrl,
+				outputVideoUrl,
+				attachments,
 			) =>
 				set((state) => ({
 					tasks: [
@@ -194,8 +223,31 @@ export const useTaskStore = create<KanbanState & Actions>()(
 							dueDate,
 							...(appointmentTime ? { appointmentTime } : {}),
 							...(appointmentDate ? { appointmentDate } : {}),
+							...(youtubeUrl ? { youtubeUrl } : {}),
+							...(outputVideoUrl ? { outputVideoUrl } : {}),
+							...(attachments && attachments.length ? { attachments } : {}),
 						},
 					],
+				})),
+			updateTask: (id, updates) =>
+				set((state) => ({
+					tasks: state.tasks.map((t) =>
+						t.id === id
+							? {
+									...t,
+									...updates,
+									...(updates.youtubeUrl !== undefined
+										? { youtubeUrl: updates.youtubeUrl }
+										: {}),
+									...(updates.outputVideoUrl !== undefined
+										? { outputVideoUrl: updates.outputVideoUrl }
+										: {}),
+									...(updates.attachments !== undefined
+										? { attachments: updates.attachments }
+										: {}),
+								}
+							: t,
+					),
 				})),
 			updateCol: (id: string, newName: string) =>
 				set((state) => ({

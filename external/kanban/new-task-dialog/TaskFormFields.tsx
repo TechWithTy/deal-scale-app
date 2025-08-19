@@ -21,7 +21,6 @@ export function TaskFormFields({
 }: TaskFormFieldsProps) {
 	return (
 		<>
-			{/* Todo Title Field */}
 			<div className="mb-2">
 				<label
 					htmlFor="title"
@@ -40,7 +39,6 @@ export function TaskFormFields({
 				/>
 			</div>
 
-			{/* Due Date Field */}
 			<div className="mb-2">
 				<label
 					htmlFor="dueDate"
@@ -59,7 +57,6 @@ export function TaskFormFields({
 				/>
 			</div>
 
-			{/* Appointment Date & Time Fields - Only for single lead assignment */}
 			{assignType === "lead" && (
 				<>
 					<div className="mb-2">
@@ -97,7 +94,6 @@ export function TaskFormFields({
 				</>
 			)}
 
-			{/* Description Field */}
 			<div className="mb-2">
 				<label
 					htmlFor="description"
@@ -135,7 +131,7 @@ export function TaskFormFields({
 				/>
 			</div>
 
-			{/* Attachments */}
+			{/* Single Attachment */}
 			<div className="mb-2">
 				<label
 					htmlFor="attachmentFiles"

@@ -3,13 +3,14 @@ import { mockGeneratedLeads } from "@/constants/data";
 import { mockLeadListData } from "@/constants/dashboard/leadList";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { mockTeamMembers } from "@/constants/_faker/profile/team/members";
-import {} from "@/lib/stores/taskActions";
+import { useTaskStore } from "@/lib/stores/taskActions";
 import type { KanbanTask } from "@/types/_dashboard/kanban";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { cva } from "class-variance-authority";
-import { GripVertical } from "lucide-react";
+import { GripVertical, MoreVertical, Pencil, Trash } from "lucide-react";
 import { useState } from "react";
+import EditTaskDialog from "./edit-task-dialog/EditTaskDialog";
 import { Badge } from "../ui/badge";
 import {
 	Tooltip,
@@ -17,6 +18,12 @@ import {
 	TooltipContent,
 } from "@/components/ui/tooltip";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 // Priority-to-Badge variant mapping
 const priorityBadgeVariant = {
@@ -46,6 +53,7 @@ export function TaskCard({ task, isOverlay }: TaskCardProps) {
 	const [assignedTeamMember, setAssignedTeamMember] = useState(
 		task.assignedToTeamMember || "",
 	);
+	const [editOpen, setEditOpen] = useState(false);
 
 	const {
 		setNodeRef,
@@ -64,6 +72,9 @@ export function TaskCard({ task, isOverlay }: TaskCardProps) {
 			roleDescription: "Task",
 		},
 	});
+
+	// store actions
+	const removeTask = useTaskStore((s) => s.removeTask);
 
 	const style = {
 		transition,
@@ -116,6 +127,26 @@ export function TaskCard({ task, isOverlay }: TaskCardProps) {
 					<Badge variant={"outline"} className="ml-auto font-semibold">
 						Task
 					</Badge>
+					{/* Quick actions */}
+					<DropdownMenu>
+						<DropdownMenuTrigger asChild>
+							<Button variant="ghost" size="icon" className="ml-1 h-8 w-8">
+								<MoreVertical className="h-4 w-4" />
+								<span className="sr-only">Open quick actions</span>
+							</Button>
+						</DropdownMenuTrigger>
+						<DropdownMenuContent align="end" className="w-36">
+							<DropdownMenuItem onClick={() => setEditOpen(true)}>
+								<Pencil className="mr-2 h-4 w-4" /> Edit
+							</DropdownMenuItem>
+							<DropdownMenuItem
+								className="text-destructive focus:text-destructive"
+								onClick={() => removeTask(String(task.id))}
+							>
+								<Trash className="mr-2 h-4 w-4" /> Delete
+							</DropdownMenuItem>
+						</DropdownMenuContent>
+					</DropdownMenu>
 					{/* * Show Play button if AI workflow is available */}
 					{task.mcpWorkflow && (
 						<Tooltip>
@@ -267,6 +298,11 @@ export function TaskCard({ task, isOverlay }: TaskCardProps) {
 						</div>
 					)}
 				</CardContent>
+				<EditTaskDialog
+					task={task}
+					open={editOpen}
+					onOpenChange={setEditOpen}
+				/>
 			</Card>
 		</TooltipProvider>
 	);
