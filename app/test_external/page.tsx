@@ -1,7 +1,7 @@
 "use client";
 import { KanbanBoard, NewTaskDialog } from "@/external/kanban";
 import { useEffect } from "react";
-import { useTaskStore } from "@/external/kanban/store";
+import { useTaskStore } from "@/external/kanban/utils/store";
 
 export default function TestExternalKanbanPage() {
 	const { tasks, runAi } = useTaskStore();
