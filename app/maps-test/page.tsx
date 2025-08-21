@@ -1,6 +1,9 @@
 "use client";
 import { GoogleMap, LoadScript, DrawingManager } from "@react-google-maps/api";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { NestedMapDialog } from "@/external/google-maps/components/Controls/NestedMapDialog";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 const defaultCenter: google.maps.LatLngLiteral = {
 	lat: 39.7392,
@@ -16,6 +19,11 @@ const mapOptions: google.maps.MapOptions = {
 };
 
 export default function MapsTestPage() {
+	// Pin state
+	const [coords, setCoords] =
+		useState<google.maps.LatLngLiteral>(defaultCenter);
+	const [lat, setLat] = useState<string>(String(defaultCenter.lat));
+	const [lng, setLng] = useState<string>(String(defaultCenter.lng));
 	const [drawingMode, setDrawingMode] =
 		useState<google.maps.drawing.OverlayType | null>(null);
 	const [shapeDrawn, setShapeDrawn] = useState(false);
@@ -24,6 +32,13 @@ export default function MapsTestPage() {
 		google.maps.Polygon | google.maps.Rectangle | google.maps.Circle | null
 	>(null);
 	const mapRef = useRef<google.maps.Map | null>(null);
+	const markerRef = useRef<google.maps.marker.AdvancedMarkerElement | null>(
+		null,
+	);
+	const simMarkerRefs = useRef<google.maps.marker.AdvancedMarkerElement[]>([]);
+	const [simulatedPins, setSimulatedPins] = useState<
+		google.maps.LatLngLiteral[]
+	>([]);
 
 	const clearShape = useCallback(() => {
 		if (shapeRef.current) {
@@ -49,6 +64,10 @@ export default function MapsTestPage() {
 		setDrawingMode(null);
 		setShapeDrawn(false);
 		setBoundaryApplied(false);
+		setSimulatedPins([]);
+		// clear sim markers
+		for (const m of simMarkerRefs.current) m.map = null;
+		simMarkerRefs.current = [];
 	}, [clearShape]);
 
 	const handleApplyDrawing = useCallback(() => {
@@ -64,12 +83,95 @@ export default function MapsTestPage() {
 			for (const latLng of path.getArray()) bounds.extend(latLng);
 		}
 		if (bounds) mapRef.current.fitBounds(bounds);
+		// Simulate fetching pins within the drawn area
+		const generatePins = (count = 30): google.maps.LatLngLiteral[] => {
+			const pts: google.maps.LatLngLiteral[] = [];
+			if (!bounds) return pts;
+			const sw = bounds.getSouthWest();
+			const ne = bounds.getNorthEast();
+			const rand = (min: number, max: number) =>
+				Math.random() * (max - min) + min;
+			const withinCircle = (p: google.maps.LatLng) => {
+				if (!(shapeRef.current instanceof google.maps.Circle)) return true;
+				const center = shapeRef.current.getCenter();
+				const radius = shapeRef.current.getRadius();
+				// requires geometry library
+				const d = google.maps.geometry.spherical.computeDistanceBetween(
+					center,
+					p,
+				);
+				return d <= radius;
+			};
+			const withinPolygon = (p: google.maps.LatLng) => {
+				if (!(shapeRef.current instanceof google.maps.Polygon)) return true;
+				return google.maps.geometry.poly.containsLocation(p, shapeRef.current);
+			};
+			let attempts = 0;
+			while (pts.length < count && attempts < count * 50) {
+				attempts++;
+				const lat = rand(sw.lat(), ne.lat());
+				const lng = rand(sw.lng(), ne.lng());
+				const p = new google.maps.LatLng(lat, lng);
+				if (withinCircle(p) && withinPolygon(p)) {
+					pts.push({ lat, lng });
+				}
+			}
+			return pts;
+		};
+		setSimulatedPins(generatePins());
 		setBoundaryApplied(true);
 	}, []);
 
 	const handleRemoveBoundaries = useCallback(() => {
 		handleCancelDrawing();
 	}, [handleCancelDrawing]);
+
+	// Sync text inputs when coords change
+	useEffect(() => {
+		setLat(String(coords.lat));
+		setLng(String(coords.lng));
+	}, [coords]);
+
+	// Render simulated pins as AdvancedMarkers
+	useEffect(() => {
+		if (!mapRef.current) return;
+		for (const m of simMarkerRefs.current) m.map = null;
+		simMarkerRefs.current = [];
+		if (window.google?.maps?.marker?.AdvancedMarkerElement) {
+			simMarkerRefs.current = simulatedPins.map(
+				(p) =>
+					new window.google.maps.marker.AdvancedMarkerElement({
+						map: mapRef.current!,
+						position: p,
+					}),
+			);
+		}
+		return () => {
+			for (const m of simMarkerRefs.current) m.map = null;
+		};
+	}, [simulatedPins]);
+
+	// Initialize / update AdvancedMarker
+	useEffect(() => {
+		if (!mapRef.current || !coords) return;
+		if (!markerRef.current) {
+			markerRef.current = new google.maps.marker.AdvancedMarkerElement({
+				map: mapRef.current,
+				position: coords,
+				gmpDraggable: true,
+			});
+			markerRef.current.addListener(
+				"dragend",
+				(e: google.maps.MapMouseEvent) => {
+					const p = e.latLng?.toJSON();
+					if (p) setCoords(p);
+				},
+			);
+		} else {
+			markerRef.current.position = coords;
+			if (!markerRef.current.map) markerRef.current.map = mapRef.current;
+		}
+	}, [coords]);
 
 	return (
 		<main className="container mx-auto max-w-5xl p-6">
@@ -78,22 +180,75 @@ export default function MapsTestPage() {
 				Click on the map to drop a pin. Use the search inputs and controls to
 				explore features.
 			</p>
+			<div className="mb-4 flex items-end justify-between gap-4">
+				<div className="grid gap-2">
+					<Input placeholder="Search address" aria-label="Search address" />
+					<div className="grid grid-cols-2 gap-2">
+						<Input
+							value={lat}
+							onChange={(e) => setLat(e.target.value)}
+							placeholder="Latitude"
+							aria-label="Latitude"
+						/>
+						<Input
+							value={lng}
+							onChange={(e) => setLng(e.target.value)}
+							placeholder="Longitude"
+							aria-label="Longitude"
+						/>
+					</div>
+					<div className="flex gap-2">
+						<Button
+							type="button"
+							onClick={() => {
+								const nlat = Number(lat);
+								const nlng = Number(lng);
+								if (Number.isFinite(nlat) && Number.isFinite(nlng)) {
+									const c = {
+										lat: nlat,
+										lng: nlng,
+									} as google.maps.LatLngLiteral;
+									setCoords(c);
+									mapRef.current?.panTo(c);
+									mapRef.current?.setZoom(16);
+								}
+							}}
+						>
+							Update Pin
+						</Button>
+						<Button type="button" variant="secondary">
+							Save Location
+						</Button>
+					</div>
+				</div>
+				<NestedMapDialog
+					coords={coords}
+					results={simulatedPins}
+					onApply={(c) => setCoords(c)}
+					onResultsChange={(pins) => setSimulatedPins(pins)}
+				/>
+			</div>
 			<LoadScript
 				googleMapsApiKey={
 					process.env.NEXT_PUBLIC_GMAPS_KEY ||
 					process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ||
 					""
 				}
-				libraries={["drawing", "marker", "places"]}
+				libraries={["drawing", "marker", "places", "geometry"]}
 			>
 				<div style={{ position: "relative", width: "100%", height: "500px" }}>
 					<GoogleMap
 						mapContainerStyle={mapContainerStyle}
-						center={defaultCenter}
+						center={coords}
 						zoom={12}
 						options={mapOptions}
 						onLoad={(map) => {
 							mapRef.current = map;
+							// Click to move pin
+							map.addListener("click", (e: google.maps.MapMouseEvent) => {
+								const p = e.latLng?.toJSON();
+								if (p) setCoords(p);
+							});
 						}}
 					>
 						{!boundaryApplied && (
