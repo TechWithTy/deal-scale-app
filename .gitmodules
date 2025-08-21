@@ -7,3 +7,6 @@
 [submodule "external/kanban"]
 	path = external/kanban
 	url = https://github.com/techwithty/kanban.git
+[submodule "external/google-maps-two"]
+	path = external/google-maps-two
+	url = https://github.com/techwithty/google-maps-two.git
