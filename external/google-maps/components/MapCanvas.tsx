@@ -2,6 +2,7 @@
 import { useEffect, useRef } from "react";
 import type { MapInit } from "../types";
 import { buildMapOptions } from "../utils";
+import { assertApiLoaded } from "../utils";
 
 export function MapCanvas({
 	init,
@@ -12,9 +13,14 @@ export function MapCanvas({
 
 	useEffect(() => {
 		if (!ref.current || mapRef.current) return;
-		const map = new google.maps.Map(ref.current, buildMapOptions(init));
-		mapRef.current = map;
-		onReady?.(map);
+		try {
+			assertApiLoaded();
+			const map = new google.maps.Map(ref.current, buildMapOptions(init));
+			mapRef.current = map;
+			onReady?.(map);
+		} catch (e) {
+			console.error("[Maps] MapCanvas failed to initialize", e);
+		}
 	}, [init, onReady]);
 
 	return (
