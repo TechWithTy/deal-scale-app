@@ -22,6 +22,15 @@ export function useGoogleMapsLoader(
 					process.env.NEXT_PUBLIC_GMAPS_KEY ||
 					process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ||
 					"";
+				if (!resolvedKey) {
+					console.warn(
+						"[Maps] No API key resolved. Set NEXT_PUBLIC_GMAPS_KEY.",
+					);
+				}
+				console.debug("[Maps] Loading JS API", {
+					libraries,
+					hasKey: !!resolvedKey,
+				});
 				const loader = new Loader({
 					apiKey: resolvedKey,
 					libraries,

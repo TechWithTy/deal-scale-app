@@ -32,7 +32,11 @@ export function parseLatLng(latStr: string, lngStr: string) {
 
 export function assertApiLoaded(): void {
 	const w = globalThis as unknown as { google?: typeof google };
-	if (!w.google) {
-		throw new Error("Google Maps API not loaded");
+	if (
+		!w.google ||
+		!(w.google as any).maps ||
+		typeof (w.google as any).maps.Map !== "function"
+	) {
+		throw new Error("Google Maps API not loaded (maps namespace missing)");
 	}
 }
