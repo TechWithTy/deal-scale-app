@@ -26,6 +26,9 @@ importers:
       '@faker-js/faker':
         specifier: ^9.0.0
         version: 9.8.0
+      '@googlemaps/js-api-loader':
+        specifier: ^1.16.10
+        version: 1.16.10
       '@hookform/resolvers':
         specifier: ^3.3.2
         version: 3.10.0(react-hook-form@7.56.4(react@18.3.1))
@@ -295,7 +298,7 @@ importers:
         specifier: ^1.52.0
         version: 1.52.0
       '@types/google.maps':
-        specifier: ^3.55.12
+        specifier: ^3.58.1
         version: 3.58.1
       '@types/uuid':
         specifier: ^9.0.7
@@ -555,6 +558,9 @@ packages:
 
   '@gilbarbara/deep-equal@0.3.1':
     resolution: {integrity: sha512-I7xWjLs2YSVMc5gGx1Z3ZG1lgFpITPndpi8Ku55GeEIKpACCPQNS/OTqQbxgTCfq0Ncvcc+CrFov96itVh6Qvw==}
+
+  '@googlemaps/js-api-loader@1.16.10':
+    resolution: {integrity: sha512-c2erv2k7P2ilYzMmtYcMgAR21AULosQuUHJbStnrvRk2dG93k5cqptDrh9A8p+ZNlyhiqEOgHW7N9PAizdUM7Q==}
 
   '@googlemaps/js-api-loader@1.16.8':
     resolution: {integrity: sha512-CROqqwfKotdO6EBjZO/gQGVTbeDps5V7Mt9+8+5Q+jTg5CRMi3Ii/L9PmV3USROrt2uWxtGzJHORmByxyo9pSQ==}
@@ -3924,6 +3930,8 @@ snapshots:
   '@gilbarbara/deep-equal@0.1.2': {}
 
   '@gilbarbara/deep-equal@0.3.1': {}
+
+  '@googlemaps/js-api-loader@1.16.10': {}
 
   '@googlemaps/js-api-loader@1.16.8': {}
 

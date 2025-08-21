@@ -22,34 +22,12 @@ export function SearchInputs({
 	const [lat, setLat] = useState<string>(value.coords?.lat?.toString() ?? "");
 	const [lng, setLng] = useState<string>(value.coords?.lng?.toString() ?? "");
 
+	// Note: Deprecated google.maps.places.Autocomplete removed to avoid runtime errors
+	// for new Google Maps customers. Manual lat/lng inputs remain functional.
 	useEffect(() => {
-		let ac: google.maps.places.Autocomplete | null = null;
-		if (inputRef.current && (window as any).google?.maps?.places) {
-			ac = new google.maps.places.Autocomplete(inputRef.current, {
-				fields: ["formatted_address", "geometry", "place_id"],
-			});
-			ac.addListener("place_changed", () => {
-				const place = ac!.getPlace();
-				const loc = place.geometry?.location?.toJSON();
-				if (loc) {
-					onChange({
-						coords: loc,
-						address: {
-							formatted: place.formatted_address || "",
-							placeId: place.place_id,
-						},
-					});
-					setLat(String(loc.lat));
-					setLng(String(loc.lng));
-					map?.panTo(loc);
-					map?.setZoom(16);
-				}
-			});
-		}
-		return () => {
-			// no-op cleanup, Autocomplete cleans with element removal
-		};
-	}, [map, onChange]);
+		// Focus the input for usability; no autocomplete binding.
+		inputRef.current?.focus();
+	}, []);
 
 	return (
 		<div className="grid gap-2">

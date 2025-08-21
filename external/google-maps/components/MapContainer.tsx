@@ -13,6 +13,8 @@ export type MapContainerProps = {
 	defaultZoom?: number;
 	initialPin?: Coordinates | null;
 	onSave?: OnSave;
+	apiKey?: string;
+	libraries?: string[];
 };
 
 export function MapContainer({
@@ -20,8 +22,10 @@ export function MapContainer({
 	defaultZoom = 12,
 	initialPin = null,
 	onSave,
+	apiKey,
+	libraries,
 }: MapContainerProps) {
-	const { loaded, error } = useGoogleMapsLoader();
+	const { loaded, error } = useGoogleMapsLoader(apiKey, libraries);
 	const [map, setMap] = useState<google.maps.Map | null>(null);
 	const [coords, setCoords] = useState<Coordinates | null>(initialPin);
 	const init: MapInit = useMemo(

@@ -8,6 +8,8 @@ export function buildMapOptions(init: MapInit): google.maps.MapOptions {
 		mapTypeControl: false,
 		streetViewControl: false,
 		fullscreenControl: true,
+		// Align with dashboard map styling if mapId is configured
+		mapId: process.env.NEXT_PUBLIC_GMAPS_MAP_ID,
 	};
 }
 
@@ -28,10 +30,9 @@ export function parseLatLng(latStr: string, lngStr: string) {
 	return null;
 }
 
-export function assertApiLoaded(): asserts window is Window & {
-	google: typeof google;
-} {
-	if (!("google" in window)) {
+export function assertApiLoaded(): void {
+	const w = globalThis as unknown as { google?: typeof google };
+	if (!w.google) {
 		throw new Error("Google Maps API not loaded");
 	}
 }

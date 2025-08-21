@@ -1,3 +1,4 @@
+"use client";
 import { MapContainer } from "@/external/google-maps";
 import type { Coordinates } from "@/external/google-maps";
 
@@ -15,11 +16,11 @@ export default function MapsTestPage() {
 				defaultCenter={defaultCenter}
 				defaultZoom={12}
 				initialPin={defaultCenter}
-				onSave={(data) => {
-					// For testing purposes; you can wire this to a toast or state if needed
-					// eslint-disable-next-line no-console
-					console.log("Saved location:", data);
-				}}
+				apiKey={
+					process.env.NEXT_PUBLIC_GMAPS_KEY ||
+					process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
+				}
+				libraries={["drawing", "marker", "places"]}
 			/>
 		</main>
 	);

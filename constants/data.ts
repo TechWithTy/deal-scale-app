@@ -14,19 +14,9 @@ import type {
 // =====================================================================
 //
 
-// Resolve testing mode from env. Supports Vite and Next.js. Defaults to false.
-const viteEnv =
-	typeof import.meta !== "undefined" && (import.meta as any)?.env
-		? ((import.meta as any).env.VITE_APP_TESTING_MODE ??
-			(import.meta as any).env.NEXT_PUBLIC_APP_TESTING_MODE)
-		: undefined;
-const nodeEnv =
-	typeof process !== "undefined" && (process as any)?.env
-		? (process.env.NEXT_PUBLIC_APP_TESTING_MODE ??
-			process.env.NEXT_PUBLIC_APP_TESTING_MODE)
-		: undefined;
+// Resolve testing mode from env (Next.js runtime)
 export const NEXT_PUBLIC_APP_TESTING_MODE =
-	String(viteEnv ?? nodeEnv ?? "")
+	String(process.env.NEXT_PUBLIC_APP_TESTING_MODE ?? "")
 		.toLowerCase()
 		.trim() === "true";
 
