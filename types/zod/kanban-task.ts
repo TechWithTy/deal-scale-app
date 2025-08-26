@@ -85,7 +85,7 @@ export const CreateKanbanTaskSchema = z.object({
 	status: z.string().min(1, "Status is required"),
 
 	priority: PrioritySchema.optional(),
-	dueDate: z.string().optional(),
+	dueDate: z.string().min(1, "Due date is required"),
 	appointmentDate: z.string().optional(),
 	appointmentTime: z.string().optional(),
 
