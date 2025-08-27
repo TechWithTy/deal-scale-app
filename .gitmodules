@@ -10,3 +10,7 @@
 [submodule "external/google-maps-two"]
 	path = external/google-maps-two
 	url = https://github.com/techwithty/google-maps-two.git
+[submodule "external/shadcn-table"]
+	path = external/shadcn-table
+	url = https://github.com/TechWithTy/shadcn-table.git
+	branch = main
