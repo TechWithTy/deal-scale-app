@@ -1,6 +1,7 @@
 "use client";
 
 import { Checkbox } from "@/components/ui/checkbox";
+import { DataTableColumnHeader } from "@/external/shadcn-table/src/components/data-table/data-table-column-header";
 import { exportLeadListsToExcel } from "@/lib/_utils/files/loopDownload/leadExports";
 import type { LeadList } from "@/types/_dashboard/leadList";
 import type { ColumnDef } from "@tanstack/react-table";
@@ -30,32 +31,44 @@ export const columns: ColumnDef<LeadList>[] = [
 	},
 	{
 		accessorKey: "listName",
-		header: "List",
+		header: ({ column }) => (
+			<DataTableColumnHeader column={column} title="List" />
+		),
 		cell: ({ row }) => <span>{row.original.listName}</span>,
 	},
 	{
 		accessorKey: "uploadDate",
-		header: "Upload Date",
+		header: ({ column }) => (
+			<DataTableColumnHeader column={column} title="Upload Date" />
+		),
 		cell: ({ row }) => <span>{row.original.uploadDate}</span>,
 	},
 	{
 		accessorKey: "records",
-		header: "Records",
+		header: ({ column }) => (
+			<DataTableColumnHeader column={column} title="Records" />
+		),
 		cell: ({ row }) => <span>{row.original.records}</span>,
 	},
 	{
 		accessorKey: "phone",
-		header: "Phone",
+		header: ({ column }) => (
+			<DataTableColumnHeader column={column} title="Phone" />
+		),
 		cell: ({ row }) => <span>{row.original.phone}</span>,
 	},
 	{
 		accessorKey: "emails",
-		header: "Emails",
+		header: ({ column }) => (
+			<DataTableColumnHeader column={column} title="Emails" />
+		),
 		cell: ({ row }) => <span>{row.original.emails}</span>, // Added emails column
 	},
 	{
 		accessorKey: "socials",
-		header: "Socials",
+		header: ({ column }) => (
+			<DataTableColumnHeader column={column} title="Socials" />
+		),
 		cell: ({ row }) => (
 			<div className="flex flex-col space-y-1">
 				<span>Facebook: {row.original.socials.facebook}</span>

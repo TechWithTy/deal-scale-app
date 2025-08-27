@@ -12,10 +12,13 @@ import {
 import {
 	type ColumnDef,
 	type PaginationState,
+	type SortingState,
+	type VisibilityState,
 	flexRender,
 	getCoreRowModel,
 	getFilteredRowModel,
 	getPaginationRowModel,
+	getSortedRowModel,
 	useReactTable,
 } from "@tanstack/react-table";
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
@@ -37,6 +40,8 @@ export const LeadListDataTable = <TData extends object>({
 	pageSizeOptions = [10, 20, 30, 50], // Default page sizes
 }: DataTableProps<TData, unknown>) => {
 	const [search, setSearch] = useState("");
+	const [sorting, setSorting] = useState<SortingState>([]);
+	const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
 
 	// State for pagination
 	const [{ pageIndex, pageSize }, setPagination] = useState<PaginationState>({
@@ -51,13 +56,18 @@ export const LeadListDataTable = <TData extends object>({
 		getCoreRowModel: getCoreRowModel(),
 		getFilteredRowModel: getFilteredRowModel(),
 		getPaginationRowModel: getPaginationRowModel(),
+		getSortedRowModel: getSortedRowModel(),
 		pageCount,
 		manualPagination: true,
 		state: {
 			pagination: { pageIndex, pageSize },
 			globalFilter: search, // This will be used to filter based on search
+			sorting,
+			columnVisibility,
 		},
 		onPaginationChange: setPagination, // Update pagination state
+		onSortingChange: setSorting,
+		onColumnVisibilityChange: setColumnVisibility,
 	});
 
 	return (

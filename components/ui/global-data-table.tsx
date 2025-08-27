@@ -2,11 +2,15 @@
 
 import {
 	type ColumnDef,
+	type SortingState,
 	flexRender,
 	getCoreRowModel,
 	getFilteredRowModel,
+	getPaginationRowModel,
+	getSortedRowModel,
 	useReactTable,
 } from "@tanstack/react-table";
+import * as React from "react";
 
 import {
 	Table,
@@ -31,11 +35,19 @@ export function DataTable<TData, TValue>({
 	data,
 	searchKey,
 }: DataTableProps<TData, TValue>) {
+	const [sorting, setSorting] = React.useState<SortingState>([]);
 	const table = useReactTable({
 		data,
 		columns,
+		state: { sorting },
+		onSortingChange: setSorting,
 		getCoreRowModel: getCoreRowModel(),
 		getFilteredRowModel: getFilteredRowModel(),
+		getSortedRowModel: getSortedRowModel(),
+		getPaginationRowModel: getPaginationRowModel(),
+		initialState: {
+			pagination: { pageIndex: 0, pageSize: 10 },
+		},
 	});
 
 	/* this can be used to get the selectedrows 
@@ -56,18 +68,39 @@ export function DataTable<TData, TValue>({
 					<TableHeader>
 						{table.getHeaderGroups().map((headerGroup) => (
 							<TableRow key={headerGroup.id}>
-								{headerGroup.headers.map((header) => {
-									return (
-										<TableHead key={header.id}>
-											{header.isPlaceholder
-												? null
-												: flexRender(
-														header.column.columnDef.header,
-														header.getContext(),
-													)}
-										</TableHead>
-									);
-								})}
+								{headerGroup.headers.map((header) => (
+									<TableHead key={header.id}>
+										{header.isPlaceholder ? null : (
+											<button
+												type="button"
+												className="flex items-center gap-1 select-none"
+												onClick={header.column.getToggleSortingHandler()}
+												disabled={!header.column.getCanSort()}
+												aria-label={
+													header.column.getIsSorted() === "asc"
+														? "Sort descending"
+														: header.column.getIsSorted() === "desc"
+															? "Clear sorting"
+															: "Sort ascending"
+												}
+											>
+												{flexRender(
+													header.column.columnDef.header,
+													header.getContext(),
+												)}
+												{header.column.getCanSort() ? (
+													<span className="text-xs text-muted-foreground">
+														{header.column.getIsSorted() === "asc"
+															? "▲"
+															: header.column.getIsSorted() === "desc"
+																? "▼"
+																: ""}
+													</span>
+												) : null}
+											</button>
+										)}
+									</TableHead>
+								))}
 							</TableRow>
 						))}
 					</TableHeader>
@@ -113,6 +146,7 @@ export function DataTable<TData, TValue>({
 						size="sm"
 						onClick={() => table.previousPage()}
 						disabled={!table.getCanPreviousPage()}
+						type="button"
 					>
 						Previous
 					</Button>
@@ -121,6 +155,7 @@ export function DataTable<TData, TValue>({
 						size="sm"
 						onClick={() => table.nextPage()}
 						disabled={!table.getCanNextPage()}
+						type="button"
 					>
 						Next
 					</Button>
