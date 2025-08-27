@@ -10,8 +10,8 @@ import {
 import { mockLeadListData } from "@/constants/dashboard/leadList";
 
 interface LeadListDropdownProps {
-	selectedLeadListId: number | null;
-	setSelectedLeadListId: (id: number) => void;
+	selectedLeadListId: string | null;
+	setSelectedLeadListId: (id: string) => void;
 }
 
 export function LeadListDropdown({
@@ -33,6 +33,7 @@ export function LeadListDropdown({
 			<DropdownMenu>
 				<DropdownMenuTrigger asChild>
 					<Button
+						type="button"
 						variant="outline"
 						className="col-span-3"
 						id="lead-list-select"
@@ -41,11 +42,12 @@ export function LeadListDropdown({
 						{selectedList ? selectedList.listName : "Select Lead List"}
 					</Button>
 				</DropdownMenuTrigger>
-				<DropdownMenuContent>
+				<DropdownMenuContent className="max-h-60 overflow-y-auto w-64">
 					{lists.map((list) => (
 						<DropdownMenuItem
 							key={list.id}
-							onSelect={() => setSelectedLeadListId(Number(list.id))}
+							onClick={() => setSelectedLeadListId(String(list.id))}
+							onSelect={() => setSelectedLeadListId(String(list.id))}
 						>
 							{list.listName}
 						</DropdownMenuItem>

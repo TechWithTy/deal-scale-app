@@ -16,8 +16,8 @@ interface NewTaskFormProps {
 export function NewTaskForm({ setFormValid }: NewTaskFormProps) {
 	const addTask = useTaskStore((state) => state.addTask);
 	const [assignType, setAssignType] = useState<"lead" | "leadList" | "">("");
-	const [selectedLeadId, setSelectedLeadId] = useState<number | null>(null);
-	const [selectedLeadListId, setSelectedLeadListId] = useState<number | null>(
+	const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
+	const [selectedLeadListId, setSelectedLeadListId] = useState<string | null>(
 		null,
 	);
 	const [assignedUserId, setAssignedUserId] = useState<string>("");
@@ -145,14 +145,14 @@ export function NewTaskForm({ setFormValid }: NewTaskFormProps) {
 			{assignType === "lead" && (
 				<LeadDropdown
 					selectedLeadId={selectedLeadId}
-					setSelectedLeadId={setSelectedLeadId}
+					setSelectedLeadId={(id: string) => setSelectedLeadId(id)}
 				/>
 			)}
 
 			{assignType === "leadList" && (
 				<LeadListDropdown
 					selectedLeadListId={selectedLeadListId}
-					setSelectedLeadListId={setSelectedLeadListId}
+					setSelectedLeadListId={(id: string) => setSelectedLeadListId(id)}
 				/>
 			)}
 

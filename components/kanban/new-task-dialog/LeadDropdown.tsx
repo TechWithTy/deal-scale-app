@@ -10,8 +10,8 @@ import {
 import { mockGeneratedLeads } from "@/constants/data";
 
 interface LeadDropdownProps {
-	selectedLeadId: number | null;
-	setSelectedLeadId: (id: number) => void;
+	selectedLeadId: string | null;
+	setSelectedLeadId: (id: string) => void;
 }
 
 export function LeadDropdown({
@@ -30,6 +30,7 @@ export function LeadDropdown({
 			<DropdownMenu>
 				<DropdownMenuTrigger asChild>
 					<Button
+						type="button"
 						variant="outline"
 						className="col-span-3"
 						id="lead-select"
@@ -40,11 +41,12 @@ export function LeadDropdown({
 							: "Select Lead"}
 					</Button>
 				</DropdownMenuTrigger>
-				<DropdownMenuContent>
+				<DropdownMenuContent className="max-h-60 overflow-y-auto w-64">
 					{mockGeneratedLeads.map((lead) => (
 						<DropdownMenuItem
 							key={lead.id}
-							onSelect={() => setSelectedLeadId(Number(lead.id))}
+							onClick={() => setSelectedLeadId(String(lead.id))}
+							onSelect={() => setSelectedLeadId(String(lead.id))}
 						>
 							{lead.contactInfo.firstName} {lead.contactInfo.lastName}
 						</DropdownMenuItem>

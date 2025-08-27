@@ -28,6 +28,7 @@ export function TeamMemberDropdown({
 			<DropdownMenu>
 				<DropdownMenuTrigger asChild>
 					<Button
+						type="button"
 						variant="outline"
 						className="col-span-3"
 						id="team-member-select"

@@ -24,7 +24,7 @@ export function AssignmentTypeDropdown({
 			</label>
 			<DropdownMenu>
 				<DropdownMenuTrigger asChild>
-					<Button variant="outline" className="col-span-3">
+					<Button type="button" variant="outline" className="col-span-3">
 						{assignType === "lead"
 							? "Assign Lead"
 							: assignType === "leadList"
