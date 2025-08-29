@@ -3,6 +3,7 @@
 import type React from "react";
 import { useState } from "react";
 import Papa, { type ParseResult } from "papaparse";
+import { LEAD_LISTS_MOCK } from "@/constants/dashboard/leadLists.mock";
 
 interface CsvRow {
 	[key: string]: string;
@@ -19,7 +20,9 @@ interface UploadStepProps {
 }
 
 const UploadStep: React.FC<UploadStepProps> = ({ onFileSelect, onBack }) => {
+	const [listMode, setListMode] = useState<"create" | "select">("create");
 	const [listName, setListName] = useState("");
+	const [selectedListId, setSelectedListId] = useState("");
 	const [file, setFile] = useState<File | null>(null);
 	const [error, setError] = useState("");
 	const [isLoading, setIsLoading] = useState(false);
@@ -39,9 +42,21 @@ const UploadStep: React.FC<UploadStepProps> = ({ onFileSelect, onBack }) => {
 	};
 
 	const handleContinue = async () => {
-		if (!file || !listName.trim()) {
-			setError("Please provide a list name and select a file.");
+		// Validate list selection
+		if (!file) {
+			setError("Please select a CSV file.");
 			return;
+		}
+		if (listMode === "create") {
+			if (!listName.trim()) {
+				setError("Please provide a list name.");
+				return;
+			}
+		} else {
+			if (!selectedListId) {
+				setError("Please select an existing list.");
+				return;
+			}
 		}
 
 		setIsLoading(true);
@@ -64,10 +79,15 @@ const UploadStep: React.FC<UploadStepProps> = ({ onFileSelect, onBack }) => {
 						return;
 					}
 
+					const effectiveListName =
+						listMode === "create"
+							? listName.trim()
+							: LEAD_LISTS_MOCK.find((l) => l.id === selectedListId)?.name ||
+								"";
 					onFileSelect(
 						file,
 						results.meta.fields,
-						listName.trim(),
+						effectiveListName,
 						results.data,
 					);
 				},
@@ -88,23 +108,74 @@ const UploadStep: React.FC<UploadStepProps> = ({ onFileSelect, onBack }) => {
 
 	return (
 		<div className="space-y-4 p-4">
-			<div>
-				<label
-					htmlFor="listName"
-					className="block font-medium text-gray-700 text-sm dark:text-gray-300"
-				>
-					List Name
-				</label>
-				<input
-					type="text"
-					id="listName"
-					value={listName}
-					onChange={(e) => setListName(e.target.value)}
-					className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-					placeholder="e.g., High Equity Leads"
-					aria-required="true"
-					aria-invalid={!listName.trim()}
-				/>
+			<div className="space-y-2">
+				<div className="flex gap-4">
+					<label className="inline-flex items-center gap-2">
+						<input
+							type="radio"
+							name="list-mode"
+							className="h-4 w-4"
+							checked={listMode === "create"}
+							onChange={() => setListMode("create")}
+						/>
+						<span>Create new list</span>
+					</label>
+					<label className="inline-flex items-center gap-2">
+						<input
+							type="radio"
+							name="list-mode"
+							className="h-4 w-4"
+							checked={listMode === "select"}
+							onChange={() => setListMode("select")}
+						/>
+						<span>Select existing list</span>
+					</label>
+				</div>
+
+				{listMode === "create" ? (
+					<div>
+						<label
+							htmlFor="listName"
+							className="block font-medium text-gray-700 text-sm dark:text-gray-300"
+						>
+							List Name
+						</label>
+						<input
+							type="text"
+							id="listName"
+							value={listName}
+							onChange={(e) => setListName(e.target.value)}
+							className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+							placeholder="e.g., High Equity Leads"
+							aria-required={true}
+							aria-invalid={!listName.trim()}
+						/>
+					</div>
+				) : (
+					<div>
+						<label
+							htmlFor="existingList"
+							className="block font-medium text-gray-700 text-sm dark:text-gray-300"
+						>
+							Existing Lists
+						</label>
+						<select
+							id="existingList"
+							value={selectedListId}
+							onChange={(e) => setSelectedListId(e.target.value)}
+							className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+							aria-required={true}
+							aria-invalid={!selectedListId}
+						>
+							<option value="">Select a list...</option>
+							{LEAD_LISTS_MOCK.map((l) => (
+								<option key={l.id} value={l.id}>
+									{l.name}
+								</option>
+							))}
+						</select>
+					</div>
+				)}
 			</div>
 			<div>
 				<label
@@ -146,7 +217,11 @@ const UploadStep: React.FC<UploadStepProps> = ({ onFileSelect, onBack }) => {
 				<button
 					type="button"
 					onClick={handleContinue}
-					disabled={!file || !listName.trim() || isLoading}
+					disabled={
+						isLoading ||
+						!file ||
+						(listMode === "create" ? !listName.trim() : !selectedListId)
+					}
 					className="rounded-md bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
 					aria-busy={isLoading}
 				>

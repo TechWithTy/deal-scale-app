@@ -11,19 +11,32 @@ import { fieldLabels } from "@/constants/skip-trace/fieldLabels";
 import { useUserProfileStore } from "@/lib/stores/user/userProfile";
 import { EnrichmentCard } from "./enrichment/EnrichmentCard";
 
-// * Helper function to check if an enrichment option should be disabled
+// * Helper functions that adapt to list vs single flow
 const isEnrichmentDisabled = (
 	option: EnrichmentOption,
 	userInput: Record<InputField, string>,
+	mappedTypes: Set<InputField> | null,
 ): boolean => {
-	// * An option is disabled if any required field is missing
+	// If mappedTypes provided (list flow), validate against mapped header types
+	if (mappedTypes) {
+		return option.requiredFields.some(
+			(field: InputField) => !mappedTypes.has(field),
+		);
+	}
+	// Otherwise (single flow), validate against userInput
 	return option.requiredFields.some((field: InputField) => !userInput[field]);
 };
 
 const getMissingFields = (
 	option: EnrichmentOption,
 	userInput: Record<InputField, string>,
+	mappedTypes: Set<InputField> | null,
 ): InputField[] => {
+	if (mappedTypes) {
+		return option.requiredFields.filter(
+			(field: InputField) => !mappedTypes.has(field),
+		);
+	}
 	return option.requiredFields.filter((field: InputField) => !userInput[field]);
 };
 
@@ -42,6 +55,8 @@ export function EnrichmentStep({ onNext, onBack }: EnrichmentStepProps) {
 		setUserInput,
 		selectedEnrichmentOptions: selectedOptions,
 		setSelectedEnrichmentOptions,
+		selectedHeaders,
+		uploadedFile,
 	} = useSkipTraceStore();
 	const { userProfile } = useUserProfileStore();
 
@@ -71,6 +86,30 @@ export function EnrichmentStep({ onNext, onBack }: EnrichmentStepProps) {
 
 	const hasEnoughCredits = availableCredits >= creditCost;
 
+	// Determine flow type and build a set of mapped types when in list flow
+	const isListFlow = Boolean(uploadedFile);
+	const mappedTypes: Set<InputField> | null = isListFlow
+		? new Set(
+				(selectedHeaders ?? [])
+					.map((h) => h.type as InputField)
+					.filter(Boolean),
+			)
+		: null;
+
+	// Build userInput fed into EnrichmentCard: in list flow, mark mapped types as present
+	const userInputForValidation: Record<InputField, string> = isListFlow
+		? Array.from(mappedTypes ?? []).reduce(
+				(acc, key) => {
+					acc[key] = acc[key] || "1"; // any truthy marker
+					return acc;
+				},
+				{ ...(userInput as Record<InputField, string>) } as Record<
+					InputField,
+					string
+				>,
+			)
+		: userInput;
+
 	return (
 		<div className="flex h-full flex-col">
 			<div className="mb-4">
@@ -84,9 +123,17 @@ export function EnrichmentStep({ onNext, onBack }: EnrichmentStepProps) {
 				<ScrollArea className="h-72 flex-grow pr-4">
 					<div className="grid grid-cols-2 gap-4 p-2">
 						{enrichmentOptions.map((enrichment) => {
-							const isDisabled = isEnrichmentDisabled(enrichment, userInput);
-							const missingFields = isDisabled
-								? getMissingFields(enrichment, userInput)
+							const disabled = isEnrichmentDisabled(
+								enrichment,
+								userInputForValidation,
+								mappedTypes,
+							);
+							const missingFields = disabled
+								? getMissingFields(
+										enrichment,
+										userInputForValidation,
+										mappedTypes,
+									)
 								: [];
 
 							return (
@@ -95,7 +142,7 @@ export function EnrichmentStep({ onNext, onBack }: EnrichmentStepProps) {
 									enrichment={enrichment}
 									isSelected={selectedOptions.includes(enrichment.id)}
 									onToggle={() => handleSelectOption(enrichment.id)}
-									userInput={userInput}
+									userInput={userInputForValidation}
 								/>
 							);
 						})}
@@ -122,7 +169,7 @@ export function EnrichmentStep({ onNext, onBack }: EnrichmentStepProps) {
 					</Button>
 					<Button
 						onClick={() => onNext(selectedOptions, userInput)}
-						disabled={!hasEnoughCredits || selectedOptions.length === 0}
+						disabled={!hasEnoughCredits}
 					>
 						Next
 					</Button>

@@ -12,7 +12,7 @@ interface SkipTraceModalMainProps {
 	isOpen: boolean;
 	onClose: () => void;
 	initialData?:
-		| { type: "list"; file: File }
+		| { type: "list"; file?: File }
 		| ({ type: "single" } & Partial<
 				Record<
 					| "firstName"
@@ -52,11 +52,11 @@ const SkipTraceModalMain: React.FC<SkipTraceModalMainProps> = ({
 	if (!isOpen) return null;
 
 	return (
-		<div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-800 bg-opacity-50">
-			<div className="relative flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-lg bg-white p-6 shadow-lg dark:bg-gray-900">
+		<div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
+			<div className="relative flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-lg border border-border bg-card p-6 text-foreground shadow-lg">
 				<button
 					type="button"
-					className="absolute top-2 right-2 text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-gray-100"
+					className="absolute top-2 right-2 text-muted-foreground hover:text-foreground"
 					onClick={handleClose}
 				>
 					&times;
@@ -64,10 +64,8 @@ const SkipTraceModalMain: React.FC<SkipTraceModalMainProps> = ({
 
 				{!currentFlow && (
 					<>
-						<h2 className="mb-4 font-semibold text-xl dark:text-white">
-							Skip Trace
-						</h2>
-						<p className="mb-6 text-gray-600 dark:text-gray-300">
+						<h2 className="mb-4 text-xl font-semibold">Skip Trace</h2>
+						<p className="mb-6 text-muted-foreground">
 							Choose an option to begin.
 						</p>
 						<div className="flex flex-col space-y-4">

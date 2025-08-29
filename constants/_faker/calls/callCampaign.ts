@@ -139,6 +139,47 @@ const generateCallCampaign = (): CallCampaign => {
 		scriptID: faker.string.uuid(),
 		funnelID: faker.string.uuid(),
 		workflowID: faker.string.uuid(),
+		transfer: faker.helpers.maybe(
+			() => ({
+				type: faker.helpers.arrayElement([
+					"chat_agent",
+					"voice_inbound",
+					"voice_outbound",
+					"text",
+					"social_media",
+					"appraisal",
+					"live_person",
+					"live_person_calendar",
+				] as const),
+				agentId: `agent_${faker.number.int({ min: 100, max: 999 })}`,
+			}),
+			{ probability: 0.8 },
+		),
+		// Build a breakdown of transfers by category for richer UI
+		// and ensure the total transfers equals the sum of breakdown values
+		...(() => {
+			const cats = [
+				"chat_agent",
+				"voice_inbound",
+				"voice_outbound",
+				"text",
+				"social_media",
+				"appraisal",
+				"live_person",
+				"live_person_calendar",
+			] as const;
+			const breakdown: Record<string, number> = {};
+			let total = 0;
+			for (const c of cats) {
+				const n = faker.number.int({ min: 0, max: 8 });
+				if (n > 0) breakdown[c] = n;
+				total += n;
+			}
+			return {
+				transferBreakdown: breakdown as any,
+				transfers: total,
+			};
+		})(),
 	};
 };
 

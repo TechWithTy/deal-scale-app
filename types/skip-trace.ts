@@ -9,5 +9,16 @@ export interface Header {
 		| "property_state"
 		| "property_zip"
 		| "owner_name"
-		| "owner_mailing_address";
+		| "owner_mailing_address"
+		// New mappings
+		| "firstName"
+		| "lastName"
+		| "phone"
+		| "facebookUrl"
+		| "linkedinUrl"
+		| "socialHandle"
+		| "socialSummary"
+		| "isIphone"
+		| "communicationPreferences"
+		| "dncList";
 }

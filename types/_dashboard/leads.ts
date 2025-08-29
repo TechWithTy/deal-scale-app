@@ -19,8 +19,11 @@ export type ContactInfo = {
 	lastName: string;
 	email: string;
 	phone: string;
+	// Optional pre-validated or known good phone number
+	knownPhone?: string;
 	address: string;
 	domain: string;
+	// Generic social tag/handle (e.g., @username)
 	social: string;
 };
 
@@ -38,5 +41,15 @@ export type LeadTypeGlobal = {
 	lastUpdate: string; // Last update timestamp
 	address1: Address; // Address of the lead (optional)
 	campaignID?: string;
-	socials?: SocialLinks; // Social media links
+	// Social media links
+	socials?: SocialLinks;
+	// Additional social data
+	socialHandle?: string; // e.g., @username
+	socialSummary?: string; // short blurb/notes about social presence
+	// Device/phone details
+	isIphone?: boolean;
+	// Preferred channels, e.g. ["sms", "email", "call"]
+	communicationPreferences?: string[];
+	// Optional Do Not Call list flag
+	dncList?: boolean;
 };

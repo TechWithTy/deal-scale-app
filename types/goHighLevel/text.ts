@@ -43,6 +43,12 @@ export interface TextMessage {
 	meta?: Meta; // Optional meta object for additional data (e.g., emails)
 	source?: "workflow" | "bulk_actions" | "campaign" | "api" | "app"; // Optional: source of the message
 	userId?: string; // Optional: User ID
+	// Optional provider hints (for demo mocks and adapters)
+	service?: string; // e.g. "iMessage", "SMS", etc.
+	appleDevice?: boolean; // true if originated from an Apple device/iMessage
+	provider?: "sendblue" | "twilio" | "ghl" | "unknown";
+	sendbluePayload?: SendblueMessagePayload; // Normalized copy of Sendblue single-message response
+	twilioPayload?: TwilioMessagePayload; // Normalized subset of Twilio message fields
 }
 
 // Meta data for the message (used for email-type messages)
@@ -63,6 +69,66 @@ export interface GHLTextMessageCampaign extends CampaignBase {
 	lastMessageSentAt: string; // Date when the last message was sent
 	conversationId: string;
 	messages: TextMessage[]; // ID of the conversation associated with the campaign
+}
+
+// Lightweight provider payloads for mocks/adapters
+export interface SendblueMessagePayload {
+	accountEmail: string;
+	content: string;
+	date_sent: string;
+	date_updated: string;
+	error_code: string | null;
+	error_detail: string | null;
+	error_message: string | null;
+	error_reason: string | null;
+	from_number: string | null;
+	group_display_name: string | null;
+	group_id: string | null;
+	is_outbound: boolean;
+	media_url: string | null;
+	message_handle: string;
+	message_type: string;
+	number: string | null;
+	opted_out: boolean;
+	participants: string[];
+	plan: string | null;
+	send_style: string | null;
+	sendblue_number: string | null;
+	service: string | null; // e.g. iMessage
+	status: string; // e.g. SENT
+	to_number: string | null;
+	was_downgraded: boolean;
+}
+
+export interface SendblueListResponse {
+	data: SendblueMessagePayload[];
+	pagination: {
+		hasMore: boolean;
+		limit: number;
+		offset: number;
+		total: number;
+	};
+	status: "OK" | string;
+}
+
+export interface TwilioMessagePayload {
+	sid: string;
+	accountSid: string;
+	to: string;
+	from: string;
+	body: string;
+	status:
+		| "queued"
+		| "sending"
+		| "sent"
+		| "delivered"
+		| "undelivered"
+		| "failed"
+		| "received";
+	numMedia: string;
+	dateCreated?: string;
+	dateUpdated?: string;
+	dateSent?: string;
 }
 
 export interface TextMessageCampaignAnalytics extends CampaignBase {

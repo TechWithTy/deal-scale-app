@@ -4,16 +4,20 @@ import type { FC } from "react";
 interface LeadContactStepProps {
 	phoneNumber: string;
 	email: string;
+	isIphone: boolean;
 	onPhoneNumberChange: (value: string) => void;
 	onEmailChange: (value: string) => void;
+	onIsIphoneChange: (value: boolean) => void;
 	errors?: Record<string, string>;
 }
 
 const LeadContactStep: FC<LeadContactStepProps> = ({
 	phoneNumber,
 	email,
+	isIphone,
 	onPhoneNumberChange,
 	onEmailChange,
+	onIsIphoneChange,
 	errors = {},
 }) => (
 	<div className="space-y-4">
@@ -31,6 +35,18 @@ const LeadContactStep: FC<LeadContactStepProps> = ({
 			error={errors.email}
 			placeholder="Enter email"
 		/>
+		<div className="flex items-center gap-2">
+			<input
+				id="isIphone"
+				type="checkbox"
+				className="h-4 w-4"
+				checked={isIphone}
+				onChange={(e) => onIsIphoneChange(e.target.checked)}
+			/>
+			<label htmlFor="isIphone" className="text-sm">
+				Device is iPhone
+			</label>
+		</div>
 	</div>
 );
 

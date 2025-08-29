@@ -5,8 +5,16 @@ export type InputField =
 	| "address"
 	| "email"
 	| "phone"
+	| "knownPhone"
 	| "domain"
-	| "socialTag";
+	| "socialTag"
+	| "facebookUrl"
+	| "linkedinUrl"
+	| "socialHandle"
+	| "socialSummary"
+	| "isIphone"
+	| "communicationPreferences"
+	| "dncList";
 
 // * Represents required fields as a flat array. All listed fields must be present.
 // * e.g., ['firstName', 'lastName'] means firstName AND lastName are required.

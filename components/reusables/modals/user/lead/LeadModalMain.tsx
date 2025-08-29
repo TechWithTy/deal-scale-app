@@ -3,6 +3,8 @@ import LeadAddressStep from "./steps/LeadAddressStep";
 import LeadBasicInfoStep from "./steps/LeadBasicInfoStep";
 import LeadContactStep from "./steps/LeadContactStep";
 import LeadSocialsStep from "./steps/LeadSocialsStep";
+import LeadListSelectStep from "./steps/LeadListSelectStep";
+import { LEAD_LISTS_MOCK } from "@/constants/dashboard/leadLists.mock";
 
 // * Main Lead Modal Component: Combines all modular steps
 interface LeadMainModalProps {
@@ -12,6 +14,10 @@ interface LeadMainModalProps {
 
 const LeadMainModal: React.FC<LeadMainModalProps> = ({ isOpen, onClose }) => {
 	// Centralized state for all fields
+	// Lead list selection/creation
+	const [listMode, setListMode] = useState<"select" | "create">("create");
+	const [selectedListId, setSelectedListId] = useState("");
+	const [newListName, setNewListName] = useState("");
 	const [firstName, setFirstName] = useState("");
 	const [lastName, setLastName] = useState("");
 	const [address, setAddress] = useState("");
@@ -22,8 +28,9 @@ const LeadMainModal: React.FC<LeadMainModalProps> = ({ isOpen, onClose }) => {
 	const [email, setEmail] = useState("");
 	const [facebook, setFacebook] = useState("");
 	const [linkedin, setLinkedin] = useState("");
-	const [instagram, setInstagram] = useState("");
-	const [twitter, setTwitter] = useState("");
+	const [socialHandle, setSocialHandle] = useState("");
+	const [socialSummary, setSocialSummary] = useState("");
+	const [isIphone, setIsIphone] = useState(false);
 	const [errors, setErrors] = useState<Record<string, string>>({});
 	const [step, setStep] = useState(0);
 
@@ -122,8 +129,8 @@ const LeadMainModal: React.FC<LeadMainModalProps> = ({ isOpen, onClose }) => {
 			...prev,
 			facebook: value && !urlRegex.test(value) ? "Invalid Facebook URL" : "",
 			// Socials group error
-			socials: [value, linkedin, instagram, twitter].every((s) => !s.trim())
-				? "At least one social profile is required"
+			socials: [value, linkedin, socialHandle].every((s) => !s.trim())
+				? "At least one social profile or handle is required"
 				: "",
 		}));
 	};
@@ -132,30 +139,22 @@ const LeadMainModal: React.FC<LeadMainModalProps> = ({ isOpen, onClose }) => {
 		setErrors((prev) => ({
 			...prev,
 			linkedin: value && !urlRegex.test(value) ? "Invalid LinkedIn URL" : "",
-			socials: [facebook, value, instagram, twitter].every((s) => !s.trim())
-				? "At least one social profile is required"
+			socials: [facebook, value, socialHandle].every((s) => !s.trim())
+				? "At least one social profile or handle is required"
 				: "",
 		}));
 	};
-	const handleInstagramChange = (value: string) => {
-		setInstagram(value);
+	const handleSocialHandleChange = (value: string) => {
+		setSocialHandle(value);
 		setErrors((prev) => ({
 			...prev,
-			instagram: value && !urlRegex.test(value) ? "Invalid Instagram URL" : "",
-			socials: [facebook, linkedin, value, twitter].every((s) => !s.trim())
-				? "At least one social profile is required"
+			socials: [facebook, linkedin, value].every((s) => !s.trim())
+				? "At least one social profile or handle is required"
 				: "",
 		}));
 	};
-	const handleTwitterChange = (value: string) => {
-		setTwitter(value);
-		setErrors((prev) => ({
-			...prev,
-			twitter: value && !urlRegex.test(value) ? "Invalid Twitter URL" : "",
-			socials: [facebook, linkedin, instagram, value].every((s) => !s.trim())
-				? "At least one social profile is required"
-				: "",
-		}));
+	const handleSocialSummaryChange = (value: string) => {
+		setSocialSummary(value);
 	};
 
 	// ! Validation helpers
@@ -181,6 +180,14 @@ const LeadMainModal: React.FC<LeadMainModalProps> = ({ isOpen, onClose }) => {
 	const validateStep = (currentStep: number): Record<string, string> => {
 		const newErrors: Record<string, string> = {};
 		if (currentStep === 0) {
+			// Lead list step
+			if (listMode === "create") {
+				if (!newListName.trim()) newErrors.list = "List name is required";
+			} else {
+				if (!selectedListId) newErrors.list = "Please select a list";
+			}
+		}
+		if (currentStep === 1) {
 			if (!firstName.trim()) newErrors.firstName = "First name is required";
 			else if (!nameRegex.test(firstName.trim()))
 				newErrors.firstName = "First name must be valid (letters only)";
@@ -188,7 +195,7 @@ const LeadMainModal: React.FC<LeadMainModalProps> = ({ isOpen, onClose }) => {
 			else if (!nameRegex.test(lastName.trim()))
 				newErrors.lastName = "Last name must be valid (letters only)";
 		}
-		if (currentStep === 1) {
+		if (currentStep === 2) {
 			if (!address.trim()) newErrors.address = "Address is required";
 			else if (!addressRegex.test(address.trim()))
 				newErrors.address = "Enter a valid address";
@@ -202,7 +209,7 @@ const LeadMainModal: React.FC<LeadMainModalProps> = ({ isOpen, onClose }) => {
 			else if (!zipRegex.test(zipCode.trim()))
 				newErrors.zipCode = "Enter a valid zip code";
 		}
-		if (currentStep === 2) {
+		if (currentStep === 3) {
 			if (!phoneNumber.trim())
 				newErrors.phoneNumber = "Phone number is required";
 			else if (!phoneRegex.test(phoneNumber.trim()))
@@ -211,19 +218,15 @@ const LeadMainModal: React.FC<LeadMainModalProps> = ({ isOpen, onClose }) => {
 			else if (!emailRegex.test(email.trim()))
 				newErrors.email = "Enter a valid email address";
 		}
-		if (currentStep === 3) {
-			const socials = [facebook, linkedin, instagram, twitter];
+		if (currentStep === 4) {
+			const socials = [facebook, linkedin, socialHandle];
 			if (socials.every((s) => !s.trim())) {
-				newErrors.socials = "At least one social profile is required";
+				newErrors.socials = "At least one social profile or handle is required";
 			}
 			if (facebook && !urlRegex.test(facebook))
 				newErrors.facebook = "Invalid Facebook URL";
 			if (linkedin && !urlRegex.test(linkedin))
 				newErrors.linkedin = "Invalid LinkedIn URL";
-			if (instagram && !urlRegex.test(instagram))
-				newErrors.instagram = "Invalid Instagram URL";
-			if (twitter && !urlRegex.test(twitter))
-				newErrors.twitter = "Invalid Twitter URL";
 		}
 		return newErrors;
 	};
@@ -236,6 +239,25 @@ const LeadMainModal: React.FC<LeadMainModalProps> = ({ isOpen, onClose }) => {
 			return;
 		}
 		// todo: Integrate with API or parent state here
+		const targetList =
+			listMode === "create"
+				? { mode: "create" as const, name: newListName.trim() }
+				: { mode: "select" as const, id: selectedListId };
+		console.log("Add lead payload", {
+			list: targetList,
+			lead: {
+				firstName,
+				lastName,
+				address,
+				city,
+				state: stateValue,
+				zipCode,
+				phoneNumber,
+				isIphone,
+				email,
+				socials: { facebook, linkedin, socialHandle, socialSummary },
+			},
+		});
 		setFirstName("");
 		setLastName("");
 		setAddress("");
@@ -246,8 +268,12 @@ const LeadMainModal: React.FC<LeadMainModalProps> = ({ isOpen, onClose }) => {
 		setEmail("");
 		setFacebook("");
 		setLinkedin("");
-		setInstagram("");
-		setTwitter("");
+		setSocialHandle("");
+		setSocialSummary("");
+		setIsIphone(false);
+		setSelectedListId("");
+		setNewListName("");
+		setListMode("create");
 		setErrors({});
 		onClose();
 	};
@@ -258,7 +284,7 @@ const LeadMainModal: React.FC<LeadMainModalProps> = ({ isOpen, onClose }) => {
 			return;
 		}
 		setErrors({});
-		setStep((s) => Math.min(3, s + 1));
+		setStep((s) => Math.min(4, s + 1));
 	};
 
 	const handleBack = () => {
@@ -268,23 +294,35 @@ const LeadMainModal: React.FC<LeadMainModalProps> = ({ isOpen, onClose }) => {
 
 	// * Sorted classnames for Biome compliance
 	const buttonClass =
-		"rounded-md bg-primary px-4 py-2 font-medium text-white transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50";
+		"rounded-md bg-primary px-4 py-2 font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50";
 	const navClass = "mt-6 flex items-center justify-between";
 
 	if (!isOpen) return null;
 
 	return (
-		<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-			<div className="relative mx-auto w-full max-w-lg rounded-lg bg-white p-6 shadow-lg">
+		<div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
+			<div className="relative mx-auto w-full max-w-lg rounded-lg bg-card p-6 shadow-lg border border-border text-foreground">
 				<button
 					type="button"
-					className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+					className="absolute top-4 right-4 text-muted-foreground hover:text-foreground"
 					onClick={onClose}
 					aria-label="Close"
 				>
 					&times;
 				</button>
 				{step === 0 && (
+					<LeadListSelectStep
+						mode={listMode}
+						onModeChange={setListMode}
+						listName={newListName}
+						onListNameChange={setNewListName}
+						selectedListId={selectedListId}
+						onSelectedListIdChange={setSelectedListId}
+						existingLists={LEAD_LISTS_MOCK}
+						errors={errors}
+					/>
+				)}
+				{step === 1 && (
 					<LeadBasicInfoStep
 						firstName={firstName}
 						lastName={lastName}
@@ -293,7 +331,7 @@ const LeadMainModal: React.FC<LeadMainModalProps> = ({ isOpen, onClose }) => {
 						errors={errors}
 					/>
 				)}
-				{step === 1 && (
+				{step === 2 && (
 					<LeadAddressStep
 						address={address}
 						city={city}
@@ -306,30 +344,32 @@ const LeadMainModal: React.FC<LeadMainModalProps> = ({ isOpen, onClose }) => {
 						errors={errors}
 					/>
 				)}
-				{step === 2 && (
+				{step === 3 && (
 					<LeadContactStep
 						phoneNumber={phoneNumber}
 						email={email}
+						isIphone={isIphone}
 						onPhoneNumberChange={handlePhoneNumberChange}
 						onEmailChange={handleEmailChange}
+						onIsIphoneChange={setIsIphone}
 						errors={errors}
 					/>
 				)}
-				{step === 3 && (
+				{step === 4 && (
 					<>
 						<LeadSocialsStep
 							facebook={facebook}
 							linkedin={linkedin}
-							instagram={instagram}
-							twitter={twitter}
+							socialHandle={socialHandle}
+							socialSummary={socialSummary}
 							onFacebookChange={handleFacebookChange}
 							onLinkedinChange={handleLinkedinChange}
-							onInstagramChange={handleInstagramChange}
-							onTwitterChange={handleTwitterChange}
+							onSocialHandleChange={handleSocialHandleChange}
+							onSocialSummaryChange={handleSocialSummaryChange}
 							errors={errors}
 						/>
 						{errors.socials && (
-							<p className="mt-2 text-red-600 text-sm">{errors.socials}</p>
+							<p className="mt-2 text-destructive text-sm">{errors.socials}</p>
 						)}
 					</>
 				)}
@@ -340,7 +380,7 @@ const LeadMainModal: React.FC<LeadMainModalProps> = ({ isOpen, onClose }) => {
 							Back
 						</button>
 					)}
-					{step !== 3 ? (
+					{step !== 4 ? (
 						<button
 							type="button"
 							className={buttonClass}

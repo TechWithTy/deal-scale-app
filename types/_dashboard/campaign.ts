@@ -25,7 +25,28 @@ export interface CampaignBase {
 	aiScript?: string;
 	updatedAt?: string;
 	aiAvatarAgent?: string;
+	// Optional routing info for agent transfers (chat/voice/text/social)
+	readonly transfer?: {
+		type: TransferType;
+		agentId: string; // agent receiving the transfer
+	};
+	// Total number of transfers attributed to this campaign (for reporting)
+	readonly transfers?: number;
+	readonly appraisalsScheduled?: number;
+	readonly livePersonContacts?: number;
+	readonly livePersonCalendarBookings?: number;
 }
+
+// Supported agent transfer channels
+export type TransferType =
+	| "chat_agent"
+	| "voice_inbound"
+	| "voice_outbound"
+	| "text"
+	| "social_media"
+	| "appraisal"
+	| "live_person"
+	| "live_person_calendar";
 
 export const campaignStatusesGB: CampaignBase["status"][] = [
 	"queued",
@@ -68,6 +89,8 @@ export interface CallCampaign extends CampaignBase {
 	funnelID?: string;
 	workflowID?: string;
 	endedReason: EndedReason[];
+	/** Optional breakdown of transfers by category */
+	readonly transferBreakdown?: Partial<Record<TransferType, number>>;
 }
 export type BaseAction = {
 	status: "pending" | "successful" | "failed"; // Status of each action
