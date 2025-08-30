@@ -20,3 +20,6 @@
 [submodule "external/audio-playback"]
 	path = external/audio-playback
 	url = https://github.com/techwithty/audio-playback.git
+[submodule "external/teleprompter-modal"]
+	path = external/teleprompter-modal
+	url = https://github.com/techwithty/teleprompter-modal.git
