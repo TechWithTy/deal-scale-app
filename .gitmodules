@@ -17,3 +17,6 @@
 [submodule "external/ai-avatar-dropdown"]
 	path = external/ai-avatar-dropdown
 	url = https://github.com/techwithty/ai-avatar-dropdown.git
+[submodule "external/audio-playback"]
+	path = external/audio-playback
+	url = https://github.com/techwithty/audio-playback.git
