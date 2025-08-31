@@ -23,3 +23,6 @@
 [submodule "external/teleprompter-modal"]
 	path = external/teleprompter-modal
 	url = https://github.com/techwithty/teleprompter-modal.git
+[submodule "external/wheel-spinner"]
+	path = external/wheel-spinner
+	url = https://github.com/techwithty/wheel-spinner.git
