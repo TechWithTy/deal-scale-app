@@ -1,3 +1,5 @@
+"use client";
+
 import { useState } from "react";
 import LeadAddressStep from "./steps/LeadAddressStep";
 import LeadBasicInfoStep from "./steps/LeadBasicInfoStep";
@@ -5,6 +7,7 @@ import LeadContactStep from "./steps/LeadContactStep";
 import LeadSocialsStep from "./steps/LeadSocialsStep";
 import LeadListSelectStep from "./steps/LeadListSelectStep";
 import { LEAD_LISTS_MOCK } from "@/constants/dashboard/leadLists.mock";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 // * Main Lead Modal Component: Combines all modular steps
 interface LeadMainModalProps {
@@ -31,6 +34,13 @@ const LeadMainModal: React.FC<LeadMainModalProps> = ({ isOpen, onClose }) => {
 	const [socialHandle, setSocialHandle] = useState("");
 	const [socialSummary, setSocialSummary] = useState("");
 	const [isIphone, setIsIphone] = useState(false);
+	const [preferCall, setPreferCall] = useState(false);
+	const [preferSms, setPreferSms] = useState(false);
+	const [bestContactTime, setBestContactTime] = useState<
+		"morning" | "afternoon" | "evening" | "any"
+	>("any");
+	const [leadNotes, setLeadNotes] = useState("");
+	const [listNotes, setListNotes] = useState("");
 	const [errors, setErrors] = useState<Record<string, string>>({});
 	const [step, setStep] = useState(0);
 
@@ -45,6 +55,13 @@ const LeadMainModal: React.FC<LeadMainModalProps> = ({ isOpen, onClose }) => {
 					? "First name must be valid (letters only)"
 					: "",
 		}));
+	};
+
+	// Communication preferences don't need strict validation; optional
+	const handleBestTimeChange = (
+		value: "morning" | "afternoon" | "evening" | "any",
+	) => {
+		setBestContactTime(value);
 	};
 	const handleLastNameChange = (value: string) => {
 		setLastName(value);
@@ -180,11 +197,10 @@ const LeadMainModal: React.FC<LeadMainModalProps> = ({ isOpen, onClose }) => {
 	const validateStep = (currentStep: number): Record<string, string> => {
 		const newErrors: Record<string, string> = {};
 		if (currentStep === 0) {
-			// Lead list step
 			if (listMode === "create") {
 				if (!newListName.trim()) newErrors.list = "List name is required";
-			} else {
-				if (!selectedListId) newErrors.list = "Please select a list";
+			} else if (!selectedListId) {
+				newErrors.list = "Please select a list";
 			}
 		}
 		if (currentStep === 1) {
@@ -231,19 +247,13 @@ const LeadMainModal: React.FC<LeadMainModalProps> = ({ isOpen, onClose }) => {
 		return newErrors;
 	};
 
-	// ! Handles final submission of the lead form
 	const handleAddLead = () => {
-		const stepErrors = validateStep(step);
-		if (Object.keys(stepErrors).length > 0) {
-			setErrors(stepErrors);
-			return;
-		}
-		// todo: Integrate with API or parent state here
 		const targetList =
 			listMode === "create"
 				? { mode: "create" as const, name: newListName.trim() }
 				: { mode: "select" as const, id: selectedListId };
-		console.log("Add lead payload", {
+
+		const payload = {
 			list: targetList,
 			lead: {
 				firstName,
@@ -255,108 +265,101 @@ const LeadMainModal: React.FC<LeadMainModalProps> = ({ isOpen, onClose }) => {
 				phoneNumber,
 				isIphone,
 				email,
+				communication: { preferCall, preferSms },
 				socials: { facebook, linkedin, socialHandle, socialSummary },
 			},
-		});
-		setFirstName("");
-		setLastName("");
-		setAddress("");
-		setCity("");
-		setStateValue("");
-		setZipCode("");
-		setPhoneNumber("");
-		setEmail("");
-		setFacebook("");
-		setLinkedin("");
-		setSocialHandle("");
-		setSocialSummary("");
-		setIsIphone(false);
-		setSelectedListId("");
-		setNewListName("");
-		setListMode("create");
-		setErrors({});
+		};
+		console.log("Add lead payload", payload);
 		onClose();
 	};
+
 	const handleNext = () => {
-		const stepErrors = validateStep(step);
-		if (Object.keys(stepErrors).length > 0) {
-			setErrors(stepErrors);
-			return;
-		}
-		setErrors({});
-		setStep((s) => Math.min(4, s + 1));
+		const problems = validateStep(step);
+		setErrors(problems);
+		if (Object.keys(problems).length === 0) setStep((s) => Math.min(4, s + 1));
 	};
 
-	const handleBack = () => {
-		setErrors({});
-		setStep((s) => Math.max(0, s - 1));
-	};
+	const handleBack = () => setStep((s) => Math.max(0, s - 1));
 
-	// * Sorted classnames for Biome compliance
 	const buttonClass =
-		"rounded-md bg-primary px-4 py-2 font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50";
+		"px-4 py-2 rounded-md bg-primary text-primary-foreground disabled:opacity-50";
 	const navClass = "mt-6 flex items-center justify-between";
 
-	if (!isOpen) return null;
-
 	return (
-		<div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
-			<div className="relative mx-auto w-full max-w-lg rounded-lg bg-card p-6 shadow-lg border border-border text-foreground">
-				<button
-					type="button"
-					className="absolute top-4 right-4 text-muted-foreground hover:text-foreground"
-					onClick={onClose}
-					aria-label="Close"
-				>
-					&times;
-				</button>
-				{step === 0 && (
-					<LeadListSelectStep
-						mode={listMode}
-						onModeChange={setListMode}
-						listName={newListName}
-						onListNameChange={setNewListName}
-						selectedListId={selectedListId}
-						onSelectedListIdChange={setSelectedListId}
-						existingLists={LEAD_LISTS_MOCK}
-						errors={errors}
-					/>
-				)}
-				{step === 1 && (
-					<LeadBasicInfoStep
-						firstName={firstName}
-						lastName={lastName}
-						onFirstNameChange={handleFirstNameChange}
-						onLastNameChange={handleLastNameChange}
-						errors={errors}
-					/>
-				)}
-				{step === 2 && (
-					<LeadAddressStep
-						address={address}
-						city={city}
-						state={stateValue}
-						zipCode={zipCode}
-						onAddressChange={handleAddressChange}
-						onCityChange={handleCityChange}
-						onStateChange={handleStateChange}
-						onZipCodeChange={handleZipCodeChange}
-						errors={errors}
-					/>
-				)}
-				{step === 3 && (
-					<LeadContactStep
-						phoneNumber={phoneNumber}
-						email={email}
-						isIphone={isIphone}
-						onPhoneNumberChange={handlePhoneNumberChange}
-						onEmailChange={handleEmailChange}
-						onIsIphoneChange={setIsIphone}
-						errors={errors}
-					/>
-				)}
-				{step === 4 && (
-					<>
+		<Dialog
+			open={isOpen}
+			onOpenChange={(open) => {
+				if (!open) onClose();
+			}}
+		>
+			<DialogContent className="max-w-2xl">
+				<div className="space-y-6">
+					{step === 0 && (
+						<LeadListSelectStep
+							mode={listMode}
+							onModeChange={setListMode}
+							listName={newListName}
+							onListNameChange={setNewListName}
+							selectedListId={selectedListId}
+							onSelectedListIdChange={setSelectedListId}
+							existingLists={LEAD_LISTS_MOCK}
+							bestContactTime={bestContactTime}
+							onBestContactTimeChange={handleBestTimeChange}
+							listNotes={listNotes}
+							onListNotesChange={setListNotes}
+							showBestTime={false}
+							showNotes={false}
+							errors={errors}
+						/>
+					)}
+
+					{step === 1 && (
+						<LeadBasicInfoStep
+							firstName={firstName}
+							lastName={lastName}
+							onFirstNameChange={handleFirstNameChange}
+							onLastNameChange={handleLastNameChange}
+							errors={errors}
+						/>
+					)}
+
+					{step === 2 && (
+						<LeadAddressStep
+							address={address}
+							city={city}
+							state={stateValue}
+							zipCode={zipCode}
+							onAddressChange={handleAddressChange}
+							onCityChange={handleCityChange}
+							onStateChange={handleStateChange}
+							onZipCodeChange={handleZipCodeChange}
+							errors={errors}
+						/>
+					)}
+
+					{step === 3 && (
+						<LeadContactStep
+							phoneNumber={phoneNumber}
+							email={email}
+							isIphone={isIphone}
+							preferCall={preferCall}
+							preferSms={preferSms}
+							bestContactTime={bestContactTime}
+							onPhoneNumberChange={handlePhoneNumberChange}
+							onEmailChange={handleEmailChange}
+							onIsIphoneChange={setIsIphone}
+							onPreferCallChange={setPreferCall}
+							onPreferSmsChange={setPreferSms}
+							onBestContactTimeChange={handleBestTimeChange}
+							leadNotes={leadNotes}
+							onLeadNotesChange={setLeadNotes}
+							showBestTime={false}
+							showLeadNotes={false}
+							errors={errors}
+						/>
+					)}
+
+					{step === 4 && (
 						<LeadSocialsStep
 							facebook={facebook}
 							linkedin={linkedin}
@@ -368,40 +371,45 @@ const LeadMainModal: React.FC<LeadMainModalProps> = ({ isOpen, onClose }) => {
 							onSocialSummaryChange={handleSocialSummaryChange}
 							errors={errors}
 						/>
-						{errors.socials && (
-							<p className="mt-2 text-destructive text-sm">{errors.socials}</p>
-						)}
-					</>
-				)}
+					)}
 
-				<div className={navClass}>
-					{step !== 0 && (
-						<button type="button" className={buttonClass} onClick={handleBack}>
-							Back
-						</button>
+					{errors.socials && step === 4 && (
+						<p className="mt-2 text-destructive text-sm">{errors.socials}</p>
 					)}
-					{step !== 4 ? (
-						<button
-							type="button"
-							className={buttonClass}
-							onClick={handleNext}
-							disabled={Object.keys(validateStep(step)).length > 0}
-						>
-							Next
-						</button>
-					) : (
-						<button
-							type="button"
-							className={buttonClass}
-							onClick={handleAddLead}
-							disabled={Object.keys(validateStep(step)).length > 0}
-						>
-							Add Lead
-						</button>
-					)}
+
+					<div className={navClass}>
+						{step !== 0 && (
+							<button
+								type="button"
+								className={buttonClass}
+								onClick={handleBack}
+							>
+								Back
+							</button>
+						)}
+						{step !== 4 ? (
+							<button
+								type="button"
+								className={buttonClass}
+								onClick={handleNext}
+								disabled={Object.keys(validateStep(step)).length > 0}
+							>
+								Next
+							</button>
+						) : (
+							<button
+								type="button"
+								className={buttonClass}
+								onClick={handleAddLead}
+								disabled={Object.keys(validateStep(step)).length > 0}
+							>
+								Add Lead
+							</button>
+						)}
+					</div>
 				</div>
-			</div>
-		</div>
+			</DialogContent>
+		</Dialog>
 	);
 };
 

@@ -1,8 +1,7 @@
-import { PlayButtonSkip } from "@/components/reusables/audio/playButton";
 import { Checkbox } from "@/components/ui/checkbox";
-import type { CallCampaign, CallInfo } from "@/types/_dashboard/campaign";
+import type { CallCampaign } from "@/types/_dashboard/campaign";
 import type { ColumnDef } from "@tanstack/react-table";
-import { useState } from "react";
+import { PlaybackCell } from "@/external/audio-playback";
 
 const statusColor: Record<CallCampaign["status"], string> = {
 	delivering: "bg-green-100 text-green-600",
@@ -123,49 +122,3 @@ export const callCampaignColumns: ColumnDef<CallCampaign>[] = [
 		},
 	},
 ];
-
-interface PlaybackCellProps {
-	callInformation: CallInfo[];
-}
-
-export const PlaybackCell = ({ callInformation }: PlaybackCellProps) => {
-	const [currentCallIndex, setCurrentCallIndex] = useState(0);
-
-	const handleNextCall = () => {
-		if (currentCallIndex < callInformation.length - 1) {
-			setCurrentCallIndex(currentCallIndex + 1); // Move to the next call
-		}
-	};
-
-	const handlePrevCall = () => {
-		if (currentCallIndex > 0) {
-			setCurrentCallIndex(currentCallIndex - 1); // Move to the previous call
-		}
-	};
-
-	const currentCall = callInformation[currentCallIndex].callResponse; // Access the current call's response
-	const title = currentCall.id;
-	const recordingUrl = currentCall.recordingUrl;
-	const startedAt = currentCall.startedAt
-		? new Date(currentCall.startedAt).getTime() / 1000
-		: 0;
-	const endedAt = currentCall.endedAt
-		? new Date(currentCall.endedAt).getTime() / 1000
-		: 0;
-
-	if (recordingUrl) {
-		return (
-			<PlayButtonSkip
-				title={title}
-				audioSrc={recordingUrl}
-				startTime={startedAt}
-				endTime={endedAt}
-				onNextCall={handleNextCall}
-				onPrevCall={handlePrevCall}
-				isNextDisabled={currentCallIndex >= callInformation.length - 1}
-				isPrevDisabled={currentCallIndex <= 0}
-			/>
-		);
-	}
-	return <span>No Recording</span>;
-};

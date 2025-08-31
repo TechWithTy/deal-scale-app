@@ -31,3 +31,6 @@ declare global {
 		}
 	}
 }
+
+// Fallback types for external libs without bundled type declarations
+declare module "react-wheel-of-prizes";

@@ -88,6 +88,19 @@ export interface CallCampaign extends CampaignBase {
 	scriptID?: string;
 	funnelID?: string;
 	workflowID?: string;
+	/**
+	 * Dialing configuration
+	 * - totalDialAttempts: overall attempt cap per lead/number for the life of the campaign
+	 * - maxDailyAttempts: max attempts allowed per day
+	 * - minMinutesBetweenCalls: pacing cooldown between attempts to the same lead/number
+	 * - countVoicemailAsAnswered: treat voicemail detection as an answered call for attempt counting
+	 */
+	totalDialAttempts?: number;
+	maxDailyAttempts?: number;
+	minMinutesBetweenCalls?: number; // minutes
+	countVoicemailAsAnswered?: boolean;
+	/** Optional hook for post-call data payloads (e.g., CRM/webhook) */
+	postCallWebhookUrl?: string;
 	endedReason: EndedReason[];
 	/** Optional breakdown of transfers by category */
 	readonly transferBreakdown?: Partial<Record<TransferType, number>>;

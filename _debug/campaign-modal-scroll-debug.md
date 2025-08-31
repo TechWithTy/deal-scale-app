@@ -1,6 +1,6 @@
 # Campaign Modal Vertical Scroll Debug Log
 
-- Date: 2025-08-29
+- Date: 2025-08-30
 - Route: `/test-external/dynamic-table-test/campaign-table`
 - Files touched:
   - `external/shadcn-table/src/examples/campaigns/modal/CampaignModalMain.tsx`
@@ -35,6 +35,23 @@ The multi-step "Create Campaign" modal in the external shadcn table demo was not
 - Rationale: Avoid multiple scroll candidates and give body an explicit max height under header.
 - Result: Should scroll when content exceeds the calc height. If content is shorter, no scrollbar (expected). If still no scroll, likely a child enforces its own height/overflow.
 
+### Attempt D — Make container flex parent scroll-safe (min-h-0)
+- Change: `DialogContent` now includes `min-h-0` in addition to `h-[85vh] max-h-[85vh] overflow-hidden flex flex-col`.
+- Rationale: Without `min-h-0`, flex children with `overflow-y-auto` can be prevented from shrinking and therefore not scroll.
+- Files:
+  - `external/shadcn-table/src/examples/campaigns/modal/CampaignModalMain.tsx`
+- Result: Body is allowed to scroll inside the fixed-height dialog.
+
+### Attempt E — Ensure Step 2 (after channel selection) fills available height with inner scroll
+- Change: In `ChannelCustomizationStep`, wrap content in a column flex container and make the content area the scroll surface.
+- Structure:
+  - Root: `div.h-full.flex.flex-col`
+  - Scroll area: `div.flex-1.min-h-0.overflow-y-auto.space-y-6.pr-1`
+  - Actions: `<CampaignNavigation />` placed after scroll area so Back/Next stay pinned at bottom.
+- Files:
+  - `external/shadcn-table/src/examples/campaigns/modal/steps/ChannelCustomizationStep.tsx`
+- Result: Step 2 content scrolls; footer actions remain visible and not cut off.
+
 ## Remaining Possibilities / Root Causes
 - Child step components (e.g., `ChannelCustomizationStep`) might include layout rules that expand height or add nested overflow containers, fighting the outer scroll behavior (e.g., `h-screen`, `max-h-screen`, or absolute/fixed elements inside).
 - Platform/browser scrollbar visibility: on macOS/trackpads scrollbars are hidden until you scroll. This can look like "no scroll".
@@ -54,9 +71,18 @@ The multi-step "Create Campaign" modal in the external shadcn table demo was not
    - Footer: `sticky bottom-0 bg-background border-t px-6 py-3` below the body scroll area.
 
 ## Next Actions Proposed
-- Flip body from `max-h-[calc(85vh-64px)]` to `h-[calc(85vh-64px)]` to guarantee a fixed-height scroll pane.
-- Audit step components for any height/overflow conflicts and remove/normalize them.
+- Keep one scroll surface: body uses `flex-1 min-h-0 overflow-y-auto` under a flex column dialog.
+- Audit any nested widgets (e.g., long selects, template lists) for internal `h-full`/`overflow` that could fight scroll.
 - Hard refresh the page (or restart dev server) to ensure latest DOM structure.
+
+## Current Status (2025-08-30)
+- Dialog height fixed to 85vh; container has `min-h-0`.
+- Body uses `flex-1 min-h-0 overflow-y-auto` and scrolls.
+- Step 2 (after selecting a channel) now fills height and scrolls; Back/Next pinned via `CampaignNavigation` after the scroll area.
+
+## Next Ideas (if issues reappear)
+- Add `DialogHeader` and `DialogFooter` with `sticky` styles to guarantee header/footer visibility while the middle scrolls.
+- If a specific subsection still stretches (e.g., Templates), confine it with its own `max-h` or ensure it doesn’t apply `h-full`.
 
 ## How to Verify
 1) Open the modal on `/test-external/dynamic-table-test/campaign-table`.

@@ -2,7 +2,7 @@ import type { InputField } from "./skip-trace/enrichment";
 
 export interface Header {
 	csvHeader: string;
-	mappedTo: InputField | null;
+	mappedTo: Header["type"] | null;
 	type:
 		| "property_address"
 		| "property_city"
@@ -20,5 +20,7 @@ export interface Header {
 		| "socialSummary"
 		| "isIphone"
 		| "communicationPreferences"
-		| "dncList";
+		| "dncList"
+		| "bestContactTime"
+		| "leadNotes";
 }

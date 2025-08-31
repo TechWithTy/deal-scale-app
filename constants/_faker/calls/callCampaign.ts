@@ -139,6 +139,15 @@ const generateCallCampaign = (): CallCampaign => {
 		scriptID: faker.string.uuid(),
 		funnelID: faker.string.uuid(),
 		workflowID: faker.string.uuid(),
+		// New dialing configuration & webhook mock data
+		totalDialAttempts: faker.number.int({ min: 1, max: 8 }),
+		maxDailyAttempts: faker.number.int({ min: 1, max: 4 }),
+		minMinutesBetweenCalls: faker.number.int({ min: 5, max: 240 }),
+		countVoicemailAsAnswered: faker.datatype.boolean(),
+		postCallWebhookUrl: faker.helpers.maybe(
+			() => faker.internet.url({ appendSlash: false }) + "/webhooks/post-call",
+			{ probability: 0.7 },
+		),
 		transfer: faker.helpers.maybe(
 			() => ({
 				type: faker.helpers.arrayElement([

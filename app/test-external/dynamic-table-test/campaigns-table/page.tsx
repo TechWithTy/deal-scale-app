@@ -6,7 +6,6 @@ import CallCampaignsDemoTable from "../../../../external/shadcn-table/src/exampl
 import TextCampaignsDemoTable from "../../../../external/shadcn-table/src/examples/text-campaigns-demo-table";
 import SocialCampaignsDemoTable from "../../../../external/shadcn-table/src/examples/social-campaigns-demo-table";
 import DirectMailCampaignsDemoTable from "../../../../external/shadcn-table/src/examples/direct-mail-campaigns-demo-table";
-import { Button } from "@/components/ui/button";
 import LeadMainModal from "@/components/reusables/modals/user/lead/LeadModalMain";
 import SkipTraceModalMain from "@/components/reusables/modals/user/skipTrace/SkipTraceModalMain";
 
@@ -29,31 +28,7 @@ export default function CampaignCallTablePage() {
 						{tab === "social" && "Page: Social Demo"}
 						{tab === "directMail" && "Page: Direct Mail Demo"}
 					</h2>
-					<div className="flex items-center gap-2">
-						<Button
-							type="button"
-							variant="outline"
-							onClick={() => {
-								setSkipTraceInit({ type: "list" });
-								setIsSkipTraceOpen(true);
-							}}
-						>
-							Add Lead List
-						</Button>
-						<Button type="button" onClick={() => setIsLeadModalOpen(true)}>
-							Add Lead
-						</Button>
-						<Button
-							type="button"
-							variant="secondary"
-							onClick={() => {
-								setSkipTraceInit(undefined); // open chooser
-								setIsSkipTraceOpen(true);
-							}}
-						>
-							Skip Trace
-						</Button>
-					</div>
+					{/* Create Campaign button is rendered inside each example header to keep placement consistent */}
 				</div>
 				{tab === "calls" && (
 					<CallCampaignsDemoTable

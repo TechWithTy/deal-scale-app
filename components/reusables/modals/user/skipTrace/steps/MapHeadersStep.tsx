@@ -27,6 +27,8 @@ const availableFields: Array<{ value: Header["type"]; label: string }> = [
 	{ value: "isIphone", label: "Is iPhone" },
 	{ value: "communicationPreferences", label: "Communication Preferences" },
 	{ value: "dncList", label: "DNC List (optional)" },
+	{ value: "bestContactTime", label: "Best Time to Contact" },
+	{ value: "leadNotes", label: "Lead Notes" },
 ];
 
 const MapHeadersStep: React.FC<MapHeadersStepProps> = ({

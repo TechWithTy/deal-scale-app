@@ -14,7 +14,7 @@ import { AgentSocialForm } from "./AgentSocialForm";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import VoicemailModal from "@/components/forms/steppers/profile-form/steps/knowledge/voice/VoicemailModal";
-import CloneModal from "@/components/forms/steppers/profile-form/steps/knowledge/voice/CloneModal";
+import { CloneModal } from "@/external/teleprompter-modal";
 
 interface AgentFormProps {
 	onSubmit: (data: Agent) => void;

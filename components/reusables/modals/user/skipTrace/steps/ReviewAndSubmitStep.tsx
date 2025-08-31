@@ -5,18 +5,36 @@ import type { Header } from "@/types/skip-trace";
 import type { InputField } from "@/types/skip-trace/enrichment";
 import { fieldLabels } from "@/constants/skip-trace/fieldLabels";
 import type React from "react";
+import { Label } from "@/components/ui/label";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
 import { useSkipTraceStore } from "@/lib/stores/user/skipTraceStore";
 
 interface ReviewAndSubmitStepProps {
 	onSubmit: () => void;
 	onBack: () => void;
 	availableCredits: number;
+	bestContactTime: "morning" | "afternoon" | "evening" | "any";
+	onBestContactTimeChange: (
+		value: "morning" | "afternoon" | "evening" | "any",
+	) => void;
+	contactNotes: string;
+	onContactNotesChange: (value: string) => void;
 }
 
 const ReviewAndSubmitStep: React.FC<ReviewAndSubmitStepProps> = ({
 	onSubmit,
 	onBack,
 	availableCredits,
+	bestContactTime,
+	onBestContactTimeChange,
+	contactNotes,
+	onContactNotesChange,
 }) => {
 	const {
 		listName,
@@ -102,7 +120,6 @@ const ReviewAndSubmitStep: React.FC<ReviewAndSubmitStepProps> = ({
 						</ul>
 					</div>
 				)}
-
 				{selectedOptionsDetails.length > 0 && (
 					<div>
 						<h4 className="font-semibold">Selected Enrichments:</h4>
@@ -113,6 +130,35 @@ const ReviewAndSubmitStep: React.FC<ReviewAndSubmitStepProps> = ({
 						</ul>
 					</div>
 				)}
+				<h4 className="font-semibold">Contact Preferences</h4>
+				<div className="space-y-2">
+					<Label htmlFor="bestTimeReview">Best Time to Contact</Label>
+					<Select
+						value={bestContactTime}
+						onValueChange={(v) => onBestContactTimeChange(v as any)}
+					>
+						<SelectTrigger id="bestTimeReview">
+							<SelectValue placeholder="Select best time" />
+						</SelectTrigger>
+						<SelectContent>
+							<SelectItem value="any">Any</SelectItem>
+							<SelectItem value="morning">Morning</SelectItem>
+							<SelectItem value="afternoon">Afternoon</SelectItem>
+							<SelectItem value="evening">Evening</SelectItem>
+						</SelectContent>
+					</Select>
+				</div>
+				<div>
+					<Label htmlFor="contactNotes">Contact Notes</Label>
+					<textarea
+						id="contactNotes"
+						className="mt-1 block w-full rounded-md border border-border bg-background px-3 py-2 text-foreground shadow-sm focus:outline-none focus:ring-2 focus:ring-ring"
+						rows={3}
+						value={contactNotes}
+						onChange={(e) => onContactNotesChange(e.target.value)}
+						placeholder="Notes about this lead for contacting"
+					/>
+				</div>
 			</div>
 			<div className="flex justify-between">
 				<button

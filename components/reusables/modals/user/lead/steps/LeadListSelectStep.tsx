@@ -1,6 +1,13 @@
 "use client";
 
 import type React from "react";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
 
 interface LeadListSelectStepProps {
 	mode: "select" | "create";
@@ -10,6 +17,15 @@ interface LeadListSelectStepProps {
 	selectedListId: string;
 	onSelectedListIdChange: (id: string) => void;
 	existingLists?: Array<{ id: string; name: string }>; // optional
+	bestContactTime?: "morning" | "afternoon" | "evening" | "any";
+	onBestContactTimeChange?: (
+		value: "morning" | "afternoon" | "evening" | "any",
+	) => void;
+	listNotes?: string;
+	onListNotesChange?: (value: string) => void;
+	// visibility controls (optional, default true)
+	showBestTime?: boolean;
+	showNotes?: boolean;
 	errors?: Record<string, string>;
 }
 
@@ -21,7 +37,13 @@ const LeadListSelectStep: React.FC<LeadListSelectStepProps> = ({
 	selectedListId,
 	onSelectedListIdChange,
 	existingLists = [],
+	bestContactTime = "any",
+	onBestContactTimeChange,
+	listNotes = "",
+	onListNotesChange,
 	errors = {},
+	showBestTime = true,
+	showNotes = true,
 }) => {
 	return (
 		<div className="space-y-4">
@@ -72,6 +94,45 @@ const LeadListSelectStep: React.FC<LeadListSelectStepProps> = ({
 					{errors.list && (
 						<p className="mt-1 text-destructive text-sm">{errors.list}</p>
 					)}
+					{showBestTime && (
+						<div className="mt-4 space-y-2">
+							<label
+								className="block font-medium text-sm"
+								htmlFor="bestTimeList"
+							>
+								Best Time to Contact
+							</label>
+							<Select
+								value={bestContactTime}
+								onValueChange={(v) => onBestContactTimeChange?.(v as any)}
+							>
+								<SelectTrigger id="bestTimeList">
+									<SelectValue placeholder="Select best time" />
+								</SelectTrigger>
+								<SelectContent>
+									<SelectItem value="any">Any</SelectItem>
+									<SelectItem value="morning">Morning</SelectItem>
+									<SelectItem value="afternoon">Afternoon</SelectItem>
+									<SelectItem value="evening">Evening</SelectItem>
+								</SelectContent>
+							</Select>
+						</div>
+					)}
+					{showNotes && (
+						<div className="mt-3">
+							<label className="block font-medium text-sm" htmlFor="listNotes">
+								List Notes
+							</label>
+							<textarea
+								id="listNotes"
+								className="mt-1 block w-full rounded-md border border-border bg-background px-3 py-2 text-foreground shadow-sm focus:outline-none focus:ring-2 focus:ring-ring"
+								rows={3}
+								value={listNotes}
+								onChange={(e) => onListNotesChange?.(e.target.value)}
+								placeholder="Notes about this list or segmentation"
+							/>
+						</div>
+					)}
 				</div>
 			) : (
 				<div>
@@ -99,6 +160,45 @@ const LeadListSelectStep: React.FC<LeadListSelectStepProps> = ({
 						<p className="mt-1 text-muted-foreground text-xs">
 							No lists found. You can create a new list instead.
 						</p>
+					)}
+					{showBestTime && (
+						<div className="mt-4 space-y-2">
+							<label
+								className="block font-medium text-sm"
+								htmlFor="bestTimeList"
+							>
+								Best Time to Contact
+							</label>
+							<Select
+								value={bestContactTime}
+								onValueChange={(v) => onBestContactTimeChange?.(v as any)}
+							>
+								<SelectTrigger id="bestTimeList">
+									<SelectValue placeholder="Select best time" />
+								</SelectTrigger>
+								<SelectContent>
+									<SelectItem value="any">Any</SelectItem>
+									<SelectItem value="morning">Morning</SelectItem>
+									<SelectItem value="afternoon">Afternoon</SelectItem>
+									<SelectItem value="evening">Evening</SelectItem>
+								</SelectContent>
+							</Select>
+						</div>
+					)}
+					{showNotes && (
+						<div className="mt-3">
+							<label className="block font-medium text-sm" htmlFor="listNotes">
+								List Notes
+							</label>
+							<textarea
+								id="listNotes"
+								className="mt-1 block w-full rounded-md border border-border bg-background px-3 py-2 text-foreground shadow-sm focus:outline-none focus:ring-2 focus:ring-ring"
+								rows={3}
+								value={listNotes}
+								onChange={(e) => onListNotesChange?.(e.target.value)}
+								placeholder="Notes about this list or segmentation"
+							/>
+						</div>
 					)}
 				</div>
 			)}

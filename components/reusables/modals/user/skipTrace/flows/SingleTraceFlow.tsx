@@ -10,6 +10,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { EnrichmentStep } from "../steps/EnrichmentStep";
 import ReviewAndSubmitStep from "../steps/ReviewAndSubmitStep";
+import LeadListSelectStep from "@/components/reusables/modals/user/lead/steps/LeadListSelectStep";
+import { LEAD_LISTS_MOCK } from "@/constants/dashboard/leadLists.mock";
+// no Select used in this step; contact prefs are edited in Review step
 
 interface SingleTraceFlowProps {
 	onClose: () => void;
@@ -35,6 +38,14 @@ const SingleTraceFlow: React.FC<SingleTraceFlowProps> = ({
 		string[]
 	>([]);
 	const [submitting, setSubmitting] = useState(false);
+	// List selection/creation for single trace
+	const [listMode, setListMode] = useState<"select" | "create">("create");
+	const [selectedListId, setSelectedListId] = useState("");
+	const [newListName, setNewListName] = useState("");
+	const [contactNotes, setContactNotes] = useState("");
+	const [bestContactTime, setBestContactTime] = useState<
+		"morning" | "afternoon" | "evening" | "any"
+	>("any");
 
 	const { userProfile } = useUserProfileStore();
 	const { setUserInput } = useSkipTraceStore();
@@ -91,6 +102,21 @@ const SingleTraceFlow: React.FC<SingleTraceFlowProps> = ({
 		nextStep();
 	};
 
+	const handleListNext = () => {
+		// simple validation similar to Lead modal
+		if (listMode === "create") {
+			if (!newListName.trim()) {
+				setError("List name is required");
+				return;
+			}
+		} else if (!selectedListId) {
+			setError("Please select a list");
+			return;
+		}
+		setError("");
+		nextStep();
+	};
+
 	const handleEnrichmentNext = (options: string[]) => {
 		setSelectedEnrichmentOptions(options);
 		nextStep();
@@ -99,7 +125,12 @@ const SingleTraceFlow: React.FC<SingleTraceFlowProps> = ({
 	const handleFinalSubmit = () => {
 		setSubmitting(true);
 		// ! todo: Add submission logic and credit deduction
+		const targetList =
+			listMode === "create"
+				? { mode: "create" as const, name: newListName.trim() }
+				: { mode: "select" as const, id: selectedListId };
 		console.log("Submitting single trace:", {
+			list: targetList,
 			firstName,
 			lastName,
 			address,
@@ -108,6 +139,8 @@ const SingleTraceFlow: React.FC<SingleTraceFlowProps> = ({
 			socialTag,
 			domain,
 			enrichments: selectedEnrichmentOptions,
+			bestContactTime,
+			contactNotes,
 		});
 		setTimeout(() => {
 			setSubmitting(false);
@@ -183,6 +216,7 @@ const SingleTraceFlow: React.FC<SingleTraceFlowProps> = ({
 								/>
 							</div>
 						</div>
+						{/* Contact preferences now captured in final Review step */}
 						{error && <p className="text-red-600 text-sm">{error}</p>}
 						<div className="flex justify-between pt-4">
 							<Button variant="outline" onClick={onBack}>
@@ -194,14 +228,42 @@ const SingleTraceFlow: React.FC<SingleTraceFlowProps> = ({
 				);
 			case 1:
 				return (
-					<EnrichmentStep onNext={handleEnrichmentNext} onBack={prevStep} />
+					<div className="p-4">
+						<LeadListSelectStep
+							mode={listMode}
+							onModeChange={setListMode}
+							listName={newListName}
+							onListNameChange={setNewListName}
+							selectedListId={selectedListId}
+							onSelectedListIdChange={setSelectedListId}
+							existingLists={LEAD_LISTS_MOCK}
+							bestContactTime={bestContactTime}
+							onBestContactTimeChange={setBestContactTime}
+							showBestTime={false}
+							showNotes={false}
+						/>
+						<div className="flex justify-between pt-6">
+							<Button variant="outline" onClick={prevStep}>
+								Back
+							</Button>
+							<Button onClick={handleListNext}>Next</Button>
+						</div>
+					</div>
 				);
 			case 2:
+				return (
+					<EnrichmentStep onNext={handleEnrichmentNext} onBack={prevStep} />
+				);
+			case 3:
 				return (
 					<ReviewAndSubmitStep
 						onSubmit={handleFinalSubmit}
 						onBack={prevStep}
 						availableCredits={availableCredits}
+						bestContactTime={bestContactTime}
+						onBestContactTimeChange={(v) => setBestContactTime(v)}
+						contactNotes={contactNotes}
+						onContactNotesChange={setContactNotes}
 					/>
 				);
 			default:

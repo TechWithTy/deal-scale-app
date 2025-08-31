@@ -1,6 +1,7 @@
 import { Calendar } from "@/components/ui/calendar";
 import { useCampaignCreationStore } from "@/lib/stores/campaignCreation";
 import { useState } from "react";
+import Holidays from "date-holidays";
 
 interface TimingPreferencesStepProps {
 	onBack: () => void;
@@ -22,8 +23,16 @@ export function TimingPreferencesStep({
 		setReachAfterBusiness,
 		reachOnWeekend,
 		setReachOnWeekend,
+		reachOnHolidays,
+		setReachOnHolidays,
 	} = useCampaignCreationStore();
 	const [dateError, setDateError] = useState("");
+
+	// Initialize holidays for default country (US)
+	const hd = new Holidays("US");
+
+	const isWeekend = (date: Date) => date.getDay() === 0 || date.getDay() === 6;
+	const isHoliday = (date: Date) => Boolean(hd.isHoliday(date));
 
 	const handleDateSelection = (
 		range: { from?: Date; to?: Date } | undefined,
@@ -57,18 +66,18 @@ export function TimingPreferencesStep({
 			return;
 		}
 
-		// If weekends are not allowed, validate the dates
-		if (!reachOnWeekend) {
-			const isWeekend = (date: Date) =>
-				date.getDay() === 0 || date.getDay() === 6;
-
-			// Check if either date is a weekend
-			if (isWeekend(fromDate) || isWeekend(toDate)) {
-				setDateError(
-					"Selected range cannot include weekends when weekend outreach is disabled.",
-				);
-				return;
-			}
+		// If weekends/holidays are not allowed, validate the endpoints
+		if (!reachOnWeekend && (isWeekend(fromDate) || isWeekend(toDate))) {
+			setDateError(
+				"Selected range cannot start or end on a weekend when weekend outreach is disabled.",
+			);
+			return;
+		}
+		if (!reachOnHolidays && (isHoliday(fromDate) || isHoliday(toDate))) {
+			setDateError(
+				"Selected range cannot start or end on a holiday when holiday outreach is disabled.",
+			);
+			return;
 		}
 
 		// Only update the dates if all validations pass
@@ -117,6 +126,14 @@ export function TimingPreferencesStep({
 					/>
 					<span>Reach out on weekends</span>
 				</label>
+				<label className="flex items-center gap-2">
+					<input
+						type="checkbox"
+						checked={reachOnHolidays}
+						onChange={() => setReachOnHolidays(!reachOnHolidays)}
+					/>
+					<span>Reach out on holidays</span>
+				</label>
 			</div>
 			<label
 				htmlFor="dateRange"
@@ -135,17 +152,42 @@ export function TimingPreferencesStep({
 					numberOfMonths={2}
 					fromDate={new Date()}
 					orientation="horizontal"
-					// ! Disable weekends if not reaching out on weekends
-					disabled={
-						!reachOnWeekend
-							? (date) => {
-									const day = date.getDay();
-									return day === 0 || day === 6;
-								}
-							: undefined
-					}
+					// Disable weekends/holidays according to preferences
+					disabled={(date) => {
+						const weekendDisabled = !reachOnWeekend && isWeekend(date);
+						const holidayDisabled = !reachOnHolidays && isHoliday(date);
+						return weekendDisabled || holidayDisabled;
+					}}
 				/>
 			</div>
+			{/* Debug: Show skipped dates within selected range */}
+			{startDate && endDate && (
+				<div className="mx-auto max-w-md text-left text-xs text-muted-foreground">
+					{(() => {
+						const skipped: string[] = [];
+						const d = new Date(startDate);
+						while (d <= (endDate as Date)) {
+							if (
+								(!reachOnWeekend && isWeekend(d)) ||
+								(!reachOnHolidays && isHoliday(d))
+							) {
+								skipped.push(new Date(d).toISOString().slice(0, 10));
+							}
+							d.setDate(d.getDate() + 1);
+						}
+						// Log for debugging
+						if (skipped.length) {
+							// eslint-disable-next-line no-console
+							console.debug("Skipped dates (weekends/holidays):", skipped);
+						}
+						return skipped.length ? (
+							<p>
+								Skipping {skipped.length} day(s): {skipped.join(", ")}
+							</p>
+						) : null;
+					})()}
+				</div>
+			)}
 			{dateError && <p className="text-red-500">{dateError}</p>}
 			<div className="mt-8 flex justify-between gap-2">
 				<button
