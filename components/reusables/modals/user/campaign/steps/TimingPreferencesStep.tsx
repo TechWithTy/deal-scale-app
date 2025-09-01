@@ -25,6 +25,8 @@ export function TimingPreferencesStep({
 		setReachOnWeekend,
 		reachOnHolidays,
 		setReachOnHolidays,
+		countVoicemailAsAnswered,
+		setCountVoicemailAsAnswered,
 	} = useCampaignCreationStore();
 	const [dateError, setDateError] = useState("");
 
@@ -133,6 +135,16 @@ export function TimingPreferencesStep({
 						onChange={() => setReachOnHolidays(!reachOnHolidays)}
 					/>
 					<span>Reach out on holidays</span>
+				</label>
+				<label className="flex items-center gap-2">
+					<input
+						type="checkbox"
+						checked={countVoicemailAsAnswered}
+						onChange={() =>
+							setCountVoicemailAsAnswered(!countVoicemailAsAnswered)
+						}
+					/>
+					<span>Count voicemail as answered</span>
 				</label>
 			</div>
 			<label

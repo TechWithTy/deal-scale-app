@@ -7,6 +7,7 @@ import type {
 	GetEmailByIdResponse,
 } from "@/types/goHighLevel/email";
 import type { ColumnDef } from "@tanstack/react-table";
+import { ControlPanel } from "@/components/reusables/ControlPanel";
 
 // Color statuses for the email campaign
 const statusColor: Record<EmailCampaign["status"], string> = {
@@ -63,6 +64,16 @@ export const emailCampaignColumns: ColumnDef<EmailCampaign>[] = [
 		),
 		enableSorting: false,
 		enableHiding: false,
+	},
+	{
+		id: "controls",
+		header: "Controls",
+		cell: ({ row }) => {
+			const status = row.original.status as string | undefined;
+			const active =
+				status === "queued" || status === "delivering" || status === "pending";
+			return active ? <ControlPanel campaignId={row.original.id} /> : null;
+		},
 	},
 	{
 		accessorKey: "name",

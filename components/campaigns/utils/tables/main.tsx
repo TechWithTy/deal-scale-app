@@ -14,6 +14,7 @@ import type {
 import type { EmailCampaign } from "@/types/goHighLevel/email";
 import type React from "react";
 import type { GHLTextMessageCampaign } from "../../../../types/goHighLevel/text";
+import { ControlPanel } from "@/components/reusables/ControlPanel";
 
 interface CampaignsTableProps {
 	campaigns: Array<
@@ -26,7 +27,14 @@ interface CampaignsTableProps {
 const getHeadersByType = (campaignType: CampaignType) => {
 	switch (campaignType) {
 		case "text":
-			return ["Phone Number", "Message", "Sent At", "Status", "Start Date"];
+			return [
+				"Phone Number",
+				"Message",
+				"Sent At",
+				"Status",
+				"Start Date",
+				"Controls",
+			];
 		case "call":
 			return [
 				"Calls",
@@ -37,9 +45,11 @@ const getHeadersByType = (campaignType: CampaignType) => {
 				"Dead",
 				"Wrong #",
 				"Inactive #",
+				"VM as Ans",
 				"DNC",
 				"Status",
 				"Start Date",
+				"Controls",
 			];
 		case "dm":
 			return [
@@ -50,6 +60,7 @@ const getHeadersByType = (campaignType: CampaignType) => {
 				"Sent At",
 				"Status",
 				"Start Date",
+				"Controls",
 			];
 		case "email":
 			return [
@@ -60,11 +71,15 @@ const getHeadersByType = (campaignType: CampaignType) => {
 				"Sent At",
 				"Status",
 				"Start Date",
+				"Controls",
 			];
 		default:
 			return [];
 	}
 };
+
+const isActiveStatus = (status: string | undefined) =>
+	status === "queued" || status === "delivering" || status === "pending";
 
 // Helper function to render table cells dynamically
 const renderTableRowCells = (
@@ -95,6 +110,11 @@ const renderTableRowCells = (
 					<TableCell className="p-2 text-center">
 						{textCampaign.startDate}
 					</TableCell>
+					<TableCell className="p-2 text-center">
+						{isActiveStatus(textCampaign.status) ? (
+							<ControlPanel campaignId={textCampaign.id} />
+						) : null}
+					</TableCell>
 				</>
 			);
 		}
@@ -124,12 +144,20 @@ const renderTableRowCells = (
 					<TableCell className="p-2 text-center">
 						{callCampaign.inactiveNumbers}
 					</TableCell>
+					<TableCell className="p-2 text-center">
+						{callCampaign.countVoicemailAsAnswered ? "Yes" : "No"}
+					</TableCell>
 					<TableCell className="p-2 text-center">{callCampaign.dnc}</TableCell>
 					<TableCell className="p-2 text-center">
 						{callCampaign.status}
 					</TableCell>
 					<TableCell className="p-2 text-center">
 						{callCampaign.startDate}
+					</TableCell>
+					<TableCell className="p-2 text-center">
+						{isActiveStatus(callCampaign.status) ? (
+							<ControlPanel campaignId={callCampaign.id} />
+						) : null}
 					</TableCell>
 				</>
 			);
@@ -156,6 +184,11 @@ const renderTableRowCells = (
 					<TableCell className="p-2 text-center">{dmCampaign.status}</TableCell>
 					<TableCell className="p-2 text-center">
 						{dmCampaign.startDate}
+					</TableCell>
+					<TableCell className="p-2 text-center">
+						{isActiveStatus(dmCampaign.status) ? (
+							<ControlPanel campaignId={dmCampaign.id} />
+						) : null}
 					</TableCell>
 				</>
 			);
@@ -191,6 +224,11 @@ const renderTableRowCells = (
 					</TableCell>
 					<TableCell className="p-2 text-center">
 						{emailCampaign.status} {/* Campaign status */}
+					</TableCell>
+					<TableCell className="p-2 text-center">
+						{isActiveStatus(emailCampaign.status) ? (
+							<ControlPanel campaignId={emailCampaign.id} />
+						) : null}
 					</TableCell>
 				</>
 			);

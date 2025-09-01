@@ -17,6 +17,7 @@ export interface CampaignBase {
 		| "completed"
 		| "missed"
 		| "queued"
+		| "paused"
 		| "read"
 		| "unread";
 	startDate: string;
@@ -73,6 +74,7 @@ export const campaignStatusesGB: CampaignBase["status"][] = [
 	"pending",
 	"completed",
 	"missed",
+	"paused",
 	"read",
 	"unread",
 ];

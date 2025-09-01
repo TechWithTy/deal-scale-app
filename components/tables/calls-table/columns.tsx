@@ -1,4 +1,6 @@
 import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
+import { ControlPanel } from "@/components/reusables/ControlPanel";
 import type { CallCampaign } from "@/types/_dashboard/campaign";
 import type { ColumnDef } from "@tanstack/react-table";
 import { PlaybackCell } from "@/external/audio-playback";
@@ -35,6 +37,16 @@ export const callCampaignColumns: ColumnDef<CallCampaign>[] = [
 		),
 		enableSorting: false,
 		enableHiding: false,
+	},
+	{
+		id: "controls",
+		header: "Controls",
+		cell: ({ row }) => {
+			const status = row.original.status as string | undefined;
+			const active =
+				status === "queued" || status === "delivering" || status === "pending";
+			return active ? <ControlPanel campaignId={row.original.id} /> : null;
+		},
 	},
 	{
 		accessorKey: "name",
@@ -80,6 +92,16 @@ export const callCampaignColumns: ColumnDef<CallCampaign>[] = [
 		accessorKey: "inactiveNumbers",
 		header: "Inactive #",
 		cell: ({ row }) => <span>{row.original.inactiveNumbers}</span>,
+	},
+	{
+		id: "countVoicemailAsAnswered",
+		header: "VM Counts as Answered",
+		cell: ({ row }) => {
+			const v = Boolean((row.original as any).countVoicemailAsAnswered);
+			return (
+				<Badge variant={v ? "default" : "outline"}>{v ? "Yes" : "No"}</Badge>
+			);
+		},
 	},
 	{
 		accessorKey: "dnc",

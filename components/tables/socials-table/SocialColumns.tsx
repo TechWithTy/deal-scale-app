@@ -5,6 +5,7 @@ import type {
 } from "@/types/_dashboard/campaign";
 import type { ColumnDef } from "@tanstack/react-table";
 import DownloadCell from "./steps/columns/DownloadCell";
+import { ControlPanel } from "@/components/reusables/ControlPanel";
 import PlatformCell from "./steps/columns/PlatformCell";
 import StatusCell from "./steps/columns/StatusCell";
 
@@ -28,6 +29,16 @@ export const socialColumns: ColumnDef<SocialMediaCampaign>[] = [
 		),
 		enableSorting: false,
 		enableHiding: false,
+	},
+	{
+		id: "controls",
+		header: "Controls",
+		cell: ({ row }) => {
+			const status = row.original.status as string | undefined;
+			const active =
+				status === "queued" || status === "delivering" || status === "pending";
+			return active ? <ControlPanel campaignId={row.original.id} /> : null;
+		},
 	},
 	{
 		accessorKey: "name",

@@ -6,6 +6,7 @@ import type {
 } from "@/types/goHighLevel/text";
 import type { ColumnDef } from "@tanstack/react-table";
 import { EyeIcon } from "lucide-react";
+import { ControlPanel } from "@/components/reusables/ControlPanel";
 
 // Color statuses for the text message campaign
 // Assuming TextMessageCampaign['status'] includes the following:
@@ -76,6 +77,16 @@ export const textMessageCampaignColumns: ColumnDef<GHLTextMessageCampaign>[] = [
 		),
 		enableSorting: false,
 		enableHiding: false,
+	},
+	{
+		id: "controls",
+		header: "Controls",
+		cell: ({ row }) => {
+			const status = row.original.status as string | undefined;
+			const active =
+				status === "queued" || status === "delivering" || status === "pending";
+			return active ? <ControlPanel campaignId={row.original.id} /> : null;
+		},
 	},
 	{
 		accessorKey: "name",
