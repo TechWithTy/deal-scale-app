@@ -8,18 +8,10 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import {
-	type ColumnDef,
-	type PaginationState,
-	flexRender,
-	getCoreRowModel,
-	getFilteredRowModel,
-	getPaginationRowModel,
-	useReactTable,
-} from "@tanstack/react-table";
+import { type ColumnDef, flexRender } from "@tanstack/react-table";
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import React, { useState } from "react";
+import React from "react";
+import { useDataTable } from "../../../external/shadcn-table/src/hooks/use-data-table";
 
 interface DataTableProps<TData, TValue> {
 	columns: ColumnDef<TData, TValue>[];
@@ -36,79 +28,32 @@ export function CallCampaignTable<TData, TValue>({
 	pageCount,
 	pageSizeOptions = [10, 20, 30, 50],
 }: DataTableProps<TData, TValue>) {
-	const router = useRouter();
-	const pathname = usePathname();
-	const searchParams = useSearchParams();
-	const page = searchParams?.get("page") ?? "1";
-	const per_page = searchParams?.get("limit") ?? "10";
-	const [search, setSearch] = useState("");
-
-	const [{ pageIndex, pageSize }, setPagination] =
-		React.useState<PaginationState>({
-			pageIndex: Number(page) - 1,
-			pageSize: Number(per_page),
-		});
-
-	const createQueryString = React.useCallback(
-		(params: Record<string, string | number | null>) => {
-			const newSearchParams = new URLSearchParams(searchParams?.toString());
-
-			for (const [key, value] of Object.entries(params)) {
-				if (value === null) {
-					newSearchParams.delete(key);
-				} else {
-					newSearchParams.set(key, String(value));
-				}
-			}
-
-			return newSearchParams.toString();
-		},
-		[searchParams],
-	);
-
-	React.useEffect(() => {
-		router.push(
-			`${pathname}?${createQueryString({
-				page: pageIndex + 1,
-				limit: pageSize,
-			})}`,
-			{
-				scroll: false,
-			},
-		);
-	}, [pageIndex, pageSize, router, pathname, createQueryString]);
-
-	const table = useReactTable({
-		data: data.slice(pageIndex * pageSize, (pageIndex + 1) * pageSize), // Limit data by current page and page size
-		columns,
+	const { table } = useDataTable<TData>({
+		data,
+		columns: columns as ColumnDef<TData>[],
 		pageCount,
-		getFilteredRowModel: getFilteredRowModel(),
-		getCoreRowModel: getCoreRowModel(),
-		state: {
-			pagination: { pageIndex, pageSize },
-			globalFilter: search, // This will be used to filter based on search
+		initialState: {
+			pagination: { pageIndex: 0, pageSize: pageSizeOptions?.[0] ?? 10 },
 		},
-		onPaginationChange: setPagination,
-		getPaginationRowModel: getPaginationRowModel(),
-		manualPagination: true,
+		// let the shared hook manage filtering/sorting/pagination via nuqs
+		getRowId: (row, index) => (row as any).id ?? String(index),
 	});
 
 	return (
 		<>
 			<Input
 				placeholder={`Search ${searchKey}...`}
-				value={search}
-				onChange={(e) => setSearch(e.target.value)}
+				value={(table.getColumn(searchKey)?.getFilterValue() as string) ?? ""}
+				onChange={(e) =>
+					table.getColumn(searchKey)?.setFilterValue(e.target.value)
+				}
 				className="w-full max-w-sm"
 			/>
 
 			{/* Add horizontal scroll with overflow-x-auto */}
 			<div className="w-full overflow-x-auto">
-				{" "}
 				{/* Ensure horizontal scroll */}
 				<Table className="min-w-[1200px]">
-					{" "}
-					{/* Set minimum width to trigger horizontal scroll */}
 					<TableHeader>
 						{table.getHeaderGroups().map((headerGroup) => (
 							<TableRow key={headerGroup.id}>
@@ -169,6 +114,7 @@ export function CallCampaignTable<TData, TValue>({
 				<div className="flex items-center space-x-2">
 					<Button
 						aria-label="Go to previous page"
+						type="button"
 						onClick={() => table.previousPage()}
 						disabled={!table.getCanPreviousPage()}
 					>
@@ -176,6 +122,7 @@ export function CallCampaignTable<TData, TValue>({
 					</Button>
 					<Button
 						aria-label="Go to next page"
+						type="button"
 						onClick={() => table.nextPage()}
 						disabled={!table.getCanNextPage()}
 					>

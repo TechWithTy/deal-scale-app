@@ -81,7 +81,32 @@ export function generateMockLeads(count: number): LeadTypeGlobal[] {
 				instagram: `https://instagram.com/${faker.internet.username()}`,
 				twitter: `https://twitter.com/${faker.internet.username()}`,
 			},
+			// Channel-specific opt-out flags (low probabilities)
+			smsOptOut: faker.datatype.boolean(0.08),
+			emailOptOut: faker.datatype.boolean(0.06),
+			callOptOut: faker.datatype.boolean(0.04),
+			dmOptOut: faker.datatype.boolean(0.03),
 		};
+
+		// Aggregate DNC and derive a friendly source label
+		const flags = {
+			sms: Boolean(lead.smsOptOut),
+			email: Boolean(lead.emailOptOut),
+			call: Boolean(lead.callOptOut),
+			dm: Boolean(lead.dmOptOut),
+		};
+		lead.dncList =
+			flags.sms || flags.email || flags.call || flags.dm || undefined;
+		if (lead.dncList) {
+			// Priority: Text -> Email -> Call -> DM
+			lead.dncSource = flags.sms
+				? "Text Opt-out"
+				: flags.email
+					? "Email Unsubscribe"
+					: flags.call
+						? "Call Blocked"
+						: "DM Opt-out";
+		}
 
 		leads.push(lead);
 	}

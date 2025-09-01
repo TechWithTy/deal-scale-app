@@ -25,6 +25,23 @@ export interface CampaignBase {
 	aiScript?: string;
 	updatedAt?: string;
 	aiAvatarAgent?: string;
+	// Optional human agent display fields (used by tables for non-AI agents)
+	agentTitle?: string;
+	agentName?: string;
+	agent?: string;
+	// Optional human role fields (rendered as chips when Human)
+	agentRole?: string;
+	role?: string;
+	humanRole?: string;
+	/**
+	 * Optional Do-Not-Contact (DNC) fields available on some campaign summaries
+	 * - dnc: total count of DNC flags attributed to this campaign's contacts
+	 * - dncBreakdown: per-source breakout (e.g., text/email/call/dm/manual/scrub)
+	 */
+	dnc?: number;
+	dncBreakdown?: Partial<
+		Record<"text" | "email" | "call" | "dm" | "manual" | "scrub", number>
+	>;
 	// Optional routing info for agent transfers (chat/voice/text/social)
 	readonly transfer?: {
 		type: TransferType;

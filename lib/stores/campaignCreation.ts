@@ -51,12 +51,22 @@ export interface CampaignCreationState {
 	setAreaMode: (mode: "zip" | "leadList") => void;
 	selectedLeadListId: string;
 	setSelectedLeadListId: (id: string) => void;
+	// A/B testing for lead lists
+	abTestingEnabled: boolean;
+	setAbTestingEnabled: (v: boolean) => void;
+	selectedLeadListAId: string;
+	setSelectedLeadListAId: (id: string) => void;
+	selectedLeadListBId: string;
+	setSelectedLeadListBId: (id: string) => void;
 	campaignArea: string;
 	setCampaignArea: (area: string) => void;
 	leadCount: number;
 	includeWeekends: boolean;
 	setIncludeWeekends: (v: boolean) => void;
 	setLeadCount: (count: number) => void;
+
+	// Validation helpers
+	isLeadListSelectionValid: () => boolean;
 
 	// Step 3: Timing Preferences
 	daysSelected: number;
@@ -79,6 +89,8 @@ export interface CampaignCreationState {
 	setMinDailyAttempts: (v: number) => void;
 	maxDailyAttempts: number;
 	setMaxDailyAttempts: (v: number) => void;
+	countVoicemailAsAnswered: boolean;
+	setCountVoicemailAsAnswered: (v: boolean) => void;
 
 	// Timezone handling
 	getTimezoneFromLeadLocation: boolean;
@@ -140,12 +152,30 @@ export const useCampaignCreationStore = create<CampaignCreationState>(
 		setAreaMode: (areaMode) => set({ areaMode }),
 		selectedLeadListId: "",
 		setSelectedLeadListId: (selectedLeadListId) => set({ selectedLeadListId }),
+		// A/B testing defaults
+		abTestingEnabled: false,
+		setAbTestingEnabled: (abTestingEnabled) => set({ abTestingEnabled }),
+		selectedLeadListAId: "",
+		setSelectedLeadListAId: (selectedLeadListAId) =>
+			set({ selectedLeadListAId }),
+		selectedLeadListBId: "",
+		setSelectedLeadListBId: (selectedLeadListBId) =>
+			set({ selectedLeadListBId }),
 		campaignArea: "",
 		setCampaignArea: (campaignArea) => set({ campaignArea }),
 		leadCount: 0,
 		setLeadCount: (leadCount) => set({ leadCount }),
 		includeWeekends: false,
 		setIncludeWeekends: (includeWeekends) => set({ includeWeekends }),
+
+		// Validation helpers
+		isLeadListSelectionValid: () => {
+			const s = get();
+			if (s.areaMode !== "leadList") return true;
+			if (!s.abTestingEnabled)
+				return Boolean(s.selectedLeadListId || s.selectedLeadListAId);
+			return Boolean(s.selectedLeadListAId && s.selectedLeadListBId);
+		},
 
 		// Step 3: Timing Preferences
 		daysSelected: 7,
@@ -168,6 +198,9 @@ export const useCampaignCreationStore = create<CampaignCreationState>(
 		setMinDailyAttempts: (minDailyAttempts) => set({ minDailyAttempts }),
 		maxDailyAttempts: 3,
 		setMaxDailyAttempts: (maxDailyAttempts) => set({ maxDailyAttempts }),
+		countVoicemailAsAnswered: false,
+		setCountVoicemailAsAnswered: (countVoicemailAsAnswered) =>
+			set({ countVoicemailAsAnswered }),
 
 		// Timezone handling
 		getTimezoneFromLeadLocation: true,
@@ -281,6 +314,9 @@ export const useCampaignCreationStore = create<CampaignCreationState>(
 				// Step 2
 				areaMode: "leadList",
 				selectedLeadListId: "",
+				abTestingEnabled: false,
+				selectedLeadListAId: "",
+				selectedLeadListBId: "",
 				campaignArea: "",
 				leadCount: 0,
 				includeWeekends: false,
@@ -295,6 +331,7 @@ export const useCampaignCreationStore = create<CampaignCreationState>(
 				reachOnHolidays: false,
 				minDailyAttempts: 1,
 				maxDailyAttempts: 3,
+				countVoicemailAsAnswered: false,
 				getTimezoneFromLeadLocation: true,
 				// Number Pooling
 				numberPoolingEnabled: false,

@@ -52,4 +52,11 @@ export type LeadTypeGlobal = {
 	communicationPreferences?: string[];
 	// Optional Do Not Call list flag
 	dncList?: boolean;
+	/** Optional explicit DNC source label (e.g., "Text Opt-out", "Email Unsubscribe") */
+	dncSource?: string;
+	/** Channel-specific opt-out flags to infer DNC Source when label is not present */
+	smsOptOut?: boolean;
+	emailOptOut?: boolean;
+	callOptOut?: boolean;
+	dmOptOut?: boolean;
 };

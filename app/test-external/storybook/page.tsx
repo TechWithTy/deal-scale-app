@@ -4,7 +4,6 @@ import { useState } from "react";
 import { PlaybackCell } from "@/external/audio-playback";
 import { CloneModal } from "@/external/teleprompter-modal";
 import type { CallInfo } from "@/types/_dashboard/campaign";
-import WheelDemo from "@/external/shadcn-table/src/examples/wheel-demo";
 
 export default function StorybookExternalPage() {
 	// Minimal mock data for PlaybackCell
@@ -70,16 +69,6 @@ export default function StorybookExternalPage() {
 						setCloneOpen(false);
 					}}
 				/>
-			</section>
-
-			<section className="space-y-3 rounded-md border p-4">
-				<h2 className="text-lg font-semibold">Prize Wheel (External)</h2>
-				<p className="text-sm text-muted-foreground">
-					Test the prize wheel with center-click spin and auto-spin behavior.
-				</p>
-				<div className="rounded-md border p-3">
-					<WheelDemo />
-				</div>
 			</section>
 		</main>
 	);

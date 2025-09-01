@@ -1,5 +1,6 @@
 // * Lead Table Columns Definition - Cleaned for Biome & TypeScript
 import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
 import type { LeadTypeGlobal } from "@/types/_dashboard/leads";
 import type { ColumnDef, Row } from "@tanstack/react-table";
 import { EmailCell } from "./steps/columns/EmailCell";
@@ -76,6 +77,47 @@ export const leadListColumns: ColumnDef<LeadTypeGlobal>[] = [
 		accessorKey: "status",
 		header: "Status",
 		cell: StatusCell,
+	},
+	{
+		id: "dnc",
+		header: "DNC",
+		accessorFn: (row) => (row as LeadTypeGlobal).dncList ?? false,
+		cell: ({ row }: { row: Row<LeadTypeGlobal> }) => {
+			const isDnc = Boolean(row.original.dncList);
+			return (
+				<Badge variant={isDnc ? "destructive" : "outline"}>
+					{isDnc ? "DNC" : "OK"}
+				</Badge>
+			);
+		},
+	},
+	{
+		id: "dncSource",
+		header: "DNC Source",
+		accessorFn: (row) => {
+			const r = row as LeadTypeGlobal;
+			if (r.dncSource && r.dncSource.trim()) return r.dncSource;
+			const pick =
+				(r.smsOptOut && "Text Opt-out") ||
+				(r.emailOptOut && "Email Unsubscribe") ||
+				(r.callOptOut && "Call Blocked") ||
+				(r.dmOptOut && "DM Opt-out") ||
+				"";
+			return pick;
+		},
+		cell: ({ row }: { row: Row<LeadTypeGlobal> }) => {
+			const r = row.original;
+			const label =
+				r.dncSource && r.dncSource.trim()
+					? r.dncSource
+					: (r.smsOptOut && "Text Opt-out") ||
+						(r.emailOptOut && "Email Unsubscribe") ||
+						(r.callOptOut && "Call Blocked") ||
+						(r.dmOptOut && "DM Opt-out") ||
+						"";
+			if (!label) return <span className="text-muted-foreground">—</span>;
+			return <Badge variant="secondary">{label}</Badge>;
+		},
 	},
 	{
 		accessorKey: "download",

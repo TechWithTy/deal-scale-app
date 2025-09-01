@@ -101,6 +101,17 @@ const generateCallCampaign = (): CallCampaign => {
 
 	const callTypes: CallCampaign["callType"][] = ["inbound", "outbound"];
 
+	// Decide whether this campaign uses an AI avatar agent; if not, create a human agent with a role
+	const aiAvatarAgent = faker.helpers.maybe(() => faker.person.firstName(), {
+		probability: 0.2,
+	});
+	const humanName = !aiAvatarAgent ? faker.person.fullName() : undefined;
+	const humanRole = !aiAvatarAgent
+		? faker.number.int({ min: 1, max: 100 }) <= 70
+			? "Closer"
+			: "Custom"
+		: undefined;
+
 	return {
 		id: campaignId,
 		name: `${faker.company.name()}`,
@@ -116,9 +127,29 @@ const generateCallCampaign = (): CallCampaign => {
 			probability: 0.3,
 		}),
 		aiScript: faker.lorem.paragraph(),
-		aiAvatarAgent: faker.helpers.maybe(() => faker.person.firstName(), {
-			probability: 0.2,
-		}),
+		// Friendly script name and status for table chips
+		scriptTitle: faker.helpers.arrayElement([
+			"Property Pitch V2",
+			"Foreclosure Outreach",
+			"Expired Listings Intro",
+			"Absentee Owner Touch",
+			"General Seller Lead",
+		]),
+		scriptName: undefined,
+		script: undefined,
+		scriptStatus: faker.helpers.weightedArrayElement([
+			{ weight: 5, value: "active" },
+			{ weight: 3, value: "draft" },
+			{ weight: 2, value: "archived" },
+		]),
+		aiAvatarAgent,
+		// Human agent fields (when no AI agent is present)
+		agentName: humanName,
+		agentTitle: humanName,
+		agent: humanName,
+		agentRole: humanRole,
+		role: humanRole,
+		humanRole: humanRole,
 		callInformation: Array.from({ length: 10 }, () =>
 			generateCallInfo(campaignId),
 		), // Use CallInfo objects
@@ -135,7 +166,28 @@ const generateCallCampaign = (): CallCampaign => {
 		dead: faker.number.int({ min: 0, max: 5 }),
 		wrongNumber: faker.number.int({ min: 0, max: 5 }),
 		inactiveNumbers: faker.number.int({ min: 0, max: 5 }),
-		dnc: faker.number.int({ min: 0, max: 5 }),
+		// Per-source DNC breakdown for UI display
+		...(() => {
+			const total = faker.number.int({ min: 0, max: 5 });
+			let remaining = total;
+			const pick = (max: number) => {
+				const v = faker.number.int({ min: 0, max: Math.max(0, max) });
+				remaining -= v;
+				return v;
+			};
+			const text = pick(remaining);
+			const email = pick(remaining);
+			const dm = pick(remaining);
+			const manual = pick(remaining);
+			// allocate remainder to call and scrub evenly-ish
+			const call = Math.max(0, Math.floor(remaining / 2));
+			const scrub = Math.max(0, remaining - call);
+			return {
+				// Keep dnc total in sync with breakdown total
+				dnc: total,
+				dncBreakdown: { text, email, call, dm, manual, scrub },
+			};
+		})(),
 		scriptID: faker.string.uuid(),
 		funnelID: faker.string.uuid(),
 		workflowID: faker.string.uuid(),
