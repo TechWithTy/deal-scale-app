@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { PlaybackCell } from "@/external/audio-playback";
 import { CloneModal } from "@/external/teleprompter-modal";
+import { PrizeWheel } from "@/external/wheel-spinner";
+import type { Prize, Cadence, SpinResult } from "@/external/wheel-spinner";
 import type { CallInfo } from "@/types/_dashboard/campaign";
 
 export default function StorybookExternalPage() {
@@ -33,6 +35,21 @@ export default function StorybookExternalPage() {
 	];
 
 	const [cloneOpen, setCloneOpen] = useState(false);
+
+	// ----- Wheel Spinner demo config -----
+	const demoCadence: Cadence = "hourly";
+	const demoUserId = "demo-user-123";
+	const demoPrizes: Prize[] = [
+		{ id: "p1", label: "10 Credits", weight: 2, color: "#6d28d9" },
+		{ id: "p2", label: "Try Again", weight: 3, color: "#8b5cf6" },
+		{ id: "p3", label: "25 Credits", weight: 1, color: "#d946ef" },
+		{ id: "p4", label: "5 Credits", weight: 4, color: "#22c55e" },
+	];
+
+	function handleWin(result: SpinResult) {
+		// Demo: log and toast placeholder
+		console.log("Wheel result:", result);
+	}
 
 	return (
 		<main className="mx-auto max-w-2xl space-y-8 p-6">
@@ -69,6 +86,32 @@ export default function StorybookExternalPage() {
 						setCloneOpen(false);
 					}}
 				/>
+			</section>
+
+			<section className="space-y-3 rounded-md border p-4">
+				<h2 className="text-lg font-semibold">Prize Wheel (External)</h2>
+				<p className="text-sm text-muted-foreground">
+					Spin the wheel to test prize distribution, countdown lock, and modal
+					behavior.
+				</p>
+				<div className="flex justify-center">
+					<PrizeWheel
+						cadence={demoCadence}
+						prizes={demoPrizes}
+						onWin={handleWin}
+						userId={demoUserId}
+						showCountdown
+						showResultModal
+						allowAdminOverride
+						className="py-2"
+						// theme can tweak size and timing if desired
+						// theme={{ size: 240, spinUpMs: 200, spinDownMs: 1100 }}
+					/>
+				</div>
+				<p className="text-xs text-muted-foreground">
+					Note: Hourly cadence. Use admin reset in code if needed for repeated
+					testing.
+				</p>
 			</section>
 		</main>
 	);
