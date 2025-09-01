@@ -1,4 +1,5 @@
 import Providers from "@/components/layout/providers";
+import { CommandPaletteProvider, ActionBarRoot } from "@/external/action-bar";
 import "@uploadthing/react/styles.css";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
@@ -24,7 +25,11 @@ export default async function RootLayout({
 		<html lang="en">
 			<body className={`${inter.className}  `} suppressHydrationWarning={true}>
 				<NextTopLoader showSpinner={false} />
-				<Providers session={session}>{children}</Providers>
+				<CommandPaletteProvider>
+					<Providers session={session}>{children}</Providers>
+					{/* Global command palette dialog (Cmd/Ctrl+K) */}
+					<ActionBarRoot />
+				</CommandPaletteProvider>
 				<div id="sidebar-portal" />
 			</body>
 		</html>

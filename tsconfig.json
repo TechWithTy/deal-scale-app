@@ -19,7 +19,8 @@
 			}
 		],
 		"paths": {
-			"@/*": ["./*"]
+			"@/*": ["./*"],
+			"@ssf/*": ["external/score-streak-flow/src/*"]
 		}
 	},
 	"include": [
