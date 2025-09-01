@@ -26,3 +26,6 @@
 [submodule "external/wheel-spinner"]
 	path = external/wheel-spinner
 	url = https://github.com/techwithty/wheel-spinner.git
+[submodule "external/score-streak-flow"]
+	path = external/score-streak-flow
+	url = https://github.com/TechWithTy/score-streak-flow.git
