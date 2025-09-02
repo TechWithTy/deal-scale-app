@@ -32,3 +32,6 @@
 [submodule "external/action-bar"]
 	path = external/action-bar
 	url = https://github.com/techwithty/action-bar.git
+[submodule ".windsurf"]
+	path = .windsurf
+	url = https://github.com/techwithty/worldwide-prompts.git
