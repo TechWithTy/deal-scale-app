@@ -36,6 +36,10 @@ export type CommandItem = {
 	role?: "guest" | "auth" | "any";
 	// Optional media preview to show on hover inside the palette
 	preview?: CommandPreview;
+	// Optional background color for the item row (e.g., "var(--accent)" or "#222")
+	color?: string;
+	// Optional submenu items
+	children?: CommandItem[];
 };
 
 export type CommandPaletteContextValue = {
