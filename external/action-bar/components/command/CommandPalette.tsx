@@ -1,6 +1,6 @@
 "use client";
 
-import { Command as CommandKey } from "lucide-react";
+import { Command as CommandKey, ChevronDown, ChevronRight } from "lucide-react";
 import { type FC, useEffect, useMemo, useState } from "react";
 import { Button } from "../../../shadcn-table/src/components/ui/button";
 import {
@@ -46,6 +46,7 @@ const CommandPalette: FC<CommandPaletteProps> = ({
 	const [q, setQ] = useState("");
 	const [aiItems, setAiItems] = useState<CommandItem[]>([]);
 	const [hoveredId, setHoveredId] = useState<string | null>(null);
+	const [expanded, setExpanded] = useState<Record<string, boolean>>({});
 
 	// Seed query when opening
 	useEffect(() => {
@@ -115,6 +116,10 @@ const CommandPalette: FC<CommandPaletteProps> = ({
 		onOpenChange(false);
 	}
 
+	function toggleExpand(id: string) {
+		setExpanded((prev) => ({ ...prev, [id]: !prev[id] }));
+	}
+
 	const groupKeys = Object.keys(groups);
 
 	const content = (
@@ -134,18 +139,63 @@ const CommandPalette: FC<CommandPaletteProps> = ({
 				{groupKeys.map((g, gi) => (
 					<div key={g}>
 						<CommandGroup heading={g}>
-							{groups[g].map((cmd) => (
-								<PreviewPopover
-									key={cmd.id}
-									cmd={cmd}
-									hoveredId={hoveredId}
-									setHoveredId={setHoveredId}
-									onSelectCommand={(selected, source) =>
-										handleSelect(selected, source)
-									}
-									CommandItemUI={CommandItemUI as unknown as any}
-								/>
-							))}
+							{groups[g].map((cmd) => {
+								const hasChildren =
+									Array.isArray(cmd.children) && cmd.children.length > 0;
+								if (!hasChildren) {
+									return (
+										<PreviewPopover
+											key={cmd.id}
+											cmd={cmd}
+											hoveredId={hoveredId}
+											setHoveredId={setHoveredId}
+											onSelectCommand={(selected, source) =>
+												handleSelect(selected, source)
+											}
+											CommandItemUI={CommandItemUI as unknown as any}
+										/>
+									);
+								}
+
+								const isOpen = !!expanded[cmd.id];
+								return (
+									<div key={cmd.id}>
+										<CommandItemUI
+											onSelect={() => toggleExpand(cmd.id)}
+											className="flex items-center justify-between"
+										>
+											<div className="flex items-center gap-2">
+												{cmd.icon ? (
+													<span className="shrink-0">{cmd.icon}</span>
+												) : null}
+												<span>{cmd.label}</span>
+											</div>
+											<span className="text-muted-foreground">
+												{isOpen ? (
+													<ChevronDown className="h-4 w-4" />
+												) : (
+													<ChevronRight className="h-4 w-4" />
+												)}
+											</span>
+										</CommandItemUI>
+										{isOpen
+											? cmd.children!.map((child) => (
+													<div key={child.id} className="pl-6">
+														<PreviewPopover
+															cmd={child}
+															hoveredId={hoveredId}
+															setHoveredId={setHoveredId}
+															onSelectCommand={(selected, source) =>
+																handleSelect(selected, source)
+															}
+															CommandItemUI={CommandItemUI as unknown as any}
+														/>
+													</div>
+												))
+											: null}
+									</div>
+								);
+							})}
 						</CommandGroup>
 						{gi < groupKeys.length - 1 ? <CommandSeparator /> : null}
 					</div>
