@@ -14,11 +14,15 @@ import {
 export type CommandInputTrayProps = {
 	q: string;
 	setQ: (v: string) => void;
+	externalUrls?: string[];
+	setExternalUrls?: (urls: string[]) => void;
 };
 
 export default function CommandInputTray({
 	q,
 	setQ,
+	externalUrls = [],
+	setExternalUrls,
 }: CommandInputTrayProps): JSX.Element {
 	type FileAttachment = {
 		id: string;
@@ -31,9 +35,15 @@ export default function CommandInputTray({
 	const fileInputRef = useRef<HTMLInputElement>(null);
 
 	const attachments = useMemo(() => parseUrlAttachments(q), [q]);
+	const externalUrlSet = useMemo(() => new Set(externalUrls), [externalUrls]);
 
 	function removeAttachment(value: string) {
 		setQ(q.replace(value, "").trim());
+	}
+
+	function removeExternalUrl(value: string) {
+		if (!setExternalUrls) return;
+		setExternalUrls(externalUrls.filter((u) => u !== value));
 	}
 
 	function addFiles(list: FileList): void {
@@ -94,26 +104,7 @@ export default function CommandInputTray({
 					>
 						<Paperclip className="h-4 w-4" />
 					</Button>
-					<Button
-						type="button"
-						variant="ghost"
-						size="icon"
-						aria-label="Add image URL"
-						onClick={() => {
-							const url = window.prompt(
-								"Image URL (can be absolute or relative):",
-							);
-							if (!url) return;
-							const token = url.trim();
-							if (!token) return;
-							// Inject into the query so the normal parser creates a chip
-							setQ(q ? `${q} ${token}` : token);
-						}}
-						className="h-8 w-8"
-						title="Add image URL"
-					>
-						<ImageIcon className="h-4 w-4" />
-					</Button>
+					{/* Removed: explicit Add image URL button (URLs should be typed/pasted into input) */}
 					<div className="flex-1">
 						<CommandInput
 							placeholder="Type a command or search..."
@@ -135,12 +126,48 @@ export default function CommandInputTray({
 					/>
 				</div>
 
-				{(attachments.length > 0 || fileAttachments.length > 0) && (
+				{(attachments.length > 0 ||
+					externalUrls.length > 0 ||
+					fileAttachments.length > 0) && (
 					<div
 						className="mt-1.5 flex flex-wrap items-center gap-1.5"
 						role="list"
 						aria-label="Attachments"
 					>
+						{/* URL image attachments are derived only from the input value via parseUrlAttachments */}
+
+						{/* External URLs (non-image and image) */}
+						{[...externalUrlSet]
+							.filter(
+								(v) =>
+									!parseUrlAttachments(v)[0] ||
+									parseUrlAttachments(v)[0]?.type !== "image",
+							)
+							.map((value) => (
+								<Badge
+									key={`ext-${value}`}
+									variant="secondary"
+									className="flex max-w-full items-center gap-1"
+									role="listitem"
+								>
+									<Link2 className="h-3.5 w-3.5" />
+									<span className="max-w-[240px] truncate" title={value}>
+										{value}
+									</span>
+									<button
+										type="button"
+										className="ml-1 rounded p-0.5 hover:bg-accent"
+										aria-label={`Remove ${value}`}
+										onClick={(e) => {
+											e.stopPropagation();
+											removeExternalUrl(value);
+										}}
+									>
+										<X className="h-3 w-3" />
+									</button>
+								</Badge>
+							))}
+
 						{attachments
 							.filter((a) => a.type !== "image")
 							.map((a) => (
@@ -171,6 +198,48 @@ export default function CommandInputTray({
 									</button>
 								</Badge>
 							))}
+
+						{/* External image URLs */}
+						{[...externalUrlSet]
+							.filter(
+								(value) => parseUrlAttachments(value)[0]?.type === "image",
+							)
+							.map((value) => {
+								const inferred = filenameFromUrl(value);
+								const label = inferred ?? friendlyGeneratedImageName();
+								return (
+									<Badge
+										key={`ext-img-${value}`}
+										variant="secondary"
+										className="flex max-w-full items-center gap-1"
+										role="listitem"
+										title={label}
+									>
+										<ImageIcon className="h-3.5 w-3.5" />
+										<span className="max-w-[200px] truncate">{label}</span>
+										<a
+											href={value}
+											target="_blank"
+											rel="noreferrer"
+											className="ml-1 rounded p-0.5 hover:bg-accent"
+											aria-label={`Open image`}
+										>
+											<Link2 className="h-3 w-3" />
+										</a>
+										<button
+											type="button"
+											className="ml-1 rounded p-0.5 hover:bg-accent"
+											aria-label={`Remove image`}
+											onClick={(e) => {
+												e.stopPropagation();
+												removeExternalUrl(value);
+											}}
+										>
+											<X className="h-3 w-3" />
+										</button>
+									</Badge>
+								);
+							})}
 
 						{attachments
 							.filter((a) => a.type === "image")

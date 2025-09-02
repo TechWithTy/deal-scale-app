@@ -34,7 +34,13 @@ const CommandPalette: FC<CommandPaletteProps> = ({
 	initialQuery = "",
 	variant = "dialog",
 }) => {
-	const { aiSuggestEndpoint, pathname, navigate } = useCommandPalette();
+	const {
+		aiSuggestEndpoint,
+		pathname,
+		navigate,
+		externalUrlAttachments,
+		setExternalUrlAttachments,
+	} = useCommandPalette();
 
 	// Controlled query for AI suggestions
 	const [q, setQ] = useState("");
@@ -113,7 +119,12 @@ const CommandPalette: FC<CommandPaletteProps> = ({
 
 	const content = (
 		<>
-			<CommandInputTray q={q} setQ={setQ} />
+			<CommandInputTray
+				q={q}
+				setQ={setQ}
+				externalUrls={externalUrlAttachments}
+				setExternalUrls={setExternalUrlAttachments}
+			/>
 			<CommandList>
 				<CommandEmpty>
 					<div className="py-6 text-center text-sm">

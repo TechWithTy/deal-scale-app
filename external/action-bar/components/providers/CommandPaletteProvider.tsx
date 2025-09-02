@@ -64,6 +64,9 @@ export function CommandPaletteProvider({
 		undefined,
 	);
 	const [openedBySelection, setOpenedBySelection] = useState<boolean>(false);
+	const [externalUrlAttachments, setExternalUrlAttachments] = useState<
+		string[]
+	>([]);
 
 	const base = useMemo(() => baseGlobalCommands(router), [router]);
 	const scoped = useMemo(
@@ -180,6 +183,8 @@ export function CommandPaletteProvider({
 			keyboard,
 			pathname: pathname ?? "/",
 			navigate: (path: string) => router.push(path),
+			externalUrlAttachments,
+			setExternalUrlAttachments,
 		}),
 		[
 			isOpen,
@@ -192,6 +197,7 @@ export function CommandPaletteProvider({
 			keyboard,
 			pathname,
 			router,
+			externalUrlAttachments,
 		],
 	);
 
@@ -211,6 +217,8 @@ export function CommandPaletteProvider({
 			setOpenOnSelect: (enabled: boolean) => setOpenOnSelect(!!enabled),
 			setSelectContainer: (selector?: string) =>
 				setSelectContainer(selector || undefined),
+			setExternalUrls: (urls: string[]) =>
+				setExternalUrlAttachments(urls ?? []),
 		} as const;
 		// attach once
 		(window as any).DealActionBar = {

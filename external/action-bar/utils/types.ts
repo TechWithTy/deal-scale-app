@@ -57,6 +57,9 @@ export type CommandPaletteContextValue = {
 	keyboard: boolean;
 	pathname: string;
 	navigate: (path: string) => void;
+	// External URL attachments to render as chips independent of the input text
+	externalUrlAttachments: string[];
+	setExternalUrlAttachments: (urls: string[]) => void;
 };
 
 export type ActionBarController = {
@@ -68,4 +71,5 @@ export type ActionBarController = {
 	setInitialQuery: (q: string) => void;
 	setEndpoint: (ep: string) => void;
 	setKeyboard: (enabled: boolean) => void;
+	setExternalUrls?: (urls: string[]) => void;
 };

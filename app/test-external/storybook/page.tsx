@@ -106,6 +106,7 @@ export default function StorybookExternalPage() {
 		setVariant,
 		isOpen,
 		variant,
+		setExternalUrlAttachments,
 	} = useCommandPalette();
 
 	// Highlight + Action Bar demo state
@@ -163,7 +164,9 @@ export default function StorybookExternalPage() {
 
 	// Media popovers demo state
 	const [imageOpen, setImageOpen] = useState(false);
-	const [imageSrc, setImageSrc] = useState<string>("/next.svg");
+	const [imageSrc, setImageSrc] = useState<string>(
+		"https://place-hold.it/300x500/666/fff",
+	);
 
 	const [videoOpen, setVideoOpen] = useState(false);
 	const [videoUrl, setVideoUrl] = useState<string>(
@@ -217,8 +220,8 @@ export default function StorybookExternalPage() {
 				preview: {
 					type: "image",
 					src: imageSrc,
-					placeholder: "/next.svg",
-					alt: "Next logo",
+					placeholder: "https://place-hold.it/300x500/666/fff",
+					alt: "Image preview",
 				},
 				action: (payload) => {
 					const src = payload?.media?.src ?? imageSrc;
@@ -235,7 +238,7 @@ export default function StorybookExternalPage() {
 				preview: {
 					type: "youtube",
 					src: videoUrl,
-					placeholder: "/next.svg",
+					placeholder: "https://place-hold.it/300x500/666/fff",
 					alt: "YouTube preview",
 				},
 				action: (payload) => {
@@ -466,7 +469,7 @@ export default function StorybookExternalPage() {
 						type="button"
 						className="group rounded-md border p-2 hover:bg-muted"
 						onClick={() => {
-							setImageSrc("/next.svg");
+							setImageSrc("https://place-hold.it/300x500/666/fff");
 							setImageOpen(true);
 						}}
 					>
@@ -501,7 +504,11 @@ export default function StorybookExternalPage() {
 							type="button"
 							onClick={() => {
 								setVariant("dialog");
-								setInitialQuery(imageSrc || "/next.svg");
+								// Provide the image URL as an external attachment chip
+								setExternalUrlAttachments?.([
+									imageSrc || "https://place-hold.it/300x500/666/fff",
+								]);
+								setInitialQuery("");
 								setOpen(true);
 							}}
 						>
@@ -512,7 +519,9 @@ export default function StorybookExternalPage() {
 							type="button"
 							onClick={() => {
 								setVariant("dialog");
-								setInitialQuery(videoUrl);
+								// Provide the YouTube URL as an external attachment chip
+								if (videoUrl) setExternalUrlAttachments?.([videoUrl]);
+								setInitialQuery("");
 								setOpen(true);
 							}}
 							disabled={!videoUrl}
