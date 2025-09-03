@@ -5,6 +5,8 @@ import { z } from "zod";
  */
 export const ScoreCardSchema = z.object({
 	title: z.string(),
+	/** Small line under title, e.g., "Safety assessment of the neighborhood" */
+	subTitle: z.string().optional(),
 	description: z.string().optional(),
 	/** Primary numeric score, e.g., 85 */
 	score: z.number().min(0).max(100).optional(),
@@ -12,10 +14,16 @@ export const ScoreCardSchema = z.object({
 	delta: z.number().optional(),
 	/** Optional external link for more info */
 	href: z.string().url().optional(),
+	/** Optional label for the link, e.g., "View on map →" */
+	linkLabel: z.string().optional(),
 	/** Optional list of bullet points */
 	bullets: z.array(z.string()).optional(),
 	/** Optional icon emoji or short label */
 	icon: z.string().optional(),
+	/** Optional label displayed above progress bar (e.g., repeats title) */
+	primaryLabel: z.string().optional(),
+	/** Show small arrow next to top-right inline score */
+	showArrow: z.boolean().optional(),
 });
 export type ScoreCard = z.infer<typeof ScoreCardSchema>;
 
@@ -31,6 +39,15 @@ export const AISummarySectionSchema = z.object({
 	overallScore: z.number().min(0).max(100).optional(),
 	/** Positive for up, negative for down */
 	overallDelta: z.number().optional(),
+	/** Header band labels flanking the progress bar */
+	headerBand: z
+		.object({
+			leftLabel: z.string().default("Low Potential"),
+			rightLabel: z.string().default("High Potential"),
+		})
+		.optional(),
+	/** Feature checklist rendered as pill items under the band */
+	features: z.array(z.string()).optional(),
 	/** Cards that render in the grid */
 	cards: z.array(ScoreCardSchema).default([]),
 });

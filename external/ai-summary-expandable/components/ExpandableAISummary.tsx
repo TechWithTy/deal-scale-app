@@ -115,6 +115,86 @@ export default function ExpandableAISummary(
 				</div>
 			</div>
 
+			{/* Gradient header band with overall score and labels */}
+			{typeof section.overallScore === "number" ? (
+				<div className="border-b border-border">
+					<div className="relative overflow-hidden">
+						<div className="bg-gradient-to-r from-violet-600 via-fuchsia-600 to-pink-600">
+							<div className="p-4 sm:p-5">
+								<div className="flex items-start justify-between gap-4">
+									<div>
+										<h3 className="text-base font-medium text-white/90">
+											{section.title}
+										</h3>
+										{section.description ? (
+											<p className="text-sm text-white/80">
+												{section.description}
+											</p>
+										) : null}
+									</div>
+									<div className="text-right">
+										<div className="flex items-baseline gap-2 justify-end">
+											<span className="text-3xl font-semibold text-white">
+												{overallPct}
+												<span className="text-base text-white/80">/100</span>
+											</span>
+											{overallDeltaFmt ? (
+												<span className={cn("text-sm", overallDeltaFmt.color)}>
+													{overallDeltaFmt.text}
+												</span>
+											) : null}
+										</div>
+									</div>
+								</div>
+
+								{/* Band progress with labels */}
+								<div className="mt-4">
+									<div className="flex items-center justify-between text-[11px] text-white/80">
+										<span>
+											{section.headerBand?.leftLabel ?? "Low Potential"}
+										</span>
+										<span>
+											{section.headerBand?.rightLabel ?? "High Potential"}
+										</span>
+									</div>
+									<div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-white/20">
+										<div
+											className="h-full bg-white/90"
+											style={{ width: `${overallPct}%` }}
+										/>
+									</div>
+								</div>
+
+								{/* Feature checklist row */}
+								{Array.isArray(section.features) &&
+								section.features.length > 0 ? (
+									<div className="mt-4 flex flex-wrap gap-3">
+										{section.features.map((f, idx) => (
+											<div
+												key={idx}
+												className="inline-flex items-center gap-2 rounded-md bg-white/10 px-3 py-1 text-xs text-white/90 ring-1 ring-inset ring-white/15"
+											>
+												<svg
+													xmlns="http://www.w3.org/2000/svg"
+													viewBox="0 0 24 24"
+													fill="none"
+													stroke="currentColor"
+													strokeWidth="2"
+													className="h-3.5 w-3.5"
+												>
+													<path d="M20 6L9 17l-5-5" />
+												</svg>
+												<span>{f}</span>
+											</div>
+										))}
+									</div>
+								) : null}
+							</div>
+						</div>
+					</div>
+				</div>
+			) : null}
+
 			{/* Body */}
 			{expanded ? (
 				<div className="p-4">
@@ -161,14 +241,32 @@ function DefaultCard({ card }: { card: ScoreCard }) {
 						<div className="text-sm font-medium text-foreground">
 							{card.score}/100
 						</div>
-						{deltaFmt ? (
-							<div className={cn("text-xs", deltaFmt.color)}>
-								{deltaFmt.text}
-							</div>
-						) : null}
+						<div className="flex items-center justify-end gap-1">
+							{deltaFmt ? (
+								<div className={cn("text-xs", deltaFmt.color)}>
+									{deltaFmt.text}
+								</div>
+							) : null}
+							{card.showArrow ? (
+								<svg
+									xmlns="http://www.w3.org/2000/svg"
+									viewBox="0 0 24 24"
+									fill="none"
+									stroke="currentColor"
+									strokeWidth="2"
+									className="h-3.5 w-3.5"
+								>
+									<path d="M9 18l6-6-6-6" />
+								</svg>
+							) : null}
+						</div>
 					</div>
 				) : null}
 			</div>
+
+			{card.subTitle ? (
+				<p className="text-sm text-muted-foreground">{card.subTitle}</p>
+			) : null}
 
 			{typeof scorePct === "number" ? (
 				<div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
@@ -176,6 +274,12 @@ function DefaultCard({ card }: { card: ScoreCard }) {
 						className="h-full bg-primary"
 						style={{ width: `${scorePct}%` }}
 					/>
+				</div>
+			) : null}
+
+			{card.primaryLabel ? (
+				<div className="text-sm font-medium text-foreground">
+					{card.primaryLabel}
 				</div>
 			) : null}
 
@@ -198,7 +302,7 @@ function DefaultCard({ card }: { card: ScoreCard }) {
 					rel="noreferrer"
 					className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
 				>
-					View on map
+					{card.linkLabel ?? "View on map"}
 					<svg
 						xmlns="http://www.w3.org/2000/svg"
 						fill="none"

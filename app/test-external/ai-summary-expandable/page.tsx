@@ -16,14 +16,25 @@ export default function AISummaryExpandableTestPage() {
 
 	const section = useMemo(
 		() => ({
-			title: "Property Location & Market Analysis",
+			title: "Off-Market Potential",
 			description: "Likelihood of finding off-market deals in this area",
 			overallScore: 85,
 			overallDelta: 2,
+			headerBand: {
+				leftLabel: "Low Potential",
+				rightLabel: "High Potential",
+			},
+			features: [
+				"Analyzes historical off-market transactions",
+				"Considers local market conditions",
+				"Identifies potential motivated sellers",
+			],
 			cards: [
 				{
 					title: "Crime Score",
-					description: "Safety assessment of the neighborhood",
+					subTitle: "Safety assessment of the neighborhood",
+					primaryLabel: "Crime Score",
+					description: undefined,
 					score: 72,
 					delta: 0,
 					bullets: [
@@ -32,11 +43,14 @@ export default function AISummaryExpandableTestPage() {
 						"Local law enforcement presence",
 					],
 					href: "https://www.google.com/maps",
+					linkLabel: "View on map →",
 					icon: "🛡️",
+					showArrow: true,
 				},
 				{
 					title: "Walk Score",
-					description: "Walkability of the neighborhood",
+					subTitle: "Walkability of the neighborhood",
+					primaryLabel: "Walk Score",
 					score: 63,
 					delta: 1,
 					bullets: [
@@ -45,11 +59,14 @@ export default function AISummaryExpandableTestPage() {
 						"Pedestrian safety",
 					],
 					href: "https://www.google.com/maps",
+					linkLabel: "View on map →",
 					icon: "🚶",
+					showArrow: true,
 				},
 				{
 					title: "Transit Score",
-					description: "Quality of public transportation",
+					subTitle: "Quality of public transportation",
+					primaryLabel: "Transit Score",
 					score: 58,
 					delta: -1,
 					bullets: [
@@ -58,7 +75,9 @@ export default function AISummaryExpandableTestPage() {
 						"Access to major hubs",
 					],
 					href: "https://www.google.com/maps",
+					linkLabel: "View on map →",
 					icon: "🚌",
+					showArrow: true,
 				},
 			],
 		}),
