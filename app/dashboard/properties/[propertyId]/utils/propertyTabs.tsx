@@ -12,7 +12,7 @@ import { useEffect, useRef, useState } from "react";
 // Define the type for each tab
 type TabData = {
 	value: string;
-	label: string;
+	label: React.ReactNode;
 	content: React.ReactNode; // The content can be any valid JSX
 };
 
