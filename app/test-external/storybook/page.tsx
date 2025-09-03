@@ -9,7 +9,11 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useCommandPalette } from "@/external/action-bar/components/providers/CommandPaletteProvider";
+import {
+	CommandPaletteProvider,
+	useCommandPalette,
+} from "../../../external/action-bar/components/providers/CommandPaletteProvider";
+import { registerStorybookDemoCommands } from "../../../external/action-bar/components/demo/storybookCommands";
 import { PlaybackCell } from "@/external/audio-playback";
 import { CloneModal } from "@/external/teleprompter-modal";
 import { MinimalWheel } from "@/external/wheel-spinner";
@@ -189,73 +193,26 @@ export default function StorybookExternalPage() {
 	}, [videoUrl]);
 
 	useEffect(() => {
-		registerDynamicCommands([
-			{
-				id: "sb-go-home",
-				group: "Action Bar Demo",
-				label: "Go Home",
-				action: () => {
-					window.location.href = "/";
-				},
-				icon: <Home className="h-4 w-4" />,
-				shortcut: "G H",
-			},
-			{
-				id: "sb-go-leaderboard",
-				group: "Action Bar Demo",
-				label: "Go Leaderboard",
-				action: () => {
-					window.location.href = "/app/dashboard/leaderboard";
-				},
-				icon: <ListOrdered className="h-4 w-4" />,
-				shortcut: "G L",
-			},
-			// Media preview commands that open the modals using payload
-			{
-				id: "sb-media-image",
-				group: "Action Bar Demo",
-				label: "Show Image (Preview)",
-				hint: "Opens the image modal with preview src",
-				icon: <ImageIcon className="h-4 w-4" />,
-				preview: {
-					type: "image",
-					src: imageSrc,
-					placeholder: "https://place-hold.it/300x500/666/fff",
-					alt: "Image preview",
-				},
-				action: (payload) => {
-					const src = payload?.media?.src ?? imageSrc;
-					setImageSrc(src);
-					setImageOpen(true);
-				},
-			},
-			{
-				id: "sb-media-youtube",
-				group: "Action Bar Demo",
-				label: "Play YouTube (Preview)",
-				hint: "Opens the video modal with YouTube URL",
-				icon: <PlayCircle className="h-4 w-4" />,
-				preview: {
-					type: "youtube",
-					src: videoUrl,
-					placeholder: "https://place-hold.it/300x500/666/fff",
-					alt: "YouTube preview",
-				},
-				action: (payload) => {
-					const media = payload?.media;
-					if (media?.type === "youtube") {
-						const id = media.id;
-						if (id) {
-							setVideoUrl(`https://www.youtube.com/watch?v=${id}`);
-						} else if (media.src) {
-							setVideoUrl(media.src);
-						}
-						setVideoOpen(true);
-					}
-				},
-			},
-		]);
-	}, [registerDynamicCommands, imageSrc, videoUrl]);
+		registerStorybookDemoCommands({
+			registerDynamicCommands,
+			selectedText,
+			addHighlight,
+			setImageOpen,
+			setImageSrc,
+			setVideoOpen,
+			setVideoUrl,
+			videoUrl,
+		});
+	}, [
+		registerDynamicCommands,
+		selectedText,
+		addHighlight,
+		setImageOpen,
+		setImageSrc,
+		setVideoOpen,
+		setVideoUrl,
+		videoUrl,
+	]);
 
 	return (
 		<main className="mx-auto max-w-2xl space-y-8 p-6" style={highlightStyle}>

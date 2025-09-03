@@ -1,19 +1,10 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import {
-	Dialog,
-	DialogContent,
-	DialogHeader,
-	DialogTitle,
-} from "@/components/ui/dialog";
-import { Separator } from "@/components/ui/separator";
 import type { UserProfileSubscription } from "@/constants/_faker/profile/userSubscription";
 import { SubscriptionFeatures } from "@/constants/dashboard/featureList";
 import { useModalStore } from "@/lib/stores/dashboard";
-import { ArrowUpCircle, X } from "lucide-react";
-import Link from "next/link";
-import { useState } from "react";
+import { X } from "lucide-react";
+import { useEffect, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 
 const FeatureList = () => {
@@ -97,13 +88,33 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
 	);
 	const selectedPlan = plans.find((p) => p.id === selectedPlanId) || plans[0];
 
+	// SAFETY: allow disabling entirely via env flag if needed
+	if (process.env.NEXT_PUBLIC_DISABLE_UPGRADE_MODAL === "1") return null;
+
+	// Do not render at all unless explicitly opened
+	if (!isUpgradeModalOpen) return null;
+
+	// Close on Escape
+	useEffect(() => {
+		const onKey = (e: KeyboardEvent) => {
+			if (e.key === "Escape") closeUpgradeModal();
+		};
+		document.addEventListener("keydown", onKey);
+		return () => document.removeEventListener("keydown", onKey);
+	}, [closeUpgradeModal]);
+
 	return (
 		<div
-			className={`fixed inset-0 z-50 flex items-center justify-center bg-black/30 ${!isUpgradeModalOpen ? "hidden" : ""}`}
+			className="fixed inset-0 z-50 flex items-center justify-center bg-black/30"
 			aria-modal="true"
-			tabIndex={-1}
+			onClick={(e) => {
+				if (e.currentTarget === e.target) closeUpgradeModal();
+			}}
 		>
-			<div className="relative flex max-h-[80vh] w-full max-w-lg animate-fade-in flex-col rounded-xl bg-white p-0 shadow-2xl">
+			<div
+				className="relative flex max-h-[80vh] w-full max-w-lg animate-fade-in flex-col rounded-xl bg-white p-0 shadow-2xl"
+				onClick={(e) => e.stopPropagation()}
+			>
 				<div className="flex-1 overflow-y-auto p-8">
 					<button
 						aria-label="Close"
@@ -179,7 +190,7 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
 							CREDITS / month
 						</div>
 						<ul className="mb-6 space-y-2 text-base">
-							{selectedPlan.features.map((feature, i) => (
+							{selectedPlan.features.map((feature) => (
 								<li key={uuidv4()} className="flex items-center gap-2">
 									<span className="text-green-600">✔</span>{" "}
 									<span>{feature}</span>
