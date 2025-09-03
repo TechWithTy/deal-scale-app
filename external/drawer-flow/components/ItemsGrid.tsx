@@ -1,10 +1,11 @@
 "use client";
 import React, { useMemo, useState } from "react";
+import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useDrawerFlowStore } from "../stores/drawerFlowStore";
 import type { DrawerItem } from "../types";
-import { Bed, Bath, Ruler, ChevronLeft, ChevronRight } from "lucide-react";
+import { Bed, Bath, Ruler, ChevronLeft, ChevronRight, Eye } from "lucide-react";
 import { ModalImageLens } from "@/external/modal-image-inspect";
 
 interface ItemsGridProps {
@@ -124,18 +125,33 @@ export const ItemsGrid: React.FC<ItemsGridProps> = ({ renderItem }) => {
 									)}
 
 									<div className="p-4">
-										<div className="mb-2 flex items-center justify-between">
-											<h3 className="font-semibold text-base">
+										<div className="mb-2 flex items-center justify-between gap-2">
+											<h3 className="font-semibold text-base truncate pr-2">
 												{item.display.title}
 											</h3>
-											<Button
-												variant={selected ? "default" : "outline"}
-												size="sm"
-												onClick={toggle}
-												aria-pressed={selected}
-											>
-												{selected ? "Selected" : "Select"}
-											</Button>
+											<div className="flex items-center gap-2">
+												<Button
+													asChild
+													size="sm"
+													className="bg-primary text-primary-foreground hover:bg-primary/90 shadow"
+												>
+													<Link
+														href={`/dashboard/properties/${item.id}`}
+														prefetch
+														title="View details"
+													>
+														<Eye className="mr-1.5 h-4 w-4" /> View
+													</Link>
+												</Button>
+												<Button
+													variant={selected ? "default" : "outline"}
+													size="sm"
+													onClick={toggle}
+													aria-pressed={selected}
+												>
+													{selected ? "Selected" : "Select"}
+												</Button>
+											</div>
 										</div>
 										{item.display.subtitle && (
 											<p className="text-muted-foreground text-sm">
