@@ -25,8 +25,69 @@ import {
 } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
 import { Settings2, GripVertical } from "lucide-react";
+import {
+	ExpandableAISummary,
+	ExpandableAISummarySkeleton,
+} from "@/external/ai-summary-expandable/components";
 
 export default function TabbedListTestPage() {
+	// Loading showcase for AI Summary story
+	const [aiLoading, setAiLoading] = useState(true);
+	useEffect(() => {
+		const t = setTimeout(() => setAiLoading(false), 900);
+		return () => clearTimeout(t);
+	}, []);
+
+	const aiSection = useMemo(
+		() => ({
+			title: "Property Location & Market Analysis",
+			description: "Likelihood of finding off-market deals in this area",
+			overallScore: 85,
+			overallDelta: 2,
+			cards: [
+				{
+					title: "Crime Score",
+					description: "Safety assessment of the neighborhood",
+					score: 72,
+					delta: 0,
+					bullets: [
+						"Crime rate analysis",
+						"Safety trends",
+						"Local law enforcement presence",
+					],
+					href: "https://www.google.com/maps",
+					icon: "🛡️",
+				},
+				{
+					title: "Walk Score",
+					description: "Walkability of the neighborhood",
+					score: 63,
+					delta: 1,
+					bullets: [
+						"Proximity to amenities",
+						"Sidewalk quality",
+						"Pedestrian safety",
+					],
+					href: "https://www.google.com/maps",
+					icon: "🚶",
+				},
+				{
+					title: "Transit Score",
+					description: "Quality of public transportation",
+					score: 58,
+					delta: -1,
+					bullets: [
+						"Transit routes",
+						"Frequency of service",
+						"Access to major hubs",
+					],
+					href: "https://www.google.com/maps",
+					icon: "🚌",
+				},
+			],
+		}),
+		[],
+	);
 	// Sample data
 	const allData: PropertySummary[] = useMemo(
 		() => [
@@ -438,6 +499,30 @@ export default function TabbedListTestPage() {
 			</div>
 
 			<PropertyTabsList tabsData={tabsData} />
+
+			{/* AI Summary storybook-style section */}
+			<div className="mt-8 space-y-3">
+				<h2 className="font-semibold">AI Summary Expandable — Story</h2>
+				{/* Decorative gradient banner for visual context */}
+				<div className="relative overflow-hidden rounded-lg border border-border">
+					<div className="bg-gradient-to-r from-violet-500 via-fuchsia-500 to-pink-500 h-12" />
+					<div className="p-4">
+						<p className="text-sm text-muted-foreground">
+							Demo gradient banner above the component
+						</p>
+					</div>
+				</div>
+
+				{aiLoading ? (
+					<ExpandableAISummarySkeleton />
+				) : (
+					<ExpandableAISummary
+						section={aiSection}
+						defaultExpanded
+						gridColsClassName="grid-cols-1 md:grid-cols-2 xl:grid-cols-3"
+					/>
+				)}
+			</div>
 		</div>
 	);
 }
