@@ -82,53 +82,57 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
 	],
 	initialPlanId,
 }) => {
+	// SAFETY: allow disabling entirely via env flag if needed
+	if (process.env.NEXT_PUBLIC_DISABLE_UPGRADE_MODAL === "1") return null;
+
 	const { isUpgradeModalOpen, closeUpgradeModal } = useModalStore();
 	const [selectedPlanId, setSelectedPlanId] = useState(
 		initialPlanId || plans[0]?.id,
 	);
 	const selectedPlan = plans.find((p) => p.id === selectedPlanId) || plans[0];
 
-	// SAFETY: allow disabling entirely via env flag if needed
-	if (process.env.NEXT_PUBLIC_DISABLE_UPGRADE_MODAL === "1") return null;
-
-	// Do not render at all unless explicitly opened
-	if (!isUpgradeModalOpen) return null;
-
-	// Close on Escape
+	// Close on Escape - moved to top level
 	useEffect(() => {
+		if (!isUpgradeModalOpen) return;
+
 		const onKey = (e: KeyboardEvent) => {
 			if (e.key === "Escape") closeUpgradeModal();
 		};
 		document.addEventListener("keydown", onKey);
 		return () => document.removeEventListener("keydown", onKey);
-	}, [closeUpgradeModal]);
+	}, [isUpgradeModalOpen, closeUpgradeModal]);
+
+	// Do not render at all unless explicitly opened
+	if (!isUpgradeModalOpen) return null;
 
 	return (
 		<div
-			className="fixed inset-0 z-50 flex items-center justify-center bg-black/30"
+			className="fixed inset-0 z-50 flex items-center justify-center bg-background/80"
 			aria-modal="true"
 			onClick={(e) => {
 				if (e.currentTarget === e.target) closeUpgradeModal();
 			}}
 		>
 			<div
-				className="relative flex max-h-[80vh] w-full max-w-lg animate-fade-in flex-col rounded-xl bg-white p-0 shadow-2xl"
+				className="relative flex max-h-[80vh] w-full max-w-lg animate-fade-in flex-col rounded-xl bg-card p-0 shadow-2xl border border-border"
 				onClick={(e) => e.stopPropagation()}
 			>
 				<div className="flex-1 overflow-y-auto p-8">
 					<button
 						aria-label="Close"
 						type="button"
-						className="absolute top-4 right-4 text-gray-400 hover:text-gray-700"
+						className="absolute top-4 right-4 text-muted-foreground hover:text-foreground"
 						onClick={closeUpgradeModal}
 					>
 						<X size={22} />
 					</button>
-					<h2 className="mb-1 font-semibold text-lg">
+					<h2 className="mb-1 font-semibold text-lg text-foreground">
 						AI Calling - Upgrade your plan
 					</h2>
 					<p className="mb-2 font-bold text-2xl">{selectedPlan.name}</p>
-					<p className="mb-4 text-gray-600">{selectedPlan.description}</p>
+					<p className="mb-4 text-muted-foreground">
+						{selectedPlan.description}
+					</p>
 
 					{/* Tier Switcher */}
 					{plans.length > 1 && (
@@ -137,7 +141,7 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
 								<button
 									key={plan.id}
 									type="button"
-									className={`rounded-full border px-4 py-1 font-medium text-sm transition-all duration-150 ${selectedPlanId === plan.id ? "border-blue-600 bg-blue-600 text-white" : "border-blue-600 bg-white text-blue-600 hover:bg-blue-50"}`}
+									className={`rounded-full border border-border px-4 py-1 font-medium text-sm transition-all duration-150 ${selectedPlanId === plan.id ? "bg-primary text-primary-foreground" : "bg-transparent text-foreground hover:bg-accent"}`}
 									onClick={() => setSelectedPlanId(plan.id)}
 								>
 									{plan.name}
@@ -154,7 +158,7 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
 								</span>{" "}
 								Calling powered by artificial intelligence.
 							</div>
-							<p className="text-gray-500 text-sm">
+							<p className="text-muted-foreground text-sm">
 								Our AI technology allows for natural phrasing and dynamic
 								engagements using human-like voice models. Advanced calling
 								algorithms ensure optimal results and quality leads.
@@ -165,7 +169,7 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
 								</span>{" "}
 								Scale rapidly and dominate your market.
 							</div>
-							<p className="text-gray-500 text-sm">
+							<p className="text-muted-foreground text-sm">
 								Scaling your business used to take years; with Deal Scale, you
 								can scale in months.
 							</p>
@@ -177,7 +181,7 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
 								</span>{" "}
 								Human vs Deal Scale.
 							</div>
-							<p className="text-gray-500 text-sm">
+							<p className="text-muted-foreground text-sm">
 								It takes a human on a dialer 3 years to do what Deal Scale can
 								do in one day. Let us do the heavy lifting while you focus on
 								closing deals.
@@ -186,7 +190,7 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
 					</div>
 
 					<div className="my-6 border-t pt-5">
-						<div className="mb-3 font-semibold text-gray-500 text-xs uppercase tracking-wider">
+						<div className="mb-3 font-semibold text-muted-foreground text-xs uppercase tracking-wider">
 							CREDITS / month
 						</div>
 						<ul className="mb-6 space-y-2 text-base">
@@ -200,11 +204,11 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
 						<div className="mb-4 flex items-center justify-between">
 							<span className="font-bold text-3xl">
 								${selectedPlan.price.toLocaleString()}{" "}
-								<span className="font-medium text-base text-gray-500">
+								<span className="font-medium text-base text-muted-foreground">
 									{selectedPlan.priceSuffix}
 								</span>
 							</span>
-							<span className="text-gray-500 text-xs">
+							<span className="text-muted-foreground text-xs">
 								1 credit = 1 property record
 							</span>
 						</div>
@@ -212,7 +216,7 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
 							href={selectedPlan.stripePaymentLink}
 							target="_blank"
 							rel="noopener noreferrer"
-							className="block w-full rounded-lg bg-blue-600 py-3 text-center font-semibold text-lg text-white transition hover:bg-blue-700"
+							className="block w-full rounded-lg bg-primary py-3 text-center font-semibold text-lg text-primary-foreground transition hover:bg-primary/90"
 						>
 							{selectedPlan.cta || "Upgrade now"}
 						</a>

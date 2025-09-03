@@ -125,14 +125,12 @@ const PropertyListView: React.FC<PropertyListProps> = ({ properties }) => {
 	};
 
 	return (
-		<div
-			style={{ position: "absolute", right: 0, width: "400px", height: "100%" }}
-		>
+		<div>
 			<Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
-				<DrawerContent className="p-0" style={{ maxHeight: drawerHeight }}>
+				<DrawerContent className="p-0 flex h-full flex-col">
 					{/* Drawer header and resize bar */}
 					<div
-						className="my-5 flex cursor-ns-resize items-center justify-between bg-secondary p-4"
+						className="flex flex-none cursor-ns-resize items-center justify-between bg-secondary p-4"
 						onMouseDown={startResizing}
 					>
 						<h2 className="font-semibold text-lg">
@@ -149,10 +147,7 @@ const PropertyListView: React.FC<PropertyListProps> = ({ properties }) => {
 						</DrawerClose>
 					</div>
 
-					<CardContent
-						className="overflow-auto"
-						style={{ height: drawerHeight - 60 }}
-					>
+					<CardContent className="flex-1 overflow-auto p-6 pt-0">
 						<div className="space-y-4">
 							<div className="my-5 space-y-2">
 								<h3 className="font-semibold text-lg">

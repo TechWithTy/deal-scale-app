@@ -18,6 +18,7 @@ import type {
 import Image from "next/image";
 import Link from "next/link";
 import type React from "react";
+import { useState } from "react";
 
 interface PropertyCardProps {
 	property: Property;
@@ -32,14 +33,32 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
 }) => {
 	const isRealtor = isRealtorProperty(property);
 
-	// Get primary image URL
-	// Get primary image URL with type safety
-	const primaryImage = isRealtor
-		? (property as RealtorProperty).media.images.find((img) => img.isPrimary)
-				?.url ||
-			(property as RealtorProperty).media.images[0]?.url ||
-			""
-		: ""; // RentCast properties don't have direct image access in the type
+	// Build image list (Realtor only has media list; RentCast lacks images in the type)
+	const realtorImages = isRealtor
+		? (property as RealtorProperty).media.images
+				.map((img) => img.url)
+				.filter(Boolean)
+		: [];
+	let images = realtorImages;
+	if (!images.length) {
+		// Fallback demo images so the carousel is visible even when data lacks media
+		const seed = encodeURIComponent(property.id ?? "prop");
+		images = [
+			`https://picsum.photos/seed/${seed}a/800/450`,
+			`https://picsum.photos/seed/${seed}b/800/450`,
+			`https://picsum.photos/seed/${seed}c/800/450`,
+		];
+	}
+	const [imgIdx, setImgIdx] = useState(0);
+	const prevImg = () =>
+		setImgIdx((i) => (i - 1 + images.length) % images.length);
+	const nextImg = () => setImgIdx((i) => (i + 1) % images.length);
+
+	// Pre-compute neighbor indices and prefetch those images using hidden <img>
+	const leftIdx = (imgIdx - 1 + images.length) % images.length;
+	const rightIdx = (imgIdx + 1) % images.length;
+	const blurDataURL =
+		"data:image/svg+xml;base64,PHN2ZyB3aWR0aD0nMScgaGVpZ2h0PScxJyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnPjxyZWN0IHdpZHRoPScxJyBoZWlnaHQ9JzEnIGZpbGw9JyNlZWUnIC8+PC9zdmc+";
 
 	// Get property details with type safety
 	const { address, details, metadata } = property;
@@ -83,7 +102,7 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
 
 	return (
 		<Card
-			className={`group relative mx-auto max-w-lg overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm transition-all hover:shadow-md dark:border-gray-700 dark:bg-gray-900 ${
+			className={`group relative mx-auto max-w-lg overflow-hidden rounded-lg border bg-card text-card-foreground shadow-sm transition-all hover:shadow-md ${
 				selected ? "ring-2 ring-orange-500 ring-offset-2" : ""
 			}`}
 			aria-selected={selected}
@@ -92,10 +111,10 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
 				{/* Checkbox for selection */}
 				<button
 					type="button"
-					className={`absolute z-10 flex h-8 w-8 items-center justify-center rounded-full border-2 border-gray-200 border-orange-500 text-transparent shadow-md transition-colors hover:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500 dark:border-gray-700 ${
+					className={`absolute z-10 flex h-8 w-8 items-center justify-center rounded-full border-2 text-transparent shadow-md transition-colors focus:outline-none focus:ring-2 focus:ring-orange-500 ${
 						selected
-							? "bg-orange-500 text-white"
-							: "bg-white/80 group-hover:text-gray-400 dark:bg-gray-800/80"
+							? "bg-orange-500 text-white border-orange-500"
+							: "bg-white/80 group-hover:text-gray-400 dark:bg-gray-800/80 border-gray-200 hover:border-orange-500"
 					}`}
 					onClick={(e) => {
 						e.stopPropagation();
@@ -135,25 +154,92 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
 					)}
 				</button>
 
-				{/* Property Image */}
-				<Link href={`/dashboard/properties/${property.id}`}>
-					<div className="relative h-48 w-full cursor-pointer overflow-hidden rounded-t-lg bg-gray-100 dark:bg-gray-800">
-						{primaryImage ? (
+				{/* Property Image Carousel */}
+				<div className="group relative h-48 w-full overflow-hidden rounded-t-lg bg-gray-100 dark:bg-gray-800">
+					<Link
+						href={`/dashboard/properties/${property.id}`}
+						className="block h-full w-full"
+					>
+						{images[imgIdx] ? (
 							<Image
-								src={primaryImage}
+								src={images[imgIdx]}
 								alt={`${address.street}, ${address.city}, ${address.state} ${address.zipCode}`}
 								fill
 								className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
 								sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-								priority
+								loading="eager"
+								placeholder="blur"
+								blurDataURL={blurDataURL}
 							/>
 						) : (
 							<div className="flex h-full w-full items-center justify-center text-gray-400">
 								<Home className="h-16 w-16" />
 							</div>
 						)}
+					</Link>
+					{images.length > 1 && (
+						<>
+							<button
+								type="button"
+								onClick={(e) => {
+									e.stopPropagation();
+									prevImg();
+								}}
+								className="absolute left-2 top-1/2 z-10 -translate-y-1/2 rounded-full bg-black/35 text-white shadow backdrop-blur-sm ring-1 ring-white/20 hover:bg-black/55 transition-opacity opacity-0 group-hover:opacity-100 h-8 w-8 flex items-center justify-center"
+								aria-label="Previous image"
+							>
+								<svg
+									className="h-5 w-5"
+									viewBox="0 0 24 24"
+									fill="none"
+									stroke="currentColor"
+									strokeWidth="2"
+									strokeLinecap="round"
+									strokeLinejoin="round"
+								>
+									<polyline points="15 18 9 12 15 6"></polyline>
+								</svg>
+							</button>
+							<button
+								type="button"
+								onClick={(e) => {
+									e.stopPropagation();
+									nextImg();
+								}}
+								className="absolute right-2 top-1/2 z-10 -translate-y-1/2 rounded-full bg-black/35 text-white shadow backdrop-blur-sm ring-1 ring-white/20 hover:bg-black/55 transition-opacity opacity-0 group-hover:opacity-100 h-8 w-8 flex items-center justify-center"
+								aria-label="Next image"
+							>
+								<svg
+									className="h-5 w-5"
+									viewBox="0 0 24 24"
+									fill="none"
+									stroke="currentColor"
+									strokeWidth="2"
+									strokeLinecap="round"
+									strokeLinejoin="round"
+								>
+									<polyline points="9 18 15 12 9 6"></polyline>
+								</svg>
+							</button>
+							<div className="pointer-events-none absolute bottom-2 left-1/2 z-10 -translate-x-1/2">
+								<div className="flex gap-1">
+									{images.map((_, i) => (
+										<span
+											key={i}
+											className={`h-1.5 w-3 rounded-full ${i === imgIdx ? "bg-primary" : "bg-background/70 ring-1 ring-border"}`}
+										/>
+									))}
+								</div>
+							</div>
+						</>
+					)}
+
+					{/* Hidden prefetch for neighbor images */}
+					<div className="hidden">
+						{images[leftIdx] && <img src={images[leftIdx]} alt="" />}
+						{images[rightIdx] && <img src={images[rightIdx]} alt="" />}
 					</div>
-				</Link>
+				</div>
 
 				{/* Property Details */}
 				<div className="p-4 text-center">
