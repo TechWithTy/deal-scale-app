@@ -60,7 +60,8 @@ import { emptyAgentProperty as testProperty } from "@/constants/dashboard/testPr
 import { createRealtorProperty } from "@/types/_dashboard/property";
 import PropertyTabsList from "./utils/propertyTabs";
 import ContactCard from "@/components/property/page/contactCard";
-import PropertyAIScoreCard from "@/components/property/page/PropertyAIScoreCard";
+// Replaced legacy AI score card with external summary client wrapper
+import AISummaryCardClient from "@/components/property/page/AISummaryCardClient";
 
 // Dynamically import the client component with no SSR
 const PropertyPageClient = dynamic(
@@ -345,7 +346,7 @@ export default async function PropertyPage({
 						/>
 					</div>
 				</div>
-				<PropertyAIScoreCard property={property} />
+				<AISummaryCardClient property={property} />
 				{/* Property Details */}
 				<PropertyOverviewCard property={property} />
 

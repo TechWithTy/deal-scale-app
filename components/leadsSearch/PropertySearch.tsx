@@ -35,6 +35,7 @@ import { mockUserProfile } from "@/constants/_faker/profile/userProfile";
 import HelpModal from "./search/HelpModal";
 import LeadSearchForm from "./search/LeadSearchForm";
 import LeadSearchHeader from "./search/LeadSearchHeader";
+import { useRemainingLeads, useUserStore } from "@/lib/stores/userStore";
 import MapSection from "./search/MapSection";
 import PropertiesList from "./search/PropertiesList";
 import WalkThroughModal from "./search/WalkthroughModal";
@@ -64,6 +65,8 @@ const PropertySearch: React.FC<PropertySearchProps> = ({
 		useState<google.maps.LatLngBounds | null>(null);
 
 	const { properties, setProperties, setIsDrawerOpen } = usePropertyStore();
+	const remainingLeads = useRemainingLeads();
+	const consumeLeads = useUserStore((s) => s.consumeLeads);
 
 	useEffect(() => {
 		setProperties([]);
@@ -127,6 +130,8 @@ const PropertySearch: React.FC<PropertySearchProps> = ({
 			setProperties(generateFakeProperties(propertyCount));
 			setIsSearching(false);
 			setHasResults(propertyCount > 0);
+			// Decrement leads credits by the number of properties fetched
+			consumeLeads(propertyCount);
 			toast.success(`Search complete! Found ${propertyCount} properties`);
 		}, 1500);
 	};
@@ -137,12 +142,7 @@ const PropertySearch: React.FC<PropertySearchProps> = ({
 				onHelpClick={() => setIsModalOpen(true)}
 				title="Leads Search"
 				description="Quickly search for properties by location, filters, and more."
-				creditsRemaining={
-					mockUserProfile
-						? mockUserProfile.subscription.aiCredits.allotted -
-							mockUserProfile.subscription.aiCredits.used
-						: undefined
-				}
+				creditsRemaining={remainingLeads}
 			/>
 			<form onSubmit={handleFormSubmit(onSubmit)}>
 				<LeadSearchForm
@@ -182,13 +182,15 @@ const PropertySearch: React.FC<PropertySearchProps> = ({
 						<Button
 							type="submit"
 							className="w-full gap-2 md:w-auto"
-							disabled={!isValid}
+							disabled={!isValid || remainingLeads <= 0}
 						>
 							<Search className="h-4 w-4" /> Search
 						</Button>
-						{!isValid && (
+						{(!isValid || remainingLeads <= 0) && (
 							<span className="-translate-x-1/2 -translate-y-full pointer-events-none absolute top-0 left-1/2 z-10 w-max rounded bg-gray-800 px-3 py-1 text-white text-xs opacity-0 transition-opacity duration-200 group-hover:opacity-100">
-								Enter valid search criteria to save
+								{!isValid
+									? "Enter valid search criteria to search"
+									: "No lead credits remaining"}
 							</span>
 						)}
 					</div>

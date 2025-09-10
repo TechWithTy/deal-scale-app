@@ -13,7 +13,21 @@ interface UserState {
 		leads: UserCredits;
 		skipTraces: UserCredits;
 	};
-	setUser: (session: any) => void;
+	setUser: (
+		session: {
+			user?: {
+				role?: string;
+				permissions?: string[];
+				subscription?: {
+					aiCredits?: UserCredits;
+					leads?: UserCredits;
+					skipTraces?: UserCredits;
+				};
+			};
+		} | null,
+	) => void;
+	consumeLeads: (amount: number) => void;
+	consumeAI: (amount: number) => void;
 }
 
 const initialState = {
@@ -29,25 +43,78 @@ const initialState = {
 export const useUserStore = create<UserState>((set) => ({
 	...initialState,
 	setUser: (session) => {
-		if (!session?.user) return;
+		if (!session?.user) {
+			// reset to initial state on sign out or missing user
+			set({ ...initialState });
+			return;
+		}
 
+		const u = session.user;
 		set({
-			role: session.user.role,
-			permissions: session.user.permissions || [],
+			role: u.role,
+			permissions: u.permissions || [],
 			credits: {
 				ai: {
-					used: session.user.subscription?.aiCredits?.used || 0,
-					allotted: session.user.subscription?.aiCredits?.allotted || 0,
+					used: u.subscription?.aiCredits?.used || 0,
+					allotted: u.subscription?.aiCredits?.allotted || 0,
 				},
 				leads: {
-					used: session.user.subscription?.leads?.used || 0,
-					allotted: session.user.subscription?.leads?.allotted || 0,
+					used: u.subscription?.leads?.used || 0,
+					allotted: u.subscription?.leads?.allotted || 0,
 				},
 				skipTraces: {
-					used: session.user.subscription?.skipTraces?.used || 0,
-					allotted: session.user.subscription?.skipTraces?.allotted || 0,
+					used: u.subscription?.skipTraces?.used || 0,
+					allotted: u.subscription?.skipTraces?.allotted || 0,
 				},
 			},
 		});
 	},
+	consumeLeads: (amount) => {
+		const safeAmount = Number.isFinite(amount) && amount > 0 ? amount : 0;
+		if (safeAmount === 0) return;
+		set((state) => {
+			const current = state.credits.leads;
+			const remaining = Math.max(0, current.allotted - current.used);
+			const delta = Math.min(remaining, safeAmount);
+			return {
+				credits: {
+					...state.credits,
+					leads: {
+						...current,
+						used: Math.min(current.allotted, current.used + delta),
+					},
+				},
+			};
+		});
+	},
+	consumeAI: (amount) => {
+		const safeAmount = Number.isFinite(amount) && amount > 0 ? amount : 0;
+		if (safeAmount === 0) return;
+		set((state) => {
+			const current = state.credits.ai;
+			const remaining = Math.max(0, current.allotted - current.used);
+			const delta = Math.min(remaining, safeAmount);
+			return {
+				credits: {
+					...state.credits,
+					ai: {
+						...current,
+						used: Math.min(current.allotted, current.used + delta),
+					},
+				},
+			};
+		});
+	},
 }));
+
+export const useRemainingLeads = () =>
+	useUserStore((state) => {
+		const current = state.credits.leads;
+		return Math.max(0, current.allotted - current.used);
+	});
+
+export const useRemainingAI = () =>
+	useUserStore((state) => {
+		const current = state.credits.ai;
+		return Math.max(0, current.allotted - current.used);
+	});

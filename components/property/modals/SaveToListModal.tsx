@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
 import { useUserProfileStore } from "@/lib/stores/user/userProfile";
+import { useRemainingLeads, useUserStore } from "@/lib/stores/userStore";
 import type { LeadTypeGlobal } from "@/types/_dashboard/leads";
 import type {
 	Property,
@@ -81,6 +82,8 @@ interface SaveToListModalProps {
 	onClose: () => void;
 	property: Property;
 	onSave: () => void;
+	// Optional bulk support: when provided, we will save multiple and consume credits accordingly
+	properties?: Property[];
 }
 
 export function SaveToListModal({
@@ -88,6 +91,7 @@ export function SaveToListModal({
 	onClose,
 	property,
 	onSave,
+	properties,
 }: SaveToListModalProps) {
 	const { toast } = useToast();
 	const { addLeadList, addLeadToList } = useUserProfileStore();
@@ -97,6 +101,8 @@ export function SaveToListModal({
 
 	const [newListName, setNewListName] = useState("");
 	const [selectedListId, setSelectedListId] = useState<string | null>(null);
+	const remainingLeads = useRemainingLeads();
+	const consumeLeads = useUserStore((s) => s.consumeLeads);
 
 	// * This effect ensures the dropdown is populated and a default is selected
 	useEffect(() => {
@@ -104,6 +110,19 @@ export function SaveToListModal({
 			setSelectedListId(leadLists[0].id);
 		}
 	}, [isOpen, leadLists, selectedListId]);
+
+	const isOffMarket = (p: Property) => {
+		// Basic heuristic: realtor status contains "off" or equals "off_market"
+		if (isRealtorProperty(p)) {
+			const st = (p.metadata.status || "").toString().toLowerCase();
+			return st.includes("off");
+		}
+		return false;
+	};
+
+	const calcRequiredCredits = (list: Property[]) => {
+		return list.reduce((sum, p) => sum + (isOffMarket(p) ? 1.5 : 1), 0);
+	};
 
 	const handleCreateList = () => {
 		if (newListName.trim() !== "") {
@@ -130,16 +149,37 @@ export function SaveToListModal({
 
 	const handleSave = () => {
 		if (selectedListId) {
-			const lead = propertyToLead(property);
-			addLeadToList(selectedListId, lead);
+			const items: Property[] =
+				Array.isArray(properties) && properties.length > 0
+					? properties
+					: [property];
+			const required = calcRequiredCredits(items);
+			if (remainingLeads < required) {
+				toast({
+					title: "Insufficient lead credits",
+					description: `You need ${required} credits but only have ${remainingLeads}.`,
+					variant: "destructive",
+				});
+				return;
+			}
+
+			// Save each property as a lead
+			for (const prop of items) {
+				const lead = propertyToLead(prop);
+				addLeadToList(selectedListId, lead);
+			}
+
+			// Consume credits after successful save
+			consumeLeads(required);
+
 			const listName = leadLists.find(
 				(list) => list.id === selectedListId,
 			)?.listName;
 			toast({
 				title: "Success",
-				description: `Property saved to "${listName || "list"}"`,
+				description: `${items.length} propert${items.length > 1 ? "ies" : "y"} saved to "${listName || "list"}". ${required} lead credit${required !== 1 ? "s" : ""} used.`,
 			});
-			onSave(); // Notify parent
+			onSave();
 			onClose();
 		} else {
 			toast({
@@ -198,8 +238,20 @@ export function SaveToListModal({
 						</Select>
 					</div>
 				</div>
-				<div className="mt-4 flex justify-end">
-					<Button onClick={handleSave} disabled={!selectedListId}>
+				<div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+					<div className="text-muted-foreground text-xs">
+						Required Credits: {(() => {
+							const items: Property[] =
+								Array.isArray(properties) && properties.length > 0
+									? properties
+									: [property];
+							return calcRequiredCredits(items);
+						})()} / Remaining: {remainingLeads}
+					</div>
+					<Button
+						onClick={handleSave}
+						disabled={!selectedListId || remainingLeads <= 0}
+					>
 						Save
 					</Button>
 				</div>
