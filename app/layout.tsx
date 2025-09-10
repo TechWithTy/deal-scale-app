@@ -6,6 +6,7 @@ import { Inter } from "next/font/google";
 import NextTopLoader from "nextjs-toploader";
 import "./globals.css";
 import { auth } from "@/auth";
+import SessionSync from "@/components/auth/SessionSync";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -26,7 +27,10 @@ export default async function RootLayout({
 			<body className={`${inter.className}  `} suppressHydrationWarning={true}>
 				<NextTopLoader showSpinner={false} />
 				<CommandPaletteProvider>
-					<Providers session={session}>{children}</Providers>
+					<Providers session={session}>
+						{children}
+						<SessionSync />
+					</Providers>
 					{/* Global command palette dialog (Cmd/Ctrl+K) */}
 					<ActionBarRoot />
 				</CommandPaletteProvider>
