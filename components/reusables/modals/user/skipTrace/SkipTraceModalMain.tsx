@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { Button } from "@/components/ui/button";
 import ListTraceFlow from "./flows/ListTraceFlow";
 import SingleTraceFlow from "./flows/SingleTraceFlow";
@@ -12,7 +13,12 @@ interface SkipTraceModalMainProps {
 	isOpen: boolean;
 	onClose: () => void;
 	initialData?:
-		| { type: "list"; file?: File }
+		| {
+				type: "list";
+				file?: File;
+				availableListNames?: string[];
+				availableFields?: string[];
+		  }
 		| ({ type: "single" } & Partial<
 				Record<
 					| "firstName"
@@ -21,10 +27,11 @@ interface SkipTraceModalMainProps {
 					| "email"
 					| "phone"
 					| "socialMedia"
-					| "domain",
+					| "domain"
+					| "listName",
 					string
 				>
-		  >);
+		  > & { availableListNames?: string[] });
 }
 
 const SkipTraceModalMain: React.FC<SkipTraceModalMainProps> = ({
@@ -32,7 +39,9 @@ const SkipTraceModalMain: React.FC<SkipTraceModalMainProps> = ({
 	onClose,
 	initialData,
 }) => {
-	const [currentFlow, setCurrentFlow] = useState<Flow>(null);
+	const [currentFlow, setCurrentFlow] = useState<Flow>(
+		initialData?.type ?? "list",
+	);
 
 	useEffect(() => {
 		if (initialData) {
@@ -51,9 +60,9 @@ const SkipTraceModalMain: React.FC<SkipTraceModalMainProps> = ({
 
 	if (!isOpen) return null;
 
-	return (
-		<div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
-			<div className="relative flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-lg border border-border bg-card p-6 text-foreground shadow-lg">
+	const content = (
+		<div className="fixed inset-0 z-[100] flex items-center justify-center bg-background/80 backdrop-blur-sm">
+			<div className="relative z-[101] flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-lg border border-border bg-card p-6 text-foreground shadow-lg">
 				<button
 					type="button"
 					className="absolute top-2 right-2 text-muted-foreground hover:text-foreground"
@@ -62,32 +71,99 @@ const SkipTraceModalMain: React.FC<SkipTraceModalMainProps> = ({
 					&times;
 				</button>
 
-				{!currentFlow && (
-					<>
-						<h2 className="mb-4 text-xl font-semibold">Skip Trace</h2>
-						<p className="mb-6 text-muted-foreground">
-							Choose an option to begin.
-						</p>
-						<div className="flex flex-col space-y-4">
-							<Button onClick={() => setCurrentFlow("list")} variant="outline">
-								Skip Trace a List
-							</Button>
-							<Button
-								onClick={() => setCurrentFlow("single")}
-								variant="outline"
-							>
-								Skip Trace a Single Contact
-							</Button>
-						</div>
-					</>
-				)}
-
 				{currentFlow === "list" && (
 					<ListTraceFlow
 						onClose={handleClose}
 						onBack={handleBack}
 						initialFile={
 							initialData?.type === "list" ? initialData.file : undefined
+						}
+						initialListMode={(() => {
+							// 1) Explicit intent override when provided by launcher
+							const hasIntent = Boolean(
+								initialData &&
+									typeof initialData === "object" &&
+									"intent" in (initialData as Record<string, unknown>),
+							);
+							if (hasIntent) {
+								const intent = (initialData as { intent?: string }).intent;
+								if (intent === "add_lead") return "create" as const;
+								if (intent === "skip_trace") return "select" as const;
+							}
+
+							// 2) Fallback: infer from incoming lists/counts
+							const hasNames = Boolean(
+								initialData &&
+									typeof initialData === "object" &&
+									"availableListNames" in
+										(initialData as Record<string, unknown>) &&
+									(initialData as { availableListNames?: string[] })
+										.availableListNames?.length,
+							);
+							const hasLists = Boolean(
+								initialData &&
+									typeof initialData === "object" &&
+									"availableLists" in
+										(initialData as Record<string, unknown>) &&
+									(
+										initialData as {
+											availableLists?: { name: string; count: number }[];
+										}
+									).availableLists?.length,
+							);
+							const hasCounts = Boolean(
+								initialData &&
+									typeof initialData === "object" &&
+									"listCounts" in (initialData as Record<string, unknown>) &&
+									Object.keys(
+										(initialData as { listCounts?: Record<string, number> })
+											.listCounts ?? {},
+									).length,
+							);
+							return hasNames || hasLists || hasCounts ? "select" : "create";
+						})()}
+						availableListNames={
+							initialData &&
+							typeof initialData === "object" &&
+							"availableListNames" in (initialData as Record<string, unknown>)
+								? (initialData as { availableListNames?: string[] })
+										.availableListNames
+								: undefined
+						}
+						availableFields={
+							initialData &&
+							typeof initialData === "object" &&
+							"availableFields" in (initialData as Record<string, unknown>)
+								? (initialData as { availableFields?: string[] })
+										.availableFields
+								: undefined
+						}
+						availableLists={
+							initialData &&
+							typeof initialData === "object" &&
+							"availableLists" in (initialData as Record<string, unknown>)
+								? (
+										initialData as {
+											availableLists?: { name: string; count: number }[];
+										}
+									).availableLists
+								: undefined
+						}
+						availableLeadCount={
+							initialData &&
+							typeof initialData === "object" &&
+							"availableLeadCount" in (initialData as Record<string, unknown>)
+								? (initialData as { availableLeadCount?: number })
+										.availableLeadCount
+								: undefined
+						}
+						listCounts={
+							initialData &&
+							typeof initialData === "object" &&
+							"listCounts" in (initialData as Record<string, unknown>)
+								? (initialData as { listCounts?: Record<string, number> })
+										.listCounts
+								: undefined
 						}
 					/>
 				)}
@@ -97,13 +173,58 @@ const SkipTraceModalMain: React.FC<SkipTraceModalMainProps> = ({
 						onClose={handleClose}
 						onBack={handleBack}
 						initialData={
-							initialData?.type === "single" ? initialData : undefined
+							initialData &&
+							typeof initialData === "object" &&
+							"type" in initialData &&
+							initialData.type === "single"
+								? initialData
+								: undefined
+						}
+						availableListNames={
+							initialData &&
+							typeof initialData === "object" &&
+							"availableListNames" in (initialData as Record<string, unknown>)
+								? (initialData as { availableListNames?: string[] })
+										.availableListNames
+								: undefined
+						}
+						availableLists={
+							initialData &&
+							typeof initialData === "object" &&
+							"availableLists" in (initialData as Record<string, unknown>)
+								? (
+										initialData as {
+											availableLists?: { name: string; count: number }[];
+										}
+									).availableLists
+								: undefined
+						}
+						availableLeadCount={
+							initialData &&
+							typeof initialData === "object" &&
+							"availableLeadCount" in (initialData as Record<string, unknown>)
+								? (initialData as { availableLeadCount?: number })
+										.availableLeadCount
+								: undefined
+						}
+						listCounts={
+							initialData &&
+							typeof initialData === "object" &&
+							"listCounts" in (initialData as Record<string, unknown>)
+								? (initialData as { listCounts?: Record<string, number> })
+										.listCounts
+								: undefined
 						}
 					/>
 				)}
 			</div>
 		</div>
 	);
+
+	if (typeof window !== "undefined" && typeof document !== "undefined") {
+		return createPortal(content, document.body);
+	}
+	return content;
 };
 
 export default SkipTraceModalMain;

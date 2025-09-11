@@ -1,12 +1,12 @@
 "use client";
 
 import { NuqsAdapter } from "nuqs/adapters/next/app";
-import LeadsDemoTable from "../../../../external/shadcn-table/src/examples/leads-demo-table";
+import LeadListTableWithModals from "@/components/tables/LeadListTableWithModals";
 
 export default function TestExternalPage() {
 	return (
 		<NuqsAdapter>
-			<LeadsDemoTable />
+			<LeadListTableWithModals />
 		</NuqsAdapter>
 	);
 }

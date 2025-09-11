@@ -1,4 +1,5 @@
 import { useSkipTraceStore } from "@/lib/stores/user/skipTraceStore";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -8,7 +9,7 @@ import type {
 } from "@/types/skip-trace/enrichment";
 import { enrichmentOptions } from "@/constants/skip-trace/enrichmentOptions";
 import { fieldLabels } from "@/constants/skip-trace/fieldLabels";
-import { useUserProfileStore } from "@/lib/stores/user/userProfile";
+import { useUserStore } from "@/lib/stores/userStore";
 import { EnrichmentCard } from "./enrichment/EnrichmentCard";
 
 // * Helper functions that adapt to list vs single flow
@@ -46,9 +47,16 @@ interface EnrichmentStepProps {
 		userInput: Record<InputField, string>,
 	) => void;
 	onBack: () => void;
+	mappedTypesOverride?: Set<InputField> | null;
+	leadCountOverride?: number;
 }
 
-export function EnrichmentStep({ onNext, onBack }: EnrichmentStepProps) {
+export function EnrichmentStep({
+	onNext,
+	onBack,
+	mappedTypesOverride = null,
+	leadCountOverride,
+}: EnrichmentStepProps) {
 	const {
 		leadCount,
 		userInput,
@@ -58,7 +66,17 @@ export function EnrichmentStep({ onNext, onBack }: EnrichmentStepProps) {
 		selectedHeaders,
 		uploadedFile,
 	} = useSkipTraceStore();
-	const { userProfile } = useUserProfileStore();
+
+	// Select credits from NextAuth-synced userStore
+	const availableCredits = useUserStore((s) =>
+		Math.max(
+			0,
+			(s.credits.skipTraces.allotted ?? 0) - (s.credits.skipTraces.used ?? 0),
+		),
+	);
+
+	// Local submitting state for async submit UX
+	const [submitting, setSubmitting] = useState(false);
 
 	const handleInputChange = (field: InputField, value: string) => {
 		const newUserInput = { ...userInput, [field]: value };
@@ -72,29 +90,30 @@ export function EnrichmentStep({ onNext, onBack }: EnrichmentStepProps) {
 		setSelectedEnrichmentOptions(newSelectedOptions);
 	};
 
-	const creditCost = selectedOptions.reduce((total, optionId) => {
-		const option = enrichmentOptions.find((opt) => opt.id === optionId);
-		if (option && !option.isFree) {
-			return total + leadCount;
-		}
-		return total;
-	}, 0);
-
-	const availableCredits =
-		(userProfile?.subscription?.skipTraces.allotted ?? 0) -
-		(userProfile?.subscription?.skipTraces.used ?? 0);
+	// Pricing policy: 1 credit per lead per paid tool
+	const effectiveLeadCount =
+		typeof leadCountOverride === "number" && leadCountOverride >= 0
+			? leadCountOverride
+			: leadCount;
+	const premiumPerLead = new Set(["data_enrichment_suite", "domain_recon"]);
+	const selectedPremiumCount = selectedOptions.filter((id) =>
+		premiumPerLead.has(id),
+	).length;
+	const creditCost = effectiveLeadCount * selectedPremiumCount;
 
 	const hasEnoughCredits = availableCredits >= creditCost;
 
 	// Determine flow type and build a set of mapped types when in list flow
-	const isListFlow = Boolean(uploadedFile);
-	const mappedTypes: Set<InputField> | null = isListFlow
-		? new Set(
-				(selectedHeaders ?? [])
-					.map((h) => h.type as InputField)
-					.filter(Boolean),
-			)
-		: null;
+	const isListFlow = Boolean(uploadedFile) || Boolean(mappedTypesOverride);
+	const mappedTypes: Set<InputField> | null = mappedTypesOverride
+		? new Set(mappedTypesOverride)
+		: uploadedFile
+			? new Set(
+					(selectedHeaders ?? [])
+						.map((h) => h.type as InputField)
+						.filter(Boolean),
+				)
+			: null;
 
 	// Build userInput fed into EnrichmentCard: in list flow, mark mapped types as present
 	const userInputForValidation: Record<InputField, string> = isListFlow
@@ -151,27 +170,46 @@ export function EnrichmentStep({ onNext, onBack }: EnrichmentStepProps) {
 			</TooltipProvider>
 
 			<div className="mt-auto pt-4">
+				{/* Total leads summary */}
+				<div className="mb-2 rounded-md border border-gray-200 bg-muted p-3 text-center dark:border-gray-800 dark:bg-muted/30">
+					<p className="font-medium text-sm">
+						Total Leads: {effectiveLeadCount.toLocaleString()}
+					</p>
+				</div>
 				<div className="mb-2 rounded-md border border-blue-200 bg-blue-50 p-3 text-center dark:border-blue-800 dark:bg-blue-900/50">
 					<p className="font-medium text-blue-800 text-sm dark:text-blue-200">
 						Available Credits: {availableCredits.toLocaleString()}
 					</p>
 				</div>
-				{creditCost > 0 && (
-					<div className="mb-4 rounded-md border border-yellow-200 bg-yellow-50 p-3 text-center dark:border-yellow-800 dark:bg-yellow-900/50">
-						<p className="font-medium text-sm text-yellow-800 dark:text-yellow-200">
-							Estimated Cost: {creditCost.toLocaleString()} credits
-						</p>
-					</div>
-				)}
+				<div className="mb-4 rounded-md border border-yellow-200 bg-yellow-50 p-3 text-center dark:border-yellow-800 dark:bg-yellow-900/50">
+					<p className="font-medium text-sm text-yellow-800 dark:text-yellow-200">
+						Estimated Cost: {creditCost.toLocaleString()} credits
+					</p>
+					<p className="mt-1 text-xs text-yellow-800 dark:text-yellow-200">
+						Leads: {effectiveLeadCount.toLocaleString()} • Paid tools:{" "}
+						{selectedPremiumCount}
+					</p>
+					<p className="text-xs text-yellow-800 dark:text-yellow-200">
+						Estimated: {effectiveLeadCount.toLocaleString()} ×{" "}
+						{selectedPremiumCount} = {creditCost.toLocaleString()}
+					</p>
+				</div>
 				<div className="flex justify-between">
 					<Button variant="outline" onClick={onBack}>
 						Back
 					</Button>
 					<Button
-						onClick={() => onNext(selectedOptions, userInput)}
-						disabled={!hasEnoughCredits}
+						onClick={async () => {
+							setSubmitting(true);
+							try {
+								await onNext(selectedOptions, userInput);
+							} finally {
+								setSubmitting(false);
+							}
+						}}
+						disabled={!hasEnoughCredits || submitting}
 					>
-						Next
+						{submitting ? "Submitting..." : "Submit"}
 					</Button>
 				</div>
 			</div>

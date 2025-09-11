@@ -1,6 +1,7 @@
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import PageContainer from "@/components/layout/page-container";
-import LeadListClient from "@/components/tables/lead-list-tables/client";
+import LeadListTableWithModals from "@/components/tables/LeadListTableWithModals";
+import { NuqsAdapter } from "nuqs/adapters/next/app";
 
 const breadcrumbItems = [
 	{ title: "Dashboard", link: "/dashboard" },
@@ -9,10 +10,12 @@ const breadcrumbItems = [
 export default function page() {
 	return (
 		<PageContainer>
-			<div className="space-y-2">
-				<Breadcrumbs items={breadcrumbItems} />
-				<LeadListClient />
-			</div>
+			<NuqsAdapter>
+				<div className="space-y-2">
+					<Breadcrumbs items={breadcrumbItems} />
+					<LeadListTableWithModals />
+				</div>
+			</NuqsAdapter>
 		</PageContainer>
 	);
 }

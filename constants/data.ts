@@ -168,12 +168,7 @@ export const navItems: NavItem[] = [
 		icon: "campaigns",
 		label: "campaigns",
 	},
-	{
-		title: "Leads",
-		href: "/dashboard/lead",
-		icon: "user",
-		label: "leads",
-	},
+
 	{
 		title: "Lead Lists",
 		href: "/dashboard/leadList",
