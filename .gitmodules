@@ -44,3 +44,6 @@
 [submodule "external/drawer-flow"]
 	path = external/drawer-flow
 	url = https://github.com/techwithty/drawer-flow.git
+[submodule "external/tabbed-list-test"]
+	path = external/tabbed-list-test
+	url = https://github.com/techwithty/tabbed-list-test.git
