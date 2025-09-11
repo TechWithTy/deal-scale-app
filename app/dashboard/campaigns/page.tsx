@@ -9,9 +9,12 @@ const breadcrumbItems = [
 export default function page() {
 	return (
 		<PageContainer>
-			<div className="space-y-2">
+			<div className="w-full min-w-0 space-y-2">
 				<Breadcrumbs items={breadcrumbItems} />
-				<CampaignPage />
+				{/* ! Keep inner content from forcing layout width */}
+				<div className="w-full min-w-0">
+					<CampaignPage />
+				</div>
 			</div>
 		</PageContainer>
 	);

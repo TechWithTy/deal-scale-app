@@ -20,9 +20,9 @@ export default function CampaignCallTablePage() {
 	return (
 		<NuqsAdapter>
 			<div className="container mx-auto max-w-7xl p-4">
-				<div className="mb-2 text-xs text-muted-foreground">Active: {tab}</div>
+				<div className="mb-2 text-muted-foreground text-xs">Active: {tab}</div>
 				<div className="mb-3 flex items-center justify-between gap-3">
-					<h2 className="text-xl font-semibold">
+					<h2 className="font-semibold text-xl">
 						{tab === "calls" && "Page: Calls Demo"}
 						{tab === "text" && "Page: Text Demo"}
 						{tab === "social" && "Page: Social Demo"}

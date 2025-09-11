@@ -34,7 +34,7 @@ export default function SidebarClient({ user }: { user: UserProfile | null }) {
 	return (
 		<aside
 			className={cn(
-				"relative hidden h-screen flex-none border-r bg-card transition-[width] duration-500 md:block",
+				"sticky top-0 hidden h-[100dvh] flex-none overflow-y-auto border-r bg-card transition-[width] duration-500 md:block",
 				isSidebarMinimized ? "w-[72px]" : "w-72",
 			)}
 		>
