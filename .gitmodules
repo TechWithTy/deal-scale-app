@@ -35,3 +35,9 @@
 [submodule ".windsurf"]
 	path = .windsurf
 	url = https://github.com/techwithty/worldwide-prompts.git
+[submodule "external/ai-summary-expandable"]
+	path = external/ai-summary-expandable
+	url = https://github.com/TechWithTy/ai-summary-expandable.git
+[submodule "external/modal-image-inspect"]
+	path = external/modal-image-inspect
+	url = https://github.com/TechWithTy/modal-image-inspect.git

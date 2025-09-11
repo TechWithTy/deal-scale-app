@@ -1,6 +1,9 @@
 import type React from "react";
 import { MapWithDrawing } from "@/external/google-maps-two/components";
-import { PlaceSearchPanel } from "@/external/google-maps-two/components/composit/components/PlaceSearchPanel";
+import {
+	PlaceSearchPanel,
+	type UIPanelPlace,
+} from "@/external/google-maps-two/components/composit/components/PlaceSearchPanel";
 import type { Coordinate } from "@/types/_dashboard/maps";
 import { GOOGLE_LIBS } from "./helpers";
 
@@ -47,10 +50,12 @@ const MapArea: React.FC<MapAreaProps> = ({
 					} as unknown as google.maps.LatLngLiteral
 				}
 				radiusMeters={1000}
-				onSelectPlace={(place: {
-					id?: string;
-					location?: google.maps.LatLngLiteral;
-				}) => onSelectPlace({ placeId: place.id, location: place.location })}
+				onSelectPlace={(place: UIPanelPlace) =>
+					onSelectPlace({
+						placeId: place.id ? String(place.id) : undefined,
+						location: place.location,
+					})
+				}
 			/>
 			<MapWithDrawing
 				apiKey={
