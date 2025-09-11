@@ -1,4 +1,5 @@
 import type { MapFormSchemaType } from "@/types/_dashboard/maps";
+import type { ACSeed } from "@/external/google-maps-two/components/composit/utils/autocomplete";
 import { useEffect } from "react";
 import type { Control, FieldErrors, UseFormSetValue } from "react-hook-form";
 import { useLeadSearchStore } from "@/lib/stores/leadSearch/leadSearch";
@@ -15,6 +16,7 @@ interface LeadSearchFormProps {
 	setValue: UseFormSetValue<MapFormSchemaType>;
 	onAdvancedOpen: () => void;
 	isValid: boolean;
+	onPlaceSelected?: (seed: ACSeed) => void;
 }
 
 const LeadSearchForm: React.FC<LeadSearchFormProps> = ({
@@ -23,6 +25,7 @@ const LeadSearchForm: React.FC<LeadSearchFormProps> = ({
 	setValue,
 	onAdvancedOpen,
 	isValid,
+	onPlaceSelected,
 }) => {
 	const { filters } = useLeadSearchStore();
 
@@ -38,7 +41,11 @@ const LeadSearchForm: React.FC<LeadSearchFormProps> = ({
 	return (
 		<div className="mb-6 w-full rounded-xl bg-white/80 p-4 shadow-md dark:bg-gray-900/80">
 			<div className="grid grid-cols-1 gap-x-6 gap-y-4 md:grid-cols-2 lg:grid-cols-3">
-				<LocationInput control={control} errors={errors} />
+				<LocationInput
+					control={control}
+					errors={errors}
+					onPlaceSelected={onPlaceSelected}
+				/>
 				<MarketStatusSelect control={control} />
 				<NumericInput
 					control={control}

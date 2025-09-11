@@ -36,15 +36,25 @@ import HelpModal from "./search/HelpModal";
 import LeadSearchForm from "./search/LeadSearchForm";
 import LeadSearchHeader from "./search/LeadSearchHeader";
 import { useRemainingLeads, useUserStore } from "@/lib/stores/userStore";
-import MapSection from "./search/MapSection";
+import { MapWithDrawing } from "@/external/google-maps-two/components";
+import type { ACSeed } from "@/external/google-maps-two/components/composit/utils/autocomplete";
+import { PlaceSearchPanel } from "@/external/google-maps-two/components/composit/components/PlaceSearchPanel";
 import PropertiesList from "./search/PropertiesList";
 import WalkThroughModal from "./search/WalkthroughModal";
 import { generateFakeProperties } from "@/constants/dashboard/properties";
 import { fetchFakeMapMarkers } from "@/constants/_faker/_api/google_maps/mockMapApi";
+import { SaveToListModal } from "@/components/property/modals/SaveToListModal";
+import {
+	createRentCastProperty,
+	type Property,
+} from "@/types/_dashboard/property";
 
 interface PropertySearchProps {
 	initialProperties?: number;
 }
+
+// ! Stable libraries array for Google Maps script load
+const GOOGLE_LIBS = ["drawing", "marker", "places", "geometry"] as const;
 
 const PropertySearch: React.FC<PropertySearchProps> = ({
 	initialProperties: initialPropCount = 6,
@@ -63,6 +73,12 @@ const PropertySearch: React.FC<PropertySearchProps> = ({
 	const [markers, setMarkers] = useState<Coordinate[]>([]);
 	const [mapBoundary, setMapBoundary] =
 		useState<google.maps.LatLngBounds | null>(null);
+	const [selectedPlace, setSelectedPlace] = useState<{
+		placeId?: string;
+		location?: google.maps.LatLngLiteral;
+	} | null>(null);
+	const [saveOpen, setSaveOpen] = useState(false);
+	const [saveProperty, setSaveProperty] = useState<Property | null>(null);
 
 	const { properties, setProperties, setIsDrawerOpen } = usePropertyStore();
 	const remainingLeads = useRemainingLeads();
@@ -151,6 +167,26 @@ const PropertySearch: React.FC<PropertySearchProps> = ({
 					setValue={setValue}
 					onAdvancedOpen={() => setShowAdvanced(true)}
 					isValid={isValid}
+					onPlaceSelected={(seed: ACSeed) => {
+						// Center map, add a pin, and set selectedPlace so popover can show
+						if (seed.location) {
+							setCenter(seed.location);
+							setMarkers((prev) => [
+								...prev,
+								{ lat: seed.location.lat, lng: seed.location.lng },
+							]);
+							// Append one generated property to the current list
+							setProperties([
+								...(properties || []),
+								...generateFakeProperties(1),
+							]);
+							setHasResults(true);
+							setSelectedPlace({
+								placeId: seed.placeId,
+								location: seed.location,
+							});
+						}
+					}}
 				/>
 
 				{!isValid && Object.keys(errors).length > 0 && (
@@ -213,11 +249,125 @@ const PropertySearch: React.FC<PropertySearchProps> = ({
 				control={control}
 				errors={errors}
 			/>
-			<MapSection
-				markers={markers}
-				center={center}
-				onBoundaryChange={handleBoundaryChange}
+			{/* Google Places UI Kit panel (like external demo) */}
+			<PlaceSearchPanel
+				center={
+					{
+						lat: center.lat,
+						lng: center.lng,
+					} as unknown as google.maps.LatLngLiteral
+				}
+				radiusMeters={1000}
+				onSelectPlace={(place: any) => {
+					const loc = place?.location as google.maps.LatLngLiteral | undefined;
+					if (!loc) return;
+					setCenter({ lat: loc.lat, lng: loc.lng });
+					setMarkers((prev) => [...prev, { lat: loc.lat, lng: loc.lng }]);
+					// Append one generated property to the current list
+					setProperties([...(properties || []), ...generateFakeProperties(1)]);
+					setHasResults(true);
+					const pid =
+						(place?.id as string | undefined) ?? place?.id?.toString?.();
+					setSelectedPlace({ placeId: pid, location: loc });
+				}}
 			/>
+
+			{/* External Google Maps (with drawing tools) */}
+			<MapWithDrawing
+				apiKey={
+					process.env.NEXT_PUBLIC_GMAPS_KEY ||
+					process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ||
+					""
+				}
+				mapId={
+					process.env.NEXT_PUBLIC_GMAPS_MAP_ID ||
+					process.env.NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID
+				}
+				libraries={
+					GOOGLE_LIBS as unknown as (
+						| "drawing"
+						| "marker"
+						| "places"
+						| "geometry"
+					)[]
+				}
+				center={center}
+				onCenterChange={(c) => setCenter(c)}
+				results={markers as unknown as google.maps.LatLngLiteral[]}
+				onResultsChange={(pins) => {
+					// Update markers from drawing/pins and mirror into properties list for demo
+					const coords = pins.map((p) => ({ lat: p.lat, lng: p.lng }));
+					setMarkers(coords);
+					setProperties([
+						...(properties || []),
+						...generateFakeProperties(coords.length),
+					]);
+					setHasResults(coords.length > 0);
+				}}
+				defaultZoom={11}
+				containerStyle={{ width: "100%", height: "420px" }}
+				showAddressHoverInfo={true}
+				centerChangeZoom={16}
+				mapColorScheme="system"
+				selectedPlace={selectedPlace}
+				onViewPlace={({ googleMapsUri, placeId, position }) => {
+					const url =
+						googleMapsUri ||
+						`https://www.google.com/maps/search/?api=1${placeId ? `&query_place_id=${placeId}` : `&query=${encodeURIComponent(`${position.lat},${position.lng}`)}`}`;
+					try {
+						window.open(url, "_blank", "noopener,noreferrer");
+					} catch {}
+				}}
+				onAddToList={({ placeId, position, name, address }) => {
+					// Build a minimal RentCast property from the selected place and open Save modal
+					const prop = createRentCastProperty({
+						metadata: {
+							source: "rentcast",
+							lastUpdated: new Date().toISOString(),
+						},
+						address: {
+							street: address || name || "",
+							city: "",
+							state: "",
+							zipCode: "",
+							fullStreetLine:
+								address || name || `${position.lat}, ${position.lng}`,
+							latitude: position.lat,
+							longitude: position.lng,
+						},
+						details: {
+							beds: 0,
+							fullBaths: 0,
+							halfBaths: null,
+							sqft: null,
+							yearBuilt: 0,
+							lotSqft: null,
+							propertyType: "Unknown",
+							stories: 0,
+							style: "",
+							construction: "",
+							roof: "",
+							parking: "",
+						},
+						lastUpdated: new Date().toISOString(),
+					});
+					setSaveProperty(prop);
+					setSaveOpen(true);
+				}}
+				pinSnapToGrid={false}
+			/>
+			{saveProperty && (
+				<SaveToListModal
+					isOpen={saveOpen}
+					onClose={() => setSaveOpen(false)}
+					property={saveProperty}
+					onSave={() => {
+						toast.success("Saved to list", {
+							description: saveProperty.address.fullStreetLine,
+						});
+					}}
+				/>
+			)}
 			<PropertiesList properties={properties} />
 			<WalkThroughModal
 				isOpen={isModalOpen}
