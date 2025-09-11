@@ -1,71 +1,32 @@
-"use client"; // Ensure it's a client-side component
+"use client";
+import { KanbanBoard, NewTaskDialog } from "@/external/kanban";
+import { useEffect } from "react";
+import { useTaskStore } from "@/external/kanban/utils/store";
 
-import { Breadcrumbs } from "@/components/breadcrumbs";
-import { KanbanBoard } from "@/components/kanban/kanban-board";
-import NewTaskDialog from "@/components/kanban/new-task-dialog";
-import PageContainer from "@/components/layout/page-container";
-import WalkThroughModal from "../../../components/leadsSearch/search/WalkthroughModal"; // Import the help modal
-import { Heading } from "@/components/ui/heading";
-import { HelpCircle } from "lucide-react"; // Import Help icon
-import { useState } from "react"; // Import useState for modal visibility
+export default function TestExternalKanbanPage() {
+	const { tasks, runAi } = useTaskStore();
 
-const breadcrumbItems = [
-	{ title: "Dashboard", link: "/dashboard" },
-	{ title: "Kanban", link: "/dashboard/kanban" },
-];
-
-const campaignSteps = [
-	{
-		target: ".kanban-board",
-		content: "This is the Kanban board where you can manage your tasks.",
-	},
-	{
-		target: ".new-task-button",
-		content: "Click here to create a new task.",
-	},
-];
-
-export default function Page() {
-	const [isHelpModalOpen, setIsHelpModalOpen] = useState(false); // State for help modal
-	const [isTourOpen, setIsTourOpen] = useState(false); // State for tour
-
-	const handleHelpOpenModal = () => setIsHelpModalOpen(true);
-	const handleHelpCloseModal = () => setIsHelpModalOpen(false);
-	const handleHelpStartTour = () => setIsTourOpen(true);
-	const handleHelpCloseTour = () => setIsTourOpen(false);
-
+	// Auto-sync: any AI-enabled task already in IN_PROGRESS should be set to running
+	useEffect(() => {
+		for (const t of tasks) {
+			if (
+				t.status === "IN_PROGRESS" &&
+				t.mcpWorkflow &&
+				t.aiState !== "running"
+			) {
+				runAi(String(t.id));
+			}
+		}
+		// Only run on mount and when tasks ref changes
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, []);
 	return (
-		<PageContainer>
-			<div className="space-y-4">
-				<Breadcrumbs items={breadcrumbItems} />
-				<div className="flex items-start justify-between">
-					<Heading title="Kanban" description="Manage tasks " />
-					{/* Help button to trigger the modal */}
-					<button
-						type="button"
-						onClick={handleHelpOpenModal}
-						title="Get More help"
-						className="animate-bounce rounded-full bg-blue-500 p-2 text-white hover:animate-none dark:bg-green-700 dark:text-gray-300"
-					>
-						<HelpCircle size={20} />
-					</button>
-					<NewTaskDialog />
-				</div>
-				<KanbanBoard />
+		<div className="container mx-auto space-y-6 py-6">
+			<div className="flex items-center justify-between">
+				<h1 className="font-bold text-2xl">External Kanban Test</h1>
+				<NewTaskDialog />
 			</div>
-
-			{/* Help Modal */}
-			<WalkThroughModal
-				isOpen={isHelpModalOpen}
-				onClose={handleHelpCloseModal}
-				videoUrl="https://www.youtube.com/embed/example-video" // Example YouTube video URL
-				title="Welcome to Kanban Board"
-				subtitle="Learn how to manage your tasks effectively using this Kanban board."
-				steps={campaignSteps} // Steps for the tour
-				isTourOpen={isTourOpen}
-				onStartTour={handleHelpStartTour}
-				onCloseTour={handleHelpCloseTour}
-			/>
-		</PageContainer>
+			<KanbanBoard />
+		</div>
 	);
 }

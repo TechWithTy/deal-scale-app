@@ -26,11 +26,20 @@ export default function LeadListTableWithModals(
 	>,
 ) {
 	const [isLeadOpen, setIsLeadOpen] = React.useState(false);
+	const [leadInitialMode, setLeadInitialMode] = React.useState<
+		"select" | "create"
+	>("create");
 	const [isSkipTraceOpen, setIsSkipTraceOpen] = React.useState(false);
 	const [skipTraceInit, setSkipTraceInit] =
 		React.useState<SkipTraceInit>(undefined);
 
-	const handleOpenLead = React.useCallback(() => setIsLeadOpen(true), []);
+	const handleOpenLead = React.useCallback(
+		(opts?: { initialListMode?: "select" | "create" }) => {
+			setLeadInitialMode(opts?.initialListMode ?? "create");
+			setIsLeadOpen(true);
+		},
+		[],
+	);
 	const handleOpenSkipTrace = React.useCallback((init?: SkipTraceInit) => {
 		setSkipTraceInit(init);
 		setIsSkipTraceOpen(true);
@@ -57,6 +66,7 @@ export default function LeadListTableWithModals(
 					<LeadMainModal
 						isOpen={isLeadOpen}
 						onClose={() => setIsLeadOpen(false)}
+						initialListMode={leadInitialMode}
 					/>
 					<SkipTraceModalMain
 						isOpen={isSkipTraceOpen}
