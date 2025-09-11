@@ -41,3 +41,6 @@
 [submodule "external/modal-image-inspect"]
 	path = external/modal-image-inspect
 	url = https://github.com/TechWithTy/modal-image-inspect.git
+[submodule "external/drawer-flow"]
+	path = external/drawer-flow
+	url = https://github.com/techwithty/drawer-flow.git
