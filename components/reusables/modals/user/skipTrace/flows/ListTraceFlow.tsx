@@ -245,12 +245,19 @@ const ListTraceFlow: React.FC<ListTraceFlowProps> = ({
 									<p id="listMultiBoxLabel" className="text-sm">
 										Select one or more lists
 									</p>
-									<div
+									<select
 										id="listMultiBox"
-										role="listbox"
 										aria-labelledby="listMultiBoxLabel"
-										aria-multiselectable
-										tabIndex={0}
+										multiple
+										value={selectedListNames}
+										onChange={(e) => {
+											// Convert selectedOptions to an array of values
+											const options = Array.from(
+												e.target.selectedOptions,
+												(option) => option.value,
+											);
+											setSelectedListNames(options);
+										}}
 										className="max-h-56 w-full overflow-auto rounded-md border text-sm"
 									>
 										{(effectiveListNames ?? []).map((name) => {
@@ -258,30 +265,13 @@ const ListTraceFlow: React.FC<ListTraceFlowProps> = ({
 												availableLists?.find((l) => l.name === name)?.count ??
 												listCounts?.[name] ??
 												0;
-											const selected = selectedListNames.includes(name);
 											return (
-												<button
-													key={name}
-													type="button"
-													role="option"
-													aria-selected={selected}
-													onClick={() =>
-														setSelectedListNames((prev) =>
-															prev.includes(name)
-																? prev.filter((n) => n !== name)
-																: [...prev, name],
-														)
-													}
-													className={`flex w-full items-center justify-between px-3 py-2 text-left transition-colors ${selected ? "bg-primary/10 text-foreground" : "hover:bg-accent hover:text-accent-foreground"}`}
-												>
-													<span className="truncate">{name}</span>
-													<span className="text-muted-foreground">
-														{count.toLocaleString()}
-													</span>
-												</button>
+												<option key={name} value={name}>
+													{name} ({count})
+												</option>
 											);
 										})}
-									</div>
+									</select>
 								</div>
 							)}
 						</div>

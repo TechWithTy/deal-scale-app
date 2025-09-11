@@ -17,9 +17,7 @@ export default function TestExternalKanbanPage() {
 				runAi(String(t.id));
 			}
 		}
-		// Only run on mount and when tasks ref changes
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, []);
+	}, [runAi, tasks]); // Add both dependencies here
 	return (
 		<div className="container mx-auto space-y-6 py-6">
 			<div className="flex items-center justify-between">

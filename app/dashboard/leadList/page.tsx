@@ -1,6 +1,6 @@
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import PageContainer from "@/components/layout/page-container";
-import LeadListTableWithModals from "@/components/tables/LeadListTableWithModals";
+import LeadListTableWithModals from "@/src/components/tables/LeadListTableWithModals";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 
 const breadcrumbItems = [
