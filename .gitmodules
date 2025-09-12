@@ -47,3 +47,6 @@
 [submodule "external/tabbed-list-test"]
 	path = external/tabbed-list-test
 	url = https://github.com/techwithty/tabbed-list-test.git
+[submodule "external/activity-graph"]
+	path = external/activity-graph
+	url = https://github.com/techwithty/activity-graph.git
