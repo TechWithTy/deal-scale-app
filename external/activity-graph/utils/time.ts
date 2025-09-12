@@ -17,6 +17,23 @@ export function rangeLabel(key: TimeRangeKey): string {
 	}
 }
 
+export function daysForRange(range: TimeRangeKey, fallback: number): number {
+	switch (range) {
+		case "24h":
+			return 2;
+		case "7d":
+			return 7;
+		case "30d":
+			return 30;
+		case "quarter":
+			return 90;
+		case "year":
+			return 365;
+		default:
+			return fallback;
+	}
+}
+
 export function filterDataByRange<T extends { timestamp: string }>(
 	data: T[],
 	range: TimeRangeKey,

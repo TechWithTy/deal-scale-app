@@ -43,11 +43,11 @@ const configBrowsers: ChartConfigLocal = {
 
 export default function ChartsLineDemoPage() {
 	return (
-		<div className="container mx-auto max-w-5xl p-6 flex flex-col gap-10">
+		<div className="container mx-auto flex max-w-5xl flex-col gap-10 p-6">
 			{/* Team activity feed demo (Owner/Admin view) */}
 			<section className="space-y-2">
 				<h2 className="font-semibold text-xl">Team Activity</h2>
-				<p className="text-sm text-muted-foreground">
+				<p className="text-muted-foreground text-sm">
 					As an Owner/Admin, view a team-wide activity feed to monitor usage.
 				</p>
 				<TeamActivityFeed
@@ -59,7 +59,7 @@ export default function ChartsLineDemoPage() {
 
 			<section className="space-y-2">
 				<h2 className="font-semibold text-xl">Line Chart - Multiple</h2>
-				<p className="text-sm text-muted-foreground">January - June 2024</p>
+				<p className="text-muted-foreground text-sm">January - June 2024</p>
 				<ActivityLineGraphContainer
 					data={dataMulti}
 					config={configMulti}
