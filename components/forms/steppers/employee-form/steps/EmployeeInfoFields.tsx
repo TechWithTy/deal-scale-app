@@ -62,5 +62,18 @@ export const EmployeeInfoFields: React.FC<EmployeeInfoFieldsProps> = ({
 				</FormItem>
 			)}
 		/>
+		<FormField
+			control={form.control}
+			name="phone"
+			render={({ field }) => (
+				<FormItem>
+					<FormLabel>Phone (optional)</FormLabel>
+					<FormControl>
+						<Input disabled={loading} placeholder="Phone number" {...field} />
+					</FormControl>
+					<FormMessage />
+				</FormItem>
+			)}
+		/>
 	</div>
 );

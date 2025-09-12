@@ -58,20 +58,37 @@ export const CellAction: React.FC<CellActionProps> = ({
 			/>
 			<DropdownMenu modal={false}>
 				<DropdownMenuTrigger asChild>
-					<Button variant="ghost" className="h-8 w-8 p-0">
+					<Button
+						variant="ghost"
+						className="h-8 w-8 p-0"
+						onClick={(e) => e.stopPropagation()}
+						onPointerDown={(e) => e.stopPropagation()}
+					>
 						<span className="sr-only">Open menu</span>
 						<MoreHorizontal className="h-4 w-4" />
 					</Button>
 				</DropdownMenuTrigger>
-				<DropdownMenuContent align="end">
+				<DropdownMenuContent
+					align="end"
+					onClick={(e) => e.stopPropagation()}
+					onPointerDown={(e) => e.stopPropagation()}
+				>
 					<DropdownMenuLabel>Actions</DropdownMenuLabel>
 
 					<DropdownMenuItem
-						onClick={() => router.push(`/dashboard/employee/${data.id}`)}
+						onClick={(e) => {
+							e.stopPropagation();
+							router.push(`/dashboard/employee/${data.id}`);
+						}}
 					>
 						<Edit className="mr-2 h-4 w-4" /> Update
 					</DropdownMenuItem>
-					<DropdownMenuItem onClick={() => setOpen(true)}>
+					<DropdownMenuItem
+						onClick={(e) => {
+							e.stopPropagation();
+							setOpen(true);
+						}}
+					>
 						<Trash className="mr-2 h-4 w-4" /> Delete
 					</DropdownMenuItem>
 
@@ -82,13 +99,22 @@ export const CellAction: React.FC<CellActionProps> = ({
 								UserPermissions
 							</DropdownMenuLabel>
 							{Object.keys(permissions).map((key) => (
-								<DropdownMenuItem key={key} asChild>
-									<div className="flex items-center justify-between">
+								<DropdownMenuItem
+									key={key}
+									asChild
+									onClick={(e) => e.stopPropagation()}
+								>
+									<div
+										className="flex items-center justify-between"
+										onClick={(e) => e.stopPropagation()}
+										onPointerDown={(e) => e.stopPropagation()}
+									>
 										<span className="capitalize">
 											{key.replace(/can/g, "")}
 										</span>
 										<Switch
 											checked={permissions[key as keyof typeof permissions]}
+											onClick={(e) => e.stopPropagation()}
 											onCheckedChange={() =>
 												togglePermission(key as keyof typeof permissions)
 											}

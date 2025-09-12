@@ -4,9 +4,10 @@ import { campaignSteps } from "@/_tests/tours/campaignTour";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import PageContainer from "@/components/layout/page-container";
 import WalkThroughModal from "../../../components/leadsSearch/search/WalkthroughModal";
-import { EmployeeTable } from "@/components/tables/employee-tables/EmployeeTables";
+import { DataTableViewOptions } from "@/external/shadcn-table/src/components/data-table/data-table-view-options";
 import { columns } from "@/components/tables/employee-tables/columns";
 import { buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { Heading } from "@/components/ui/heading";
 import { Separator } from "@/components/ui/separator";
 import { mockUserProfile } from "@/constants/_faker/profile/userProfile";
@@ -15,6 +16,14 @@ import type { TeamMember, UserProfile } from "@/types/userProfile";
 import { HelpCircle, Plus } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react"; // Import useState and useEffect for state management
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import TeamActivityFeed from "@/external/activity-graph/components/TeamActivityFeed";
+import TeamCreditsBanner from "@/components/banners/TeamCreditsBanner";
+import InviteEmployeeModal from "@/components/tables/employee-tables/InviteEmployeeModal";
+import type { Table as TanstackTable } from "@tanstack/react-table";
+import EmployeeKanbanTable from "@/components/tables/employee-tables/EmployeeKanbanTable";
 
 const breadcrumbItems = [
 	{ title: "Dashboard", link: "/dashboard" },
@@ -47,7 +56,8 @@ export default function EmployeePage({
 	const [totalUsers, setTotalUsers] = useState(0); // Total users state
 	const [employees, setEmployees] = useState<TeamMember[]>([]); // Employees state
 	const [pageCount, setPageCount] = useState(0); // Page count state
-	const [search, setSearch] = useState(""); // Search state
+	const [search, setSearch] = useState("");
+	const [inviteOpen, setInviteOpen] = useState(false);
 
 	const page = Number(searchParams.page) || 1;
 	const pageLimit = Number(searchParams.limit) || 10;
@@ -101,15 +111,16 @@ export default function EmployeePage({
 
 					{/* Add New Button */}
 					<div className="flex w-full justify-center sm:w-auto">
-						<Link
-							href={"/dashboard/employee/new"}
+						<button
+							type="button"
+							onClick={() => setInviteOpen(true)}
 							className={cn(
 								buttonVariants({ variant: "default" }),
 								"flex w-full items-center justify-center sm:w-auto",
 							)}
 						>
 							<Plus className="mr-2 h-4 w-4" /> Add New
-						</Link>
+						</button>
 					</div>
 				</div>
 
@@ -128,22 +139,74 @@ export default function EmployeePage({
 					onCloseTour={handleHelpCloseTour}
 				/>
 
-				{/* Employee Table */}
-				{/* Filter employees by search (firstName, lastName, email) */}
-				<EmployeeTable
-					columns={columns}
-					data={employees.filter(
-						(emp) =>
-							emp.firstName.toLowerCase().includes(search.toLowerCase()) ||
-							emp.lastName.toLowerCase().includes(search.toLowerCase()) ||
-							emp.email.toLowerCase().includes(search.toLowerCase()),
-					)}
-					searchKey="firstName"
-					searchValue={search}
-					onSearchChange={setSearch}
-					pageCount={pageCount}
-					pageSizeOptions={[10, 20, 30, 40, 50]}
-				/>
+				{/* Team Credits Banner */}
+				<TeamCreditsBanner />
+
+				<InviteEmployeeModal open={inviteOpen} onOpenChange={setInviteOpen} />
+
+				{/* Tabs: Employees (table) | Activity (line graph) */}
+				<Tabs defaultValue="employees">
+					<TabsList>
+						<TabsTrigger value="employees">Employees</TabsTrigger>
+						<TabsTrigger value="activity">Activity</TabsTrigger>
+					</TabsList>
+
+					<TabsContent value="employees">
+						<EmployeeKanbanTable
+							columns={columns}
+							data={employees}
+							pageCount={pageCount}
+							renderToolbar={({
+								table,
+								openAI,
+								disabled,
+								selectedCount,
+							}: {
+								table: TanstackTable<TeamMember>;
+								openAI: () => void;
+								disabled: boolean;
+								selectedCount: number;
+							}) => (
+								<div className="mb-3 flex w-full items-end justify-between gap-3">
+									<div className="grid gap-1">
+										<Label
+											htmlFor="employee-search"
+											className="text-muted-foreground text-xs"
+										>
+											Search first name…
+										</Label>
+										<Input
+											id="employee-search"
+											placeholder="Search first name…"
+											value={search}
+											onChange={(e) => {
+												setSearch(e.target.value);
+												table
+													.getColumn("firstName")
+													?.setFilterValue(e.target.value);
+											}}
+											className="h-8 w-[220px]"
+										/>
+									</div>
+									<div className="flex items-center gap-2">
+										<DataTableViewOptions table={table} />
+										<Button size="sm" onClick={openAI} disabled={disabled}>
+											AI Actions {selectedCount > 0 ? `(${selectedCount})` : ""}
+										</Button>
+									</div>
+								</div>
+							)}
+						/>
+					</TabsContent>
+
+					<TabsContent value="activity">
+						<div className="mt-3">
+							<TeamActivityFeed
+								permissions={{ ViewReports: true, ManageTeam: true }}
+							/>
+						</div>
+					</TabsContent>
+				</Tabs>
 			</div>
 		</PageContainer>
 	);

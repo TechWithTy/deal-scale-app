@@ -7,6 +7,7 @@ import NextTopLoader from "nextjs-toploader";
 import "./globals.css";
 import { auth } from "@/auth";
 import SessionSync from "@/components/auth/SessionSync";
+import { NuqsAdapter } from "nuqs/adapters/next/app";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -27,12 +28,14 @@ export default async function RootLayout({
 			<body className={`${inter.className}  `} suppressHydrationWarning={true}>
 				<NextTopLoader showSpinner={false} />
 				<CommandPaletteProvider>
-					<Providers session={session}>
-						{children}
-						<SessionSync />
-					</Providers>
-					{/* Global command palette dialog (Cmd/Ctrl+K) */}
-					<ActionBarRoot />
+					<NuqsAdapter>
+						<Providers session={session}>
+							{children}
+							<SessionSync />
+						</Providers>
+						{/* Global command palette dialog (Cmd/Ctrl+K) */}
+						<ActionBarRoot />
+					</NuqsAdapter>
 				</CommandPaletteProvider>
 				<div id="sidebar-portal" />
 			</body>

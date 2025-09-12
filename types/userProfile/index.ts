@@ -86,6 +86,7 @@ export interface TeamMember {
 	firstName: string;
 	lastName: string;
 	email: string;
+	phone?: string;
 	role: "admin" | "member"; // Roles for team members, can be extended with more roles
 	permissions: UserPermissions; // UserPermissions granted to the team member
 	NotificationPreferences?: NotificationPreferences;

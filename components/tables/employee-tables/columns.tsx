@@ -4,6 +4,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import type { TeamMember } from "@/types/userProfile";
 import type { ColumnDef } from "@tanstack/react-table";
 import { CellAction } from "./cell-action"; // Assuming you have a cell-action component
+import { DataTableColumnHeader } from "@/external/shadcn-table/src/components/data-table/data-table-column-header";
 
 // Columns definition for TeamMember
 export const columns: ColumnDef<TeamMember>[] = [
@@ -28,54 +29,123 @@ export const columns: ColumnDef<TeamMember>[] = [
 	},
 	{
 		accessorKey: "firstName",
-		header: "First Name",
+		header: ({ column }) => (
+			<DataTableColumnHeader column={column} title="First Name" />
+		),
+		enableSorting: true,
 	},
 	{
 		accessorKey: "lastName",
-		header: "Last Name",
+		header: ({ column }) => (
+			<DataTableColumnHeader column={column} title="Last Name" />
+		),
+		enableSorting: true,
 	},
 	{
 		accessorKey: "email",
-		header: "Email",
+		header: ({ column }) => (
+			<DataTableColumnHeader column={column} title="Email" />
+		),
+		enableSorting: true,
+	},
+	{
+		accessorKey: "phone",
+		header: ({ column }) => (
+			<DataTableColumnHeader column={column} title="Phone" />
+		),
+		cell: ({ row }) => <span>{row.original.phone ?? ""}</span>,
+		enableSorting: true,
 	},
 	{
 		accessorKey: "role",
-		header: "Role",
+		header: ({ column }) => (
+			<DataTableColumnHeader column={column} title="Role" />
+		),
+		enableSorting: true,
 	},
 	{
 		accessorKey: "permissions.canGenerateLeads",
-		header: "Can Generate Leads",
+		header: ({ column }) => (
+			<DataTableColumnHeader column={column} title="Can Generate Leads" />
+		),
 		cell: ({ row }) => (
 			<span>{row.original.permissions.canGenerateLeads ? "Yes" : "No"}</span>
 		),
+		enableSorting: true,
+	},
+	{
+		accessorKey: "permissions.canStartCampaigns",
+		header: ({ column }) => (
+			<DataTableColumnHeader column={column} title="Can Start Campaigns" />
+		),
+		cell: ({ row }) => (
+			<span>{row.original.permissions.canStartCampaigns ? "Yes" : "No"}</span>
+		),
+		enableSorting: true,
 	},
 	{
 		accessorKey: "permissions.canManageTeam",
-		header: "Can Manage Team",
+		header: ({ column }) => (
+			<DataTableColumnHeader column={column} title="Can Manage Team" />
+		),
 		cell: ({ row }) => (
 			<span>{row.original.permissions.canManageTeam ? "Yes" : "No"}</span>
 		),
+		enableSorting: true,
+	},
+	{
+		accessorKey: "permissions.canManageSubscription",
+		header: ({ column }) => (
+			<DataTableColumnHeader column={column} title="Can Manage Subscription" />
+		),
+		cell: ({ row }) => (
+			<span>
+				{row.original.permissions.canManageSubscription ? "Yes" : "No"}
+			</span>
+		),
+		enableSorting: true,
 	},
 	{
 		accessorKey: "permissions.canViewReports",
-		header: "Can View Reports",
+		header: ({ column }) => (
+			<DataTableColumnHeader column={column} title="Can View Reports" />
+		),
 		cell: ({ row }) => (
 			<span>{row.original.permissions.canViewReports ? "Yes" : "No"}</span>
 		),
+		enableSorting: true,
 	},
 	{
 		accessorKey: "permissions.canMoveCompanyTasks",
-		header: "Can Move Tasks",
+		header: ({ column }) => (
+			<DataTableColumnHeader column={column} title="Can Move Tasks" />
+		),
 		cell: ({ row }) => (
 			<span>{row.original.permissions.canMoveCompanyTasks ? "Yes" : "No"}</span>
 		),
+		enableSorting: true,
 	},
 	{
 		accessorKey: "permissions.canAccessAI",
-		header: "Can Access AI",
+		header: ({ column }) => (
+			<DataTableColumnHeader column={column} title="Can Access AI" />
+		),
 		cell: ({ row }) => (
 			<span>{row.original.permissions.canAccessAI ? "Yes" : "No"}</span>
 		),
+		enableSorting: true,
+	},
+	{
+		accessorKey: "permissions.canEditCompanyProfile",
+		header: ({ column }) => (
+			<DataTableColumnHeader column={column} title="Can Edit Company Profile" />
+		),
+		cell: ({ row }) => (
+			<span>
+				{row.original.permissions.canEditCompanyProfile ? "Yes" : "No"}
+			</span>
+		),
+		enableSorting: true,
 	},
 	{
 		id: "actions",

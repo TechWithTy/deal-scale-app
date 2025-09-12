@@ -9,6 +9,12 @@ export const teamMemberFormSchema = z.object({
 		.string()
 		.min(2, { message: "Last name must be at least 2 characters" }),
 	email: z.string().email({ message: "Please enter a valid email address" }),
+	phone: z
+		.string()
+		.min(7, { message: "Phone must be at least 7 digits" })
+		.max(20)
+		.optional()
+		.or(z.literal("")),
 	role: z.enum(["admin", "member"], {
 		errorMap: () => ({ message: "Role is required" }),
 	}),
