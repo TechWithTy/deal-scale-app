@@ -54,8 +54,10 @@ export function PermissionsEditor({
 
 	return (
 		<div className="mt-4">
-			<div className="mb-2 text-sm font-medium">Edit Permissions</div>
-			<div className="space-y-3 rounded-md border border-border bg-card p-3">
+			<div className="mb-2 font-medium text-sm">
+				Edit Permissions: Create/Read/Update/Delete
+			</div>
+			<div className="max-h-64 space-y-3 overflow-y-auto rounded-md border border-border bg-card p-3 pr-1">
 				{ENTITIES.map((entity) => {
 					const flags = toFlags(user.permissions, entity);
 					const label =
@@ -66,7 +68,7 @@ export function PermissionsEditor({
 								: entity.charAt(0).toUpperCase() + entity.slice(1);
 					return (
 						<div key={entity} className="flex items-center justify-between">
-							<span className="text-sm text-foreground">{label}</span>
+							<span className="text-foreground text-sm">{label}</span>
 							<CrudToggle
 								value={flags}
 								onChange={(next) => handleChange(entity, next)}

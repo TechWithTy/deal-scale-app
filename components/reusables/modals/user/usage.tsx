@@ -1,16 +1,16 @@
 "use client";
 
-import { mockUserProfile } from "@/constants/_faker/profile/userProfile";
 import type { UserProfileSubscription } from "@/constants/_faker/profile/userSubscription";
 import { useModalStore } from "@/lib/stores/dashboard";
 import type React from "react";
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
+import { useSession } from "next-auth/react";
 
 export interface UsageData {
 	subscription: UserProfileSubscription;
 }
 
-// Fallback when mockUserProfile is unavailable (e.g., NEXT_PUBLIC_APP_TESTING_MODE is false)
+// Fallback when no subscription is present on the signed-in user
 const defaultSubscription: UserProfileSubscription = {
 	id: "0",
 	stripeSubscriptionID: "",
@@ -26,40 +26,65 @@ const defaultSubscription: UserProfileSubscription = {
 	planDetails: "",
 };
 
-// Simulate fetching real subscription data (replace with actual API call)
-const fetchSubscriptionData = async (): Promise<UserProfileSubscription> => {
-	return new Promise((resolve) => {
-		setTimeout(() => {
-			resolve(mockUserProfile?.subscription ?? defaultSubscription);
-		}, 1000);
-	});
-};
-
 const AiUsageModal: React.FC = () => {
 	const { isUsageModalOpen, closeUsageModal } = useModalStore();
-	const [subscriptionData, setSubscriptionData] =
-		useState<UserProfileSubscription | null>(null);
-	const [loading, setLoading] = useState(true);
+	const { data: session } = useSession();
 
-	useEffect(() => {
-		const getData = async () => {
-			const data = await fetchSubscriptionData(); // Replace with real API call
-			setSubscriptionData(data);
-			setLoading(false);
+	type CreditsBucket = { allotted: number; used: number; resetInDays?: number };
+	type SubscriptionShape = {
+		id?: string;
+		stripeSubscriptionID?: string;
+		name?: string;
+		type?: string;
+		status?: "active" | "inactive" | string;
+		price?: string;
+		aiCredits?: CreditsBucket;
+		leads?: CreditsBucket;
+		skipTraces?: CreditsBucket;
+		renewalDate?: string;
+		createdAt?: string;
+		planDetails?: string;
+	};
+
+	const subscriptionData: UserProfileSubscription = useMemo(() => {
+		const subs = (
+			session?.user as { subscription?: SubscriptionShape } | undefined
+		)?.subscription;
+		if (!subs) return defaultSubscription;
+		return {
+			id: subs.id ?? defaultSubscription.id,
+			stripeSubscriptionID:
+				subs.stripeSubscriptionID ?? defaultSubscription.stripeSubscriptionID,
+			name: subs.name ?? defaultSubscription.name,
+			type:
+				(subs.type as UserProfileSubscription["type"]) ??
+				defaultSubscription.type,
+			status:
+				(subs.status as UserProfileSubscription["status"]) ??
+				defaultSubscription.status,
+			price: subs.price ?? defaultSubscription.price,
+			aiCredits: {
+				allotted: subs.aiCredits?.allotted ?? 0,
+				used: subs.aiCredits?.used ?? 0,
+				resetInDays: subs.aiCredits?.resetInDays ?? 0,
+			},
+			leads: {
+				allotted: subs.leads?.allotted ?? 0,
+				used: subs.leads?.used ?? 0,
+				resetInDays: subs.leads?.resetInDays ?? 0,
+			},
+			skipTraces: {
+				allotted: subs.skipTraces?.allotted ?? 0,
+				used: subs.skipTraces?.used ?? 0,
+				resetInDays: subs.skipTraces?.resetInDays ?? 0,
+			},
+			renewalDate: subs.renewalDate ?? defaultSubscription.renewalDate,
+			createdAt: subs.createdAt ?? defaultSubscription.createdAt,
+			planDetails: subs.planDetails ?? defaultSubscription.planDetails,
 		};
-
-		getData();
-	}, []);
+	}, [session]);
 
 	if (!isUsageModalOpen) return null; // Don't render anything if the modal is not open
-
-	if (loading) {
-		return <div>Loading...</div>;
-	}
-
-	if (!subscriptionData) {
-		return <div>Error loading data</div>;
-	}
 
 	const { name, status, aiCredits, leads, skipTraces, price, renewalDate } =
 		subscriptionData;

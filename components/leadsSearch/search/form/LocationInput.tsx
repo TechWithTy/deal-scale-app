@@ -57,9 +57,10 @@ const LocationInput: React.FC<LocationInputProps> = ({
 								} catch {}
 							},
 							{
-								// Loosen types so Google shows broad suggestions (cities, addresses, POIs)
-								types: undefined,
+								// Restrict to US addresses, cities, states, and zips
+								types: ["address", "(regions)"],
 								fields: ["place_id", "geometry", "name", "formatted_address"],
+								componentRestrictions: { country: "us" },
 							},
 						);
 					})();

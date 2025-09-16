@@ -9,7 +9,7 @@ import { BaseSetupMain } from "./steps/base/BaseSetupMain";
 import { KnowledgeBaseMain } from "./steps/knowledge/KnowledgeBaseMain";
 import { PersonalInformationFormMain } from "./steps/personal_information/PersonalInformationFormMain";
 import type { AssistantVoice } from "@/types/vapiAi/api/assistant/create";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useRouter, usePathname } from "next/navigation";
 // * Step definitions: label and component for each step
 const stepHashes = [
@@ -30,6 +30,10 @@ export const ProfileStepper: React.FC = () => {
 	const router = useRouter();
 	const pathname = usePathname();
 	const [currentStep, setCurrentStep] = useState(0);
+	// Force a fresh form instance on first mount to avoid stale values
+	const [formKey] = useState(() => `profile-form-${Date.now()}`);
+	// Debug toggle to bypass validation and enable free navigation
+	const [bypassValidation, setBypassValidation] = useState(false);
 
 	// Helper to navigate to a step and update the hash
 	const goToStep = (stepIdx: number) => {
@@ -49,36 +53,49 @@ export const ProfileStepper: React.FC = () => {
 	const [stepError, setStepError] = useState<string | null>(null); // * Error message for validation
 	// ! Use zodResolver for strict Zod schema validation (see user rules)
 
+	// Centralized empty defaults to ensure a clean form on mount
+	const emptyDefaults: Partial<ProfileFormValues> = useMemo(
+		() =>
+			({
+				firstName: "",
+				lastName: "",
+				email: "",
+				personalNum: "",
+				companyName: "",
+				companyLogo: undefined,
+				// outreachEmailAddress: "",
+				companyAssets: [],
+				selectedVoice: "",
+				exampleSalesScript: "",
+				// exampleEmailBody: "",
+				voicemailRecordingId: "",
+				clonedVoiceId: "",
+				meta: undefined,
+				socialMediaCampaignAccounts: {
+					oauthData: {},
+					facebook: undefined,
+					twitter: undefined,
+					instagram: undefined,
+					linkedIn: undefined,
+				},
+				socialMediatags: [],
+				state: "",
+				city: "",
+			}) as Partial<ProfileFormValues>,
+		[],
+	);
+
 	const form = useForm<ProfileFormValues>({
 		resolver: zodResolver(profileSchema),
-		defaultValues: {
-			firstName: "",
-			lastName: "",
-			email: "",
-			personalNum: "",
-			companyName: "",
-			companyLogo: undefined,
-			// outreachEmailAddress: "",
-			companyAssets: [],
-			selectedVoice: "",
-			exampleSalesScript: "",
-			// exampleEmailBody: "",
-			voicemailRecordingId: "",
-			clonedVoiceId: "",
-			meta: undefined,
-			socialMediaCampaignAccounts: {
-				oauthData: {},
-				facebook: undefined,
-				twitter: undefined,
-				instagram: undefined,
-				linkedIn: undefined,
-			},
-			socialMediatags: [],
-			state: "",
-			city: "",
-		},
+		defaultValues: emptyDefaults,
+		shouldUnregister: true,
 		mode: "onChange",
 	});
+
+	// Ensure we reset to clean defaults on mount so prior values don't persist
+	useEffect(() => {
+		form.reset(emptyDefaults);
+	}, [form, emptyDefaults]);
 
 	// * Stepper header UI
 	// Only include required and rendered fields for each step
@@ -130,7 +147,8 @@ export const ProfileStepper: React.FC = () => {
 				{steps.map((step, idx) => {
 					let isDisabled = false;
 					// Disable future steps unless all previous steps are valid
-					isDisabled = idx > currentStep && !allPrevStepsValid(idx);
+					isDisabled =
+						!bypassValidation && idx > currentStep && !allPrevStepsValid(idx);
 					return (
 						<button
 							key={step.label}
@@ -143,21 +161,26 @@ export const ProfileStepper: React.FC = () => {
 									setCurrentStep(idx);
 								} else {
 									// Only allow navigating forward if all previous steps are valid
-									let allPrevValid = true;
-									for (let i = 0; i < idx; i++) {
-										const valid = await form.trigger(stepFields[i]);
-										if (!valid) {
-											allPrevValid = false;
-											break;
-										}
-									}
-									if (allPrevValid) {
+									if (bypassValidation) {
 										setStepError(null);
 										setCurrentStep(idx);
 									} else {
-										setStepError(
-											"Please complete all previous steps before proceeding.",
-										);
+										let allPrevValid = true;
+										for (let i = 0; i < idx; i++) {
+											const valid = await form.trigger(stepFields[i]);
+											if (!valid) {
+												allPrevValid = false;
+												break;
+											}
+										}
+										if (allPrevValid) {
+											setStepError(null);
+											setCurrentStep(idx);
+										} else {
+											setStepError(
+												"Please complete all previous steps before proceeding.",
+											);
+										}
 									}
 								}
 							}}
@@ -190,9 +213,23 @@ export const ProfileStepper: React.FC = () => {
 	const initialData = undefined;
 
 	return (
-		<FormProvider {...form}>
+		<FormProvider key={formKey} {...form}>
 			<div className="flex flex-col gap-8 p-8">
-				<h2 className="mb-4 font-bold text-xl">Profile Stepper</h2>
+				<div className="mb-4 flex items-center justify-between">
+					<h2 className="font-bold text-xl">Profile Stepper</h2>
+					<button
+						type="button"
+						onClick={() => setBypassValidation((v) => !v)}
+						className={`rounded px-3 py-1 text-sm border ${
+							bypassValidation
+								? "bg-accent text-accent-foreground"
+								: "bg-muted text-muted-foreground"
+						} border-border`}
+						title="Toggle to bypass validation and freely navigate steps"
+					>
+						{bypassValidation ? "Bypass: ON" : "Bypass: OFF"}
+					</button>
+				</div>
 				<StepperHeader />
 				{/* Show required fields for the current step at the top of the form */}
 				<div className="mb-4">
@@ -255,6 +292,7 @@ export const ProfileStepper: React.FC = () => {
 						{(() => {
 							const watchedFields = form.watch(stepFields[currentStep]);
 							const isCurrentStepValid =
+								bypassValidation ||
 								stepFields[currentStep].length === 0 ||
 								stepFields[currentStep].every((field, i) => {
 									const value = watchedFields?.[i];
@@ -281,12 +319,16 @@ export const ProfileStepper: React.FC = () => {
 										}
 										onClick={async () => {
 											setStepError(null);
-											const valid = await form.trigger(stepFields[currentStep]);
-											if (!valid) {
-												setStepError(
-													"Please fill in all required fields for this step.",
+											if (!bypassValidation) {
+												const valid = await form.trigger(
+													stepFields[currentStep],
 												);
-												return;
+												if (!valid) {
+													setStepError(
+														"Please fill in all required fields for this step.",
+													);
+													return;
+												}
 											}
 											goToStep(Math.min(steps.length - 1, currentStep + 1));
 										}}

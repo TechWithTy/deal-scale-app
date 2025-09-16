@@ -101,11 +101,11 @@ export default function PropertyHeader({
 
 	return (
 		<>
-			<div className="w-full bg-card p-4 shadow-sm text-card-foreground">
+			<div className="w-full bg-card p-4 text-card-foreground shadow-sm">
 				<div className="flex flex-col items-center justify-center gap-2">
 					{/* Top row: Title + Help */}
 					<div className="flex w-full items-center justify-center gap-2">
-						<h1 className="flex items-center gap-2 text-center text-xl font-semibold text-foreground">
+						<h1 className="flex items-center gap-2 text-center font-semibold text-foreground text-xl">
 							{property.address?.fullStreetLine || "N/A"},{" "}
 							{property.address?.city || "N/A"},{" "}
 							{property.address?.state || "N/A"}{" "}
@@ -121,7 +121,7 @@ export default function PropertyHeader({
 						</button>
 					</div>
 					{/* Second row: Metadata */}
-					<p className="text-center text-sm text-muted-foreground">
+					<p className="text-center text-muted-foreground text-sm">
 						{property.details.beds || "N/A"} bed |{" "}
 						{property.details.fullBaths || "N/A"} bath |{" "}
 						{formatNumber(property.details.sqft)} sqft |{" "}

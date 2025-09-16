@@ -39,6 +39,12 @@ export const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({
 			name: city.name,
 		})) || [];
 
+	// Helpers to map stored values (codes/ids) to human-readable labels
+	const getStateNameByCode = (code?: string) =>
+		stateList.find((s) => s.id === code)?.name ?? "";
+	const getCityNameById = (id?: string) =>
+		cityList.find((c) => c.id === id)?.name ?? "";
+
 	return (
 		<>
 			<FormField
@@ -48,7 +54,13 @@ export const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({
 					<FormItem>
 						<FormLabel>First Name</FormLabel>
 						<FormControl>
-							<Input disabled={loading} placeholder="John" {...field} />
+							<Input
+								disabled={loading}
+								placeholder="John"
+								autoComplete="off"
+								inputMode="text"
+								{...field}
+							/>
 						</FormControl>
 						<FormMessage />
 					</FormItem>
@@ -61,7 +73,13 @@ export const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({
 					<FormItem>
 						<FormLabel>Last Name</FormLabel>
 						<FormControl>
-							<Input disabled={loading} placeholder="Doe" {...field} />
+							<Input
+								disabled={loading}
+								placeholder="Doe"
+								autoComplete="off"
+								inputMode="text"
+								{...field}
+							/>
 						</FormControl>
 						<FormMessage />
 					</FormItem>
@@ -77,6 +95,8 @@ export const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({
 							<Input
 								disabled={loading}
 								placeholder="johndoe@gmail.com"
+								type="email"
+								autoComplete="off"
 								{...field}
 							/>
 						</FormControl>
@@ -92,9 +112,11 @@ export const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({
 						<FormLabel>Personal Phone Number</FormLabel>
 						<FormControl>
 							<Input
-								type="number"
+								type="tel"
 								placeholder="Enter your phone number"
 								disabled={loading}
+								autoComplete="off"
+								inputMode="tel"
 								{...field}
 							/>
 						</FormControl>
@@ -116,7 +138,9 @@ export const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({
 						>
 							<FormControl>
 								<SelectTrigger>
-									<SelectValue placeholder="Select a state" />
+									<SelectValue placeholder="Select a state">
+										{field.value ? getStateNameByCode(field.value) : ""}
+									</SelectValue>
 								</SelectTrigger>
 							</FormControl>
 							<SelectContent
@@ -153,7 +177,9 @@ export const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({
 									<SelectValue
 										defaultValue={field.value}
 										placeholder="Select a city"
-									/>
+									>
+										{field.value ? getCityNameById(field.value) : ""}
+									</SelectValue>
 								</SelectTrigger>
 							</FormControl>
 							<SelectContent

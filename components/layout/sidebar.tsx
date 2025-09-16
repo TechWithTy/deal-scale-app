@@ -18,6 +18,7 @@ import {
 } from "react";
 import { useSession } from "next-auth/react";
 import { CrudToggle } from "@/external/crud-toggle/components/CrudToggle";
+import { CreditsSummary } from "@/external/credit-view-purchase/components/CreditsSummary";
 import type { CrudFlags } from "@/external/crud-toggle/utils/types";
 
 export default function SidebarClient({ user }: { user: UserProfile | null }) {
@@ -40,7 +41,18 @@ export default function SidebarClient({ user }: { user: UserProfile | null }) {
 	}, [user, setUserProfile]);
 
 	const [showPerms, setShowPerms] = useState(false);
+	const [showCredits, setShowCredits] = useState(false);
 	const { data: session } = useSession();
+	// Narrow session user to access subscription safely without 'any'
+	type CreditsBucket = { allotted?: number; used?: number };
+	type SubscriptionShape = {
+		aiCredits?: CreditsBucket;
+		leads?: CreditsBucket;
+		skipTraces?: CreditsBucket;
+	};
+	const subs: SubscriptionShape | undefined = (
+		session?.user as { subscription?: SubscriptionShape } | undefined
+	)?.subscription;
 
 	// Build CRUD flags from session.user.permissions (array of strings like "leads:read")
 	const ENTITIES = [
@@ -166,6 +178,31 @@ export default function SidebarClient({ user }: { user: UserProfile | null }) {
 						</div>
 					)}
 
+					{/* Credits (collapsible) */}
+					{!isSidebarMinimized && (
+						<div className="px-3 py-2">
+							<button
+								type="button"
+								className="flex w-full items-center justify-between rounded-md border border-border bg-card px-2 py-1 font-semibold text-muted-foreground text-xs uppercase"
+								onClick={() => setShowCredits((v) => !v)}
+							>
+								<span>Credits</span>
+								<span className="text-foreground">
+									{showCredits ? "−" : "+"}
+								</span>
+							</button>
+							{showCredits && (
+								<div className="mt-2">
+									<CreditsSummary
+										ai={subs?.aiCredits}
+										leads={subs?.leads}
+										skipTraces={subs?.skipTraces}
+									/>
+								</div>
+							)}
+						</div>
+					)}
+
 					{/* Permissions (read-only preview with invite requests) */}
 					{!isSidebarMinimized && (
 						<div className="px-3 py-2" data-sidebar-toggle-wrapper="true">
@@ -221,9 +258,10 @@ export default function SidebarClient({ user }: { user: UserProfile | null }) {
 				</div>
 
 				{/* ✅ Display user info, either from the server or client */}
-				{user && !isSidebarMinimized && (
-					<div className="p-4 text-foreground text-sm">
-						Logged in as: <strong>{user.email}</strong>
+				{!isSidebarMinimized && (
+					<div className="p-4 text-sm text-foreground">
+						Logged in as:{" "}
+						<strong>{session?.user?.email ?? user?.email ?? ""}</strong>
 					</div>
 				)}
 			</div>

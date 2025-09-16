@@ -1,15 +1,29 @@
 import * as z from "zod";
-const locationRegex =
-	/^(?:(?:\d{5}(?:-\d{4})?)|(?:[A-Za-z ]+,\s?[A-Za-z]{2})|(?:[A-Za-z ]+),\s?\d{5}(?:-\d{4})?)$/;
+import {
+	isValidUSState,
+	isValidUSCity,
+	isValidZipCode,
+	isLikelyAddress,
+} from "@/lib/utils/locationValidator";
 
 export const mapFormSchema = z.object({
 	location: z
 		.string()
 		.min(1, "Location is required")
-		.refine((val) => locationRegex.test(val), {
-			message:
-				"Please enter a valid State, Zip, County, Street, Neighborhood, or Address",
-		}),
+		.refine(
+			(val) => {
+				const trimmedVal = val.trim();
+				return (
+					isValidZipCode(trimmedVal) ||
+					isValidUSState(trimmedVal) ||
+					isValidUSCity(trimmedVal) ||
+					isLikelyAddress(trimmedVal)
+				);
+			},
+			{
+				message: "Please enter a valid State, Zip, City, or Address",
+			},
+		),
 
 	marketStatus: z
 		.string()
