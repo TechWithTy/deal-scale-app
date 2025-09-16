@@ -10,6 +10,7 @@ import { AgentAudioForm } from "./AgentAudioForm";
 
 import { AgentPublicationForm } from "./AgentPublicationForm";
 import { AgentSocialForm } from "./AgentSocialForm";
+import { AgentDirectMailForm } from "./AgentDirectMailForm";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -78,6 +79,10 @@ export function AgentForm({
 
 							{agentType === "social" && (
 								<AgentSocialForm form={form} avatars={avatars} />
+							)}
+
+							{agentType === "direct mail" && (
+								<AgentDirectMailForm form={form} />
 							)}
 
 							<div className="flex justify-end space-x-2">

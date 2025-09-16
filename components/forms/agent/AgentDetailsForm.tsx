@@ -116,7 +116,6 @@ export function AgentDetailsForm({
 							<SelectContent>
 								<SelectItem value="phone">Phone</SelectItem>
 								<SelectItem value="direct mail">Direct Mail</SelectItem>
-								<SelectItem value="email">Email</SelectItem>
 								<SelectItem value="social">Social</SelectItem>
 							</SelectContent>
 						</Select>

@@ -5,6 +5,8 @@ import { z } from "zod";
 
 export const agentSchema = z.object({
 	isPublic: z.boolean().default(false),
+	isFree: z.boolean().default(false),
+	priceMultiplier: z.number().min(1).max(5).default(1),
 	id: z.string().optional(),
 	image: z.string().optional(),
 	name: z.string().min(1, { message: "Agent Name is required." }),
@@ -38,6 +40,9 @@ export const agentSchema = z.object({
 	campaignGoal: z.string().optional(),
 	salesScript: z.string().optional(),
 	persona: z.string().optional(),
+
+	// Direct Mail-specific fields
+	directMailTemplates: z.array(z.any()).optional(),
 });
 
 export type Agent = z.infer<typeof agentSchema>;
