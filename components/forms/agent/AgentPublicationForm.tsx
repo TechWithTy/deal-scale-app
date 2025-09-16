@@ -10,7 +10,13 @@ import {
 	FormLabel,
 } from "@/components/ui/form";
 import { Switch } from "@/components/ui/switch";
-import { Slider } from "@/components/ui/slider";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
 
 interface AgentPublicationFormProps {
 	form: UseFormReturn<Agent>;
@@ -19,6 +25,19 @@ interface AgentPublicationFormProps {
 export function AgentPublicationForm({ form }: AgentPublicationFormProps) {
 	const isPublic = form.watch("isPublic");
 	const isFree = form.watch("isFree");
+	const agentType = form.watch("type");
+	const billingCycle = form.watch("billingCycle");
+	const priceMultiplier = form.watch("priceMultiplier");
+
+	// Simple placeholder base rate by agent type. Replace with API-driven values later.
+	const baseRateByType: Record<string, number> = {
+		phone: 200,
+		"direct mail": 150,
+		social: 100,
+	};
+
+	const baseRate = baseRateByType[agentType ?? ""] ?? 0;
+	const estimated = (priceMultiplier ?? 1) * baseRate;
 
 	return (
 		<div className="space-y-4">
@@ -39,6 +58,31 @@ export function AgentPublicationForm({ form }: AgentPublicationFormProps) {
 
 			{isPublic && (
 				<div className="space-y-4 rounded-lg border p-4">
+					{/* Billing cycle selection */}
+					<FormField
+						control={form.control}
+						name="billingCycle"
+						render={({ field }) => (
+							<FormItem>
+								<FormLabel>Billing Cycle</FormLabel>
+								<FormControl>
+									<Select
+										onValueChange={field.onChange}
+										defaultValue={field.value}
+									>
+										<SelectTrigger>
+											<SelectValue placeholder="Select billing cycle" />
+										</SelectTrigger>
+										<SelectContent>
+											<SelectItem value="monthly">Monthly</SelectItem>
+											<SelectItem value="one-time">One-time</SelectItem>
+										</SelectContent>
+									</Select>
+								</FormControl>
+							</FormItem>
+						)}
+					/>
+
 					<FormField
 						control={form.control}
 						name="isFree"
@@ -57,27 +101,49 @@ export function AgentPublicationForm({ form }: AgentPublicationFormProps) {
 						)}
 					/>
 
-					<FormField
-						control={form.control}
-						name="priceMultiplier"
-						render={({ field }) => (
-							<FormItem>
-								<FormLabel>
-									Price Multiplier: {isFree ? "N/A" : `${field.value}x`}
-								</FormLabel>
-								<FormControl>
-									<Slider
-										disabled={isFree}
-										min={1}
-										max={5}
-										step={1}
-										value={[field.value]}
-										onValueChange={(value) => field.onChange(value[0])}
-									/>
-								</FormControl>
-							</FormItem>
-						)}
-					/>
+					{!isFree && (
+						<FormField
+							control={form.control}
+							name="priceMultiplier"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel>Price Multiplier</FormLabel>
+									<FormControl>
+										<Select
+											onValueChange={(val) => field.onChange(Number(val))}
+											defaultValue={String(field.value ?? 1)}
+										>
+											<SelectTrigger>
+												<SelectValue placeholder="Select multiplier" />
+											</SelectTrigger>
+											<SelectContent>
+												<SelectItem value="1">1x</SelectItem>
+												<SelectItem value="2">2x</SelectItem>
+												<SelectItem value="3">3x</SelectItem>
+												<SelectItem value="4">4x</SelectItem>
+												<SelectItem value="5">5x</SelectItem>
+											</SelectContent>
+										</Select>
+									</FormControl>
+									<div className="pt-2 text-sm text-muted-foreground">
+										<div>
+											Estimated{" "}
+											{billingCycle === "one-time" ? "One-time" : "Monthly"}{" "}
+											Income:{" "}
+											{estimated.toLocaleString("en-US", {
+												style: "currency",
+												currency: "USD",
+											})}
+										</div>
+										<div>
+											Agent Performance Score (vs. avg.):{" "}
+											<span className="text-primary">Calculating...</span>
+										</div>
+									</div>
+								</FormItem>
+							)}
+						/>
+					)}
 				</div>
 			)}
 		</div>

@@ -15,7 +15,13 @@ import {
 export function useAgentForm(defaultValues?: Partial<Agent>) {
 	const form = useForm<Agent>({
 		resolver: zodResolver(agentSchema),
-		defaultValues: defaultValues || {},
+		defaultValues: {
+			isPublic: false,
+			isFree: false,
+			priceMultiplier: 1,
+			billingCycle: "monthly",
+			...(defaultValues || {}),
+		},
 	});
 
 	const [showVoicemailModal, setShowVoicemailModal] = useState(false);

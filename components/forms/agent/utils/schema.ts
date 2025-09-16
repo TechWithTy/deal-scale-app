@@ -7,6 +7,7 @@ export const agentSchema = z.object({
 	isPublic: z.boolean().default(false),
 	isFree: z.boolean().default(false),
 	priceMultiplier: z.number().min(1).max(5).default(1),
+	billingCycle: z.enum(["monthly", "one-time"]).default("monthly"),
 	id: z.string().optional(),
 	image: z.string().optional(),
 	name: z.string().min(1, { message: "Agent Name is required." }),
