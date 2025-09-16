@@ -72,14 +72,22 @@ export default function SidebarClient({ user }: { user: UserProfile | null }) {
 			)}
 		>
 			<div
-				role="button"
 				aria-label={isSidebarMinimized ? "Expand sidebar" : "Collapse sidebar"}
-				tabIndex={0}
 				onClick={handleAsideClick}
 				onKeyDown={handleAsideKeyDown}
 				data-sidebar-toggle-wrapper="true"
 				className="h-full cursor-pointer"
 			>
+				<button
+					type="button"
+					className="sr-only"
+					onClick={(e) => {
+						e.stopPropagation();
+						toggleSidebar();
+					}}
+				>
+					{isSidebarMinimized ? "Expand sidebar" : "Collapse sidebar"}
+				</button>
 				<div
 					className={cn(
 						"hidden overflow-visible p-5 lg:block",
