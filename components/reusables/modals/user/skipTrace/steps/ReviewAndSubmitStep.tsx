@@ -60,29 +60,29 @@ const ReviewAndSubmitStep: React.FC<ReviewAndSubmitStepProps> = ({
 	return (
 		<div className="space-y-4 p-4">
 			<h3 className="font-medium text-lg">Review and Submit</h3>
-			<div className="space-y-2 rounded-md border border-blue-200 bg-blue-50 p-4 text-center dark:border-blue-800 dark:bg-blue-900/50">
+			<div className="space-y-2 rounded-md border border-primary/20 bg-primary/10 p-4 text-center">
 				<div className="grid grid-cols-3 gap-4 text-sm">
 					<div>
-						<p className="text-gray-600 dark:text-gray-400">Available</p>
-						<p className="font-bold text-blue-800 dark:text-blue-200">
+						<p className="text-muted-foreground">Available</p>
+						<p className="font-bold text-primary">
 							{availableCredits.toLocaleString()}
 						</p>
 					</div>
 					<div>
-						<p className="text-gray-600 dark:text-gray-400">Cost</p>
-						<p className="font-bold text-red-600 dark:text-red-400">
+						<p className="text-muted-foreground">Cost</p>
+						<p className="font-bold text-destructive">
 							- {totalCost.toLocaleString()}
 						</p>
 					</div>
 					<div>
-						<p className="text-gray-600 dark:text-gray-400">Remaining</p>
+						<p className="text-muted-foreground">Remaining</p>
 						<p className="font-bold text-green-600 dark:text-green-400">
 							{remainingCredits.toLocaleString()}
 						</p>
 					</div>
 				</div>
 			</div>
-			<div className="space-y-3 rounded-md border p-4 dark:border-gray-700">
+			<div className="space-y-3 rounded-md border border-border p-4">
 				{uploadedFile ? (
 					<>
 						<div>
@@ -164,7 +164,7 @@ const ReviewAndSubmitStep: React.FC<ReviewAndSubmitStepProps> = ({
 				<button
 					type="button"
 					onClick={onBack}
-					className="rounded-md border bg-white px-4 py-2 font-medium text-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+					className="rounded-md border bg-card px-4 py-2 font-medium text-card-foreground hover:bg-muted"
 				>
 					Back
 				</button>
@@ -172,7 +172,7 @@ const ReviewAndSubmitStep: React.FC<ReviewAndSubmitStepProps> = ({
 					type="button"
 					onClick={onSubmit}
 					disabled={submitting}
-					className="rounded-md bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+					className="rounded-md bg-primary px-4 py-2 text-primary-foreground transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
 				>
 					{submitting ? "Submitting..." : "Submit"}
 				</button>

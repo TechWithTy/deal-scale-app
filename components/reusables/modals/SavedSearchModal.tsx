@@ -21,11 +21,11 @@ const SavedSearchModal: FC<SavedSearchModalProps> = ({
 }) => {
 	if (!open) return null;
 	return (
-		<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-			<div className="relative w-full max-w-lg rounded-xl bg-white p-6 shadow-lg dark:bg-gray-900">
+		<div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
+			<div className="relative w-full max-w-lg rounded-xl bg-card p-6 shadow-lg text-card-foreground">
 				<button
 					type="button"
-					className="absolute top-3 right-3 text-gray-500 hover:text-orange-600"
+					className="absolute right-3 top-3 text-muted-foreground hover:text-accent"
 					onClick={onClose}
 					aria-label="Close modal"
 				>
@@ -33,7 +33,7 @@ const SavedSearchModal: FC<SavedSearchModalProps> = ({
 				</button>
 				<h2 className="mb-4 font-bold text-lg">Saved Searches</h2>
 				{savedSearches.length === 0 ? (
-					<div className="py-8 text-center text-gray-400">
+					<div className="py-8 text-center text-muted-foreground">
 						No saved searches yet.
 					</div>
 				) : (
@@ -41,10 +41,10 @@ const SavedSearchModal: FC<SavedSearchModalProps> = ({
 						{savedSearches.map((search) => (
 							<li
 								key={search.id}
-								className="flex flex-col gap-2 rounded-lg border bg-gray-50 p-4 dark:bg-gray-800"
+								className="flex flex-col gap-2 rounded-lg border bg-muted/50 p-4"
 							>
 								<div className="flex items-center justify-between">
-									<span className="font-semibold text-gray-900 dark:text-white">
+									<span className="font-semibold text-foreground">
 										{search.name}
 									</span>
 									<div className="flex items-center gap-2">
@@ -57,25 +57,22 @@ const SavedSearchModal: FC<SavedSearchModalProps> = ({
 											onClick={() => onSetPriority(search.id)}
 										>
 											{search.priority ? (
-												<Star
-													className="fill-orange-400 text-orange-500"
-													size={20}
-												/>
+												<Star className="fill-accent text-accent" size={20} />
 											) : (
 												<StarOff
-													className="text-gray-400 group-hover:text-orange-500"
+													className="text-muted-foreground group-hover:text-accent"
 													size={20}
 												/>
 											)}
 										</button>
-										<span className="text-gray-400 text-xs">
+										<span className="text-xs text-muted-foreground">
 											{new Date(search.createdAt).toLocaleString()}
 										</span>
 									</div>
 								</div>
-								<div className="flex flex-wrap gap-2 rounded-lg bg-gray-100 p-3 text-xs dark:bg-gray-900">
+								<div className="flex flex-wrap gap-2 rounded-lg bg-muted p-3 text-xs">
 									{typeof search.searchCriteria.location === "string" && (
-										<div className="rounded bg-orange-50 px-2 py-1 font-semibold text-orange-800 dark:bg-orange-900 dark:text-orange-200">
+										<div className="rounded bg-accent/10 px-2 py-1 font-semibold text-accent-foreground">
 											Location:{" "}
 											<span className="font-normal">
 												{search.searchCriteria.location}
@@ -83,7 +80,7 @@ const SavedSearchModal: FC<SavedSearchModalProps> = ({
 										</div>
 									)}
 									{typeof search.searchCriteria.baths === "string" && (
-										<div className="rounded bg-blue-50 px-2 py-1 font-semibold text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+										<div className="rounded bg-primary/10 px-2 py-1 font-semibold text-primary-foreground">
 											Baths:{" "}
 											<span className="font-normal">
 												{search.searchCriteria.baths}
@@ -91,7 +88,7 @@ const SavedSearchModal: FC<SavedSearchModalProps> = ({
 										</div>
 									)}
 									{typeof search.searchCriteria.beds === "string" && (
-										<div className="rounded bg-green-50 px-2 py-1 font-semibold text-green-800 dark:bg-green-900 dark:text-green-200">
+										<div className="rounded bg-green-500/10 px-2 py-1 font-semibold text-green-700">
 											Beds:{" "}
 											<span className="font-normal">
 												{search.searchCriteria.beds}
@@ -99,7 +96,7 @@ const SavedSearchModal: FC<SavedSearchModalProps> = ({
 										</div>
 									)}
 									{typeof search.searchCriteria.propertyType === "string" && (
-										<div className="rounded bg-purple-50 px-2 py-1 font-semibold text-purple-800 dark:bg-purple-900 dark:text-purple-200">
+										<div className="rounded bg-purple-500/10 px-2 py-1 font-semibold text-purple-700">
 											Type:{" "}
 											<span className="font-normal">
 												{search.searchCriteria.propertyType}
@@ -117,7 +114,7 @@ const SavedSearchModal: FC<SavedSearchModalProps> = ({
 												<>
 													{"mlsOnly" in adv &&
 														typeof adv.mlsOnly === "boolean" && (
-															<div className="rounded bg-gray-200 px-2 py-1 font-semibold text-gray-800 dark:bg-gray-700 dark:text-gray-100">
+															<div className="rounded bg-muted px-2 py-1 font-semibold text-muted-foreground">
 																MLS Only:
 																<span className="font-normal">
 																	{adv.mlsOnly ? "Yes" : "No"}
@@ -126,7 +123,7 @@ const SavedSearchModal: FC<SavedSearchModalProps> = ({
 														)}
 													{"foreClosure" in adv &&
 														typeof adv.foreClosure === "boolean" && (
-															<div className="rounded bg-gray-200 px-2 py-1 font-semibold text-gray-800 dark:bg-gray-700 dark:text-gray-100">
+															<div className="rounded bg-muted px-2 py-1 font-semibold text-muted-foreground">
 																Foreclosure:
 																<span className="font-normal">
 																	{adv.foreClosure ? "Yes" : "No"}
@@ -135,7 +132,7 @@ const SavedSearchModal: FC<SavedSearchModalProps> = ({
 														)}
 													{"extraPropertyData" in adv &&
 														typeof adv.extraPropertyData === "boolean" && (
-															<div className="rounded bg-gray-200 px-2 py-1 font-semibold text-gray-800 dark:bg-gray-700 dark:text-gray-100">
+															<div className="rounded bg-muted px-2 py-1 font-semibold text-muted-foreground">
 																Extra Data:
 																<span className="font-normal">
 																	{adv.extraPropertyData ? "Yes" : "No"}
@@ -144,7 +141,7 @@ const SavedSearchModal: FC<SavedSearchModalProps> = ({
 														)}
 													{"excludePending" in adv &&
 														typeof adv.excludePending === "boolean" && (
-															<div className="rounded bg-gray-200 px-2 py-1 font-semibold text-gray-800 dark:bg-gray-700 dark:text-gray-100">
+															<div className="rounded bg-muted px-2 py-1 font-semibold text-muted-foreground">
 																Exclude Pending:
 																<span className="font-normal">
 																	{adv.excludePending ? "Yes" : "No"}
@@ -158,14 +155,14 @@ const SavedSearchModal: FC<SavedSearchModalProps> = ({
 								<div className="flex justify-end gap-2">
 									<button
 										type="button"
-										className="rounded bg-orange-600 px-3 py-1 text-white text-xs hover:bg-orange-700"
+										className="rounded bg-accent px-3 py-1 text-xs text-accent-foreground hover:bg-accent/90"
 										onClick={() => onSelect(search)}
 									>
 										Select
 									</button>
 									<button
 										type="button"
-										className="rounded bg-gray-200 px-3 py-1 text-gray-800 text-xs hover:bg-red-500 hover:text-white"
+										className="rounded bg-muted px-3 py-1 text-xs text-muted-foreground hover:bg-destructive hover:text-destructive-foreground"
 										onClick={() => onDelete(search.id)}
 									>
 										Delete

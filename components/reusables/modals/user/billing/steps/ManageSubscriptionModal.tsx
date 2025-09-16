@@ -30,28 +30,28 @@ const ManageSubscriptionModal = ({
 		<>
 			<Button
 				onClick={openModal}
-				className="w-full rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 sm:w-auto"
+				className="w-full rounded-md bg-primary px-4 py-2 text-primary-foreground hover:bg-primary/90 sm:w-auto"
 				type="button"
 			>
 				Manage Subscription
 			</Button>
 			{isOpen && (
-				<div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 p-4">
-					<div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl dark:bg-gray-800">
+				<div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 p-4 backdrop-blur-sm">
+					<div className="w-full max-w-md rounded-xl bg-card p-6 text-card-foreground shadow-xl">
 						<div className="mb-4 flex items-center justify-between">
-							<h2 className="font-semibold text-gray-900 text-xl dark:text-white">
+							<h2 className="font-semibold text-foreground text-xl">
 								Basic Subscription
 							</h2>
 							<button
 								type="button"
 								onClick={closeModal}
-								className="rounded-full p-1 text-gray-400 hover:bg-gray-200 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:hover:bg-gray-700"
+								className="rounded-full p-1 text-muted-foreground hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
 								aria-label="Close"
 							>
 								<span aria-hidden="true">&times;</span>
 							</button>
 						</div>
-						<div className="mb-4 text-gray-700 text-sm dark:text-gray-300">
+						<div className="mb-4 text-muted-foreground text-sm">
 							<div className="mb-1">
 								{subscription.status === "active"
 									? "Active Subscription"
@@ -69,47 +69,41 @@ const ManageSubscriptionModal = ({
 							</div>
 						</div>
 						<div className="mb-4 grid grid-cols-1 gap-2 md:grid-cols-2">
-							<div className="rounded-lg bg-gray-100 p-3 dark:bg-gray-900">
-								<div className="font-medium text-gray-900 dark:text-white">
-									AI Credits
-								</div>
-								<div className="text-gray-600 text-xs dark:text-gray-400">
+							<div className="rounded-lg bg-muted p-3">
+								<div className="font-medium text-foreground">AI Credits</div>
+								<div className="text-muted-foreground text-xs">
 									{subscription.aiCredits.used} /{" "}
 									{subscription.aiCredits.allotted} used
 								</div>
-								<div className="text-gray-500 text-xs dark:text-gray-500">
+								<div className="text-muted-foreground text-xs">
 									Resets in: {subscription.aiCredits.resetInDays} days
 								</div>
 							</div>
-							<div className="rounded-lg bg-gray-100 p-3 dark:bg-gray-900">
-								<div className="font-medium text-gray-900 dark:text-white">
-									Leads
-								</div>
-								<div className="text-gray-600 text-xs dark:text-gray-400">
+							<div className="rounded-lg bg-muted p-3">
+								<div className="font-medium text-foreground">Leads</div>
+								<div className="text-muted-foreground text-xs">
 									{subscription.leads.used} / {subscription.leads.allotted} used
 								</div>
-								<div className="text-gray-500 text-xs dark:text-gray-500">
+								<div className="text-muted-foreground text-xs">
 									Resets in: {subscription.leads.resetInDays} days
 								</div>
 							</div>
-							<div className="rounded-lg bg-gray-100 p-3 md:col-span-2 dark:bg-gray-900">
-								<div className="font-medium text-gray-900 dark:text-white">
-									Skip Traces
-								</div>
-								<div className="text-gray-600 text-xs dark:text-gray-400">
+							<div className="rounded-lg bg-muted p-3 md:col-span-2">
+								<div className="font-medium text-foreground">Skip Traces</div>
+								<div className="text-muted-foreground text-xs">
 									{subscription.skipTraces.used} /{" "}
 									{subscription.skipTraces.allotted} used
 								</div>
-								<div className="text-gray-500 text-xs dark:text-gray-500">
+								<div className="text-muted-foreground text-xs">
 									Resets in: {subscription.skipTraces.resetInDays} days
 								</div>
 							</div>
 						</div>
-						<div className="mb-4 text-gray-700 text-xs dark:text-gray-300">
+						<div className="mb-4 text-muted-foreground text-xs">
 							Plan Details: {subscription.planDetails}
 						</div>
 						<Button
-							className="w-full rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+							className="w-full rounded-md bg-primary px-4 py-2 text-primary-foreground hover:bg-primary/90"
 							type="button"
 							onClick={() => {
 								/* todo: handle subscribe/upgrade */

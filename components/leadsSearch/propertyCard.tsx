@@ -1,3 +1,4 @@
+import { cn } from "@/lib/_utils";
 import { Card, CardContent } from "@/components/ui/card";
 import type { Property } from "@/types/_dashboard/property";
 import { isRealtorProperty } from "@/types/_dashboard/property";
@@ -102,20 +103,22 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
 
 	return (
 		<Card
-			className={`group relative mx-auto max-w-lg overflow-hidden rounded-lg border bg-card text-card-foreground shadow-sm transition-all hover:shadow-md ${
-				selected ? "ring-2 ring-orange-500 ring-offset-2" : ""
-			}`}
+			className={cn(
+				"group relative mx-auto max-w-lg overflow-hidden rounded-lg border bg-card text-card-foreground shadow-sm transition-all hover:shadow-md",
+				selected && "ring-2 ring-accent ring-offset-2",
+			)}
 			aria-selected={selected}
 		>
 			<CardContent className="p-0">
 				{/* Checkbox for selection */}
 				<button
 					type="button"
-					className={`absolute z-10 flex h-8 w-8 items-center justify-center rounded-full border-2 text-transparent shadow-md transition-colors focus:outline-none focus:ring-2 focus:ring-orange-500 ${
+					className={cn(
+						"absolute z-10 flex h-8 w-8 items-center justify-center rounded-full border-2 text-transparent shadow-md transition-colors focus:outline-none focus:ring-2 focus:ring-accent",
 						selected
-							? "bg-orange-500 text-white border-orange-500"
-							: "bg-white/80 group-hover:text-gray-400 dark:bg-gray-800/80 border-gray-200 hover:border-orange-500"
-					}`}
+							? "border-accent bg-accent text-accent-foreground"
+							: "border-border bg-card/80 hover:border-accent group-hover:text-muted-foreground",
+					)}
 					onClick={(e) => {
 						e.stopPropagation();
 						onSelect(property.id);
@@ -127,11 +130,12 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
 				>
 					{selected ? (
 						<svg
-							className="h-5 w-5 text-white"
+							className="h-5 w-5 text-accent-foreground"
 							viewBox="0 0 20 20"
 							fill="currentColor"
 							aria-hidden="true"
 						>
+							<title>Checked</title>
 							<path
 								fillRule="evenodd"
 								d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
@@ -140,11 +144,12 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
 						</svg>
 					) : (
 						<svg
-							className="h-5 w-5 text-gray-500"
+							className="h-5 w-5 text-muted-foreground"
 							viewBox="0 0 20 20"
 							fill="currentColor"
 							aria-hidden="true"
 						>
+							<title>Unchecked</title>
 							<path
 								fillRule="evenodd"
 								d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
@@ -155,7 +160,7 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
 				</button>
 
 				{/* Property Image Carousel */}
-				<div className="group relative h-48 w-full overflow-hidden rounded-t-lg bg-gray-100 dark:bg-gray-800">
+				<div className="group relative h-48 w-full overflow-hidden rounded-t-lg bg-muted">
 					<Link
 						href={`/dashboard/properties/${property.id}`}
 						className="block h-full w-full"
@@ -172,7 +177,7 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
 								blurDataURL={blurDataURL}
 							/>
 						) : (
-							<div className="flex h-full w-full items-center justify-center text-gray-400">
+							<div className="flex h-full w-full items-center justify-center text-muted-foreground">
 								<Home className="h-16 w-16" />
 							</div>
 						)}
@@ -185,7 +190,7 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
 									e.stopPropagation();
 									prevImg();
 								}}
-								className="absolute left-2 top-1/2 z-10 -translate-y-1/2 rounded-full bg-black/35 text-white shadow backdrop-blur-sm ring-1 ring-white/20 hover:bg-black/55 transition-opacity opacity-0 group-hover:opacity-100 h-8 w-8 flex items-center justify-center"
+								className="-translate-y-1/2 absolute top-1/2 left-2 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-background/35 text-foreground opacity-0 shadow-sm ring-1 ring-foreground/20 backdrop-blur-sm transition-opacity hover:bg-background/55 group-hover:opacity-100"
 								aria-label="Previous image"
 							>
 								<svg
@@ -196,8 +201,10 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
 									strokeWidth="2"
 									strokeLinecap="round"
 									strokeLinejoin="round"
+									aria-hidden="true"
 								>
-									<polyline points="15 18 9 12 15 6"></polyline>
+									<title>Previous</title>
+									<polyline points="15 18 9 12 15 6" />
 								</svg>
 							</button>
 							<button
@@ -206,7 +213,7 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
 									e.stopPropagation();
 									nextImg();
 								}}
-								className="absolute right-2 top-1/2 z-10 -translate-y-1/2 rounded-full bg-black/35 text-white shadow backdrop-blur-sm ring-1 ring-white/20 hover:bg-black/55 transition-opacity opacity-0 group-hover:opacity-100 h-8 w-8 flex items-center justify-center"
+								className="-translate-y-1/2 absolute top-1/2 right-2 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-background/35 text-foreground opacity-0 shadow ring-1 ring-foreground/20 backdrop-blur-sm transition-opacity hover:bg-background/55 group-hover:opacity-100"
 								aria-label="Next image"
 							>
 								<svg
@@ -217,16 +224,21 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
 									strokeWidth="2"
 									strokeLinecap="round"
 									strokeLinejoin="round"
+									aria-hidden="true"
 								>
-									<polyline points="9 18 15 12 9 6"></polyline>
+									<title>Next</title>
+									<polyline points="9 18 15 12 9 6" />
 								</svg>
 							</button>
-							<div className="pointer-events-none absolute bottom-2 left-1/2 z-10 -translate-x-1/2">
+							<div className="-translate-x-1/2 pointer-events-none absolute bottom-2 left-1/2 z-10">
 								<div className="flex gap-1">
 									{images.map((_, i) => (
 										<span
 											key={i}
-											className={`h-1.5 w-3 rounded-full ${i === imgIdx ? "bg-primary" : "bg-background/70 ring-1 ring-border"}`}
+											className={cn("h-1.5 w-3 rounded-full", {
+												"bg-primary": i === imgIdx,
+												"bg-background/70 ring-1 ring-border": i !== imgIdx,
+											})}
 										/>
 									))}
 								</div>
@@ -245,7 +257,7 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
 				<div className="p-4 text-center">
 					<div className="mb-2">
 						<Link href={`/dashboard/properties/${property.id}`}>
-							<h3 className="font-semibold text-gray-900 text-lg hover:text-orange-600 dark:text-white dark:hover:text-orange-400">
+							<h3 className="font-semibold text-foreground text-lg hover:text-accent">
 								{address.street}, {address.city}, {address.state}{" "}
 								{address.zipCode}
 							</h3>
@@ -254,8 +266,8 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
 
 					{/* Price */}
 					<div className="mb-3 flex items-center justify-center">
-						<DollarSign className="mr-1 h-4 w-4 text-gray-500" />
-						<span className="font-medium text-gray-700 text-sm dark:text-gray-300">
+						<DollarSign className="mr-1 h-4 w-4 text-muted-foreground" />
+						<span className="font-medium text-foreground text-sm">
 							{listPrice ? formatPrice(listPrice) : "Price not available"}
 						</span>
 					</div>
@@ -263,8 +275,8 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
 					{/* Last Sold */}
 					{(lastSoldDate || soldPrice) && (
 						<div className="mb-3 flex items-center justify-center">
-							<Calendar className="mr-1 h-4 w-4 text-gray-500" />
-							<span className="text-gray-600 text-sm dark:text-gray-400">
+							<Calendar className="mr-1 h-4 w-4 text-muted-foreground" />
+							<span className="text-muted-foreground text-sm">
 								{lastSoldDate && `Last sold: ${formatDate(lastSoldDate)}`}
 								{soldPrice && ` for ${formatPrice(soldPrice)}`}
 							</span>
@@ -272,25 +284,25 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
 					)}
 
 					{/* Property Features */}
-					<div className="grid grid-cols-3 gap-2 border-gray-200 border-t pt-3 dark:border-gray-700">
+					<div className="grid grid-cols-3 gap-2 border-border border-t pt-3">
 						<div className="flex items-center justify-center">
-							<Bed className="mr-1 h-4 w-4 text-gray-500" />
-							<span className="text-gray-700 text-sm dark:text-gray-300">
+							<Bed className="mr-1 h-4 w-4 text-muted-foreground" />
+							<span className="text-foreground text-sm">
 								{details.beds} {details.beds === 1 ? "bed" : "beds"}
 							</span>
 						</div>
 
 						<div className="flex items-center justify-center">
-							<Bath className="mr-1 h-4 w-4 text-gray-500" />
-							<span className="text-gray-700 text-sm dark:text-gray-300">
+							<Bath className="mr-1 h-4 w-4 text-muted-foreground" />
+							<span className="text-foreground text-sm">
 								{details.fullBaths} {details.fullBaths === 1 ? "bath" : "baths"}
 								{details.halfBaths ? `, ${details.halfBaths} half` : ""}
 							</span>
 						</div>
 
 						<div className="flex items-center justify-center">
-							<Ruler className="mr-1 h-4 w-4 text-gray-500" />
-							<span className="text-gray-700 text-sm dark:text-gray-300">
+							<Ruler className="mr-1 h-4 w-4 text-muted-foreground" />
+							<span className="text-foreground text-sm">
 								{details.sqft?.toLocaleString() || "N/A"} sqft
 							</span>
 						</div>

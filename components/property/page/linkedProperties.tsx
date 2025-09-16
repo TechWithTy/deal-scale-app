@@ -25,40 +25,40 @@ const LinkedPropertiesComponent: React.FC<LinkedPropertiesProps> = ({
 	linkedProperties,
 }) => {
 	return (
-		<div className="rounded-lg bg-white p-6 shadow-md dark:bg-gray-800 dark:shadow-lg">
+		<div className="rounded-lg bg-card p-6 shadow-md text-card-foreground">
 			{/* Header Boxes */}
 			<div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-4">
-				<div className="rounded-lg border p-4 text-center dark:border-gray-700">
-					<h3 className="font-semibold text-gray-500 text-sm dark:text-gray-400">
+				<div className="rounded-lg border border-border p-4 text-center">
+					<h3 className="text-sm font-semibold text-muted-foreground">
 						Total Properties Owned
 					</h3>
-					<p className="text-lg dark:text-white">{totalProperties || "-"}</p>
+					<p className="text-lg text-foreground">{totalProperties || "-"}</p>
 				</div>
-				<div className="rounded-lg border p-4 text-center dark:border-gray-700">
-					<h3 className="font-semibold text-gray-500 text-sm dark:text-gray-400">
+				<div className="rounded-lg border border-border p-4 text-center">
+					<h3 className="text-sm font-semibold text-muted-foreground">
 						Total Open Loan Amount
 					</h3>
-					<p className="text-lg dark:text-white">
+					<p className="text-lg text-foreground">
 						{totalOpenLoanAmount !== null
 							? `$${totalOpenLoanAmount.toLocaleString()}`
 							: "-"}
 					</p>
 				</div>
-				<div className="rounded-lg border p-4 text-center dark:border-gray-700">
-					<h3 className="font-semibold text-gray-500 text-sm dark:text-gray-400">
+				<div className="rounded-lg border border-border p-4 text-center">
+					<h3 className="text-sm font-semibold text-muted-foreground">
 						Total Estimated Value
 					</h3>
-					<p className="text-lg dark:text-white">
+					<p className="text-lg text-foreground">
 						{totalEstimatedValue !== null
 							? `$${totalEstimatedValue.toLocaleString()}`
 							: "-"}
 					</p>
 				</div>
-				<div className="rounded-lg border p-4 text-center dark:border-gray-700">
-					<h3 className="font-semibold text-gray-500 text-sm dark:text-gray-400">
+				<div className="rounded-lg border border-border p-4 text-center">
+					<h3 className="text-sm font-semibold text-muted-foreground">
 						Portfolio Equity
 					</h3>
-					<p className="text-lg dark:text-white">
+					<p className="text-lg text-foreground">
 						{totalEquity !== null ? `$${totalEquity.toLocaleString()}` : "-"}
 					</p>
 				</div>
@@ -66,7 +66,7 @@ const LinkedPropertiesComponent: React.FC<LinkedPropertiesProps> = ({
 
 			{/* Linked Properties Section */}
 			<div>
-				<h3 className="mb-4 font-semibold text-lg dark:text-white">
+				<h3 className="mb-4 text-lg font-semibold text-foreground">
 					Linked Properties
 				</h3>
 				{linkedProperties.length > 0 ? (
@@ -74,24 +74,24 @@ const LinkedPropertiesComponent: React.FC<LinkedPropertiesProps> = ({
 						{linkedProperties.map((property) => (
 							<div
 								key={property.id}
-								className="rounded-lg border p-4 dark:border-gray-700"
+								className="rounded-lg border border-border p-4"
 							>
-								<h4 className="font-semibold text-md dark:text-white">
+								<h4 className="text-md font-semibold text-foreground">
 									{property.address}
 								</h4>
-								<p className="dark:text-gray-300">
+								<p className="text-muted-foreground">
 									Estimated Value:{" "}
 									{property.estimatedValue !== null
 										? `$${property.estimatedValue.toLocaleString()}`
 										: "N/A"}
 								</p>
-								<p className="dark:text-gray-300">
+								<p className="text-muted-foreground">
 									Open Loan Amount:{" "}
 									{property.openLoanAmount !== null
 										? `$${property.openLoanAmount.toLocaleString()}`
 										: "N/A"}
 								</p>
-								<p className="dark:text-gray-300">
+								<p className="text-muted-foreground">
 									Equity:{" "}
 									{property.equity !== null
 										? `$${property.equity.toLocaleString()}`
@@ -104,7 +104,7 @@ const LinkedPropertiesComponent: React.FC<LinkedPropertiesProps> = ({
 					<div className="py-12 text-center">
 						<div className="mb-4 flex items-center justify-center">
 							<svg
-								className="h-12 w-12 text-gray-400 dark:text-gray-500"
+								className="h-12 w-12 text-muted-foreground"
 								fill="none"
 								stroke="currentColor"
 								viewBox="0 0 24 24"
@@ -121,10 +121,8 @@ const LinkedPropertiesComponent: React.FC<LinkedPropertiesProps> = ({
 								/>
 							</svg>
 						</div>
-						<p className="text-gray-500 text-sm dark:text-gray-400">
-							No results found
-						</p>
-						<p className="text-gray-400 text-xs dark:text-gray-500">
+						<p className="text-sm text-muted-foreground">No results found</p>
+						<p className="text-xs text-muted-foreground">
 							We couldn’t find any results that match your search or filtering
 							criteria.
 						</p>

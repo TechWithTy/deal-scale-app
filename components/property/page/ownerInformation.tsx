@@ -20,9 +20,7 @@ const OwnershipInformationComponent: React.FC<OwnershipProps> = ({
 	const renderOwnershipDetails = (label: string, value: string) => {
 		return (
 			<div className="mb-4 flex flex-col items-start">
-				<span className="font-semibold text-gray-500 dark:text-gray-400">
-					{label}
-				</span>
+				<span className="font-semibold text-muted-foreground">{label}</span>
 				<span>
 					{value !== null && value !== undefined && value !== "" ? value : "-"}
 				</span>
@@ -31,8 +29,8 @@ const OwnershipInformationComponent: React.FC<OwnershipProps> = ({
 	};
 
 	return (
-		<div className="my-2 rounded-lg bg-white p-6 shadow-md dark:bg-gray-800 dark:shadow-lg">
-			<h2 className="mb-4 font-bold text-xl dark:text-white">
+		<div className="my-2 rounded-lg bg-card p-6 text-card-foreground shadow-md">
+			<h2 className="mb-4 text-xl font-bold text-foreground">
 				Ownership Information
 			</h2>
 			<div className="grid grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-4">

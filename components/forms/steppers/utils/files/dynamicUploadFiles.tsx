@@ -54,10 +54,10 @@ export const DynamicFileUpload: React.FC<DynamicFileUploadProps> = ({
 	};
 
 	return (
-		<div className="mx-auto mt-4 max-w-3xl overflow-auto rounded-lg border border-gray-300 bg-white p-4 text-gray-900 shadow-lg dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100">
+		<div className="mx-auto mt-4 max-w-3xl overflow-auto rounded-lg border border-border bg-card p-4 text-card-foreground shadow-lg">
 			<label
 				htmlFor="dynamic-file-upload"
-				className="block font-medium text-gray-700 text-sm dark:text-gray-300"
+				className="block text-sm font-medium text-foreground"
 			>
 				Upload Files ({minFiles} to {maxFiles} allowed,{" "}
 				{allowedFileTypes.join(", ")})
@@ -68,10 +68,10 @@ export const DynamicFileUpload: React.FC<DynamicFileUploadProps> = ({
 				accept={allowedFileTypes.map((type) => `.${type}`).join(",")}
 				multiple
 				onChange={handleFileUpload}
-				className="mt-2 block w-full text-gray-500 text-sm file:mr-4 file:rounded-full file:border-0 file:bg-blue-600 file:px-4 file:py-2 file:font-semibold file:text-sm file:text-white hover:file:bg-blue-700 dark:text-gray-300 file:dark:bg-blue-500 dark:hover:file:bg-blue-600"
+				className="mt-2 block w-full text-sm text-muted-foreground file:mr-4 file:rounded-full file:border-0 file:bg-primary file:px-4 file:py-2 file:text-sm file:font-semibold file:text-primary-foreground hover:file:bg-primary/90"
 			/>
 			{files.length > 0 && (
-				<p className="mt-2 text-gray-600 text-sm dark:text-gray-400">
+				<p className="mt-2 text-sm text-muted-foreground">
 					Uploaded files: {files.map((file) => file.name).join(", ")}
 				</p>
 			)}

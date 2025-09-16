@@ -56,15 +56,15 @@ const WalkThroughModal: FC<WalkThroughModalProps> = ({
 		<>
 			{/* Modal */}
 			<div
-				className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+				className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm"
 				onMouseDown={handleOutsideClick?.bind?.(null)} // Close the modal when clicking outside
 			>
-				<div className="w-96 rounded-lg bg-white p-6 text-center shadow-lg dark:bg-gray-800">
+				<div className="w-96 rounded-lg bg-card p-6 text-center shadow-lg">
 					{/* X Button for closing the modal */}
 					<button
 						onClick={onClose}
 						type="button"
-						className="absolute top-2 right-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+						className="absolute top-2 right-2 text-muted-foreground hover:text-foreground"
 					>
 						&#x2715; {/* This is the "X" character */}
 					</button>
@@ -75,9 +75,9 @@ const WalkThroughModal: FC<WalkThroughModalProps> = ({
 						aria-busy={videoLoading}
 					>
 						{videoLoading && (
-							<div className="absolute inset-0 z-10 flex items-center justify-center bg-white bg-opacity-70">
+							<div className="absolute inset-0 z-10 flex items-center justify-center bg-card/70">
 								<span className="sr-only">Loading video...</span>
-								<div className="h-12 w-12 animate-spin rounded-full border-4 border-gray-300 border-t-blue-500" />
+								<div className="h-12 w-12 animate-spin rounded-full border-4 border-border border-t-primary" />
 							</div>
 						)}
 						<iframe
@@ -95,17 +95,15 @@ const WalkThroughModal: FC<WalkThroughModalProps> = ({
 					</div>
 
 					{/* Title */}
-					<h2 className="mb-2 font-bold text-gray-900 text-xl dark:text-white">
-						{title}
-					</h2>
+					<h2 className="mb-2 text-xl font-bold text-foreground">{title}</h2>
 
 					{/* Subtitle */}
-					<p className="mb-4 text-gray-600 dark:text-gray-300">{subtitle}</p>
+					<p className="mb-4 text-muted-foreground">{subtitle}</p>
 
 					{/* "Got it" Button */}
 					<button
 						type="button"
-						className="w-full rounded-lg bg-blue-500 px-4 py-2 font-semibold text-white hover:bg-blue-600"
+						className="w-full rounded-lg bg-primary px-4 py-2 font-semibold text-primary-foreground hover:bg-primary/90"
 						onClick={onClose}
 					>
 						Got it
@@ -113,12 +111,9 @@ const WalkThroughModal: FC<WalkThroughModalProps> = ({
 
 					{/* Conditionally render the Terms of Use clause */}
 					{termsUrl && (
-						<p className="mt-4 text-gray-400 text-sm dark:text-gray-400">
+						<p className="mt-4 text-sm text-muted-foreground">
 							The use of the Deal Scale Property Search is subject to our{" "}
-							<a
-								href={termsUrl}
-								className="text-blue-500 underline dark:text-blue-400"
-							>
+							<a href={termsUrl} className="text-primary underline">
 								Terms of Use
 							</a>
 							.
@@ -128,7 +123,7 @@ const WalkThroughModal: FC<WalkThroughModalProps> = ({
 					{/* Help Button for starting the tour */}
 					<button
 						type="button"
-						className="mt-4 text-gray-700 text-sm hover:underline dark:text-gray-300"
+						className="mt-4 text-sm text-muted-foreground hover:underline"
 						onClick={onStartTour} // Trigger the tour when clicked
 					>
 						Still need help? Get a tour

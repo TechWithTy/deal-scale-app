@@ -39,7 +39,7 @@ const LeadSearchForm: React.FC<LeadSearchFormProps> = ({
 	}, [filters, setValue]);
 
 	return (
-		<div className="mb-6 w-full rounded-xl bg-white/80 p-4 shadow-md dark:bg-gray-900/80">
+		<div className="mb-6 w-full rounded-xl bg-card/80 p-4 shadow-md">
 			<div className="grid grid-cols-1 gap-x-6 gap-y-4 md:grid-cols-2 lg:grid-cols-3">
 				<LocationInput
 					control={control}

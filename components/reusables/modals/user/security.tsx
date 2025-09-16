@@ -42,23 +42,23 @@ export const SecurityModal: React.FC = () => {
 	if (!isSecurityModalOpen) return null; // Don't render the modal if it's not open
 
 	return (
-		<div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-			<div className="relative w-full max-w-lg rounded-lg bg-white p-6 shadow-lg dark:bg-gray-800">
-				<h2 className="mb-4 font-semibold text-xl dark:text-gray-200">
+		<div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
+			<div className="relative w-full max-w-lg rounded-lg bg-card p-6 text-card-foreground shadow-lg">
+				<h2 className="mb-4 font-semibold text-foreground text-xl">
 					Security Settings
 				</h2>
 
 				{/* Password Change Section */}
 				<div className="mt-4">
-					<h3 className="font-medium text-lg dark:text-gray-200">Password</h3>
-					<p className="text-muted-foreground text-sm dark:text-gray-400">
+					<h3 className="font-medium text-foreground text-lg">Password</h3>
+					<p className="text-muted-foreground text-sm">
 						Please enter your current password to change your password.
 					</p>
 					<div className="mt-4 space-y-4">
 						<div className="relative">
 							<label
 								htmlFor="currentPassword"
-								className="block font-medium text-sm dark:text-gray-200"
+								className="block font-medium text-foreground text-sm"
 							>
 								Current Password*
 							</label>
@@ -73,14 +73,14 @@ export const SecurityModal: React.FC = () => {
 								className="absolute top-8 right-2"
 								onClick={toggleShowCurrentPassword}
 							>
-								<Eye className="h-5 w-5 text-gray-500 dark:text-gray-400" />
+								<Eye className="h-5 w-5 text-muted-foreground" />
 							</button>
 						</div>
 
 						<div className="relative">
 							<label
 								htmlFor="newPassword"
-								className="block font-medium text-sm dark:text-gray-200"
+								className="block font-medium text-foreground text-sm"
 							>
 								New Password*
 							</label>
@@ -95,14 +95,14 @@ export const SecurityModal: React.FC = () => {
 								className="absolute top-8 right-2"
 								onClick={toggleShowNewPassword}
 							>
-								<Eye className="h-5 w-5 text-gray-500 dark:text-gray-400" />
+								<Eye className="h-5 w-5 text-muted-foreground" />
 							</button>
 						</div>
 
 						<div className="relative">
 							<label
 								htmlFor="confirmPassword"
-								className="block font-medium text-sm dark:text-gray-200"
+								className="block font-medium text-foreground text-sm"
 							>
 								Confirm New Password*
 							</label>
@@ -117,7 +117,7 @@ export const SecurityModal: React.FC = () => {
 								className="absolute top-8 right-2"
 								onClick={toggleShowConfirmPassword}
 							>
-								<Eye className="h-5 w-5 text-gray-500 dark:text-gray-400" />
+								<Eye className="h-5 w-5 text-muted-foreground" />
 							</button>
 						</div>
 					</div>
@@ -126,18 +126,20 @@ export const SecurityModal: React.FC = () => {
 						<Button variant="outline" onClick={closeSecurityModal}>
 							Cancel
 						</Button>
-						<Button className="bg-blue-600 text-white">Update Password</Button>
+						<Button className="bg-primary text-primary-foreground">
+							Update Password
+						</Button>
 					</div>
 				</div>
 
-				<hr className="my-6 dark:border-gray-600" />
+				<hr className="my-6 border-border" />
 
 				{/* Two-Factor Authentication Section */}
 				<div>
-					<h3 className="font-medium text-lg dark:text-gray-200">
+					<h3 className="font-medium text-foreground text-lg">
 						Two-Factor Authentication
 					</h3>
-					<p className="text-muted-foreground text-sm dark:text-gray-400">
+					<p className="text-muted-foreground text-sm">
 						Secure your account by enabling 2FA using SMS or an Authenticator
 						app.
 					</p>
@@ -155,7 +157,7 @@ export const SecurityModal: React.FC = () => {
 				<button
 					onClick={() => useModalStore.getState().closeSecurityModal()}
 					type="button"
-					className="absolute top-2 right-2 text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
+					className="absolute top-2 right-2 text-muted-foreground hover:text-foreground"
 				>
 					<svg
 						xmlns="http://www.w3.org/2000/svg"

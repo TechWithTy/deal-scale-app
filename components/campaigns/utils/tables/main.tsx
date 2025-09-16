@@ -247,10 +247,10 @@ const CampaignsTable: React.FC<CampaignsTableProps> = ({
 
 	return (
 		<div className="w-full overflow-x-auto">
-			<Table className="min-w-full table-auto bg-white dark:bg-gray-900">
+			<Table className="min-w-full table-auto bg-card">
 				{/* Table Header */}
 				<TableHeader>
-					<TableRow className="bg-gray-100 dark:bg-gray-800">
+					<TableRow className="bg-muted/50">
 						{headers.map((header) => (
 							<TableHead key={header} className="p-2 text-center">
 								{header}
@@ -262,10 +262,7 @@ const CampaignsTable: React.FC<CampaignsTableProps> = ({
 				{/* Table Body */}
 				<TableBody>
 					{campaigns.map((campaign, index) => (
-						<TableRow
-							key={campaign.id}
-							className="border-t dark:border-gray-700"
-						>
+						<TableRow key={campaign.id} className="border-t border-border">
 							{renderTableRowCells(campaign, campaignType)}
 						</TableRow>
 					))}

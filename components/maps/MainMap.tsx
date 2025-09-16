@@ -26,24 +26,24 @@ const DrawingControls: React.FC<DrawingControlsProps> = ({
 	drawingMode,
 	setDrawingMode,
 }) => (
-	<div className="absolute top-4 left-4 z-10 flex gap-2 rounded bg-white p-2 shadow">
+	<div className="absolute left-4 top-4 z-10 flex gap-2 rounded bg-card p-2 shadow">
 		<button
 			type="button"
-			className={`rounded px-3 py-1 text-xs ${drawingMode === google.maps.drawing.OverlayType.CIRCLE ? "bg-blue-600 text-white" : "bg-gray-200"}`}
+			className={`rounded px-3 py-1 text-xs ${drawingMode === google.maps.drawing.OverlayType.CIRCLE ? "bg-primary text-primary-foreground" : "bg-muted"}`}
 			onClick={() => setDrawingMode(google.maps.drawing.OverlayType.CIRCLE)}
 		>
 			Circle
 		</button>
 		<button
 			type="button"
-			className={`rounded px-3 py-1 text-xs ${drawingMode === google.maps.drawing.OverlayType.POLYLINE ? "bg-blue-600 text-white" : "bg-gray-200"}`}
+			className={`rounded px-3 py-1 text-xs ${drawingMode === google.maps.drawing.OverlayType.POLYLINE ? "bg-primary text-primary-foreground" : "bg-muted"}`}
 			onClick={() => setDrawingMode(google.maps.drawing.OverlayType.POLYLINE)}
 		>
 			Polyline
 		</button>
 		<button
 			type="button"
-			className="rounded bg-red-500 px-3 py-1 text-white text-xs"
+			className="rounded bg-destructive px-3 py-1 text-xs text-destructive-foreground"
 			onClick={() => setDrawingMode(null)}
 		>
 			Cancel
@@ -189,7 +189,7 @@ const MainMap: React.FC<MainMapProps> = ({ apiKey, center, markers, zoom }) => {
 					{boundaryApplied && (
 						<div
 							onMouseDown={handleRemoveBoundaries}
-							className="absolute top-4 right-4 z-10 flex cursor-pointer items-center rounded-lg bg-red-500 px-4 py-2 text-white shadow-lg hover:bg-red-600"
+							className="absolute right-4 top-4 z-10 flex cursor-pointer items-center rounded-lg bg-destructive px-4 py-2 text-destructive-foreground shadow-lg hover:bg-destructive/90"
 						>
 							<span className="mr-2">Remove Boundaries</span>
 							<button type="button" onClick={handleRemoveBoundaries}>
@@ -208,7 +208,7 @@ const MainMap: React.FC<MainMapProps> = ({ apiKey, center, markers, zoom }) => {
 							drawingControl: false,
 							drawingMode: drawingMode,
 							polygonOptions: {
-								fillColor: "#2196F3",
+								fillColor: "hsl(var(--primary))",
 								fillOpacity: 0.5,
 								strokeWeight: 2,
 								clickable: false,
@@ -224,13 +224,7 @@ const MainMap: React.FC<MainMapProps> = ({ apiKey, center, markers, zoom }) => {
 							position={selected}
 							onCloseClick={() => setSelected(null)}
 						>
-							<div
-								style={{
-									color: "black",
-									display: "flex",
-									alignItems: "center",
-								}}
-							>
+							<div className="flex items-center text-foreground">
 								{homeAnimation && (
 									<Lottie
 										animationData={homeAnimation}

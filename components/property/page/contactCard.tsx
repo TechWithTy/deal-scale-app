@@ -72,11 +72,11 @@ export const ContactCard: React.FC<ContactCardProps> = ({ property }) => {
 	};
 
 	return (
-		<div className="my-2 w-full rounded-lg bg-white p-4 shadow-sm dark:bg-gray-800">
+		<div className="my-2 w-full rounded-lg bg-card p-4 shadow-sm">
 			{/* Title and buttons container */}
 			<div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
 				{/* Title */}
-				<h2 className="font-semibold text-gray-900 text-lg dark:text-gray-100">
+				<h2 className="text-lg font-semibold text-foreground">
 					Contact Information
 				</h2>
 
@@ -100,26 +100,16 @@ export const ContactCard: React.FC<ContactCardProps> = ({ property }) => {
 					<table className="min-w-full table-auto border-collapse">
 						<thead>
 							<tr className="border-b">
-								<th className="p-2 text-left text-gray-700 dark:text-gray-300">
-									Agent
-								</th>
-								<th className="p-2 text-left text-gray-700 dark:text-gray-300">
-									Email
-								</th>
-								<th className="p-2 text-left text-gray-700 dark:text-gray-300">
-									Phones
-								</th>
+								<th className="p-2 text-left text-muted-foreground">Agent</th>
+								<th className="p-2 text-left text-muted-foreground">Email</th>
+								<th className="p-2 text-left text-muted-foreground">Phones</th>
 							</tr>
 						</thead>
 						<tbody>
 							<tr className="border-b">
-								<td className="p-2 text-gray-900 dark:text-gray-100">
-									{name || "N/A"}
-								</td>
-								<td className="p-2 text-gray-900 dark:text-gray-100">
-									{email || "N/A"}
-								</td>
-								<td className="p-2 text-gray-900 dark:text-gray-100">
+								<td className="p-2 text-foreground">{name || "N/A"}</td>
+								<td className="p-2 text-foreground">{email || "N/A"}</td>
+								<td className="p-2 text-foreground">
 									{phones?.length ? (
 										<ul>
 											{phones.map((phone, index) => (
@@ -145,7 +135,7 @@ export const ContactCard: React.FC<ContactCardProps> = ({ property }) => {
 						loop={true}
 						className="h-32 w-32"
 					/>
-					<p className="mt-4 text-gray-500 dark:text-gray-400">
+					<p className="mt-4 text-muted-foreground">
 						No contact information found
 					</p>
 				</div>

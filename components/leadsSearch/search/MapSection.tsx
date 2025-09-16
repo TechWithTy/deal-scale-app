@@ -126,19 +126,19 @@ const MapSection: FC<MapSectionProps> = ({
 
 	if (mapLoadError) {
 		return (
-			<div className="flex h-[350px] flex-col items-center justify-center rounded border border-red-400 bg-gray-100">
-				<div className="mb-2 font-bold text-lg text-red-600">
+			<div className="flex h-[350px] flex-col items-center justify-center rounded border border-destructive bg-muted">
+				<div className="mb-2 font-bold text-destructive text-lg">
 					Google Maps Load Error
 				</div>
-				<div className="mb-1 text-gray-800">{mapLoadError}</div>
-				<div className="mb-2 text-gray-500 text-xs">
+				<div className="mb-1 text-foreground">{mapLoadError}</div>
+				<div className="mb-2 text-muted-foreground text-xs">
 					Check your API key, referrer restrictions, billing, and Maps
 					JavaScript API enablement.
 					<br />
 					<b>API Key:</b>{" "}
 					{mapKey || process.env.NEXT_PUBLIC_GMAPS_KEY || "(none)"}
 				</div>
-				<div className="text-gray-400 text-xs">
+				<div className="text-muted-foreground text-xs">
 					See browser console for more details.
 				</div>
 			</div>
@@ -169,15 +169,15 @@ const MapSection: FC<MapSectionProps> = ({
 				>
 					{!boundaryApplied && (
 						<div
-							className="-translate-x-1/2 absolute top-10 left-1/2 z-10 transform rounded-lg bg-white p-2 text-center opacity-80 shadow-lg transition-opacity duration-300 hover:opacity-100 lg:top-2"
+							className="-translate-x-1/2 absolute top-10 left-1/2 z-10 transform rounded-lg bg-card/80 p-2 text-center shadow-lg transition-opacity duration-300 hover:opacity-100 lg:top-2"
 							style={{ pointerEvents: "auto" }}
 						>
 							{!drawingMode ? (
-								<p className="mb-2 font-semibold text-gray-800 text-sm">
+								<p className="mb-2 font-semibold text-foreground text-sm">
 									Draw a shape to search in that area
 								</p>
 							) : (
-								<p className="mb-2 font-semibold text-gray-800 text-sm">
+								<p className="mb-2 font-semibold text-foreground text-sm">
 									Start Drawing!
 								</p>
 							)}
@@ -186,7 +186,7 @@ const MapSection: FC<MapSectionProps> = ({
 									<div className="flex justify-center space-x-2">
 										<button
 											type="button"
-											className="rounded bg-blue-600 px-4 py-2 text-white text-xs hover:bg-blue-700"
+											className="rounded bg-primary px-4 py-2 text-primary-foreground text-xs hover:bg-primary/90"
 											onClick={() =>
 												setDrawingMode(google.maps.drawing.OverlayType.POLYGON)
 											}
@@ -195,7 +195,7 @@ const MapSection: FC<MapSectionProps> = ({
 										</button>
 										<button
 											type="button"
-											className="rounded bg-blue-600 px-4 py-2 text-white text-xs hover:bg-blue-700"
+											className="rounded bg-primary px-4 py-2 text-primary-foreground text-xs hover:bg-primary/90"
 											onClick={() =>
 												setDrawingMode(
 													google.maps.drawing.OverlayType.RECTANGLE,
@@ -206,7 +206,7 @@ const MapSection: FC<MapSectionProps> = ({
 										</button>
 										<button
 											type="button"
-											className="rounded bg-blue-600 px-4 py-2 text-white text-xs hover:bg-blue-700"
+											className="rounded bg-primary px-4 py-2 text-primary-foreground text-xs hover:bg-primary/90"
 											onClick={() =>
 												setDrawingMode(google.maps.drawing.OverlayType.CIRCLE)
 											}
@@ -217,7 +217,7 @@ const MapSection: FC<MapSectionProps> = ({
 									{drawingMode && (
 										<button
 											type="button"
-											className="mt-2 rounded bg-red-600 px-4 py-2 text-white text-xs hover:bg-red-700"
+											className="mt-2 rounded bg-destructive px-4 py-2 text-primary-foreground text-xs hover:bg-destructive/90"
 											onClick={handleCancelDrawing}
 										>
 											Cancel Drawing
@@ -230,14 +230,14 @@ const MapSection: FC<MapSectionProps> = ({
 									<button
 										type="button"
 										onClick={handleCancelDrawing}
-										className="rounded bg-gray-300 px-4 py-1 text-black shadow hover:bg-gray-400"
+										className="rounded bg-muted px-4 py-1 text-muted-foreground shadow hover:bg-muted/80"
 									>
 										Cancel
 									</button>
 									<button
 										type="button"
 										onClick={handleApplyDrawing}
-										className="rounded bg-blue-600 px-4 py-1 text-white shadow hover:bg-blue-700"
+										className="rounded bg-primary px-4 py-1 text-primary-foreground shadow hover:bg-primary/90"
 									>
 										Apply
 									</button>
@@ -249,7 +249,7 @@ const MapSection: FC<MapSectionProps> = ({
 						<button
 							onClick={handleRemoveBoundaries}
 							type="button"
-							className="absolute top-4 right-4 z-10 flex cursor-pointer items-center rounded-lg bg-red-500 px-4 py-2 text-white shadow-lg hover:bg-red-600"
+							className="absolute top-4 right-4 z-10 flex cursor-pointer items-center rounded-lg bg-destructive px-4 py-2 text-destructive-foreground shadow-lg hover:bg-destructive/90"
 						>
 							<span className="mr-2">Remove Boundaries</span>
 							<button type="button">&#x2715;</button>
@@ -263,7 +263,7 @@ const MapSection: FC<MapSectionProps> = ({
 							drawingControl: false,
 							drawingMode: drawingMode,
 							polygonOptions: {
-								fillColor: "#2196F3",
+								fillColor: "hsl(var(--primary))",
 								fillOpacity: 0.5,
 								strokeWeight: 2,
 								clickable: false,

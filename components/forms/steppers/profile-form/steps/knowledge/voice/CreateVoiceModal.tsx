@@ -42,11 +42,11 @@ const CreateVoiceModal: React.FC<CreateVoiceModalProps> = ({
 	if (!open) return null;
 
 	return (
-		<div className="fixed inset-0 z-40 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-			<div className="relative w-full max-w-md rounded-lg bg-white p-6 shadow-xl dark:bg-gray-900">
+		<div className="fixed inset-0 z-40 flex items-center justify-center bg-background/80 backdrop-blur-sm">
+			<div className="relative w-full max-w-md rounded-lg bg-card p-6 shadow-xl">
 				<button
 					type="button"
-					className="absolute top-2 right-2 text-gray-400 hover:text-gray-600 focus:outline-none"
+					className="absolute top-2 right-2 text-muted-foreground hover:text-foreground focus:outline-none"
 					onClick={onClose}
 					aria-label="Close"
 				>
@@ -64,7 +64,7 @@ const CreateVoiceModal: React.FC<CreateVoiceModalProps> = ({
 								href="https://elevenlabs.io/docs/product-guides/voices/voice-design"
 								target="_blank"
 								rel="noopener noreferrer"
-								className="text-blue-600 hover:underline dark:text-blue-400"
+								className="text-primary hover:underline"
 							>
 								Read full documentation
 							</a>
@@ -73,7 +73,7 @@ const CreateVoiceModal: React.FC<CreateVoiceModalProps> = ({
 				</div>
 				<form onSubmit={handleSubmit}>
 					<textarea
-						className="mt-1 w-full rounded border px-3 py-2 text-base focus:ring focus:ring-blue-300 dark:bg-gray-800 dark:text-white"
+						className="mt-1 w-full rounded border border-input bg-transparent px-3 py-2 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 						rows={4}
 						value={prompt}
 						onChange={(e) => setPrompt(e.target.value)}
@@ -83,18 +83,20 @@ const CreateVoiceModal: React.FC<CreateVoiceModalProps> = ({
 						required
 						aria-label="Voice prompt"
 					/>
-					{error && <div className="mt-2 text-red-500 text-sm">{error}</div>}
+					{error && (
+						<div className="mt-2 text-destructive text-sm">{error}</div>
+					)}
 					<div className="mt-4 flex justify-end">
 						<button
 							type="button"
-							className="mr-2 rounded bg-gray-200 px-4 py-2 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+							className="mr-2 rounded bg-muted px-4 py-2 text-muted-foreground hover:bg-muted/80"
 							onClick={onClose}
 						>
 							Cancel
 						</button>
 						<button
 							type="submit"
-							className="rounded bg-primary px-4 py-2 font-semibold text-white hover:bg-primary/90 disabled:opacity-50"
+							className="rounded bg-primary px-4 py-2 font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
 							disabled={prompt.length < minLength || prompt.length > maxLength}
 						>
 							Create Voice

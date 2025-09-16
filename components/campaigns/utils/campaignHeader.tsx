@@ -1,4 +1,5 @@
 "use client";
+import { cn } from "@/lib/_utils";
 import { useCampaignStore } from "@/lib/stores/campaigns"; // Import the Zustand store
 import type {
 	CallCampaign,
@@ -235,7 +236,7 @@ const CampaignHeader: React.FC = () => {
 	}, [stats.length]);
 
 	return (
-		<div className="p-4 dark:bg-gray-900">
+		<div className="p-4">
 			<div className="text-center">
 				<Heading
 					title={"Campaigns"}
@@ -245,7 +246,7 @@ const CampaignHeader: React.FC = () => {
 				{/* Credits Remaining Text and Help Button */}
 				<div className="my-4 flex flex-col items-center justify-center space-y-4 sm:flex-row sm:space-x-4 sm:space-y-0 ">
 					{/* Credits Remaining */}
-					<div className="font-semibold text-gray-900 text-lg dark:text-white ">
+					<div className="text-lg font-semibold text-foreground">
 						Credits Remaining: {creditsRemaining}
 					</div>
 
@@ -254,7 +255,7 @@ const CampaignHeader: React.FC = () => {
 						type="button"
 						onClick={handleOpenModal}
 						title="Get More help"
-						className="animate-bounce rounded-full bg-blue-500 p-2 text-white hover:animate-none dark:bg-green-700 dark:text-gray-300"
+						className="animate-bounce rounded-full bg-primary p-2 text-primary-foreground hover:animate-none"
 					>
 						<HelpCircle size={20} />
 					</button>
@@ -263,11 +264,11 @@ const CampaignHeader: React.FC = () => {
 
 			{/* Search Bar */}
 			<div className="relative mb-4">
-				<Search className="-translate-y-1/2 absolute top-1/2 left-3 transform text-gray-500 dark:text-gray-400" />
+				<Search className="absolute left-3 top-1/2 -translate-y-1/2 transform text-muted-foreground" />
 				<input
 					type="text"
 					placeholder="Search"
-					className="w-full rounded-md border px-4 py-2 pl-10 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+					className="w-full rounded-md border border-input bg-transparent px-4 py-2 pl-10 placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 				/>
 			</div>
 
@@ -280,14 +281,13 @@ const CampaignHeader: React.FC = () => {
 							key={filter.label}
 							type="button"
 							onClick={() => handleFilterClick(filter.value)}
-							className={`flex w-full min-w-[120px] max-w-full items-center justify-center rounded-md px-3 py-2 sm:w-1/4 sm:min-w-0 ${
-								isActive
-									? "bg-gray-200 dark:bg-gray-700"
-									: "bg-gray-100 dark:bg-gray-800"
-							} transition-colors duration-150 dark:text-white`}
+							className={cn(
+								"flex w-full min-w-[120px] max-w-full items-center justify-center rounded-md px-3 py-2 transition-colors duration-150 sm:w-1/4 sm:min-w-0",
+								isActive ? "bg-muted" : "bg-muted/50",
+							)}
 							style={{ flex: "1 1 45%" }}
 						>
-							<span className={`h-2 w-2 rounded-full ${filter.color}`} />
+							<span className={cn("h-2 w-2 rounded-full", filter.color)} />
 							<span className="ml-2 truncate text-xs sm:text-sm">
 								{filter.label}
 							</span>

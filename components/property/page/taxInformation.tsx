@@ -25,19 +25,17 @@ const TaxInformationComponent: React.FC<TaxInformationProps> = ({
 }) => {
 	const renderTaxDetails = (label: string, value: string | number) => (
 		<div className="mb-4 flex flex-col items-start">
-			<span className="font-semibold text-gray-500 dark:text-gray-400">
-				{label}
-			</span>
-			<span className="dark:text-gray-300">{value ?? "-"}</span>
+			<span className="font-semibold text-muted-foreground">{label}</span>
+			<span className="text-foreground">{value ?? "-"}</span>
 		</div>
 	);
 
 	return (
-		<div className="rounded-lg bg-white p-6 shadow-md dark:bg-gray-800 dark:shadow-lg">
-			<h2 className="mb-4 font-bold text-xl dark:text-white">
+		<div className="rounded-lg bg-card p-6 text-card-foreground shadow-md">
+			<h2 className="mb-4 text-xl font-bold text-foreground">
 				Tax Information
 			</h2>
-			<p className="mb-6 text-gray-600 text-sm dark:text-gray-400">
+			<p className="mb-6 text-sm text-muted-foreground">
 				Most recent taxes for this property.
 			</p>
 			<div className="grid grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-4">

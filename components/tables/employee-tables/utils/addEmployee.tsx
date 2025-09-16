@@ -72,12 +72,12 @@ const Modal: React.FC<{
 	if (!isOpen) return null;
 
 	return (
-		<div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-			<div className="relative w-full max-w-lg rounded-lg bg-white p-6 shadow-lg dark:bg-gray-800">
+		<div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
+			<div className="relative w-full max-w-lg rounded-lg bg-card p-6 shadow-lg">
 				<button
 					type="button"
 					onClick={onClose}
-					className="absolute top-3 right-3 text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
+					className="absolute top-3 right-3 text-muted-foreground hover:text-foreground"
 				>
 					<svg
 						xmlns="http://www.w3.org/2000/svg"
@@ -114,16 +114,13 @@ const CustomSwitch: React.FC<{
 				type="checkbox"
 				checked={checked}
 				onChange={(e) => onCheckedChange(e.target.checked)}
-				className="hidden"
+				className="peer sr-only"
 			/>
-			<span
-				className={`relative inline-block h-6 w-10 rounded-full transition-colors duration-300 ease-in-out ${checked ? "bg-blue-600" : "bg-gray-300"} // Light mode colors dark:${checked ? "bg-green-500" : "bg-gray-600"} // Dark mode colors `}
-			>
-				<span
-					className={`absolute top-1 left-1 h-4 w-4 transform rounded-full bg-white shadow transition-transform duration-300 ease-in-out ${checked ? "translate-x-4" : ""}
-          `}
+			<div className="peer relative h-6 w-11 rounded-full bg-muted peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-ring peer-checked:bg-primary">
+				<div
+					className={`absolute top-0.5 left-0.5 h-5 w-5 transform rounded-full bg-background shadow-lg transition-transform duration-300 ease-in-out ${checked ? "translate-x-5" : ""}`}
 				/>
-			</span>
+			</div>
 		</label>
 	);
 };
@@ -183,7 +180,7 @@ export const InviteEmployeeModal = () => {
 			{/* Modal Implementation */}
 			<Modal isOpen={isEmployeeModalOpen} onClose={closeEmployeeModal}>
 				<div className="rounded-lg">
-					<h2 className="font-semibold text-xl dark:text-gray-200">
+					<h2 className="text-xl font-semibold text-foreground">
 						Invite New Employee
 					</h2>
 
@@ -191,7 +188,7 @@ export const InviteEmployeeModal = () => {
 						<form onSubmit={handleSubmit(onSubmit)} className="mt-4 space-y-4">
 							{/* Input for Email */}
 							<div>
-								<FormLabel className="block font-medium text-sm">
+								<FormLabel className="block text-sm font-medium">
 									Email
 								</FormLabel>
 								<Controller
@@ -202,19 +199,21 @@ export const InviteEmployeeModal = () => {
 											type="email"
 											{...field}
 											placeholder="Enter employee email"
-											className="mt-1 w-full dark:bg-gray-800 dark:text-gray-200"
+											className="mt-1 w-full"
 											required
 										/>
 									)}
 								/>
 								{errors.email && (
-									<p className="text-red-500 text-sm">{errors.email.message}</p>
+									<p className="text-sm text-destructive">
+										{errors.email.message}
+									</p>
 								)}
 							</div>
 
 							{/* Permissions */}
 							<div className="space-y-2">
-								<div className="font-semibold text-sm dark:text-gray-200">
+								<div className="text-sm font-semibold text-foreground">
 									Permissions
 								</div>
 								<div className="grid grid-cols-2 gap-4">
@@ -233,7 +232,7 @@ export const InviteEmployeeModal = () => {
 												<FormItem>
 													<div className="flex items-center justify-between">
 														{/* Align label and switch on the same line */}
-														<FormLabel className="text-sm dark:text-gray-200">
+														<FormLabel className="text-sm text-foreground">
 															{permissionKey
 																.replace(/can/, "Can ")
 																.replace(/([A-Z])/g, " $1")}

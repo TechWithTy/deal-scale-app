@@ -63,15 +63,15 @@ const ActivitySidebar: React.FC<ActivitySidebarProps> = ({
 	};
 
 	const sidebarContent = (
-		<div className="fixed top-0 right-0 z-50 flex h-screen w-80 flex-col border-gray-200 border-l bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800">
+		<div className="fixed top-0 right-0 z-50 flex h-screen w-80 flex-col border-border border-l bg-card text-card-foreground shadow-lg">
 			{/* Header */}
-			<div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-gray-200 border-b bg-slate-100 p-4 dark:border-gray-700 dark:bg-slate-700">
-				<h2 className="font-semibold text-lg dark:text-white">
+			<div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-border border-b bg-muted p-4">
+				<h2 className="font-semibold text-foreground text-lg">
 					{leadData.contactInfo.firstName} Activity
 				</h2>
 				<button
 					type="button"
-					className="text-gray-500 hover:text-gray-700 dark:text-gray-200 dark:hover:text-gray-100"
+					className="text-muted-foreground hover:text-foreground"
 					onClick={onClose}
 				>
 					<X className="h-6 w-6" />
@@ -83,25 +83,25 @@ const ActivitySidebar: React.FC<ActivitySidebarProps> = ({
 				{notes.map((note) => (
 					<div key={note.id} className="group relative mb-4">
 						<div className="mb-2 flex items-center justify-between">
-							<span className="font-bold dark:text-gray-100">You</span>
-							<span className="text-gray-500 text-sm dark:text-gray-400">
+							<span className="font-bold text-foreground">You</span>
+							<span className="text-muted-foreground text-sm">
 								{note.timestamp}
 							</span>
 						</div>
-						<div className="rounded-lg bg-blue-600 p-3 text-white">
+						<div className="rounded-lg bg-primary p-3 text-primary-foreground">
 							{note.text}
 						</div>
 						<div className="mt-2 flex justify-end space-x-2 opacity-0 transition-opacity group-hover:opacity-100">
 							<button
 								type="button"
-								className="flex items-center rounded-full bg-gray-200 p-1 text-gray-600 hover:bg-gray-300 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500"
+								className="flex items-center rounded-full bg-muted p-1 text-muted-foreground hover:bg-muted/80"
 								onClick={() => handleEdit(note)}
 							>
 								<Pencil className="h-4 w-4" />
 							</button>
 							<button
 								type="button"
-								className="flex items-center rounded-full bg-gray-200 p-1 text-gray-600 hover:bg-gray-300 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500"
+								className="flex items-center rounded-full bg-muted p-1 text-muted-foreground hover:bg-muted/80"
 								onClick={() => handleDelete(note.id)}
 							>
 								<Trash2 className="h-4 w-4" />
@@ -112,9 +112,9 @@ const ActivitySidebar: React.FC<ActivitySidebarProps> = ({
 			</div>
 
 			{/* Input Area */}
-			<div className="border-gray-200 border-t p-4 dark:border-gray-700">
+			<div className="border-border border-t p-4">
 				<textarea
-					className="h-24 w-full resize-none rounded border border-gray-300 p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-700 dark:text-white"
+					className="h-24 w-full resize-none rounded border border-input bg-transparent p-2 ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 					placeholder="Write an update..."
 					value={message}
 					onChange={(e) => setMessage(e.target.value)}
@@ -122,7 +122,7 @@ const ActivitySidebar: React.FC<ActivitySidebarProps> = ({
 				<div className="mt-2 flex justify-end">
 					<button
 						type="button"
-						className="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+						className="rounded bg-primary px-4 py-2 text-primary-foreground hover:bg-primary/90"
 						onClick={handlePost}
 					>
 						{editingNoteId !== null ? "Update" : "Post"}

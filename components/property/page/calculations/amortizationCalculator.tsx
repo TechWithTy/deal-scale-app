@@ -55,67 +55,54 @@ export default function AmortizationCalculator() {
 	};
 
 	return (
-		<div className="my-2 rounded-lg bg-white p-6 shadow-md dark:bg-gray-800 dark:text-gray-100">
-			<h2 className="mb-4 font-bold text-xl">Amortization Calculator</h2>
+		<div className="my-2 rounded-lg bg-card p-6 shadow-md text-card-foreground">
+			<h2 className="mb-4 text-xl font-bold">Amortization Calculator</h2>
 			<p className="mb-4">Modify the values to quickly analyze a deal.</p>
 
 			<div className="mb-4 grid grid-cols-3 gap-4">
 				<div className="flex flex-col">
-					<label
-						htmlFor="loan-amount"
-						className="text-gray-700 dark:text-gray-300"
-					>
+					<label htmlFor="loan-amount" className="text-muted-foreground">
 						Loan Amount*
 					</label>
 					<input
 						type="number"
-						className="rounded border bg-gray-50 p-2 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+						className="rounded border border-input bg-background p-2"
 						placeholder="Enter the loan amount"
 						value={loanAmount}
 						onChange={(e) => setLoanAmount(Number(e.target.value))}
 					/>
 				</div>
 				<div className="flex flex-col">
-					<label
-						htmlFor="loan-term"
-						className="text-gray-700 dark:text-gray-300"
-					>
+					<label htmlFor="loan-term" className="text-muted-foreground">
 						Loan Term (Years)*
 					</label>
 					<input
 						type="number"
-						className={`rounded border p-2 ${
-							errorMessage.loanTerm ? "border-red-500" : "border-gray-300"
-						} bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100`}
+						className={`rounded border p-2 ${errorMessage.loanTerm ? "border-destructive" : "border-input"} bg-background`}
 						placeholder="Enter number of years"
 						value={loanTerm}
 						onChange={handleLoanTermChange}
 					/>
 					{errorMessage.loanTerm && (
-						<span className="text-red-500 text-sm">
+						<span className="text-sm text-destructive">
 							{errorMessage.loanTerm}
 						</span>
 					)}
 				</div>
 				<div className="flex flex-col">
-					<label
-						htmlFor="interest-rate"
-						className="text-gray-700 dark:text-gray-300"
-					>
+					<label htmlFor="interest-rate" className="text-muted-foreground">
 						Interest Rate (%) *
 					</label>
 					<input
 						type="number"
 						step="0.01"
-						className={`rounded border p-2 ${
-							errorMessage.interestRate ? "border-red-500" : "border-gray-300"
-						} bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100`}
+						className={`rounded border p-2 ${errorMessage.interestRate ? "border-destructive" : "border-input"} bg-background`}
 						placeholder="Enter the interest rate"
 						value={interestRate}
 						onChange={handleInterestRateChange}
 					/>
 					{errorMessage.interestRate && (
-						<span className="text-red-500 text-sm">
+						<span className="text-sm text-destructive">
 							{errorMessage.interestRate}
 						</span>
 					)}
@@ -123,7 +110,7 @@ export default function AmortizationCalculator() {
 			</div>
 
 			<div className="text-right">
-				<span className="font-semibold text-gray-600 dark:text-gray-300">
+				<span className="font-semibold text-muted-foreground">
 					Monthly Payment:{" "}
 				</span>
 				<span className="font-bold">

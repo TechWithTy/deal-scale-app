@@ -59,7 +59,7 @@ const SkipTraceForm: React.FC<SkipTraceFormProps> = ({
 	};
 
 	return (
-		<div className="rounded-lg bg-white p-6 shadow-md dark:bg-gray-800">
+		<div className="rounded-lg bg-card p-6 shadow-md">
 			<p className="mb-4 text-gray-500 text-sm dark:text-gray-400">
 				Select the number of leads to skip trace:
 			</p>
@@ -155,7 +155,7 @@ const SkipTraceDialog: React.FC<SkipTraceDialogProps> = ({
 				</Button>
 			</DialogTrigger>
 
-			<DialogContent className="-translate-x-1/2 -translate-y-1/2 fixed top-1/2 left-1/2 z-50 transform rounded-lg bg-white shadow-lg sm:max-w-[425px] dark:bg-gray-900 ">
+			<DialogContent className="-translate-x-1/2 -translate-y-1/2 fixed top-1/2 left-1/2 z-50 transform rounded-lg bg-card shadow-lg sm:max-w-[425px]">
 				<DialogHeader>
 					<DialogTitle className="dark:text-white">
 						Skip Trace Leads

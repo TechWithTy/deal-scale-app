@@ -164,7 +164,7 @@ const PropertyListView: React.FC<PropertyListProps> = ({ properties }) => {
 								</div>
 								<p>Your list size is defined by your search and filters.</p>
 								{progressValue === 75 && (
-									<p className="font-semibold text-red-600">
+									<p className="font-semibold text-destructive">
 										Your list is too broad.
 									</p>
 								)}
@@ -176,13 +176,13 @@ const PropertyListView: React.FC<PropertyListProps> = ({ properties }) => {
 										placeholder="Search by description..."
 										value={searchTerm}
 										onChange={(e) => setSearchTerm(e.target.value)}
-										className="w-full max-w-xs rounded-md border border-gray-300 px-4 py-2 text-base shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
+										className="w-full max-w-xs rounded-md border border-border bg-background px-4 py-2 text-base shadow-sm focus:border-primary focus:ring-2 focus:ring-primary"
 									/>
 									<div className="flex items-center gap-2">
 										{selectedPropertyIds.length > 0 && (
 											<button
 												type="button"
-												className="rounded-md border border-gray-200 bg-white px-4 py-2 font-medium text-red-600 text-sm shadow-sm transition hover:bg-red-50 dark:border-gray-700 dark:bg-gray-900 dark:text-red-400 dark:hover:bg-gray-800"
+												className="rounded-md border border-border bg-card px-4 py-2 font-medium text-destructive text-sm shadow-sm transition hover:bg-destructive/10"
 												onClick={() => setSelectedPropertyIds([])}
 												aria-label="Clear all selected properties"
 											>
@@ -195,7 +195,7 @@ const PropertyListView: React.FC<PropertyListProps> = ({ properties }) => {
 											filteredProperties.filter((p) => p.id).length && (
 											<button
 												type="button"
-												className="rounded-md border border-gray-200 bg-white px-4 py-2 font-medium text-blue-600 text-sm shadow-sm transition hover:bg-blue-50 dark:border-gray-700 dark:bg-gray-900 dark:text-blue-400 dark:hover:bg-gray-800"
+												className="rounded-md border border-border bg-card px-4 py-2 font-medium text-primary text-sm shadow-sm transition hover:bg-primary/10"
 												onClick={() => {
 													const allPropertyIds = filteredProperties
 														.filter((p) => p.id)
@@ -212,7 +212,7 @@ const PropertyListView: React.FC<PropertyListProps> = ({ properties }) => {
 									{/* Create List button */}
 									<button
 										type="button"
-										className={`rounded-md bg-orange-600 px-6 py-2 font-semibold text-base text-white shadow-sm transition hover:bg-orange-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-600 dark:bg-orange-500 dark:hover:bg-orange-600 ${
+										className={`rounded-md bg-accent px-6 py-2 text-base font-semibold text-accent-foreground shadow-sm transition hover:bg-accent/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent ${
 											selectedPropertyIds.length === 0
 												? "cursor-not-allowed opacity-60"
 												: ""

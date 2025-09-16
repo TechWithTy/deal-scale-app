@@ -59,12 +59,12 @@ const Modal = ({
 	}, [isOpen]);
 	if (!isOpen) return null;
 	return (
-		<div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-			<div className="relative w-full max-w-3xl rounded-lg bg-white p-6 shadow-lg dark:bg-gray-800">
+		<div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
+			<div className="relative w-full max-w-3xl rounded-lg bg-card p-6 text-card-foreground shadow-lg">
 				<button
 					onClick={onClose}
 					type="button"
-					className="absolute top-3 right-3 text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
+					className="absolute top-3 right-3 text-muted-foreground hover:text-foreground"
 				>
 					<svg
 						xmlns="http://www.w3.org/2000/svg"
@@ -136,15 +136,14 @@ export const WebhookModal: React.FC = () => {
 	return (
 		<Modal isOpen={isWebhookModalOpen} onClose={closeWebhookModal}>
 			<div className="mt-4">
-				<h3 className="font-medium text-lg dark:text-gray-200">Webhook</h3>
-				<p className="text-muted-foreground text-sm dark:text-gray-400">
+				<h3 className="font-medium text-foreground text-lg">Webhook</h3>
+				<p className="text-muted-foreground text-sm">
 					Call a webhook when you get a new lead.
 				</p>
 				<WebhookUrlInput
 					webhookUrl={webhookUrl}
 					setWebhookUrl={setWebhookUrl}
 					placeholder={defaultWebhook}
-					className="dark:bg-gray-800 dark:text-gray-200"
 				/>
 				<WebhookPayloadSection
 					webhookPayload={webhookPayload}

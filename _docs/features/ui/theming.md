@@ -3,6 +3,12 @@
 This app uses Tailwind tokens powered by CSS variables plus `next-themes` to manage the theme class on the `<html>` element. It ships with accessible Light and Dark and is ready for additional named themes.
 
 ## Stack
+
+## Company Colors
+
+<!-- - **Blue:** `#0c6398`
+- **Teal:** `#1890b7`
+- **Orange:** `#f98d21` -->
 - **Tailwind** with `darkMode: ['class']` in `tailwind.config.js`.
 - **CSS variables** for tokens in `styles/globals.css`.
 - **next-themes** to set the `class` on `<html>` (`light`, `dark`, or custom) and persist user preference.

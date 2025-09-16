@@ -36,8 +36,8 @@ export const BaseSetupFields: React.FC<BaseSetupFieldsProps> = ({
 				)}
 			/>
 			{/* <div className="relative">
-				<div className="pointer-events-auto absolute inset-0 z-10 flex items-center justify-center rounded-lg bg-white/70 dark:bg-black/60">
-					<span className="font-medium text-gray-500 text-sm">Coming soon</span>
+				<div className="pointer-events-auto absolute inset-0 z-10 flex items-center justify-center rounded-lg bg-background/70">
+					<span className="text-sm font-medium text-muted-foreground">Coming soon</span>
 				</div>
 				<FormField
 					control={control}

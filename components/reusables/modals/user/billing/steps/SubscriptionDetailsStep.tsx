@@ -39,11 +39,11 @@ const SubscriptionDetailsStep: FC<SubscriptionDetailsStepProps> = ({
 	if (!isOpen) return null;
 
 	return (
-		<div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-			<div className="relative w-full max-w-lg rounded-lg bg-white p-6 shadow-lg dark:bg-gray-800">
+		<div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
+			<div className="relative w-full max-w-lg rounded-lg bg-card p-6 text-card-foreground shadow-lg">
 				<button
 					onClick={onClose}
-					className="absolute top-3 right-3 text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
+					className="absolute top-3 right-3 text-muted-foreground hover:text-foreground"
 					type="button"
 				>
 					<svg
@@ -62,52 +62,52 @@ const SubscriptionDetailsStep: FC<SubscriptionDetailsStepProps> = ({
 						/>
 					</svg>
 				</button>
-				<div className="space-y-4 p-4 sm:p-6 dark:text-gray-300">
+				<div className="space-y-4 p-4 sm:p-6">
 					<div className="flex flex-col items-start justify-between space-y-4 sm:flex-row sm:items-center sm:space-y-0">
 						<div>
-							<h4 className="font-medium text-lg dark:text-gray-200">
+							<h4 className="font-medium text-lg">
 								{subscription.name} Subscription
 							</h4>
-							<p className="text-muted-foreground text-sm dark:text-gray-400">
+							<p className="text-muted-foreground text-sm">
 								{isSubscriptionActive
 									? "Active Subscription"
 									: "No Active Subscription"}
 							</p>
-							<p className="text-muted-foreground text-sm dark:text-gray-400">
+							<p className="text-muted-foreground text-sm">
 								Renews: {subscription.renewalDate}
 							</p>
-							<p className="text-muted-foreground text-sm dark:text-gray-400">
+							<p className="text-muted-foreground text-sm">
 								Price: ${subscription.price} / {subscriptionType}
 							</p>
 							{/* AI Credits */}
-							<p className="text-muted-foreground text-sm dark:text-gray-400">
+							<p className="text-muted-foreground text-sm">
 								AI Credits: {subscription.aiCredits.used} /{" "}
 								{subscription.aiCredits.allotted} used
 							</p>
-							<p className="text-muted-foreground text-sm dark:text-gray-400">
+							<p className="text-muted-foreground text-sm">
 								Resets in: {subscription.aiCredits.resetInDays} days
 							</p>
 							{/* Leads */}
-							<p className="text-muted-foreground text-sm dark:text-gray-400">
+							<p className="text-muted-foreground text-sm">
 								Leads: {subscription.leads.used} / {subscription.leads.allotted}{" "}
 								used
 							</p>
-							<p className="text-muted-foreground text-sm dark:text-gray-400">
+							<p className="text-muted-foreground text-sm">
 								Resets in: {subscription.leads.resetInDays} days
 							</p>
 							{/* Skip Traces */}
-							<p className="text-muted-foreground text-sm dark:text-gray-400">
+							<p className="text-muted-foreground text-sm">
 								Skip Traces: {subscription.skipTraces.used} /{" "}
 								{subscription.skipTraces.allotted} used
 							</p>
-							<p className="text-muted-foreground text-sm dark:text-gray-400">
+							<p className="text-muted-foreground text-sm">
 								Resets in: {subscription.skipTraces.resetInDays} days
 							</p>
 						</div>
 						{/* Conditional Rendering of Buy or Cancel Button */}
 						{!isSubscriptionActive ? (
 							<Button
-								className="w-full rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 sm:w-auto"
+								className="w-full rounded-md bg-primary px-4 py-2 text-primary-foreground hover:bg-primary/90 sm:w-auto"
 								type="button"
 							>
 								Buy Subscription
@@ -125,7 +125,7 @@ const SubscriptionDetailsStep: FC<SubscriptionDetailsStepProps> = ({
 								{subscriptionType === "monthly" && (
 									<Button
 										onClick={onSwitchToYearly}
-										className="w-full whitespace-nowrap rounded-md bg-blue-600 px-4 py-2 font-semibold text-white hover:bg-blue-700 sm:w-auto"
+										className="w-full whitespace-nowrap rounded-md bg-primary px-4 py-2 font-semibold text-primary-foreground hover:bg-primary/90 sm:w-auto"
 										type="button"
 									>
 										Switch to Yearly and Save
@@ -134,9 +134,9 @@ const SubscriptionDetailsStep: FC<SubscriptionDetailsStepProps> = ({
 							</div>
 						)}
 					</div>
-					<Separator className="dark:border-gray-600" />
+					<Separator />
 					<div className="flex items-center justify-between">
-						<p className="text-muted-foreground text-sm dark:text-gray-400">
+						<p className="text-muted-foreground text-sm">
 							Plan Details: {subscription.planDetails}
 						</p>
 					</div>

@@ -70,17 +70,17 @@ const AiUsageModal: React.FC = () => {
 	return (
 		<div
 			style={{ zIndex: 9999 }}
-			className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50"
+			className="fixed inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm"
 		>
 			<div
 				style={{ zIndex: 10000 }}
-				className="relative w-full max-w-lg rounded-lg bg-white p-6 shadow-lg dark:bg-gray-800"
+				className="relative w-full max-w-lg rounded-lg bg-card p-6 text-card-foreground shadow-lg"
 			>
 				{/* Close Button */}
 				<button
 					onClick={closeUsageModal}
 					type="button"
-					className="absolute top-2 right-2 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
+					className="absolute top-2 right-2 text-muted-foreground hover:text-foreground"
 				>
 					<svg
 						xmlns="http://www.w3.org/2000/svg"
@@ -104,7 +104,7 @@ const AiUsageModal: React.FC = () => {
 					AI Subscription - {name} Plan
 					<span
 						className={`ml-2 text-sm ${
-							status === "active" ? "text-green-500" : "text-red-500"
+							status === "active" ? "text-green-500" : "text-destructive"
 						}`}
 					>
 						{status}
@@ -113,8 +113,8 @@ const AiUsageModal: React.FC = () => {
 
 				{/* Center the price and renewal date */}
 				<div className="mt-4 text-center">
-					<div className="text-gray-500 text-sm">Price: {price}</div>
-					<div className="text-gray-500 text-sm">
+					<div className="text-muted-foreground text-sm">Price: {price}</div>
+					<div className="text-muted-foreground text-sm">
 						Renewal Date: {new Date(renewalDate).toLocaleDateString()}
 					</div>
 				</div>
@@ -123,14 +123,14 @@ const AiUsageModal: React.FC = () => {
 				<div className="mt-4 flex justify-center">
 					<button
 						type="button"
-						className="rounded-lg bg-blue-600 px-4 py-2 font-semibold text-sm text-white hover:bg-blue-700"
+						className="rounded-lg bg-primary px-4 py-2 font-semibold text-primary-foreground text-sm hover:bg-primary/90"
 					>
 						Buy Now
 					</button>
 				</div>
 
 				{/* Usage Info */}
-				<div className="mt-6 flex flex-col items-center rounded-lg border p-4 dark:border-gray-600">
+				<div className="mt-6 flex flex-col items-center rounded-lg border border-border p-4">
 					{/* Usage Circle */}
 					<div className="relative h-32 w-32">
 						<svg
@@ -139,7 +139,7 @@ const AiUsageModal: React.FC = () => {
 							viewBox="0 0 36 36"
 						>
 							<path
-								className="text-gray-200 dark:text-gray-700"
+								className="text-muted"
 								d="M18 2.0845
                 a 15.9155 15.9155 0 0 1 0 31.831
                 a 15.9155 15.9155 0 0 1 0 -31.831"
@@ -148,7 +148,7 @@ const AiUsageModal: React.FC = () => {
 								strokeWidth="4"
 							/>
 							<path
-								className="text-blue-600"
+								className="text-primary"
 								strokeDasharray={`${usagePercentage}, 100`}
 								d="M18 2.0845
                 a 15.9155 15.9155 0 0 1 0 31.831
@@ -160,7 +160,7 @@ const AiUsageModal: React.FC = () => {
 							/>
 						</svg>
 						<div className="absolute inset-0 flex items-center justify-center">
-							<span className="font-semibold text-gray-700 text-xl dark:text-gray-300">
+							<span className="font-semibold text-foreground text-xl">
 								{Math.floor(usagePercentage)}%
 							</span>
 						</div>
@@ -169,34 +169,34 @@ const AiUsageModal: React.FC = () => {
 					{/* Usage Details */}
 					<div className="mt-4 text-center">
 						{/* AI Credits */}
-						<div className="text-gray-500 text-sm dark:text-gray-400">
+						<div className="text-muted-foreground text-sm">
 							AI Credits Used:
 						</div>
-						<div className="font-medium text-gray-800 text-lg dark:text-gray-200">
+						<div className="font-medium text-foreground text-lg">
 							{used} / {allotted}
 						</div>
 
 						{/* Leads */}
-						<div className="mt-2 text-gray-500 text-sm dark:text-gray-400">
+						<div className="mt-2 text-muted-foreground text-sm">
 							Leads Included:
 						</div>
-						<div className="font-medium text-gray-800 text-lg dark:text-gray-200">
+						<div className="font-medium text-foreground text-lg">
 							{leads.used} / {leads.allotted}
 						</div>
 
 						{/* Skip Traces */}
-						<div className="mt-2 text-gray-500 text-sm dark:text-gray-400">
+						<div className="mt-2 text-muted-foreground text-sm">
 							Skip Traces Included:
 						</div>
-						<div className="font-medium text-gray-800 text-lg dark:text-gray-200">
+						<div className="font-medium text-foreground text-lg">
 							{skipTraces.used} / {skipTraces.allotted}
 						</div>
 
 						{/* Credit Reset */}
-						<div className="mt-2 text-gray-500 text-sm dark:text-gray-400">
+						<div className="mt-2 text-muted-foreground text-sm">
 							Next Credit Reset In:
 						</div>
-						<div className="font-medium text-gray-800 text-lg dark:text-gray-200">
+						<div className="font-medium text-foreground text-lg">
 							{resetInDays} day{resetInDays !== 1 ? "s" : ""}
 						</div>
 					</div>

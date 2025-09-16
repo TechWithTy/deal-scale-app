@@ -41,7 +41,7 @@ export function ImageModal({
 	return (
 		<dialog
 			open
-			className="fixed inset-0 z-50 m-0 flex items-center justify-center border-none bg-black/90 p-0 backdrop-blur-sm"
+			className="fixed inset-0 z-50 m-0 flex items-center justify-center border-none bg-background/90 p-0 backdrop-blur-sm"
 			onClose={onClose}
 			onClick={onClose}
 			onKeyDown={(e) => e.key === "Escape" && onClose()}
@@ -73,7 +73,7 @@ export function ImageModal({
 						e.stopPropagation();
 						onClose();
 					}}
-					className="-right-4 -top-4 absolute z-[100] rounded-full bg-white p-2 text-black shadow-lg transition-colors hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+					className="absolute -right-4 -top-4 z-[100] rounded-full bg-card p-2 text-card-foreground shadow-lg transition-colors hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring"
 					aria-label="Close image modal"
 				>
 					<X className="h-5 w-5" />

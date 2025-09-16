@@ -1,3 +1,4 @@
+import { cn } from "@/lib/_utils";
 import { ArrowUpRight } from "lucide-react"; // You can use any icon library
 import type React from "react";
 
@@ -24,7 +25,15 @@ const StatCard: React.FC<StatCardProps> = ({
 }) => {
 	return (
 		<div
-			className={`relative rounded-md bg-white p-4 text-center shadow-md transition-all dark:bg-gray-800 dark:text-white${click ? " cursor-pointer" : ""}${click && isActive && !animationComplete && value > 0 ? " animate-pulse border-4 border-orange-500 dark:border-gray-400" : ""}`}
+			className={cn(
+				"relative rounded-md bg-card p-4 text-center text-card-foreground shadow-md transition-all",
+				click && "cursor-pointer",
+				click &&
+					isActive &&
+					!animationComplete &&
+					value > 0 &&
+					"animate-pulse border-4 border-accent",
+			)}
 			tabIndex={click && !comingSoon ? 0 : -1}
 			role={click && !comingSoon ? "button" : undefined}
 			onClick={click && !comingSoon ? onClick : undefined}
@@ -37,11 +46,11 @@ const StatCard: React.FC<StatCardProps> = ({
 			}
 		>
 			<p>{title}</p>
-			<h2 className="py-1 font-bold text-3xl">{value}</h2>
+			<h2 className="py-1 text-3xl font-bold">{value}</h2>
 
 			{/* Added today badge */}
 			{addedToday && (
-				<div className="mt-2 flex items-center justify-center rounded-full bg-green-100 px-2 py-1 text-green-600 text-sm dark:bg-green-900 dark:text-green-400">
+				<div className="mt-2 flex items-center justify-center rounded-full bg-green-500/10 px-2 py-1 text-sm text-green-600 dark:bg-green-500/20 dark:text-green-400">
 					<ArrowUpRight className="mr-1" size={16} />
 					<span>{addedToday.toLocaleString()} just today</span>
 				</div>
@@ -51,10 +60,10 @@ const StatCard: React.FC<StatCardProps> = ({
 			{comingSoon && (
 				// ! Overlay blocks interaction and signals feature is not yet available
 				<div
-					className="pointer-events-auto absolute inset-0 z-10 flex select-none items-center justify-center rounded-md bg-black/60"
+					className="pointer-events-auto absolute inset-0 z-10 flex select-none items-center justify-center rounded-md bg-background/60"
 					style={{ backdropFilter: "blur(2px)" }}
 				>
-					<span className="font-bold text-lg text-white drop-shadow">
+					<span className="text-lg font-bold text-primary-foreground drop-shadow">
 						Coming Soon
 					</span>
 				</div>

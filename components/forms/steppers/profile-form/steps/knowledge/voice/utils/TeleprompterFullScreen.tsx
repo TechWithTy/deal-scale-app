@@ -37,18 +37,18 @@ const TeleprompterFullScreen: React.FC<TeleprompterFullScreenProps> = ({
 	return (
 		<div
 			ref={overlayRef}
-			className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80"
+			className="fixed inset-0 z-[9999] flex items-center justify-center bg-background/80 backdrop-blur-sm"
 			onClick={handleOverlayClick}
 			onKeyDown={(e) => {
 				if (e.key === "Escape") onClose();
 			}}
 			aria-modal="true"
 		>
-			<div className="relative flex h-[90vh] w-full max-w-3xl flex-col rounded-lg bg-white shadow-lg dark:bg-gray-900">
+			<div className="relative flex h-[90vh] w-full max-w-3xl flex-col rounded-lg bg-card shadow-lg">
 				<button
 					onClick={onClose}
 					type="button"
-					className="absolute top-4 right-4 z-10 rounded-full bg-gray-200 p-2 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600"
+					className="absolute right-4 top-4 z-10 rounded-full bg-muted p-2 hover:bg-muted/80"
 					aria-label="Close Full Screen Teleprompter"
 				>
 					<span className="text-xl">×</span>

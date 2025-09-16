@@ -67,7 +67,7 @@ export const AssetsUploader: React.FC<AssetsUploaderProps> = ({
 			</label>
 			<button
 				type="button"
-				className="mb-2 flex flex-col items-center rounded-md border border-dashed bg-gray-50 p-4"
+				className="mb-2 flex flex-col items-center rounded-md border border-dashed bg-muted/50 p-4"
 				onClick={() => inputRef.current?.click()}
 				aria-label="Upload company assets"
 			>
@@ -80,7 +80,7 @@ export const AssetsUploader: React.FC<AssetsUploaderProps> = ({
 					className="hidden"
 					onChange={(e) => handleFiles(e.target.files)}
 				/>
-				<span className="text-gray-400">
+				<span className="text-muted-foreground">
 					Drag & drop or click to upload (1-12 images)
 				</span>
 			</button>
@@ -88,7 +88,7 @@ export const AssetsUploader: React.FC<AssetsUploaderProps> = ({
 				{value.map((item) => (
 					<div
 						key={item.id}
-						className="relative mr-4 mb-4 inline-block h-24 w-24 rounded border border-gray-200 bg-gray-900"
+						className="relative mr-4 mb-4 inline-block h-24 w-24 rounded border border-border bg-card"
 					>
 						<img
 							src={URL.createObjectURL(item.file)}
@@ -97,22 +97,22 @@ export const AssetsUploader: React.FC<AssetsUploaderProps> = ({
 						/>
 						<button
 							type="button"
-							className="absolute top-1 right-1 z-10 rounded-full bg-white p-1 text-red-500 hover:bg-gray-100"
+							className="absolute top-1 right-1 z-10 rounded-full bg-card p-1 text-destructive hover:bg-card/80"
 							onClick={() => handleRemove(item.id)}
 							aria-label="Remove image"
 						>
 							&times;
 						</button>
-						<div className="absolute bottom-0 left-0 w-full truncate rounded-b bg-black/70 px-1 py-0.5 text-center text-gray-100 text-xs">
+						<div className="absolute bottom-0 left-0 w-full truncate rounded-b bg-background/70 px-1 py-0.5 text-center text-foreground text-xs">
 							{truncateMiddle(item.file.name, 18)}
 						</div>
 					</div>
 				))}
 			</div>
-			<div className="mb-1 text-gray-500 text-xs">
+			<div className="mb-1 text-muted-foreground text-xs">
 				{value.length}/12 images selected
 			</div>
-			{error && <p className="text-red-500 text-xs">{error}</p>}
+			{error && <p className="text-destructive text-xs">{error}</p>}
 		</div>
 	);
 };

@@ -35,14 +35,14 @@ export function EnrichmentCard({
 			<div className="flex items-start justify-between">
 				<div className="flex-grow pr-2">
 					<h3 className="font-semibold text-md">{title}</h3>
-					<p className="text-gray-500 text-sm">{description}</p>
+					<p className="text-muted-foreground text-sm">{description}</p>
 				</div>
 				<div className="flex flex-col items-end">
 					<div className="font-bold text-lg">{isFree ? "Free" : `${cost}`}</div>
-					{!isFree && <p className="text-gray-500 text-xs">credits</p>}
+					{!isFree && <p className="text-muted-foreground text-xs">credits</p>}
 				</div>
 			</div>
-			<div className="my-4 flex-grow border-gray-200 border-t" />
+			<div className="my-4 flex-grow border-border border-t" />
 			<ul className="space-y-2 text-sm">
 				{features.map((feature) => (
 					<li key={feature} className="flex items-center">
@@ -62,8 +62,8 @@ export function EnrichmentCard({
 					className={cn(
 						"relative block cursor-not-allowed rounded-lg border opacity-50 transition-all duration-200",
 						isSelected
-							? "border-transparent bg-blue-50 ring-2 ring-blue-500 dark:bg-blue-900/50"
-							: "border-gray-200 bg-white hover:border-gray-300 hover:shadow-sm dark:border-gray-700 dark:bg-gray-800 dark:hover:border-gray-600",
+							? "border-transparent bg-primary/10 ring-2 ring-primary"
+							: "border-border bg-card hover:border-primary hover:shadow-sm",
 					)}
 					aria-disabled="true"
 				>
@@ -108,8 +108,8 @@ export function EnrichmentCard({
 			className={cn(
 				"relative block cursor-pointer rounded-lg border transition-all duration-200",
 				isSelected
-					? "border-transparent bg-blue-50 ring-2 ring-blue-500 dark:bg-blue-900/50"
-					: "border-gray-200 bg-white hover:border-gray-300 hover:shadow-sm dark:border-gray-700 dark:bg-gray-800 dark:hover:border-gray-600",
+					? "border-transparent bg-primary/10 ring-2 ring-primary"
+					: "border-border bg-card hover:border-primary hover:shadow-sm",
 			)}
 			style={{ userSelect: "none" }}
 		>

@@ -11,24 +11,24 @@ const DrawingControls: React.FC<DrawingControlsProps> = ({
 	drawingMode,
 	setDrawingMode,
 }) => (
-	<div className="absolute top-4 left-4 z-10 flex gap-2 rounded bg-white p-2 shadow">
+	<div className="absolute left-4 top-4 z-10 flex gap-2 rounded bg-card p-2 shadow">
 		<button
 			type="button"
-			className={`rounded px-3 py-1 text-xs ${drawingMode === google.maps.drawing.OverlayType.CIRCLE ? "bg-blue-600 text-white" : "bg-gray-200"}`}
+			className={`rounded px-3 py-1 text-xs ${drawingMode === google.maps.drawing.OverlayType.CIRCLE ? "bg-primary text-primary-foreground" : "bg-muted"}`}
 			onClick={() => setDrawingMode(google.maps.drawing.OverlayType.CIRCLE)}
 		>
 			Circle
 		</button>
 		<button
 			type="button"
-			className={`rounded px-3 py-1 text-xs ${drawingMode === google.maps.drawing.OverlayType.POLYLINE ? "bg-blue-600 text-white" : "bg-gray-200"}`}
+			className={`rounded px-3 py-1 text-xs ${drawingMode === google.maps.drawing.OverlayType.POLYLINE ? "bg-primary text-primary-foreground" : "bg-muted"}`}
 			onClick={() => setDrawingMode(google.maps.drawing.OverlayType.POLYLINE)}
 		>
 			Polyline
 		</button>
 		<button
 			type="button"
-			className="rounded bg-red-500 px-3 py-1 text-white text-xs"
+			className="rounded bg-destructive px-3 py-1 text-xs text-destructive-foreground"
 			onClick={() => setDrawingMode(null)}
 		>
 			Cancel

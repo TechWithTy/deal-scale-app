@@ -8,18 +8,18 @@ import { Slider } from "@/components/ui/slider";
 
 export default function Component() {
 	return (
-		<div className="flex h-screen flex-col items-center justify-center bg-gray-900 text-white">
-			<div className="w-full max-w-md rounded-lg bg-gray-800 p-6 shadow-lg">
+		<div className="flex h-screen flex-col items-center justify-center bg-background text-foreground">
+			<div className="w-full max-w-md rounded-lg bg-card p-6 shadow-lg">
 				<div className="mb-4 flex items-center justify-between">
 					<div className="font-medium text-lg">Song Title</div>
-					<div className="flex items-center space-x-2 text-gray-400">
+					<div className="flex items-center space-x-2 text-muted-foreground">
 						<span>3:45</span>
 						<span>/</span>
 						<span>5:30</span>
 					</div>
 				</div>
-				<div className="mb-6 h-2 w-full rounded-full bg-gray-700">
-					<div className="h-2 w-2/3 rounded-full bg-white" />
+				<div className="mb-6 h-2 w-full rounded-full bg-muted">
+					<div className="h-2 w-2/3 rounded-full bg-primary" />
 				</div>
 				<div className="mb-4 flex items-center justify-between">
 					<div className="flex items-center space-x-2">
@@ -34,7 +34,7 @@ export default function Component() {
 						</Button>
 					</div>
 					<div className="flex items-center space-x-2">
-						<VolumeIcon className="h-6 w-6 text-gray-400" />
+						<VolumeIcon className="h-6 w-6 text-muted-foreground" />
 						<Slider defaultValue={[50]} max={100} step={1} className="w-24" />
 					</div>
 				</div>

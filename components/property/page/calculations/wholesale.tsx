@@ -23,8 +23,8 @@ export default function WholesaleCalculator() {
 	};
 
 	return (
-		<div className="my-4 rounded-lg bg-white p-6 shadow-md dark:bg-gray-800 dark:text-gray-100">
-			<h2 className="mb-4 font-bold text-xl">Wholesale Calculator</h2>
+		<div className="my-4 rounded-lg bg-card p-6 shadow-md text-card-foreground">
+			<h2 className="mb-4 text-xl font-bold">Wholesale Calculator</h2>
 			<p className="mb-4">
 				Easily make the right wholesale offer with confidence.
 			</p>
@@ -32,10 +32,7 @@ export default function WholesaleCalculator() {
 			{/* Responsive Grid */}
 			<div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
 				<div className="flex flex-col">
-					<label
-						htmlFor="arv"
-						className="mb-2 text-gray-700 dark:text-gray-300"
-					>
+					<label htmlFor="arv" className="mb-2 text-muted-foreground">
 						After Repair Value (ARV)*
 					</label>
 					<input
@@ -43,7 +40,7 @@ export default function WholesaleCalculator() {
 						name="arv"
 						type="number"
 						min={0}
-						className="rounded border bg-gray-50 p-2 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+						className="rounded border border-input bg-background p-2"
 						placeholder="Enter the ARV"
 						aria-label="After Repair Value"
 						value={arv}
@@ -51,44 +48,35 @@ export default function WholesaleCalculator() {
 					/>
 				</div>
 				<div className="flex flex-col">
-					<label
-						htmlFor="repairs"
-						className="mb-2 text-gray-700 dark:text-gray-300"
-					>
+					<label htmlFor="repairs" className="mb-2 text-muted-foreground">
 						Cost of Repairs*
 					</label>
 					<input
 						type="number"
-						className="rounded border bg-gray-50 p-2 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+						className="rounded border border-input bg-background p-2"
 						placeholder="Enter the repairs"
 						value={repairs}
 						onChange={(e) => setRepairs(Number(e.target.value))}
 					/>
 				</div>
 				<div className="flex flex-col">
-					<label
-						htmlFor="assignmentFee"
-						className="mb-2 text-gray-700 dark:text-gray-300"
-					>
+					<label htmlFor="assignmentFee" className="mb-2 text-muted-foreground">
 						Assignment Fee*
 					</label>
 					<input
 						type="number"
-						className="rounded border bg-gray-50 p-2 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+						className="rounded border border-input bg-background p-2"
 						placeholder="Enter the assignment fee"
 						value={assignmentFee}
 						onChange={(e) => setAssignmentFee(Number(e.target.value))}
 					/>
 				</div>
 				<div className="flex flex-col">
-					<label
-						htmlFor="profitMargin"
-						className="mb-2 text-gray-700 dark:text-gray-300"
-					>
+					<label htmlFor="profitMargin" className="mb-2 text-muted-foreground">
 						Profit Margin*
 					</label>
 					<select
-						className="rounded border bg-gray-50 p-2 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+						className="rounded border border-input bg-background p-2"
 						value={profitMargin}
 						onChange={handleProfitMarginChange}
 					>
@@ -100,7 +88,7 @@ export default function WholesaleCalculator() {
 			</div>
 
 			<div className="mb-4 text-right">
-				<span className="font-semibold text-gray-600 dark:text-gray-300">
+				<span className="font-semibold text-muted-foreground">
 					Max Allowable Offer (MAO):{" "}
 				</span>
 				<span className="font-bold">${calculateMAO().toLocaleString()}</span>

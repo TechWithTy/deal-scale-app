@@ -178,13 +178,7 @@ const PropertyMap: React.FC<PropertyMapProps> = ({
 							position={selected}
 							onCloseClick={() => setSelected(null)}
 						>
-							<div
-								style={{
-									color: "black",
-									display: "flex",
-									alignItems: "center",
-								}}
-							>
+							<div className="flex items-center text-foreground">
 								{homeAnimation && (
 									<Lottie
 										animationData={homeAnimation}
@@ -206,21 +200,11 @@ const PropertyMap: React.FC<PropertyMapProps> = ({
 				</GoogleMap>
 
 				{/* Custom Controls */}
-				<div
-					style={{
-						position: "absolute",
-						bottom: "20px",
-						left: "50%",
-						transform: "translateX(-50%)",
-						zIndex: 1,
-						display: "flex",
-						gap: "8px",
-					}}
-				>
+				<div className="absolute bottom-5 left-1/2 z-10 flex -translate-x-1/2 gap-2">
 					<button
 						type="button"
 						onClick={handleStreetViewToggle}
-						className="rounded-lg bg-white bg-opacity-80 px-3 py-2 font-semibold text-gray-800 text-sm shadow-md hover:bg-opacity-100 disabled:cursor-not-allowed disabled:opacity-50"
+						className="rounded-lg bg-card/80 px-3 py-2 text-sm font-semibold text-card-foreground shadow-md hover:bg-card/100 disabled:cursor-not-allowed disabled:opacity-50"
 						disabled={!panoId}
 					>
 						{isStreetView ? "Exit Street View" : "Street View"}
@@ -230,7 +214,7 @@ const PropertyMap: React.FC<PropertyMapProps> = ({
 						onClick={() =>
 							setMapTypeId(mapTypeId === "satellite" ? "roadmap" : "satellite")
 						}
-						className="rounded-lg bg-white bg-opacity-80 px-3 py-2 font-semibold text-gray-800 text-sm shadow-md hover:bg-opacity-100"
+						className="rounded-lg bg-card/80 px-3 py-2 text-sm font-semibold text-card-foreground shadow-md hover:bg-card/100"
 					>
 						{mapTypeId === "satellite" ? "Map View" : "Satellite View"}
 					</button>

@@ -10,12 +10,7 @@ import ChannelSelectionStep from "./steps/ChannelSelectionStep";
 import FinalizeCampaignStep from "./steps/FinalizeCampaignStep";
 import { TimingPreferencesStep } from "./steps/TimingPreferencesStep";
 import { useCampaignCreationStore } from "@/lib/stores/campaignCreation"; // Zustand campaign creation store
-import {
-	Dialog,
-	DialogContent,
-	DialogOverlay,
-	DialogPortal,
-} from "@radix-ui/react-dialog";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { X } from "lucide-react";
 
 // * Centralized Campaign Main Component
@@ -128,17 +123,16 @@ const CampaignModalMain = () => {
 
 	return (
 		<Dialog open={open} onOpenChange={setOpen}>
-			<DialogPortal>
-				<DialogOverlay className="fixed inset-0 z-50 bg-black/40" />
-				<DialogContent className="-translate-x-1/2 -translate-y-1/2 fixed top-1/2 left-1/2 z-50 w-full max-w-xl rounded-lg bg-white p-6 shadow-lg focus:outline-none">
-					<button
-						onClick={closeModal}
-						className="absolute top-4 right-4 rounded-full p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600 focus:outline-none"
-						aria-label="Close"
-						type="button"
-					>
-						<X size={20} />
-					</button>
+			<DialogContent className="w-full max-w-xl bg-card p-0 text-card-foreground shadow-lg sm:rounded-lg">
+				<button
+					onClick={closeModal}
+					className="absolute top-4 right-4 rounded-full p-2 text-muted-foreground hover:bg-muted hover:text-foreground focus:outline-none"
+					aria-label="Close"
+					type="button"
+				>
+					<X size={20} />
+				</button>
+				<div className="flex-1 min-h-0 overflow-y-auto px-6 pb-6 pr-7 bg-card text-card-foreground">
 					{step === 0 && (
 						<ChannelSelectionStep
 							onNext={nextStep}
@@ -161,13 +155,6 @@ const CampaignModalMain = () => {
 					{step === 2 && (
 						<TimingPreferencesStep onBack={prevStep} onNext={nextStep} />
 					)}
-					<p style={{ color: "blue", fontSize: "12px" }}>
-						DEBUG: leadCount={leadCount}, startDate={String(startDate)},
-						endDate={String(endDate)}, days={days}, mutatedDays={mutatedDays},
-						reachBeforeBusiness={String(reachBeforeBusiness)},
-						reachAfterBusiness={String(reachAfterBusiness)}, reachOnWeekend=
-						{String(reachOnWeekend)}, estimatedCredits={estimatedCredits}
-					</p>
 					{step === 3 && (
 						<FinalizeCampaignStep
 							onBack={prevStep}
@@ -175,8 +162,8 @@ const CampaignModalMain = () => {
 							estimatedCredits={estimatedCredits}
 						/>
 					)}
-				</DialogContent>
-			</DialogPortal>
+				</div>
+			</DialogContent>
 		</Dialog>
 	);
 };

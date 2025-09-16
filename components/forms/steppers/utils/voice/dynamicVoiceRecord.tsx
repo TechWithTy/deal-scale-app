@@ -1,5 +1,5 @@
 import VoiceClone from "@/public/lottie/RecordingButton.json"; // Path to the Lottie animation
-import Lottie from "lottie-react";
+import Lottie, { type LottieRefCurrentProps } from "lottie-react";
 import type React from "react";
 import { useEffect, useRef, useState } from "react";
 
@@ -23,7 +23,7 @@ const DynamicCloningModal: React.FC<VoiceCloningModalProps> = ({
 	const [showFinishButton, setShowFinishButton] = useState(false); // Show Finish button after recording
 
 	const scriptContainerRef = useRef<HTMLDivElement>(null); // Reference to the script container
-	const lottieRef = useRef<any>(null); // Lottie reference
+	const lottieRef = useRef<LottieRefCurrentProps | null>(null); // Lottie reference
 	const mediaRecorderRef = useRef<MediaRecorder | null>(null); // MediaRecorder reference
 	const audioChunksRef = useRef<Blob[]>([]); // Store audio chunks
 	const recordingIntervalRef = useRef<NodeJS.Timeout | null>(null); // To track recording time
@@ -147,12 +147,13 @@ const DynamicCloningModal: React.FC<VoiceCloningModalProps> = ({
 	};
 
 	return (
-		<div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-			<div className="relative w-full max-w-lg rounded-lg bg-white p-6 shadow-lg dark:bg-gray-800">
+		<div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
+			<div className="relative w-full max-w-lg rounded-lg bg-card p-6 shadow-lg">
 				{/* Close Button (X) */}
 				<button
+					type="button"
 					onClick={onClose}
-					className="absolute top-2 right-2 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
+					className="absolute right-2 top-2 text-muted-foreground hover:text-foreground"
 				>
 					<svg
 						xmlns="http://www.w3.org/2000/svg"
@@ -162,6 +163,7 @@ const DynamicCloningModal: React.FC<VoiceCloningModalProps> = ({
 						stroke="currentColor"
 						className="h-6 w-6"
 					>
+						<title>Close</title>
 						<path
 							strokeLinecap="round"
 							strokeLinejoin="round"
@@ -170,13 +172,14 @@ const DynamicCloningModal: React.FC<VoiceCloningModalProps> = ({
 					</svg>
 				</button>
 
-				<h2 className="mb-4 text-center font-semibold text-gray-900 text-lg dark:text-gray-100">
+				<h2 className="mb-4 text-center text-lg font-semibold text-foreground">
 					Clone Your Voice
 				</h2>
 
 				<div className="mb-4 flex justify-center">
 					{/* Lottie button */}
 					<button
+						type="button"
 						onClick={handleRecordingToggle}
 						className="focus:outline-none"
 					>
@@ -193,10 +196,10 @@ const DynamicCloningModal: React.FC<VoiceCloningModalProps> = ({
 				{scriptText && (
 					<div
 						ref={scriptContainerRef}
-						className="h-32 max-h-32 w-full overflow-y-auto border p-2 dark:border-gray-600"
+						className="h-32 max-h-32 w-full overflow-y-auto border border-border bg-background p-2"
 					>
 						{scriptText.map((line, index) => (
-							<p key={index} className="text-gray-700 dark:text-gray-300">
+							<p key={line} className="text-muted-foreground">
 								{line}
 							</p>
 						))}
@@ -204,11 +207,12 @@ const DynamicCloningModal: React.FC<VoiceCloningModalProps> = ({
 				)}
 
 				<button
+					type="button"
 					onClick={handleRecordingToggle}
 					className={`mt-4 w-full rounded px-4 py-2 text-white ${
 						isRecording
-							? "bg-red-600 hover:bg-red-700" // Red background when recording
-							: "bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600" // Blue background when not recording
+							? "bg-destructive hover:bg-destructive/90"
+							: "bg-primary hover:bg-primary/90"
 					}`}
 				>
 					{isRecording ? "Stop Recording" : "Start Recording"}
@@ -217,8 +221,9 @@ const DynamicCloningModal: React.FC<VoiceCloningModalProps> = ({
 				{/* Finish Recording Button */}
 				{showFinishButton && (
 					<button
+						type="button"
 						onClick={handleFinishRecording}
-						className="mt-4 w-full rounded bg-green-600 px-4 py-2 text-white hover:bg-green-700"
+						className="mt-4 w-full rounded bg-green-600 px-4 py-2 text-primary-foreground hover:bg-green-700"
 					>
 						Finish Recording
 					</button>
@@ -226,7 +231,7 @@ const DynamicCloningModal: React.FC<VoiceCloningModalProps> = ({
 
 				{/* Error message for microphone access or short recording */}
 				{recordingError && (
-					<p className="mt-2 text-center text-red-500 text-sm">
+					<p className="mt-2 text-center text-sm text-destructive">
 						{recordingError}
 					</p>
 				)}

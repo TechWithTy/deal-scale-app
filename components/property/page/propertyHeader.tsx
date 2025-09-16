@@ -101,11 +101,11 @@ export default function PropertyHeader({
 
 	return (
 		<>
-			<div className="w-full bg-white p-4 shadow-sm dark:bg-gray-900">
+			<div className="w-full bg-card p-4 shadow-sm text-card-foreground">
 				<div className="flex flex-col items-center justify-center gap-2">
 					{/* Top row: Title + Help */}
 					<div className="flex w-full items-center justify-center gap-2">
-						<h1 className="flex items-center gap-2 text-center font-semibold text-gray-900 text-xl dark:text-gray-100">
+						<h1 className="flex items-center gap-2 text-center text-xl font-semibold text-foreground">
 							{property.address?.fullStreetLine || "N/A"},{" "}
 							{property.address?.city || "N/A"},{" "}
 							{property.address?.state || "N/A"}{" "}
@@ -115,13 +115,13 @@ export default function PropertyHeader({
 							type="button"
 							onClick={openHelpModal}
 							title="Get More help"
-							className="animate-bounce rounded-full bg-blue-500 p-2 text-white hover:animate-none dark:bg-green-700 dark:text-gray-300"
+							className="animate-bounce rounded-full bg-primary p-2 text-primary-foreground hover:animate-none"
 						>
 							<HelpCircle size={20} />
 						</button>
 					</div>
 					{/* Second row: Metadata */}
-					<p className="text-center text-gray-600 text-sm dark:text-gray-300">
+					<p className="text-center text-sm text-muted-foreground">
 						{property.details.beds || "N/A"} bed |{" "}
 						{property.details.fullBaths || "N/A"} bath |{" "}
 						{formatNumber(property.details.sqft)} sqft |{" "}
@@ -135,7 +135,7 @@ export default function PropertyHeader({
 							<PopoverTrigger asChild>
 								<Button
 									variant="outline"
-									className="justify-start text-left font-normal dark:border-gray-700 dark:text-gray-100"
+									className="justify-start text-left font-normal"
 								>
 									<CalendarIcon className="mr-2 h-4 w-4" />
 									{date ? (
@@ -145,7 +145,7 @@ export default function PropertyHeader({
 									)}
 								</Button>
 							</PopoverTrigger>
-							<PopoverContent className="p-0 dark:bg-gray-800">
+							<PopoverContent className="p-0">
 								<Calendar
 									mode="single"
 									selected={date}
@@ -157,14 +157,11 @@ export default function PropertyHeader({
 						{/* Status Dropdown */}
 						<DropdownMenu>
 							<DropdownMenuTrigger asChild>
-								<Button
-									variant="outline"
-									className="dark:border-gray-700 dark:text-gray-100"
-								>
+								<Button variant="outline">
 									{status} <ChevronDownIcon className="ml-2 h-4 w-4" />
 								</Button>
 							</DropdownMenuTrigger>
-							<DropdownMenuContent className="dark:bg-gray-800 dark:text-gray-100">
+							<DropdownMenuContent>
 								<DropdownMenuItem
 									onClick={() => handleStatusChange("New Lead")}
 								>
@@ -211,7 +208,7 @@ export default function PropertyHeader({
 							disabled={isSaved}
 						>
 							{isSaved ? (
-								<BookmarkCheck className="h-5 w-5 text-blue-500" />
+								<BookmarkCheck className="h-5 w-5 text-primary" />
 							) : (
 								<Bookmark className="h-5 w-5" />
 							)}
@@ -222,7 +219,7 @@ export default function PropertyHeader({
 
 						{/* Lead Activity Button */}
 						<Button
-							className="bg-blue-600 text-white hover:bg-blue-700"
+							className="bg-primary text-primary-foreground hover:bg-primary/90"
 							onClick={toggleSidebar} // Open the sidebar on click
 						>
 							<CopyPlus className="mx-2" /> Lead Activity
