@@ -7,24 +7,12 @@ export const users: User[] = [
 		email: "admin@example.com",
 		password: "password123",
 		role: "admin",
-		permissions: ["users:create", "users:read", "users:update", "users:delete"],
+		// Deprecated: per-user permissions are managed via global CRUD state; keep empty to avoid duplication
+		permissions: [],
 		subscription: {
 			aiCredits: { allotted: 1000, used: 250, resetInDays: 7 },
 			leads: { allotted: 500, used: 120, resetInDays: 30 },
 			skipTraces: { allotted: 200, used: 50, resetInDays: 30 },
-		},
-	},
-	{
-		id: "2",
-		name: "Regular User",
-		email: "user@example.com",
-		password: "password123",
-		role: "user",
-		permissions: ["users:read"],
-		subscription: {
-			aiCredits: { allotted: 500, used: 450, resetInDays: 7 },
-			leads: { allotted: 100, used: 90, resetInDays: 30 },
-			skipTraces: { allotted: 50, used: 40, resetInDays: 30 },
 		},
 	},
 ];

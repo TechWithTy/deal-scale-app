@@ -16,6 +16,7 @@ import {
 	type MouseEventHandler,
 	type KeyboardEvent,
 } from "react";
+import { useSession } from "next-auth/react";
 import { CrudToggle } from "@/external/crud-toggle/components/CrudToggle";
 import type { CrudFlags } from "@/external/crud-toggle/utils/types";
 
@@ -39,6 +40,26 @@ export default function SidebarClient({ user }: { user: UserProfile | null }) {
 	}, [user, setUserProfile]);
 
 	const [showPerms, setShowPerms] = useState(false);
+	const { data: session } = useSession();
+
+	// Build CRUD flags from session.user.permissions (array of strings like "leads:read")
+	const ENTITIES = [
+		"leads",
+		"campaigns",
+		"reports",
+		"team",
+		"subscription",
+		"ai",
+		"tasks",
+		"company",
+	] as const;
+	type Entity = (typeof ENTITIES)[number];
+	const toFlags = (perms: string[] | undefined, entity: Entity) => ({
+		create: Boolean(perms?.includes(`${entity}:create`)),
+		read: Boolean(perms?.includes(`${entity}:read`)),
+		update: Boolean(perms?.includes(`${entity}:update`)),
+		delete: Boolean(perms?.includes(`${entity}:delete`)),
+	});
 
 	const handleAsideClick: MouseEventHandler<HTMLElement> = (e) => {
 		// Ignore clicks on interactive elements (links, buttons, form inputs)
@@ -133,6 +154,18 @@ export default function SidebarClient({ user }: { user: UserProfile | null }) {
 						</div>
 					</div>
 
+					{/* Current user summary (role) */}
+					{!isSidebarMinimized && session?.user?.role && (
+						<div className="px-3 py-1">
+							<div className="rounded-md border border-border bg-card p-2 text-muted-foreground text-xs">
+								<span className="mr-1 font-semibold text-foreground">
+									Role:
+								</span>
+								<span className="text-primary">{session.user.role}</span>
+							</div>
+						</div>
+					)}
+
 					{/* Permissions (read-only preview with invite requests) */}
 					{!isSidebarMinimized && (
 						<div className="px-3 py-2" data-sidebar-toggle-wrapper="true">
@@ -149,102 +182,38 @@ export default function SidebarClient({ user }: { user: UserProfile | null }) {
 							</button>
 							{showPerms && (
 								<div className="mt-2 space-y-3">
-									{[
-										{
-											label: "Leads",
-											flags: {
-												create: true,
-												read: true,
-												update: false,
-												delete: false,
-											} as CrudFlags,
-										},
-										{
-											label: "Campaigns",
-											flags: {
-												create: false,
-												read: true,
-												update: false,
-												delete: false,
-											} as CrudFlags,
-										},
-										{
-											label: "Reports",
-											flags: {
-												create: false,
-												read: true,
-												update: false,
-												delete: false,
-											} as CrudFlags,
-										},
-										{
-											label: "Team",
-											flags: {
-												create: false,
-												read: true,
-												update: false,
-												delete: false,
-											} as CrudFlags,
-										},
-										{
-											label: "Subscription",
-											flags: {
-												create: false,
-												read: true,
-												update: false,
-												delete: false,
-											} as CrudFlags,
-										},
-										{
-											label: "AI",
-											flags: {
-												create: false,
-												read: true,
-												update: false,
-												delete: false,
-											} as CrudFlags,
-										},
-										{
-											label: "Tasks",
-											flags: {
-												create: false,
-												read: true,
-												update: false,
-												delete: false,
-											} as CrudFlags,
-										},
-										{
-											label: "Company Profile",
-											flags: {
-												create: false,
-												read: true,
-												update: false,
-												delete: false,
-											} as CrudFlags,
-										},
-									].map((item) => (
-										<div
-											key={item.label}
-											className="flex items-center justify-between"
-										>
-											<span className="text-foreground text-sm">
-												{item.label}
-											</span>
-											<CrudToggle
-												value={item.flags}
-												readOnly
-												onInviteRequest={(key, desired) => {
-													// TODO: replace with modal/toast request flow
-													console.log("Invite request:", {
-														entity: item.label,
-														key,
-														desired,
-													});
-												}}
-												size="sm"
-											/>
-										</div>
-									))}
+									{ENTITIES.map((entity) => {
+										const flags = toFlags(
+											session?.user?.permissions as string[] | undefined,
+											entity,
+										) as CrudFlags;
+										const label =
+											entity === "ai"
+												? "AI"
+												: entity === "company"
+													? "Company Profile"
+													: entity.charAt(0).toUpperCase() + entity.slice(1);
+										return (
+											<div
+												key={entity}
+												className="flex items-center justify-between"
+											>
+												<span className="text-foreground text-sm">{label}</span>
+												<CrudToggle
+													value={flags}
+													readOnly
+													onInviteRequest={(key, desired) => {
+														console.log("Invite request:", {
+															entity: label,
+															key,
+															desired,
+														});
+													}}
+													size="sm"
+												/>
+											</div>
+										);
+									})}
 								</div>
 							)}
 						</div>

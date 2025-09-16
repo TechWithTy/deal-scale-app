@@ -1,104 +1,81 @@
 "use client";
 
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { COMMON_PERMISSIONS } from "./userHelpers";
 import type { EditableUser } from "./userHelpers";
+import { CrudToggle } from "@/external/crud-toggle/components/CrudToggle";
+import type { CrudFlags } from "@/external/crud-toggle/utils/types";
 
 export interface PermissionsEditorProps {
 	user: EditableUser;
 	onUpdateUser: (updater: (user: EditableUser) => EditableUser) => void;
 }
 
+const ENTITIES = [
+	"users",
+	"leads",
+	"campaigns",
+	"reports",
+	"team",
+	"subscription",
+	"ai",
+	"tasks",
+	"company",
+] as const;
+
+type Entity = (typeof ENTITIES)[number];
+
+const toFlags = (perms: string[], entity: Entity): CrudFlags => ({
+	create: perms.includes(`${entity}:create`),
+	read: perms.includes(`${entity}:read`),
+	update: perms.includes(`${entity}:update`),
+	delete: perms.includes(`${entity}:delete`),
+});
+
+const fromFlags = (flags: CrudFlags, entity: Entity): string[] => {
+	const next: string[] = [];
+	if (flags.create) next.push(`${entity}:create`);
+	if (flags.read) next.push(`${entity}:read`);
+	if (flags.update) next.push(`${entity}:update`);
+	if (flags.delete) next.push(`${entity}:delete`);
+	return next;
+};
+
 export function PermissionsEditor({
 	user,
 	onUpdateUser,
 }: PermissionsEditorProps) {
-	const handlePermissionInput = (value: string) => {
-		onUpdateUser((u) => ({ ...u, newPermission: value }));
-	};
-
-	const addPermission = () => {
+	const handleChange = (entity: Entity, flags: CrudFlags) => {
 		onUpdateUser((u) => {
-			const p = (u.newPermission ?? "").trim();
-			if (!p) return u;
-			if (u.permissions.includes(p)) return { ...u, newPermission: "" };
-			return { ...u, permissions: [...u.permissions, p], newPermission: "" };
+			// Remove existing entity permissions and add new from flags
+			const filtered = u.permissions.filter((p) => !p.startsWith(`${entity}:`));
+			const added = fromFlags(flags, entity);
+			return { ...u, permissions: [...filtered, ...added] };
 		});
-	};
-
-	const removePermission = (perm: string) => {
-		onUpdateUser((u) => ({
-			...u,
-			permissions: u.permissions.filter((x) => x !== perm),
-		}));
-	};
-
-	const addPermissionDirect = (perm: string) => {
-		onUpdateUser((u) =>
-			u.permissions.includes(perm)
-				? u
-				: { ...u, permissions: [...u.permissions, perm] },
-		);
 	};
 
 	return (
 		<div className="mt-4">
-			<div className="mb-2 font-medium text-sm">Edit Permissions</div>
-			<div className="flex gap-2">
-				<input
-					type="text"
-					placeholder="permission e.g. users:export"
-					value={user.newPermission ?? ""}
-					onChange={(e) => handlePermissionInput(e.target.value)}
-					className="flex-1 rounded-md border bg-background px-2 py-1 text-sm"
-				/>
-				<Button type="button" onClick={addPermission} size="sm">
-					Add
-				</Button>
+			<div className="mb-2 text-sm font-medium">Edit Permissions</div>
+			<div className="space-y-3 rounded-md border border-border bg-card p-3">
+				{ENTITIES.map((entity) => {
+					const flags = toFlags(user.permissions, entity);
+					const label =
+						entity === "ai"
+							? "AI"
+							: entity === "company"
+								? "Company Profile"
+								: entity.charAt(0).toUpperCase() + entity.slice(1);
+					return (
+						<div key={entity} className="flex items-center justify-between">
+							<span className="text-sm text-foreground">{label}</span>
+							<CrudToggle
+								value={flags}
+								onChange={(next) => handleChange(entity, next)}
+								size="sm"
+							/>
+						</div>
+					);
+				})}
 			</div>
-			<div className="mt-3 flex flex-wrap gap-2">
-				{COMMON_PERMISSIONS.map((perm) => (
-					<button
-						key={`chip-${perm}`}
-						type="button"
-						onClick={() => addPermissionDirect(perm)}
-						disabled={user.permissions.includes(perm)}
-						className={`rounded-full border px-2 py-0.5 text-xs ${
-							user.permissions.includes(perm)
-								? "cursor-not-allowed opacity-50"
-								: "hover:bg-muted/70"
-						}`}
-						aria-disabled={user.permissions.includes(perm)}
-						aria-label={`add ${perm}`}
-					>
-						{perm}
-					</button>
-				))}
-			</div>
-			<div className="mt-2 flex flex-wrap gap-2">
-				{user.permissions.map((perm) => (
-					<span
-						key={perm}
-						className="inline-flex items-center gap-1 rounded-full bg-muted/80 px-2 py-0.5 text-xs"
-					>
-						{perm}
-						<button
-							type="button"
-							aria-label={`remove ${perm}`}
-							className="ml-1 rounded bg-destructive/10 px-1 text-destructive hover:bg-destructive/20"
-							onClick={() => removePermission(perm)}
-						>
-							×
-						</button>
-					</span>
-				))}
-			</div>
-			{user.permissions.length === 0 && (
-				<div className="mt-2 text-muted-foreground text-xs">
-					No permissions assigned. Use chips above to quickly add defaults.
-				</div>
-			)}
 		</div>
 	);
 }
