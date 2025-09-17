@@ -22,7 +22,11 @@ import type {
 	GHLTextMessageCampaign,
 	TextMessageCampaignAnalytics,
 } from "@/types/goHighLevel/text";
-import type { AIKnowledgebase, UserProfile } from "@/types/userProfile";
+import type {
+	AIKnowledgebase,
+	TeamMember,
+	UserProfile,
+} from "@/types/userProfile";
 import type { UserProfileSubscription } from "./userSubscription";
 import type { CallCampaignAnalytics } from "@/types/vapiAi/api/calls/get";
 import type { LeadTypeGlobal } from "@/types/_dashboard/leads";
@@ -123,9 +127,9 @@ export const generateMockUserProfile = (): UserProfile => {
 	const safeCallCampaigns = (
 		Array.isArray(mockCallCampaignData) ? mockCallCampaignData : []
 	) as CallCampaign[];
-	const safeTeamMembers = (
-		Array.isArray(mockTeamMembers) ? mockTeamMembers : []
-	) as unknown[];
+	const safeTeamMembers: TeamMember[] = Array.isArray(mockTeamMembers)
+		? mockTeamMembers
+		: [];
 	const safeKanban = mockKanbanState || generateKanbanState(0);
 	const safeTracking = mockTrackingData || generateTaskTracking(0);
 	const analytics = [
@@ -250,7 +254,7 @@ export const generateMockUserProfile = (): UserProfile => {
 			},
 		},
 
-		teamMembers: safeTeamMembers as any,
+		teamMembers: safeTeamMembers,
 
 		activityLog: [
 			{

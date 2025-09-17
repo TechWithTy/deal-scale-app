@@ -41,6 +41,9 @@ const avatars = [
 let agents: Agent[] = [
 	{
 		isPublic: true,
+		isFree: false,
+		priceMultiplier: 1,
+		billingCycle: "monthly",
 		id: "1",
 		image: "/placeholder-agent.png",
 		name: "Q3 Top Performer",

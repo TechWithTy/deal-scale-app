@@ -107,6 +107,11 @@ export interface CallCampaign extends CampaignBase {
 	scriptID?: string;
 	funnelID?: string;
 	workflowID?: string;
+	/** Optional friendly script fields for table/UI chips */
+	scriptTitle?: string;
+	scriptName?: string;
+	script?: string;
+	scriptStatus?: "active" | "draft" | "archived";
 	/**
 	 * Dialing configuration
 	 * - totalDialAttempts: overall attempt cap per lead/number for the life of the campaign

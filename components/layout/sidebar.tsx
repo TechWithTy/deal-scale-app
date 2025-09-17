@@ -259,7 +259,7 @@ export default function SidebarClient({ user }: { user: UserProfile | null }) {
 
 				{/* ✅ Display user info, either from the server or client */}
 				{!isSidebarMinimized && (
-					<div className="p-4 text-sm text-foreground">
+					<div className="p-4 text-foreground text-sm">
 						Logged in as:{" "}
 						<strong>{session?.user?.email ?? user?.email ?? ""}</strong>
 					</div>

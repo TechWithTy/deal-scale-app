@@ -36,7 +36,10 @@ export function CallCampaignTable<TData, TValue>({
 			pagination: { pageIndex: 0, pageSize: pageSizeOptions?.[0] ?? 10 },
 		},
 		// let the shared hook manage filtering/sorting/pagination via nuqs
-		getRowId: (row, index) => (row as any).id ?? String(index),
+		getRowId: (row, index) => {
+			const candidate = row as unknown as { id?: string | number };
+			return candidate.id !== undefined ? String(candidate.id) : String(index);
+		},
 	});
 
 	return (

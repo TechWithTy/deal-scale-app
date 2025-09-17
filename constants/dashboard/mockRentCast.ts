@@ -23,7 +23,7 @@ import type {
 	RoofType,
 	ViewType,
 	PropertyType as RentCastPropertyType,
-} from "@/types/_dashboard/rentcast_off_market";
+} from "@/types/_dashboard/rentcast_types";
 
 // Helper function to generate random dates within a range
 const randomDate = (start: Date, end: Date): string => {

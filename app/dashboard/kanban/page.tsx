@@ -1,5 +1,6 @@
 "use client";
-import { KanbanBoard, NewTaskDialog } from "@/external/kanban";
+import { KanbanBoard } from "@/external/kanban/KanbanBoard";
+import NewTaskDialog from "@/external/new-task-dialog";
 import { useEffect } from "react";
 import { useTaskStore } from "@/external/kanban/utils/store";
 

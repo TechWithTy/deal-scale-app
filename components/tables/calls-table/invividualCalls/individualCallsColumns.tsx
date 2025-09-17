@@ -16,25 +16,16 @@ export const SingleCallResponseColumns: ColumnDef<GetCallResponse>[] = [
 		accessorKey: "status",
 		header: () => <div className="text-left">Status</div>,
 		cell: ({ row }) => row.original.status,
-		meta: {
-			align: "text-left",
-		},
 	},
 	{
 		accessorKey: "createdAt",
 		header: () => <div className="text-center">Created At</div>,
 		cell: ({ row }) => new Date(row.original.createdAt).toLocaleString(),
-		meta: {
-			align: "text-center",
-		},
 	},
 	{
 		accessorKey: "updatedAt",
 		header: () => <div className="text-center">Updated At</div>,
 		cell: ({ row }) => new Date(row.original.updatedAt).toLocaleString(),
-		meta: {
-			align: "text-center",
-		},
 	},
 	{
 		accessorKey: "startedAt",
@@ -43,9 +34,6 @@ export const SingleCallResponseColumns: ColumnDef<GetCallResponse>[] = [
 			row.original.startedAt
 				? new Date(row.original.startedAt).toLocaleString()
 				: "N/A",
-		meta: {
-			align: "text-center",
-		},
 	},
 	{
 		accessorKey: "endedAt",
@@ -54,25 +42,16 @@ export const SingleCallResponseColumns: ColumnDef<GetCallResponse>[] = [
 			row.original.endedAt
 				? new Date(row.original.endedAt).toLocaleString()
 				: "N/A",
-		meta: {
-			align: "text-center",
-		},
 	},
 	{
 		accessorKey: "costBreakdown.total",
 		header: () => <div className="text-center">Total Cost</div>,
 		cell: ({ row }) => `$${row.original.costBreakdown.total.toFixed(2)}`,
-		meta: {
-			align: "text-center",
-		},
 	},
 	{
 		accessorKey: "phoneCallProvider",
 		header: () => <div className="text-center">Provider</div>,
 		cell: ({ row }) => row.original.phoneCallProvider,
-		meta: {
-			align: "text-center",
-		},
 	},
 	{
 		// New column for "Download Transcript" with a download icon
@@ -103,9 +82,6 @@ export const SingleCallResponseColumns: ColumnDef<GetCallResponse>[] = [
 				"No Transcript"
 			);
 		},
-		meta: {
-			align: "text-center",
-		},
 	},
 	{
 		accessorKey: "recordingUrl",
@@ -134,9 +110,6 @@ export const SingleCallResponseColumns: ColumnDef<GetCallResponse>[] = [
 			) : (
 				"No Recording"
 			);
-		},
-		meta: {
-			align: "text-center",
 		},
 	},
 ];

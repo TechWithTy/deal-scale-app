@@ -10,7 +10,7 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { ControlPanel } from "@/components/reusables/ControlPanel";
 
 // Color statuses for the email campaign
-const statusColor: Record<EmailCampaign["status"], string> = {
+const statusColor: Partial<Record<EmailCampaign["status"], string>> = {
 	pending: "bg-orange-100 text-orange-600",
 	delivered: "bg-green-100 text-green-600",
 	delivering: "bg-blue-100 text-blue-600",
@@ -20,6 +20,7 @@ const statusColor: Record<EmailCampaign["status"], string> = {
 	failed: "bg-red-100 text-red-600",
 	read: "bg-indigo-100 text-indigo-600",
 	unread: "bg-purple-100 text-purple-600",
+	paused: "bg-gray-100 text-gray-600",
 };
 
 // Functional component for viewing an individual email via an external link

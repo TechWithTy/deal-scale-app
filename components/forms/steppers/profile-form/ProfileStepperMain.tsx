@@ -220,7 +220,7 @@ export const ProfileStepper: React.FC = () => {
 					<button
 						type="button"
 						onClick={() => setBypassValidation((v) => !v)}
-						className={`rounded px-3 py-1 text-sm border ${
+						className={`rounded border px-3 py-1 text-sm ${
 							bypassValidation
 								? "bg-accent text-accent-foreground"
 								: "bg-muted text-muted-foreground"

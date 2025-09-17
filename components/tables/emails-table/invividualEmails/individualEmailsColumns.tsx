@@ -21,53 +21,35 @@ export const emailColumns: ColumnDef<GetEmailByIdResponse>[] = [
 		accessorKey: "subject",
 		header: "Subject",
 		cell: ({ row }) => row.original.subject || "No Subject", // Default if no subject
-		meta: {
-			align: "text-left",
-		},
 	},
 	{
 		accessorKey: "from",
 		header: "Sender",
 		cell: ({ row }) => row.original.from,
-		meta: {
-			align: "text-left",
-		},
 	},
 	{
 		accessorKey: "to",
 		header: "Recipients",
 		cell: ({ row }) => row.original.to.join(", "), // Join the recipient list into a string
-		meta: {
-			align: "text-left",
-		},
 	},
 	{
 		accessorKey: "status",
-		header: "Status",
+		header: () => <div className="text-center">Status</div>,
 		cell: ({ row }) => row.original.status,
-		meta: {
-			align: "text-center",
-		},
 	},
 	{
 		accessorKey: "dateAdded",
-		header: "Date Added",
+		header: () => <div className="text-center">Date Added</div>,
 		cell: ({ row }) => new Date(row.original.dateAdded).toLocaleString(),
-		meta: {
-			align: "text-center",
-		},
 	},
 	{
 		accessorKey: "provider",
-		header: "Provider",
+		header: () => <div className="text-center">Provider</div>,
 		cell: ({ row }) => row.original.provider,
-		meta: {
-			align: "text-center",
-		},
 	},
 	{
 		accessorKey: "attachments",
-		header: "Attachments",
+		header: () => <div className="text-center">Attachments</div>,
 		cell: ({ row }) =>
 			row.original.attachments && row.original.attachments.length > 0
 				? row.original.attachments.map((attachment, index) => (
@@ -82,14 +64,11 @@ export const emailColumns: ColumnDef<GetEmailByIdResponse>[] = [
 						</a>
 					))
 				: "No Attachments",
-		meta: {
-			align: "text-center",
-		},
 	},
 	{
 		// Action for downloading the email body content
 		accessorKey: "body",
-		header: "Download Email",
+		header: () => <div className="text-center">Download Email</div>,
 		cell: ({ row }) => (
 			<button
 				type="button"
@@ -100,8 +79,5 @@ export const emailColumns: ColumnDef<GetEmailByIdResponse>[] = [
 				<span>Download</span>
 			</button>
 		),
-		meta: {
-			align: "text-center",
-		},
 	},
 ];

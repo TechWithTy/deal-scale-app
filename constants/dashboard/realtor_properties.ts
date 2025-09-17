@@ -76,7 +76,7 @@ const generateAgentPhones = (): AgentPhone[] => [
 	},
 ];
 
-const generatePropertyImages = (count: number = 5): PropertyImage[] => {
+const generatePropertyImages = (count = 5): PropertyImage[] => {
 	const images: PropertyImage[] = [];
 
 	// Generate primary image
@@ -126,10 +126,10 @@ const generateAddress = () => {
 		state,
 		zipCode,
 		fullStreetLine: unit ? `${street} ${unit}` : street,
-		latitude: parseFloat(
+		latitude: Number.parseFloat(
 			faker.location.latitude({ min: 32.7, max: 32.9 }).toFixed(6),
 		),
-		longitude: parseFloat(
+		longitude: Number.parseFloat(
 			faker.location.longitude({ min: -117.3, max: -117.0 }).toFixed(6),
 		),
 	};
@@ -235,7 +235,7 @@ const generateMockProperty = () => {
  * @param count Number of properties to generate (default: 10)
  * @returns Array of mock properties
  */
-const generateMockProperties = (count: number = 10): MockProperty[] => {
+const generateMockProperties = (count = 10): MockProperty[] => {
 	return Array.from({ length: count }, () => generateMockProperty());
 };
 

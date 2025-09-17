@@ -72,6 +72,12 @@ const PropertyPageClient = dynamic(
 	},
 );
 
+// Client wrapper that adapts MLS details to current Market View
+const MLSDetailsClient = dynamic(
+	() => import("@/components/property/page/MLSDetailsClient"),
+	{ ssr: false },
+);
+
 // Async function to fetch property data
 async function fetchProperty(id: string): Promise<Property | null> {
 	try {
@@ -285,7 +291,7 @@ export default async function PropertyPage({
 		{
 			value: "mls-details",
 			label: "MLS Details",
-			content: <MLSTableComponent mlsData={mlsData} />,
+			content: <MLSDetailsClient property={property} />,
 		},
 		{
 			value: "tax-information",

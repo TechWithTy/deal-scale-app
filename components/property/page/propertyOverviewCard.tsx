@@ -6,10 +6,13 @@ import {
 	isRealtorProperty,
 	isRentCastProperty,
 	type Property,
+	type RentCastProperty,
 } from "@/types/_dashboard/property";
 import { Pencil } from "lucide-react";
 import type React from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { usePropertyMarketView } from "@/lib/stores/property/marketView";
+import { mockRentCastMappedProperties } from "@/constants/dashboard/rentcast_properties";
 
 interface PropertyOverviewCardProps {
 	property: Property;
@@ -29,22 +32,60 @@ const PropertyOverviewCard: React.FC<PropertyOverviewCardProps> = ({
 
 	// --- Derived Data using useMemo for performance and clarity ---
 
+	const { marketView } = usePropertyMarketView();
+
+	// Premium sample for non-RentCast properties
+	const premiumSample = (mockRentCastMappedProperties || [])[0] as
+		| RentCastProperty
+		| undefined;
+
 	const owner = useMemo(() => {
-		if (isRealtorProperty(property)) {
+		// Show agent only for On (Default) Realtor view
+		if (marketView === "on_default" && isRealtorProperty(property)) {
 			return property.metadata.agent.name || "Unknown Agent";
 		}
-		// The RentCast type doesn't specify an owner name, so we use a placeholder.
-		// This could be enhanced if owner data is added to the type.
-		return "Unknown Owner";
-	}, [property]);
+		// Otherwise we don't have a reliable agent; show owner placeholder
+		return "-";
+	}, [property, marketView]);
 
 	const [ownerName, setOwnerName] = useState(owner);
 	const [tempOwnerName, setTempOwnerName] = useState(owner);
 
 	const valueInfo = useMemo(() => {
-		if (isRealtorProperty(property)) {
-			return { value: property.metadata.listPrice, label: "List Price" };
+		// On (Default): Realtor list price
+		if (marketView === "on_default" && isRealtorProperty(property)) {
+			return { value: property.metadata.listPrice ?? 0, label: "List Price" };
 		}
+		// On (Premium): RentCast listing price when available (fallback last sale)
+		if (marketView === "on_premium") {
+			const rc: RentCastProperty | undefined = isRentCastProperty(property)
+				? property
+				: premiumSample;
+			const listingPrice = rc?.listing?.price ?? null;
+			const lastSale = rc?.metadata.lastSalePrice ?? null;
+			return {
+				value: listingPrice ?? lastSale ?? 0,
+				label: listingPrice
+					? "Listing Price (Premium)"
+					: "Last Sale Price (Premium)",
+			};
+		}
+		// Off-Market: prefer last sale price
+		if (marketView === "off") {
+			if (isRentCastProperty(property)) {
+				return {
+					value: property.metadata.lastSalePrice ?? 0,
+					label: "Last Sale Price",
+				};
+			}
+			if (premiumSample) {
+				return {
+					value: premiumSample.metadata.lastSalePrice ?? 0,
+					label: "Last Sale Price",
+				};
+			}
+		}
+		// Fallback for assessed value (RentCast)
 		if (isRentCastProperty(property)) {
 			const assessments = property.metadata.taxAssessments;
 			if (assessments && Object.keys(assessments).length > 0) {
@@ -56,7 +97,7 @@ const PropertyOverviewCard: React.FC<PropertyOverviewCardProps> = ({
 			}
 		}
 		return { value: 0, label: "Est. Value" };
-	}, [property]);
+	}, [property, marketView, premiumSample]);
 
 	// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
 	const equityInfo = useMemo(() => {
@@ -83,17 +124,20 @@ const PropertyOverviewCard: React.FC<PropertyOverviewCardProps> = ({
 	}, [valueInfo]);
 
 	const lastSale = useMemo(() => {
-		if (isRealtorProperty(property)) {
-			return { date: property.metadata.lastSoldDate, price: null };
-		}
 		if (isRentCastProperty(property)) {
 			return {
 				date: property.metadata.lastSaleDate,
 				price: property.metadata.lastSalePrice,
 			};
 		}
+		if (premiumSample) {
+			return {
+				date: premiumSample.metadata.lastSaleDate,
+				price: premiumSample.metadata.lastSalePrice,
+			};
+		}
 		return { date: null, price: null };
-	}, [property]);
+	}, [property, premiumSample]);
 
 	const hoaFee = useMemo(() => {
 		if (isRealtorProperty(property)) return property.metadata.hoaFee;
@@ -124,9 +168,51 @@ const PropertyOverviewCard: React.FC<PropertyOverviewCardProps> = ({
 		return "Unknown";
 	}, [property]);
 
-	const mlsId = useMemo(() => {
-		return isRealtorProperty(property) ? property.metadata.mlsId : null;
-	}, [property]);
+	const mlsOverview = useMemo(() => {
+		// On default: Realtor status + mlsId
+		if (marketView === "on_default" && isRealtorProperty(property)) {
+			return {
+				status: property.metadata.status || "N/A",
+				mlsId: property.metadata.mlsId || null,
+				listingType: null,
+				mlsName: property.metadata.mls || null,
+				builder: null,
+			};
+		}
+		// On premium: RentCast listing snapshot
+		if (marketView === "on_premium") {
+			const rc: RentCastProperty | undefined = isRentCastProperty(property)
+				? property
+				: premiumSample;
+			return {
+				status: rc?.listing?.status || "Inactive",
+				mlsId: rc?.listing?.mlsNumber || null,
+				listingType: rc?.listing?.listingType || null,
+				mlsName: rc?.listing?.mlsName || null,
+				builder: rc?.listing?.builder?.name || null,
+			};
+		}
+		// Off-market: Inactive, try to show listing mls if present
+		if (marketView === "off") {
+			const rc: RentCastProperty | undefined = isRentCastProperty(property)
+				? property
+				: premiumSample;
+			return {
+				status: "Inactive",
+				mlsId: rc?.listing?.mlsNumber || null,
+				listingType: rc?.listing?.listingType || null,
+				mlsName: rc?.listing?.mlsName || null,
+				builder: null, // Builder not relevant for off-market
+			};
+		}
+		return {
+			status: "N/A",
+			mlsId: null as string | null,
+			listingType: null,
+			mlsName: null,
+			builder: null,
+		};
+	}, [property, marketView, premiumSample]);
 
 	// --- Handlers ---
 	const handleSave = useCallback(() => {
@@ -179,7 +265,9 @@ const PropertyOverviewCard: React.FC<PropertyOverviewCardProps> = ({
 					{/* Owner/Agent Name */}
 					<div className="text-center lg:text-left">
 						<h2 className="mb-2 font-semibold">
-							{isRealtorProperty(property) ? "Agent Name" : "Owner Name"}
+							{marketView === "on_default" && isRealtorProperty(property)
+								? "Agent Name"
+								: "Owner Name"}
 						</h2>
 						<div className="flex items-center justify-center space-x-2 lg:justify-start">
 							{isEditing ? (
@@ -274,15 +362,39 @@ const PropertyOverviewCard: React.FC<PropertyOverviewCardProps> = ({
 					<div className="text-center lg:text-left">
 						<h2 className="mb-2 font-semibold">MLS</h2>
 						<div>
-							{isRealtorProperty(property) ? property.metadata.status : "N/A"}{" "}
-							{mlsId && `(${mlsId})`}
+							{mlsOverview.status}{" "}
+							{mlsOverview.mlsId && `(${mlsOverview.mlsId})`}
 						</div>
 					</div>
 
+					{/* Listing Type */}
+					{mlsOverview.listingType && (
+						<div className="text-center lg:text-left">
+							<h2 className="mb-2 font-semibold">Listing Type</h2>
+							<div>{mlsOverview.listingType}</div>
+						</div>
+					)}
+
+					{/* MLS Name */}
+					{mlsOverview.mlsName && (
+						<div className="text-center lg:text-left">
+							<h2 className="mb-2 font-semibold">MLS Name</h2>
+							<div>{mlsOverview.mlsName}</div>
+						</div>
+					)}
+
+					{/* Builder */}
+					{mlsOverview.builder && (
+						<div className="text-center lg:text-left">
+							<h2 className="mb-2 font-semibold">Builder</h2>
+							<div>{mlsOverview.builder}</div>
+						</div>
+					)}
+
 					{/* Rent (Placeholder) */}
 					<div className="text-center lg:text-left">
-						<h2 className="mb-2 font-semgray-500old">
-							sm Rent <span className="text-gray-500 text-sm">(est.)</span>
+						<h2 className="mb-2 font-semibold">
+							Rent <span className="text-gray-500 text-sm">(est.)</span>
 						</h2>
 						<div>$2,750.00/mo</div>
 					</div>

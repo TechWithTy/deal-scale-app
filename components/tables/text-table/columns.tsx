@@ -8,20 +8,9 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { EyeIcon } from "lucide-react";
 import { ControlPanel } from "@/components/reusables/ControlPanel";
 
-// Color statuses for the text message campaign
-// Assuming TextMessageCampaign['status'] includes the following:
-type TextMessageCampaignStatus =
-	| "delivered"
-	| "delivering"
-	| "failed"
-	| "pending"
-	| "completed"
-	| "missed"
-	| "queued"
-	| "read"
-	| "unread";
-
-const statusColor: Record<TextMessageCampaignStatus, string> = {
+// Color statuses for the text message campaign.
+// Tie the map to the actual campaign status union on GHLTextMessageCampaign (inherits from CampaignBase)
+const statusColor: Partial<Record<GHLTextMessageCampaign["status"], string>> = {
 	delivered: "bg-green-200 text-green-700", // Delivered - lighter green for success
 	delivering: "bg-yellow-100 text-yellow-600", // Delivering - yellow for in-progress
 	failed: "bg-red-100 text-red-600", // Failed - red for errors
@@ -31,6 +20,7 @@ const statusColor: Record<TextMessageCampaignStatus, string> = {
 	queued: "bg-purple-100 text-purple-600", // Queued - purple for waiting in queue
 	read: "bg-blue-100 text-blue-600", // Read - blue to indicate action has been completed
 	unread: "bg-indigo-100 text-indigo-600", // Unread - indigo for something not seen yet
+	paused: "bg-gray-100 text-gray-600", // Paused - neutral
 };
 
 // Functional component for viewing an individual message

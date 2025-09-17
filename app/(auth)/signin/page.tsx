@@ -14,18 +14,17 @@ export default function AuthenticationPage() {
 
 			<div className="flex w-full max-w-xl flex-col items-center">
 				<AuthForm isSignUp={isSignUp} setIsSignUp={setIsSignUp} />
-				{!isSignUp && (
-					<>
-						<div className="relative mt-4 flex w-full items-center py-4">
-							<div className="border-border flex-grow border-t" />
-							<span className="text-muted-foreground flex-shrink px-4 text-sm">
-								Or use test accounts
-							</span>
-							<div className="border-border flex-grow border-t" />
-						</div>
-						<TestUsers />
-					</>
-				)}
+
+				<>
+					<div className="relative mt-4 flex w-full items-center py-4">
+						<div className="flex-grow border-border border-t" />
+						<span className="flex-shrink px-4 text-muted-foreground text-sm">
+							Or use test accounts
+						</span>
+						<div className="flex-grow border-border border-t" />
+					</div>
+					<TestUsers />
+				</>
 			</div>
 		</div>
 	);

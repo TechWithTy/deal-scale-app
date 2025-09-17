@@ -107,6 +107,8 @@ export interface KanbanTask {
 	leadId?: string | undefined;
 	leadListId?: string | undefined;
 	activityLog?: TaskActivity[]; // Log of task activities
+	// Optional media/link fields
+	youtubeUrl?: string; // YouTube URL to preview/link
 	// ! Optional MCP workflow for AI/automation (used to trigger Play button)
 	mcpWorkflow?: MCPWorkflow;
 }

@@ -2,6 +2,8 @@
 
 import type React from "react";
 import { useMemo, useState } from "react";
+import { usePropertyMarketView } from "@/lib/stores/property/marketView";
+import { mockRentCastMappedProperties } from "@/constants/dashboard/rentcast_properties";
 import { ImageModal } from "@/components/images/ImageModal";
 import type {
 	Property,
@@ -43,6 +45,9 @@ const PropertyCardDataComponent: React.FC<PropertyCardProps> = ({
 }) => {
 	const [lightboxOpen, setLightboxOpen] = useState(false);
 	const [activePhoto, setActivePhoto] = useState<string | null>(null);
+
+	// Selected Market View (off, on_default, on_premium)
+	const { marketView } = usePropertyMarketView();
 
 	// Centralized and type-safe logic for handling photos
 	const { primaryPhotoUrl, otherPhotoUrls } = useMemo<{
@@ -139,8 +144,69 @@ const PropertyCardDataComponent: React.FC<PropertyCardProps> = ({
 			: null;
 
 	const soldPrice = isRentCastProperty(property)
-		? property.metadata.lastSalePrice
+		? (property.metadata.lastSalePrice ?? null)
 		: null; // Not available on RealtorProperty type
+
+	// Derive Status and Price based on current Market View selection
+	const { statusForDisplay, priceForDisplay } = useMemo(() => {
+		// Defaults
+		let status: string | null = null;
+		let price: number | null = null;
+
+		// Helper: obtain a premium RentCast snapshot (from mock) when needed
+		const premiumSample = (mockRentCastMappedProperties || [])[0] as
+			| RentCastProperty
+			| undefined;
+
+		if (isRealtorProperty(property)) {
+			if (marketView === "on_premium" && premiumSample) {
+				// Premium On-Market uses RentCast listing snapshot
+				status = premiumSample.listing?.status ?? "Inactive";
+				price =
+					premiumSample.listing?.price ??
+					premiumSample.metadata.lastSalePrice ??
+					null;
+			} else if (marketView === "off" && premiumSample) {
+				// Premium Off-Market uses RentCast last sale snapshot
+				status = "Inactive";
+				price = premiumSample.metadata.lastSalePrice ?? null;
+			} else {
+				// Default/Free view uses Realtor data
+				status = property.metadata.status ?? null;
+				price = property.metadata.listPrice ?? null;
+			}
+		} else if (isRentCastProperty(property)) {
+			// Prefer listing snapshot if present
+			const listingStatus = property.listing?.status ?? null;
+			const listingPrice: number | null = property.listing?.price ?? null;
+			const lastSale: number | null = property.metadata.lastSalePrice ?? null;
+			if (marketView === "off") {
+				status = listingStatus ?? "Inactive";
+				price = listingPrice ?? lastSale;
+			} else {
+				status = listingStatus ?? "Inactive";
+				price = listingPrice ?? lastSale;
+			}
+		} else {
+			// Current property is not RentCast; use premium mock when requested
+			if (premiumSample) {
+				const p = premiumSample;
+				const premiumStatus = p.listing?.status ?? "Inactive";
+				const premiumPrice: number | null =
+					p.listing?.price ?? p.metadata.lastSalePrice ?? null;
+				if (marketView === "on_premium") {
+					status = premiumStatus;
+					price = premiumPrice;
+				} else if (marketView === "off") {
+					status = "Inactive";
+					price = p.metadata.lastSalePrice ?? premiumPrice;
+				}
+			}
+		}
+
+		return { statusForDisplay: status, priceForDisplay: price };
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [property, marketView, soldPrice]);
 
 	const description = isRealtorProperty(property)
 		? property.description
@@ -152,32 +218,38 @@ const PropertyCardDataComponent: React.FC<PropertyCardProps> = ({
 				Property Information
 			</h2>
 			<div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-				{/* Agent Information */}
+				{/* Agent Information (only meaningful for On Default view) */}
 				{isRealtorProperty(property) && (
 					<div className="mb-4 flex flex-col items-start">
 						<span className="font-semibold text-gray-500 dark:text-gray-400">
 							Agent
 						</span>
-						<span>{property.metadata.agent.name || "-"}</span>
-						{property.metadata.agent.email && (
-							<a
-								href={`mailto:${property.metadata.agent.email}`}
-								className="break-all text-blue-600 underline"
-								target="_blank"
-								rel="noopener noreferrer"
-							>
-								{property.metadata.agent.email}
-							</a>
-						)}
-						{property.metadata.agent.phones?.[0]?.number && (
-							<a
-								href={`tel:${property.metadata.agent.phones[0].number.replace(/[^\d+]/g, "")}`}
-								className="text-blue-600"
-							>
-								{property.metadata.agent.phones[0].number}
-								{property.metadata.agent.phones[0].type &&
-									` (${property.metadata.agent.phones[0].type})`}
-							</a>
+						{marketView === "on_default" ? (
+							<>
+								<span>{property.metadata.agent.name || "-"}</span>
+								{property.metadata.agent.email && (
+									<a
+										href={`mailto:${property.metadata.agent.email}`}
+										className="break-all text-blue-600 underline"
+										target="_blank"
+										rel="noopener noreferrer"
+									>
+										{property.metadata.agent.email}
+									</a>
+								)}
+								{property.metadata.agent.phones?.[0]?.number && (
+									<a
+										href={`tel:${property.metadata.agent.phones[0].number.replace(/[^\d+]/g, "")}`}
+										className="text-blue-600"
+									>
+										{property.metadata.agent.phones[0].number}
+										{property.metadata.agent.phones[0].type &&
+											` (${property.metadata.agent.phones[0].type})`}
+									</a>
+								)}
+							</>
+						) : (
+							<span>-</span>
 						)}
 					</div>
 				)}
@@ -292,19 +364,19 @@ const PropertyCardDataComponent: React.FC<PropertyCardProps> = ({
 				{renderPropertyDetails("Longitude", property.address.longitude)}
 
 				{/* Listing / Sale Details */}
+				{renderPropertyDetails("Market Status", statusForDisplay, true)}
+				{renderPropertyDetails(
+					"Market Price",
+					formatCurrency(priceForDisplay),
+					true,
+				)}
 				{renderPropertyDetails("HOA Fee", formatCurrency(hoaFee))}
 				{renderPropertyDetails("Last Sold Date", lastSoldDate)}
 				{renderPropertyDetails("Last Sold Price", formatCurrency(soldPrice))}
 
-				{/* Realtor-Specific Details */}
+				{/* Realtor-Specific Details (exclude status/price which we show above using Market View) */}
 				{isRealtorProperty(property) && (
 					<>
-						{renderPropertyDetails("Status", property.metadata.status, true)}
-						{renderPropertyDetails(
-							"List Price",
-							formatCurrency(property.metadata.listPrice),
-							true,
-						)}
 						{renderPropertyDetails(
 							"Price Per SqFt",
 							formatCurrency(property.metadata.pricePerSqft),

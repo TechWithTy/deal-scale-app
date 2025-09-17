@@ -5,7 +5,8 @@ import type { CallCampaign } from "@/types/_dashboard/campaign";
 import type { ColumnDef } from "@tanstack/react-table";
 import { PlaybackCell } from "@/external/audio-playback";
 
-const statusColor: Record<CallCampaign["status"], string> = {
+// Use Partial because we also have a safe fallback when a status is not mapped
+const statusColor: Partial<Record<CallCampaign["status"], string>> = {
 	delivering: "bg-green-100 text-green-600",
 	completed: "bg-blue-100 text-blue-600",
 	failed: "bg-red-100 text-red-600",
@@ -15,6 +16,7 @@ const statusColor: Record<CallCampaign["status"], string> = {
 	queued: "bg-gray-100 text-gray-600",
 	read: "bg-indigo-100 text-indigo-600",
 	unread: "bg-purple-100 text-purple-600",
+	paused: "bg-gray-100 text-gray-600",
 };
 
 // Adjust the column structure to match the table design
@@ -97,7 +99,7 @@ export const callCampaignColumns: ColumnDef<CallCampaign>[] = [
 		id: "countVoicemailAsAnswered",
 		header: "VM Counts as Answered",
 		cell: ({ row }) => {
-			const v = Boolean((row.original as any).countVoicemailAsAnswered);
+			const v = Boolean(row.original.countVoicemailAsAnswered ?? false);
 			return (
 				<Badge variant={v ? "default" : "outline"}>{v ? "Yes" : "No"}</Badge>
 			);

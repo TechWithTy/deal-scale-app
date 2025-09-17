@@ -162,15 +162,21 @@ export default function EditTaskDialog({
 
 					{assignType === "lead" && (
 						<LeadDropdown
-							selectedLeadId={selectedLeadId}
-							setSelectedLeadId={setSelectedLeadId}
+							selectedLeadId={selectedLeadId ? String(selectedLeadId) : null}
+							setSelectedLeadId={(id) =>
+								setSelectedLeadId(id ? Number.parseInt(id, 10) : null)
+							}
 						/>
 					)}
 
 					{assignType === "leadList" && (
 						<LeadListDropdown
-							selectedLeadListId={selectedLeadListId}
-							setSelectedLeadListId={setSelectedLeadListId}
+							selectedLeadListId={
+								selectedLeadListId ? String(selectedLeadListId) : null
+							}
+							setSelectedLeadListId={(id) =>
+								setSelectedLeadListId(id ? Number.parseInt(id, 10) : null)
+							}
 						/>
 					)}
 

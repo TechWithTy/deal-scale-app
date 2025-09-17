@@ -137,9 +137,17 @@ export interface RealtorProperty extends Omit<BaseProperty, "source"> {
 	description: string;
 }
 
+import type { RentCastListing } from "./rentcast_listing";
+
 export interface RentCastProperty extends Omit<BaseProperty, "source"> {
 	source: "rentcast";
 	metadata: PropertyRentCastMetadata;
+	/** Optional latest listing pulled from RentCast /listings endpoints */
+	listing?: RentCastListing;
+	/** Derived convenience flags from listing.status when present */
+	onMarket?: boolean;
+	lastKnownPrice?: number;
+	removedDate?: string | null;
 	// Additional RentCast specific fields
 }
 

@@ -10,7 +10,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useState, useEffect } from "react";
-import type { AdminUser } from "@/components/tables/super-users/types";
+import type {
+	AdminUser,
+	AdminUserRole,
+} from "@/components/tables/super-users/types";
 
 interface EditProfileModalProps {
 	open: boolean;
@@ -29,11 +32,9 @@ export default function EditProfileModal({
 	const [lastName, setLastName] = useState("");
 	const [email, setEmail] = useState("");
 	const [phone, setPhone] = useState("");
-	const [role, setRole] = useState<"user" | "admin" | "support" | "suspended">(
-		"user",
-	);
+	const [role, setRole] = useState<AdminUserRole>("user");
 	const [status, setStatus] = useState<
-		"active" | "pending" | "disabled" | "failed"
+		"active" | "pending" | "disabled" | "failed" | "suspended" | "banned"
 	>("active");
 	const [loading, setLoading] = useState(false);
 
@@ -121,16 +122,11 @@ export default function EditProfileModal({
 							id="role"
 							className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
 							value={role}
-							onChange={(e) =>
-								setRole(
-									e.target.value as "user" | "admin" | "support" | "suspended",
-								)
-							}
+							onChange={(e) => setRole(e.target.value as AdminUserRole)}
 						>
 							<option value="user">User</option>
 							<option value="admin">Admin</option>
 							<option value="support">Support</option>
-							<option value="suspended">Suspended</option>
 						</select>
 					</div>
 					<div className="space-y-2">
@@ -145,7 +141,9 @@ export default function EditProfileModal({
 										| "active"
 										| "pending"
 										| "disabled"
-										| "failed",
+										| "failed"
+										| "suspended"
+										| "banned",
 								)
 							}
 						>
@@ -153,6 +151,8 @@ export default function EditProfileModal({
 							<option value="pending">Pending</option>
 							<option value="disabled">Disabled</option>
 							<option value="failed">Failed</option>
+							<option value="suspended">Suspended</option>
+							<option value="banned">Banned</option>
 						</select>
 					</div>
 					<div className="flex justify-end gap-2 pt-4">

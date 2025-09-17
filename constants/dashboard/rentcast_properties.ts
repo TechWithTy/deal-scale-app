@@ -3,27 +3,7 @@ import { faker } from "@faker-js/faker";
 import { createRentCastProperty } from "@/types/_dashboard/property";
 import { generateMockRentCastProperty } from "./mockRentCast";
 import { NEXT_PUBLIC_APP_TESTING_MODE } from "../data";
-import type {
-	RentCastOffMarketProperty,
-	PropertyType as RentCastPropertyType,
-	PropertyRecord,
-	TaxAssessment,
-	PropertyTax,
-	PropertyFeatures,
-} from "@/types/_dashboard/rentcast_off_market";
-
-// Extended type for the full RentCast property with all its nested data
-type FullRentCastProperty = Omit<RentCastOffMarketProperty, "property"> & {
-	property: PropertyRecord & {
-		features?: PropertyFeatures & {
-			garage?: boolean;
-		};
-	};
-	architectureType?: string;
-	roofType?: string;
-	taxAssessments?: Record<string, TaxAssessment>;
-	propertyTaxes?: Record<string, PropertyTax>;
-};
+import type { PropertyType as RentCastPropertyType } from "@/types/_dashboard/rentcast_types";
 
 // Types for property-related data
 interface PropertyImage {
@@ -45,7 +25,7 @@ const PROPERTY_TYPES: RentCastPropertyType[] = [
 ];
 
 // Helper function to generate property images
-const generatePropertyImages = (count: number = 5): PropertyImage[] => {
+const generatePropertyImages = (count = 5): PropertyImage[] => {
 	const images: PropertyImage[] = [];
 
 	// Generate primary image
@@ -81,52 +61,47 @@ const generatePropertyImages = (count: number = 5): PropertyImage[] => {
  */
 const generateMockProperty = () => {
 	// Generate a mock RentCast property
-	const rentCastProperty =
-		generateMockRentCastProperty() as unknown as FullRentCastProperty;
-	const { property } = rentCastProperty;
-
-	// Extract property features with safe access
-	const features = property.features || {};
+	const rentCastProperty = generateMockRentCastProperty();
 
 	// Map the RentCast property to our application's property structure
 	return createRentCastProperty({
-		id: property.id,
+		id: rentCastProperty.id,
 		address: {
-			street: property.addressLine1,
-			city: property.city,
-			state: property.state,
-			zipCode: property.zipCode,
-			fullStreetLine: property.formattedAddress,
-			latitude: property.latitude,
-			longitude: property.longitude,
+			street: rentCastProperty.address.street,
+			city: rentCastProperty.address.city,
+			state: rentCastProperty.address.state,
+			zipCode: rentCastProperty.address.zipCode,
+			fullStreetLine: rentCastProperty.address.fullStreetLine,
+			latitude: rentCastProperty.address.latitude,
+			longitude: rentCastProperty.address.longitude,
 		},
 		details: {
-			beds: property.bedrooms,
-			fullBaths: Math.floor(property.bathrooms || 0),
-			halfBaths: (property.bathrooms || 0) % 1 > 0 ? 1 : 0,
-			sqft: property.squareFootage,
-			yearBuilt: property.yearBuilt,
-			lotSqft: property.lotSize,
-			propertyType: property.propertyType,
-			stories: 1, // Default value, can be enhanced
-			style: rentCastProperty.architectureType || "Unknown",
-			construction: "Unknown", // Not directly mapped
-			roof: rentCastProperty.roofType || "Unknown",
-			parking: features.garage ? "Garage" : "None",
+			beds: rentCastProperty.details.beds,
+			fullBaths: rentCastProperty.details.fullBaths,
+			halfBaths: rentCastProperty.details.halfBaths,
+			sqft: rentCastProperty.details.sqft,
+			yearBuilt: rentCastProperty.details.yearBuilt,
+			lotSqft: rentCastProperty.details.lotSqft,
+			propertyType: rentCastProperty.details.propertyType,
+			stories: rentCastProperty.details.stories,
+			style: rentCastProperty.details.style,
+			construction: rentCastProperty.details.construction,
+			roof: rentCastProperty.details.roof,
+			parking: rentCastProperty.details.parking,
 		},
 		metadata: {
 			source: "rentcast",
 			lastUpdated: new Date().toISOString(),
-			lastSaleDate: property.lastSaleDate,
-			lastSalePrice: property.lastSalePrice,
-			assessorID: property.assessorID,
-			legalDescription: property.legalDescription,
-			subdivision: property.subdivision,
-			zoning: property.zoning,
-			ownerOccupied: property.ownerOccupied,
-			hoa: property.hoa,
-			taxAssessments: rentCastProperty.taxAssessments,
-			propertyTaxes: rentCastProperty.propertyTaxes,
+			lastSaleDate: rentCastProperty.metadata.lastSaleDate,
+			lastSalePrice: rentCastProperty.metadata.lastSalePrice,
+			assessorID: rentCastProperty.metadata.assessorID,
+			legalDescription: rentCastProperty.metadata.legalDescription,
+			subdivision: rentCastProperty.metadata.subdivision,
+			zoning: rentCastProperty.metadata.zoning,
+			ownerOccupied: rentCastProperty.metadata.ownerOccupied,
+			hoa: rentCastProperty.metadata.hoa,
+			taxAssessments: rentCastProperty.metadata.taxAssessments,
+			propertyTaxes: rentCastProperty.metadata.propertyTaxes,
 		},
 	});
 };
@@ -136,7 +111,7 @@ const generateMockProperty = () => {
  * @param count Number of properties to generate (default: 10)
  * @returns Array of mock properties
  */
-const generateMockProperties = (count: number = 10) => {
+const generateMockProperties = (count = 10) => {
 	return Array.from({ length: count }, () => generateMockProperty());
 };
 

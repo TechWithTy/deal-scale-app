@@ -116,7 +116,7 @@ const CustomSwitch: React.FC<{
 				onChange={(e) => onCheckedChange(e.target.checked)}
 				className="peer sr-only"
 			/>
-			<div className="peer relative h-6 w-11 rounded-full bg-muted peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-ring peer-checked:bg-primary">
+			<div className="peer relative h-6 w-11 rounded-full bg-muted peer-checked:bg-primary peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-ring">
 				<div
 					className={`absolute top-0.5 left-0.5 h-5 w-5 transform rounded-full bg-background shadow-lg transition-transform duration-300 ease-in-out ${checked ? "translate-x-5" : ""}`}
 				/>
@@ -180,7 +180,7 @@ export const InviteEmployeeModal = () => {
 			{/* Modal Implementation */}
 			<Modal isOpen={isEmployeeModalOpen} onClose={closeEmployeeModal}>
 				<div className="rounded-lg">
-					<h2 className="text-xl font-semibold text-foreground">
+					<h2 className="font-semibold text-foreground text-xl">
 						Invite New Employee
 					</h2>
 
@@ -188,7 +188,7 @@ export const InviteEmployeeModal = () => {
 						<form onSubmit={handleSubmit(onSubmit)} className="mt-4 space-y-4">
 							{/* Input for Email */}
 							<div>
-								<FormLabel className="block text-sm font-medium">
+								<FormLabel className="block font-medium text-sm">
 									Email
 								</FormLabel>
 								<Controller
@@ -205,7 +205,7 @@ export const InviteEmployeeModal = () => {
 									)}
 								/>
 								{errors.email && (
-									<p className="text-sm text-destructive">
+									<p className="text-destructive text-sm">
 										{errors.email.message}
 									</p>
 								)}
@@ -213,7 +213,7 @@ export const InviteEmployeeModal = () => {
 
 							{/* Permissions */}
 							<div className="space-y-2">
-								<div className="text-sm font-semibold text-foreground">
+								<div className="font-semibold text-foreground text-sm">
 									Permissions
 								</div>
 								<div className="grid grid-cols-2 gap-4">
@@ -232,7 +232,7 @@ export const InviteEmployeeModal = () => {
 												<FormItem>
 													<div className="flex items-center justify-between">
 														{/* Align label and switch on the same line */}
-														<FormLabel className="text-sm text-foreground">
+														<FormLabel className="text-foreground text-sm">
 															{permissionKey
 																.replace(/can/, "Can ")
 																.replace(/([A-Z])/g, " $1")}

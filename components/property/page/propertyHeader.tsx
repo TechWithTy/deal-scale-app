@@ -30,12 +30,46 @@ import {
 import { Bookmark, BookmarkCheck } from "lucide-react";
 import { SaveToListModal } from "@/components/property/modals/SaveToListModal";
 import { useState, useEffect } from "react";
+import { usePropertyMarketView } from "@/lib/stores/property/marketView";
 
 interface PropertyHeaderProps {
 	property: Property;
 	initialDate?: Date; // Optional prop for initial date
 	initialStatus?: string; // Optional prop for initial status
 	onLeadActivity: () => void;
+}
+
+function MarketViewToggle() {
+	const { marketView, setMarketView } = usePropertyMarketView();
+	const base = "px-3 py-1 rounded-md text-sm border border-border";
+	const active = "bg-primary text-primary-foreground";
+	const inactive =
+		"bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground";
+	return (
+		<div className="flex items-center gap-1" aria-label="Market View">
+			<button
+				type="button"
+				className={`${base} ${marketView === "off" ? active : inactive}`}
+				onClick={() => setMarketView("off")}
+			>
+				Off-Market
+			</button>
+			<button
+				type="button"
+				className={`${base} ${marketView === "on_default" ? active : inactive}`}
+				onClick={() => setMarketView("on_default")}
+			>
+				On (Default)
+			</button>
+			<button
+				type="button"
+				className={`${base} ${marketView === "on_premium" ? active : inactive}`}
+				onClick={() => setMarketView("on_premium")}
+			>
+				On (Premium)
+			</button>
+		</div>
+	);
 }
 
 // * Utility function for formatting numbers with commas
@@ -130,6 +164,8 @@ export default function PropertyHeader({
 					</p>
 					{/* Third row: Controls */}
 					<div className="mt-2 flex flex-wrap items-center justify-center gap-2">
+						{/* Market View Toggle */}
+						<MarketViewToggle />
 						{/* Date Picker */}
 						<Popover>
 							<PopoverTrigger asChild>

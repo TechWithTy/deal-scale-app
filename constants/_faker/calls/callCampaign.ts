@@ -7,6 +7,7 @@ import type { CallType } from "@/types/vapiAi/api/calls/_enums";
 import {
 	type CallCampaign,
 	type CallInfo,
+	type TransferType,
 	campaignStatusesGB,
 } from "../../../types/_dashboard/campaign";
 import { NEXT_PUBLIC_APP_TESTING_MODE } from "../../data";
@@ -197,7 +198,7 @@ const generateCallCampaign = (): CallCampaign => {
 		minMinutesBetweenCalls: faker.number.int({ min: 5, max: 240 }),
 		countVoicemailAsAnswered: faker.datatype.boolean(),
 		postCallWebhookUrl: faker.helpers.maybe(
-			() => faker.internet.url({ appendSlash: false }) + "/webhooks/post-call",
+			() => `${faker.internet.url({ appendSlash: false })}/webhooks/post-call`,
 			{ probability: 0.7 },
 		),
 		transfer: faker.helpers.maybe(
@@ -219,7 +220,7 @@ const generateCallCampaign = (): CallCampaign => {
 		// Build a breakdown of transfers by category for richer UI
 		// and ensure the total transfers equals the sum of breakdown values
 		...(() => {
-			const cats = [
+			const cats: readonly TransferType[] = [
 				"chat_agent",
 				"voice_inbound",
 				"voice_outbound",
@@ -229,7 +230,7 @@ const generateCallCampaign = (): CallCampaign => {
 				"live_person",
 				"live_person_calendar",
 			] as const;
-			const breakdown: Record<string, number> = {};
+			const breakdown: Partial<Record<TransferType, number>> = {};
 			let total = 0;
 			for (const c of cats) {
 				const n = faker.number.int({ min: 0, max: 8 });
@@ -237,7 +238,7 @@ const generateCallCampaign = (): CallCampaign => {
 				total += n;
 			}
 			return {
-				transferBreakdown: breakdown as any,
+				transferBreakdown: breakdown,
 				transfers: total,
 			};
 		})(),

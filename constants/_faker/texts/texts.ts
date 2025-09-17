@@ -65,10 +65,7 @@ export const generateSampleTextMessage = (): TextMessage => {
 			group_display_name: null,
 			group_id: null,
 			is_outbound: base.direction === "outbound",
-			media_url:
-				base.attachments && base.attachments.length
-					? base.attachments[0]
-					: null,
+			media_url: base.attachments?.[0] ?? null,
 			message_handle: `msg_${faker.string.alphanumeric(12)}`,
 			message_type: "message",
 			number: faker.phone.number({ style: "international" }),
@@ -148,8 +145,7 @@ export function generateSendblueList(count = 1): SendblueListResponse {
 				group_display_name: null,
 				group_id: null,
 				is_outbound: tm.direction === "outbound",
-				media_url:
-					tm.attachments && tm.attachments.length ? tm.attachments[0] : null,
+				media_url: tm.attachments?.[0] ?? null,
 				message_handle: `msg_${faker.string.alphanumeric(12)}`,
 				message_type: "message",
 				number:

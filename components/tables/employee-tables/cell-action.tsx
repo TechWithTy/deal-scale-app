@@ -104,11 +104,7 @@ export const CellAction: React.FC<CellActionProps> = ({
 									asChild
 									onClick={(e) => e.stopPropagation()}
 								>
-									<div
-										className="flex items-center justify-between"
-										onClick={(e) => e.stopPropagation()}
-										onPointerDown={(e) => e.stopPropagation()}
-									>
+									<div className="flex items-center justify-between">
 										<span className="capitalize">
 											{key.replace(/can/g, "")}
 										</span>
