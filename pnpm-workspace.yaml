@@ -1,0 +1,5 @@
+packages:
+  # include the root package
+  - '.'
+  # include all packages in external
+  - 'external/*'
