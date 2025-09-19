@@ -32,6 +32,7 @@ const nextConfig = {
 			...(config.resolve.alias || {}),
 			"@root": path.resolve(__dirname),
 			"@": path.resolve(__dirname),
+			"@/external": path.resolve(__dirname, "external"),
 		};
 
 		// Force a stable hash function to avoid WasmHash crashes
