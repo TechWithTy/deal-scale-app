@@ -17,12 +17,37 @@ const nextConfig = {
 			"i.pravatar.cc",
 		],
 	},
-	webpack: (config) => {
-		config.resolve = config.resolve ?? {};
+	// Add webpack configuration to prevent hashing errors
+	webpack: (config, { isServer }) => {
+		// Explicitly disable Webpack's wasm hashing to avoid WasmHash crashes
+		process.env.WEBPACK_USE_WASM_HASH = "0";
+
+		// Ensure config objects exist
+		config.resolve = config.resolve || {};
+		config.output = config.output || {};
+		config.optimization = config.optimization || {};
+
+		// Set up aliases
 		config.resolve.alias = {
-			...(config.resolve.alias ?? {}),
+			...(config.resolve.alias || {}),
 			"@root": path.resolve(__dirname),
 		};
+
+		// Force a stable hash function to avoid WasmHash crashes
+		config.output.hashFunction = "xxhash64";
+
+		// Disable realContentHash which can trigger wasm hashing
+		config.optimization.realContentHash = false;
+
+		// Handle undefined values that might cause hashing issues
+		if (!config.output.hashDigest) {
+			config.output.hashDigest = "hex";
+		}
+
+		if (!config.output.hashDigestLength) {
+			config.output.hashDigestLength = 20;
+		}
+
 		return config;
 	},
 };

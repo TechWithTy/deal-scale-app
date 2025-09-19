@@ -11,7 +11,13 @@ const WorkflowSchema = z.object({
 });
 export const WorkflowsResponseSchema = z.array(WorkflowSchema);
 
+// API typically returns an object with a `workflows` array
+export const WorkflowsListResponseSchema = z.object({
+	workflows: z.array(WorkflowSchema),
+});
+
 export type Workflow = z.infer<typeof WorkflowSchema>;
+export type WorkflowsListResponse = z.infer<typeof WorkflowsListResponseSchema>;
 
 export const WorkflowQuerySchema = z.object({
 	locationId: z.string(),

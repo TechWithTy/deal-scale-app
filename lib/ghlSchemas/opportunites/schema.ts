@@ -45,8 +45,43 @@ export const SearchOpportunitiesQuerySchema = z.object({
 	status: z.enum(["open", "won", "lost", "abandoned", "all"]).optional(),
 	location_id: z.string().min(1), // Required field
 });
+
+// Minimal response schemas (passthrough to allow extra fields)
+export const OpportunitySchema = z
+	.object({
+		id: z.string(),
+		name: z.string(),
+		monetaryValue: z.number().optional(),
+		pipelineId: z.string().optional(),
+		pipelineStageId: z.string().optional(),
+		assignedTo: z.string().optional(),
+		status: z.string().optional(),
+		contactId: z.string().optional(),
+		locationId: z.string().optional(),
+	})
+	.passthrough();
+
+export const SearchOpportunitiesResponseSchema = z
+	.object({
+		opportunities: z.array(OpportunitySchema),
+	})
+	.passthrough();
+
+export const CreateOpportunityResponseSchema = z
+	.object({
+		opportunity: OpportunitySchema,
+	})
+	.passthrough();
+
 // Type based on the schema
 export type CreateOpportunity = z.infer<typeof CreateOpportunitySchema>;
 export type SearchOpportunitiesQuery = z.infer<
 	typeof SearchOpportunitiesQuerySchema
+>;
+export type Opportunity = z.infer<typeof OpportunitySchema>;
+export type SearchOpportunitiesResponse = z.infer<
+	typeof SearchOpportunitiesResponseSchema
+>;
+export type CreateOpportunityResponse = z.infer<
+	typeof CreateOpportunityResponseSchema
 >;

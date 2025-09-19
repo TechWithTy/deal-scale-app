@@ -7,7 +7,10 @@ module.exports = {
 		"./constants/**/*.{ts,tsx}",
 		"./app/**/*.{ts,tsx}",
 		"./src/**/*.{ts,tsx}",
+		// Only scan our source files in external packages, but exclude their node_modules
 		"./external/**/*.{ts,tsx}",
+		"!./external/**/node_modules/**",
+		"!./**/node_modules/**",
 	],
 	theme: {
 		container: {

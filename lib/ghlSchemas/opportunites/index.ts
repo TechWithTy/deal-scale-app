@@ -2,6 +2,8 @@ import {
 	type CreateOpportunity,
 	CreateOpportunitySchema,
 	type SearchOpportunitiesQuery,
+	SearchOpportunitiesResponseSchema,
+	CreateOpportunityResponseSchema,
 } from "./schema";
 
 const url = "https://services.leadconnectorhq.com/opportunities";
@@ -42,7 +44,9 @@ export const searchOpportunities = async (
 		);
 	}
 
-	const responseJson = await response.json();
+	const responseJson = SearchOpportunitiesResponseSchema.parse(
+		await response.json(),
+	);
 	return responseJson.opportunities;
 };
 
@@ -70,6 +74,8 @@ export const createOpportunity = async (
 		);
 	}
 
-	const responseJson = await response.json();
+	const responseJson = CreateOpportunityResponseSchema.parse(
+		await response.json(),
+	);
 	return responseJson.opportunity;
 };

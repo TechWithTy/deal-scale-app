@@ -1,3 +1,5 @@
+import { WorkflowsListResponseSchema } from "./schema";
+
 const baseUrl = "https://services.leadconnectorhq.com/workflows/";
 
 const headers = (accessToken: string) => ({
@@ -23,8 +25,8 @@ async function getWorkflows(accessToken: string, locationId: string) {
 			);
 		}
 
-		// Parse the JSON response
-		const data = await response.json();
+		// Parse and validate the JSON response
+		const data = WorkflowsListResponseSchema.parse(await response.json());
 
 		// Return the workflows data
 		return data.workflows;

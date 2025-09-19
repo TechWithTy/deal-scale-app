@@ -28,7 +28,7 @@ export default function NewTaskDialog() {
 				type="button"
 				variant="default"
 				size="sm"
-				className="bg-violet-600 text-white hover:bg-violet-700 shadow-sm hover:shadow focus-visible:ring-violet-500"
+				className="bg-violet-600 text-white shadow-sm hover:bg-violet-700 hover:shadow focus-visible:ring-violet-500"
 				onClick={() => setOpenAi(true)}
 				aria-label="Create AI task"
 			>
