@@ -13,7 +13,7 @@
 		"lint": "biome check lib types hooks components app api actions",
 		"format": "biome format --write --no-errors-on-unmatched lib types hooks components app api actions",
 		"prepare": "husky",
-		"postinstall": "sh -c 'if [ -f .gitmodules ]; then git submodule sync --recursive && git submodule update --init --recursive; fi'"
+		"postinstall": "sh -c 'if [ -f .gitmodules ]; then git submodule sync --recursive && git submodule update --init --recursive || echo \"Warning: Some submodules failed to clone, continuing with build\"; fi'"
 	},
 	"lint-staged": {
 		"**/*.{js,jsx,ts,tsx,json,css,md,html,scss,tsx,ts,js,jsx}": [

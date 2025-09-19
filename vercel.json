@@ -1,0 +1,19 @@
+{
+	"version": 2,
+	"builds": [
+		{
+			"src": "package.json",
+			"use": "@vercel/next",
+			"config": {
+				"includeFiles": [".gitmodules", ".git/**"]
+			}
+		}
+	],
+	"github": {
+		"silent": true
+	},
+	"buildCommand": "pnpm build",
+	"devCommand": "pnpm dev",
+	"installCommand": "pnpm install",
+	"framework": "nextjs"
+}
