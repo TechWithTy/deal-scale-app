@@ -6,6 +6,18 @@ import type { AuthHeaders } from "../../task";
 
 const API_BASE_URL = "https://services.leadconnectorhq.com"; // External API base URL
 
+// Type guard to validate external API response shape at runtime
+function isCampaignActionResponse(
+	data: unknown,
+): data is CampaignActionResponse {
+	return (
+		typeof data === "object" &&
+		data !== null &&
+		"succeeded" in data &&
+		typeof (data as { succeeded?: unknown }).succeeded === "boolean"
+	);
+}
+
 export default async function handler(
 	req: NextApiRequest,
 	res: NextApiResponse,
@@ -97,8 +109,14 @@ async function handleAddToCampaign(
 			.json({ error: `API request failed with status ${apiResponse.status}` });
 	}
 
-	const data: CampaignActionResponse = await apiResponse.json();
-	return res.status(201).json(data); // 201 Created
+	const parsed = await apiResponse.json();
+	if (!isCampaignActionResponse(parsed)) {
+		return res
+			.status(502)
+			.json({ error: "Invalid API response shape for CampaignActionResponse" });
+	}
+
+	return res.status(201).json(parsed); // 201 Created
 }
 
 // Handle DELETE request to remove a contact from a campaign
@@ -126,6 +144,12 @@ async function handleRemoveFromCampaign(
 			.json({ error: `API request failed with status ${apiResponse.status}` });
 	}
 
-	const data: CampaignActionResponse = await apiResponse.json();
-	return res.status(200).json(data); // 200 OK
+	const parsed = await apiResponse.json();
+	if (!isCampaignActionResponse(parsed)) {
+		return res
+			.status(502)
+			.json({ error: "Invalid API response shape for CampaignActionResponse" });
+	}
+
+	return res.status(200).json(parsed); // 200 OK
 }
