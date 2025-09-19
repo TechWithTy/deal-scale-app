@@ -192,6 +192,7 @@ export default function StorybookExternalPage() {
 		return null;
 	}, [videoUrl]);
 
+	// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
 	useEffect(() => {
 		registerStorybookDemoCommands({
 			registerDynamicCommands,

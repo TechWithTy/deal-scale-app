@@ -26,15 +26,19 @@ const nextConfig = {
 		config.resolve = config.resolve || {};
 		config.output = config.output || {};
 		config.optimization = config.optimization || {};
+		config.experiments = config.experiments || {};
+		// Disable persistent caching to avoid corrupted cache causing hashing crashes
+		config.cache = false;
 
 		// Set up aliases
 		config.resolve.alias = {
 			...(config.resolve.alias || {}),
 			"@root": path.resolve(__dirname),
+			"@ssf": path.resolve(__dirname, "external/score-streak-flow/src"),
 		};
 
-		// Force a stable hash function to avoid WasmHash crashes
-		config.output.hashFunction = "xxhash64";
+		// Force a Node built-in hash function (avoid wasm-based hashers on Windows)
+		config.output.hashFunction = "sha256";
 
 		// Disable realContentHash which can trigger wasm hashing
 		config.optimization.realContentHash = false;
@@ -47,6 +51,10 @@ const nextConfig = {
 		if (!config.output.hashDigestLength) {
 			config.output.hashDigestLength = 20;
 		}
+
+		// Explicitly turn off WebAssembly experiments to reduce wasm code paths
+		config.experiments.asyncWebAssembly = false;
+		config.experiments.syncWebAssembly = false;
 
 		return config;
 	},

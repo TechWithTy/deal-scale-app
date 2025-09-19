@@ -32,5 +32,9 @@
 		".next/types/**/*.ts",
 		"global.d.ts"
 	],
-	"exclude": ["node_modules"]
+	"exclude": [
+		"node_modules",
+		"external/score-streak-flow/src/App.tsx",
+		"external/score-streak-flow/src/pages/**"
+	]
 }
