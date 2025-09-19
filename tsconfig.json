@@ -23,7 +23,11 @@
 			"@/*": ["./*"],
 			"@root/*": ["./*"],
 			"@ssf/*": ["external/score-streak-flow/src/*"],
-			"@/external/*": ["external/*"]
+			"@/external/*": ["external/*"],
+			"@/external/shadcn-table/*": ["external/shadcn-table/*"],
+			"@/external/activity-graph/*": ["external/activity-graph/*"],
+			"@/external/kanban/*": ["external/kanban/*"],
+			"@/external/ai-summary-expandable/*": ["external/ai-summary-expandable/*"]
 		}
 	},
 	"include": [

@@ -33,6 +33,19 @@ const nextConfig = {
 			"@root": path.resolve(__dirname),
 			"@": path.resolve(__dirname),
 			"@/external": path.resolve(__dirname, "external"),
+			"@/external/shadcn-table": path.resolve(
+				__dirname,
+				"external/shadcn-table",
+			),
+			"@/external/activity-graph": path.resolve(
+				__dirname,
+				"external/activity-graph",
+			),
+			"@/external/kanban": path.resolve(__dirname, "external/kanban"),
+			"@/external/ai-summary-expandable": path.resolve(
+				__dirname,
+				"external/ai-summary-expandable",
+			),
 		};
 
 		// Force a stable hash function to avoid WasmHash crashes
