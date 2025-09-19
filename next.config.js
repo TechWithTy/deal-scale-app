@@ -31,6 +31,7 @@ const nextConfig = {
 		config.resolve.alias = {
 			...(config.resolve.alias || {}),
 			"@root": path.resolve(__dirname),
+			"@": path.resolve(__dirname),
 		};
 
 		// Force a stable hash function to avoid WasmHash crashes
