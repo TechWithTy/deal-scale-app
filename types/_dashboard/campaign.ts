@@ -1,5 +1,5 @@
 import type { EmailCampaign } from "../goHighLevel/email";
-import type { GHLTextMessageCampaign } from "../goHighLevel/text";
+import type { GHLTextMessageCampaign, TextMessage } from "../goHighLevel/text";
 import type { EndedReason } from "../vapiAi/api/calls/_enums";
 import { endedReasonValues } from "../vapiAi/api/calls/_enums";
 import type { GetCallResponse } from "../vapiAi/api/calls/get";
@@ -88,6 +88,17 @@ export interface CallInfo {
 }
 // Specific types for Call Campaigns
 export interface CallCampaign extends CampaignBase {
+	textStats?: {
+		sent?: number;
+		delivered?: number;
+		failed?: number;
+		total?: number;
+		lastMessageAt?: string;
+	};
+	lastMessageAt?: string;
+	messages?: TextMessage[];
+	threads?: Partial<CallCampaign>[];
+	children?: Partial<CallCampaign>[];
 	callInformation: CallInfo[];
 	callerNumber: string;
 	receiverNumber: string;

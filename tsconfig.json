@@ -21,6 +21,7 @@
 		"baseUrl": ".",
 		"paths": {
 			"@/*": ["./*"],
+			"@root/*": ["./*"],
 			"@ssf/*": ["external/score-streak-flow/src/*"]
 		}
 	},

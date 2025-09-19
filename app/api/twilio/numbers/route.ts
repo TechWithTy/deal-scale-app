@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { z } from "zod";
 
 // Fetch connected phone numbers from Twilio REST API without adding the twilio SDK dependency.
 // Docs: https://www.twilio.com/docs/usage/api#rest-api
@@ -29,10 +30,28 @@ export async function GET() {
 				{ status: 500 },
 			);
 		}
-		const data = await res.json();
-		const numbers: string[] = (data?.incoming_phone_numbers || [])
-			.map((n: any) => n?.phone_number)
-			.filter((n: unknown): n is string => typeof n === "string");
+
+		// Safely parse and narrow the Twilio response shape
+		const TwilioNumbersSchema = z
+			.object({
+				incoming_phone_numbers: z
+					.array(
+						z
+							.object({ phone_number: z.string().nullable().optional() })
+							.passthrough(),
+					)
+					.optional()
+					.default([]),
+			})
+			.passthrough();
+
+		const raw = await res.json().catch(() => ({}));
+		const parsed = TwilioNumbersSchema.safeParse(raw);
+		const numbers: string[] = (
+			parsed.success ? parsed.data.incoming_phone_numbers : []
+		)
+			.map((n) => n.phone_number)
+			.filter((n): n is string => typeof n === "string");
 
 		return NextResponse.json({ numbers });
 	} catch (err: unknown) {

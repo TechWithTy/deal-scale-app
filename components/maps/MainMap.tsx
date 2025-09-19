@@ -26,7 +26,7 @@ const DrawingControls: React.FC<DrawingControlsProps> = ({
 	drawingMode,
 	setDrawingMode,
 }) => (
-	<div className="absolute left-4 top-4 z-10 flex gap-2 rounded bg-card p-2 shadow">
+	<div className="absolute top-4 left-4 z-10 flex gap-2 rounded bg-card p-2 shadow">
 		<button
 			type="button"
 			className={`rounded px-3 py-1 text-xs ${drawingMode === google.maps.drawing.OverlayType.CIRCLE ? "bg-primary text-primary-foreground" : "bg-muted"}`}
@@ -43,7 +43,7 @@ const DrawingControls: React.FC<DrawingControlsProps> = ({
 		</button>
 		<button
 			type="button"
-			className="rounded bg-destructive px-3 py-1 text-xs text-destructive-foreground"
+			className="rounded bg-destructive px-3 py-1 text-destructive-foreground text-xs"
 			onClick={() => setDrawingMode(null)}
 		>
 			Cancel
@@ -114,14 +114,22 @@ const MainMap: React.FC<MainMapProps> = ({ apiKey, center, markers, zoom }) => {
 	const [selected, setSelected] = useState<google.maps.LatLngLiteral | null>(
 		null,
 	);
-	const [homeAnimation, setHomeAnimation] = useState<object | null>(null);
+	const [homeAnimation, setHomeAnimation] = useState<Record<
+		string,
+		unknown
+	> | null>(null);
 
 	useEffect(() => {
 		setProperties([]); // todo: Replace with real/mock data as needed
 		// Fetch Lottie animation for InfoWindow
 		fetch("/lottie/HousePing.json")
-			.then((response) => response.json())
-			.then((data: object) => setHomeAnimation(data));
+			.then((response) => response.json() as Promise<unknown>)
+			.then((data) => {
+				if (data && typeof data === "object") {
+					setHomeAnimation(data as Record<string, unknown>);
+				}
+			})
+			.catch(() => setHomeAnimation(null));
 	}, [setProperties]);
 
 	// Drawing event handlers
@@ -189,7 +197,7 @@ const MainMap: React.FC<MainMapProps> = ({ apiKey, center, markers, zoom }) => {
 					{boundaryApplied && (
 						<div
 							onMouseDown={handleRemoveBoundaries}
-							className="absolute right-4 top-4 z-10 flex cursor-pointer items-center rounded-lg bg-destructive px-4 py-2 text-destructive-foreground shadow-lg hover:bg-destructive/90"
+							className="absolute top-4 right-4 z-10 flex cursor-pointer items-center rounded-lg bg-destructive px-4 py-2 text-destructive-foreground shadow-lg hover:bg-destructive/90"
 						>
 							<span className="mr-2">Remove Boundaries</span>
 							<button type="button" onClick={handleRemoveBoundaries}>

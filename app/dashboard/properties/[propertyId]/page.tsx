@@ -62,6 +62,7 @@ import PropertyTabsList from "./utils/propertyTabs";
 import ContactCard from "@/components/property/page/contactCard";
 // Replaced legacy AI score card with external summary client wrapper
 import AISummaryCardClient from "@/components/property/page/AISummaryCardClient";
+import { z } from "zod";
 
 // Dynamically import the client component with no SSR
 const PropertyPageClient = dynamic(
@@ -97,7 +98,38 @@ async function fetchProperty(id: string): Promise<Property | null> {
 			return null;
 		}
 
-		const property: Property = await response.json();
+		// Validate and narrow the response before treating it as Property
+		const PropertySchema = z
+			.object({
+				address: z
+					.object({
+						street: z.string(),
+						city: z.string(),
+						state: z.string(),
+						zipCode: z.string(),
+						unit: z.string().optional().nullable(),
+						fullStreetLine: z.string().optional().nullable(),
+						latitude: z.number().optional().nullable(),
+						longitude: z.number().optional().nullable(),
+					})
+					.passthrough(),
+				details: z
+					.object({
+						sqft: z.number().optional().nullable(),
+						lotSqft: z.number().optional().nullable(),
+						style: z.string().optional().nullable(),
+					})
+					.passthrough(),
+			})
+			.passthrough();
+
+		const raw = await response.json().catch(() => ({}));
+		const parsed = PropertySchema.safeParse(raw);
+		if (!parsed.success) {
+			console.warn("Property response did not match expected shape");
+			return null;
+		}
+		const property: Property = parsed.data as unknown as Property;
 		return property;
 	} catch (error) {
 		console.error("Failed to fetch property data:", error);

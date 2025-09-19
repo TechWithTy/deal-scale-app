@@ -51,8 +51,13 @@ const PropertyMap: React.FC<PropertyMapProps> = ({
 
 	useEffect(() => {
 		fetch("/lottie/HousePing.json")
-			.then((response) => response.json())
-			.then((data: LottieAnimationData) => setHomeAnimation(data));
+			.then((response) => response.json() as Promise<unknown>)
+			.then((data) => {
+				if (data && typeof data === "object") {
+					setHomeAnimation(data as LottieAnimationData);
+				}
+			})
+			.catch(() => setHomeAnimation(null));
 	}, []);
 
 	const onLoad = useCallback(
@@ -200,11 +205,11 @@ const PropertyMap: React.FC<PropertyMapProps> = ({
 				</GoogleMap>
 
 				{/* Custom Controls */}
-				<div className="absolute bottom-5 left-1/2 z-10 flex -translate-x-1/2 gap-2">
+				<div className="-translate-x-1/2 absolute bottom-5 left-1/2 z-10 flex gap-2">
 					<button
 						type="button"
 						onClick={handleStreetViewToggle}
-						className="rounded-lg bg-card/80 px-3 py-2 text-sm font-semibold text-card-foreground shadow-md hover:bg-card/100 disabled:cursor-not-allowed disabled:opacity-50"
+						className="rounded-lg bg-card/80 px-3 py-2 font-semibold text-card-foreground text-sm shadow-md hover:bg-card/100 disabled:cursor-not-allowed disabled:opacity-50"
 						disabled={!panoId}
 					>
 						{isStreetView ? "Exit Street View" : "Street View"}
@@ -214,7 +219,7 @@ const PropertyMap: React.FC<PropertyMapProps> = ({
 						onClick={() =>
 							setMapTypeId(mapTypeId === "satellite" ? "roadmap" : "satellite")
 						}
-						className="rounded-lg bg-card/80 px-3 py-2 text-sm font-semibold text-card-foreground shadow-md hover:bg-card/100"
+						className="rounded-lg bg-card/80 px-3 py-2 font-semibold text-card-foreground text-sm shadow-md hover:bg-card/100"
 					>
 						{mapTypeId === "satellite" ? "Map View" : "Satellite View"}
 					</button>

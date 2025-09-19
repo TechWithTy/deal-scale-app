@@ -21,6 +21,7 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { z } from "zod";
 
 const MOCK_USERS: AdminUser[] = [
 	{
@@ -124,7 +125,23 @@ export default function SuperUsersTable() {
 				`/api/v1/admin/users/search?email=${encodeURIComponent(query.trim())}`,
 			);
 			if (!res.ok) throw new Error("Search failed");
-			const results: AdminUser[] = await res.json();
+			// Safely parse response JSON (typed as unknown) into AdminUser[]
+			const AdminUserSchema = z
+				.object({
+					id: z.string(),
+					email: z.string(),
+					firstName: z.string().optional(),
+					lastName: z.string().optional(),
+					phone: z.string().optional(),
+					role: z.string().optional(),
+					status: z.string().optional(),
+				})
+				.passthrough();
+			const raw = (await res.json().catch(() => ({}))) as unknown;
+			const parsed = z.array(AdminUserSchema).safeParse(raw);
+			const results: AdminUser[] = parsed.success
+				? (parsed.data as unknown as AdminUser[])
+				: [];
 			if (Array.isArray(results) && results.length > 0) {
 				// Open modal instead of navigating
 				setSelectedUserId(results[0].id);

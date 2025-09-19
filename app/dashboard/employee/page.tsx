@@ -24,6 +24,7 @@ import TeamCreditsBanner from "@/components/banners/TeamCreditsBanner";
 import InviteEmployeeModal from "@/components/tables/employee-tables/InviteEmployeeModal";
 import type { Table as TanstackTable } from "@tanstack/react-table";
 import EmployeeKanbanTable from "@/components/tables/employee-tables/EmployeeKanbanTable";
+import { z } from "zod";
 
 const breadcrumbItems = [
 	{ title: "Dashboard", link: "/dashboard" },
@@ -36,13 +37,17 @@ async function fetchEmployees(page: number, pageLimit: number) {
 	const res = await fetch(
 		`https://api.slingacademy.com/v1/sample-data/users?offset=${offset}&limit=${pageLimit}`,
 	);
-	const employeeRes = await res.json();
+	// Validate the API response to avoid accessing properties on unknown
+	const SlingUsersSchema = z.object({ total_users: z.number() }).passthrough();
+	const raw = await res.json().catch(() => ({}));
+	const parsed = SlingUsersSchema.safeParse(raw);
+	const totalUsers = parsed.success ? parsed.data.total_users : 0;
 	// mockUserProfile is now UserProfile | undefined; use directly
 	const profile: UserProfile | undefined = mockUserProfile;
 	return {
-		totalUsers: employeeRes.total_users,
+		totalUsers,
 		employees: profile?.teamMembers ?? [],
-		pageCount: Math.ceil(employeeRes.total_users / pageLimit),
+		pageCount: Math.ceil(totalUsers / pageLimit),
 	};
 }
 

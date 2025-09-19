@@ -32,7 +32,7 @@ export default function PropertyPageClient({
 			const response = await fetch(`/api/properties/${property.id}`);
 			if (response.ok) {
 				const data = await response.json();
-				setProperty(data);
+				setProperty(data as Property);
 			}
 		} catch (error) {
 			console.error("Failed to refresh property:", error);

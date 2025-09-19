@@ -1,8 +1,8 @@
+const path = require("node:path");
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-	eslint: {
-		ignoreDuringBuilds: true,
-	},
+	eslint: { ignoreDuringBuilds: true },
 	images: {
 		domains: [
 			"utfs.io",
@@ -16,6 +16,14 @@ const nextConfig = {
 			"placehold.co",
 			"i.pravatar.cc",
 		],
+	},
+	webpack: (config) => {
+		config.resolve = config.resolve ?? {};
+		config.resolve.alias = {
+			...(config.resolve.alias ?? {}),
+			"@root": path.resolve(__dirname),
+		};
+		return config;
 	},
 };
 
