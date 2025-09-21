@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { devtools, persist } from "zustand/middleware";
+import { devtools, persist, createJSONStorage } from "zustand/middleware";
 import { produce } from "immer";
 import { v4 as uuidv4 } from "uuid";
 
@@ -157,7 +157,7 @@ export const useUserProfileStore = create<UserProfileState>()(
 			}),
 			{
 				name: "user-profile-store",
-				getStorage: () => localStorage,
+				storage: createJSONStorage(() => localStorage),
 			},
 		),
 		{ name: "UserProfileStoreDevtools" },

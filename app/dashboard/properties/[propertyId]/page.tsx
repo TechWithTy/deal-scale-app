@@ -301,6 +301,7 @@ export default async function PropertyPage({
 			label: "Overview",
 			content: (
 				<>
+					<PropertyOverviewCard property={property} />
 					<ContactCard property={property} />
 					<WholesaleCalculator />
 					<AmortizationCalculator />
@@ -385,9 +386,6 @@ export default async function PropertyPage({
 					</div>
 				</div>
 				<AISummaryCardClient property={property} />
-				{/* Property Details */}
-				<PropertyOverviewCard property={property} />
-
 				<PropertyTabsList tabsData={tabsData} />
 			</div>
 		</PageContainer>

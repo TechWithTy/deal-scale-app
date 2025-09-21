@@ -43,9 +43,7 @@ const LocationInput: React.FC<LocationInputProps> = ({
 								const valueStr =
 									display || (loc ? `${loc.lat}, ${loc.lng}` : "");
 								// Update RHF and store with a friendly address string
-								onChange(
-									valueStr as unknown as React.ChangeEvent<HTMLInputElement>,
-								);
+								onChange(valueStr as unknown as string);
 								setFilters({ location: valueStr });
 								// Bubble up selection if parent wants to act (e.g., show popover on map)
 								try {
@@ -57,8 +55,7 @@ const LocationInput: React.FC<LocationInputProps> = ({
 								} catch {}
 							},
 							{
-								// Restrict to US addresses, cities, states, and zips
-								types: ["address", "(regions)"],
+								// Restrict to US while allowing broad prediction types (matches test page behavior)
 								fields: ["place_id", "geometry", "name", "formatted_address"],
 								componentRestrictions: { country: "us" },
 							},
@@ -85,6 +82,7 @@ const LocationInput: React.FC<LocationInputProps> = ({
 							}}
 							placeholder="Enter a city, address, or zip code"
 							type="text"
+							autoComplete="off"
 							error={errors.location?.message as string}
 							{...restField}
 							onChange={(e) => {
