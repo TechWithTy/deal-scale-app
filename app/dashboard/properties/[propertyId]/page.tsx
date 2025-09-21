@@ -63,6 +63,10 @@ import ContactCard from "@/components/property/page/contactCard";
 // Replaced legacy AI score card with external summary client wrapper
 import AISummaryCardClient from "@/components/property/page/AISummaryCardClient";
 import { z } from "zod";
+import {
+	createOnMarketRentCastMock,
+	createOffMarketRentCastMock,
+} from "@/lib/utils/rentcastFactory";
 
 // Dynamically import the client component with no SSR
 const PropertyPageClient = dynamic(
@@ -139,15 +143,27 @@ async function fetchProperty(id: string): Promise<Property | null> {
 
 export default async function PropertyPage({
 	params,
+	searchParams,
 }: {
 	params: { id: string };
+	searchParams?: { provider?: string; market?: string };
 }) {
 	const { id } = params;
+	const provider = searchParams?.provider || undefined; // 'realtor' | 'rentcast'
+	const market = searchParams?.market || undefined; // 'on' | 'off'
 
 	// Fetch property data
 	let property = await fetchProperty(id);
 
-	// If property data is not found, use the test property
+	// If provider=rentcast is explicitly requested, override fetched data
+	if (provider === "rentcast") {
+		property =
+			market === "off"
+				? createOffMarketRentCastMock()
+				: createOnMarketRentCastMock();
+	}
+
+	// If property data is not found, use the test realtor property
 	if (!property) {
 		// Transform test property to match Property type
 		property = createRealtorProperty({
@@ -232,6 +248,24 @@ export default async function PropertyPage({
 		mailing_address: `${property.address.street}, ${property.address.city}, ${property.address.state} ${property.address.zipCode}`,
 	};
 
+	// Compute a friendly tab label based on property type
+	const detailsTabLabel = (() => {
+		const type = (property.details.propertyType || "Property").toString();
+		// Normalize to Title Case words
+		const title = type
+			.split(" ")
+			.map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+			.join(" ");
+		// Special handling for common types
+		if (title.toLowerCase().includes("land")) return "Land Details";
+		if (title.toLowerCase().includes("condo")) return "Condo Details";
+		if (title.toLowerCase().includes("townhouse")) return "Townhouse Details";
+		if (title.toLowerCase().includes("multi")) return "Multi-Family Details";
+		if (title.toLowerCase().includes("apartment")) return "Apartment Details";
+		if (title.toLowerCase().includes("single")) return "Single Family Details";
+		return `${title} Details`;
+	})();
+
 	// Prepare property data with calculated fields
 	const enhancedProperty = {
 		...property,
@@ -310,7 +344,7 @@ export default async function PropertyPage({
 		},
 		{
 			value: "property-details",
-			label: "Property Details",
+			label: detailsTabLabel,
 			content: (
 				<>
 					<OwnershipInformationComponent
@@ -372,7 +406,16 @@ export default async function PropertyPage({
 		<PageContainer scrollable={true}>
 			<div className=" h-auto w-full space-y-4">
 				{/* Full-width container */}
-				<PropertyHeaderWrapper property={property} />
+				<PropertyHeaderWrapper
+					property={property}
+					initialMarketView={
+						provider === "rentcast"
+							? market === "off"
+								? "off"
+								: "on_premium"
+							: "on_default"
+					}
+				/>
 
 				{/* Google Maps */}
 				<div className="relative mb-8 w-full" style={{ height: "400px" }}>

@@ -8,6 +8,14 @@ interface MLSData {
 	sold_price: number;
 	status: string;
 	property_url: string;
+	days_on_market?: number;
+	county?: string;
+	date_label?: string;
+	listing_type?: string;
+	created_date?: string;
+	last_seen_date?: string;
+	state_fips?: string;
+	county_fips?: string;
 }
 
 interface MLSTableProps {
@@ -31,7 +39,9 @@ const MLSTableComponent: React.FC<MLSTableProps> = ({ mlsData }) => {
 						<td className="text-foreground">{mlsData.mls_id || "N/A"}</td>
 					</tr>
 					<tr className="border-border border-b">
-						<td className="font-semibold text-muted-foreground">List Date:</td>
+						<td className="font-semibold text-muted-foreground">
+							{mlsData.date_label || "List Date"}:
+						</td>
 						<td className="text-foreground">{mlsData.list_date || "N/A"}</td>
 					</tr>
 					<tr className="border-border border-b">
@@ -54,6 +64,49 @@ const MLSTableComponent: React.FC<MLSTableProps> = ({ mlsData }) => {
 						<td className="font-semibold text-muted-foreground">Status:</td>
 						<td className="text-foreground">{mlsData.status || "N/A"}</td>
 					</tr>
+					{mlsData.listing_type && (
+						<tr className="border-border border-b">
+							<td className="font-semibold text-muted-foreground">
+								Listing Type:
+							</td>
+							<td className="text-foreground">{mlsData.listing_type}</td>
+						</tr>
+					)}
+					{typeof mlsData.days_on_market === "number" && (
+						<tr className="border-border border-b">
+							<td className="font-semibold text-muted-foreground">
+								Days on Market:
+							</td>
+							<td className="text-foreground">{mlsData.days_on_market}</td>
+						</tr>
+					)}
+					{mlsData.county && (
+						<tr className="border-border border-b">
+							<td className="font-semibold text-muted-foreground">County:</td>
+							<td className="text-foreground">{mlsData.county}</td>
+						</tr>
+					)}
+					{(mlsData.created_date || mlsData.last_seen_date) && (
+						<tr className="border-border border-b">
+							<td className="font-semibold text-muted-foreground">
+								First/Last Seen:
+							</td>
+							<td className="text-foreground">
+								{mlsData.created_date ? mlsData.created_date : "-"} /{" "}
+								{mlsData.last_seen_date ? mlsData.last_seen_date : "-"}
+							</td>
+						</tr>
+					)}
+					{(mlsData.state_fips || mlsData.county_fips) && (
+						<tr className="border-border border-b">
+							<td className="font-semibold text-muted-foreground">
+								Geo Codes (State/County):
+							</td>
+							<td className="text-foreground">
+								{mlsData.state_fips ?? "-"} / {mlsData.county_fips ?? "-"}
+							</td>
+						</tr>
+					)}
 					<tr className="border-border border-b">
 						<td className="font-semibold text-muted-foreground">
 							Property URL:
