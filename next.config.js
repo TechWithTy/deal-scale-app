@@ -37,6 +37,7 @@ const nextConfig = {
 		// Set up aliases
 		config.resolve.alias = {
 			...(config.resolve.alias || {}),
+			"@": path.resolve(__dirname),
 			"@root": path.resolve(__dirname),
 			"@ssf": path.resolve(__dirname, "external/score-streak-flow/src"),
 			// Keep app-local aliases only; avoid forcing React singletons to prevent RSC context issues
