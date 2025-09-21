@@ -5,7 +5,7 @@ const nextConfig = {
 	// Demo mode: allow build despite type errors in external package
 	typescript: { ignoreBuildErrors: true },
 	// Ensure external package compiles with the app's dependency graph
-	transpilePackages: ["external/shadcn-table"],
+	transpilePackages: ["shadcn-table"],
 	eslint: { ignoreDuringBuilds: true },
 	images: {
 		domains: [
@@ -66,3 +66,4 @@ const nextConfig = {
 };
 
 module.exports = nextConfig;
+

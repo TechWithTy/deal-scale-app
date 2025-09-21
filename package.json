@@ -15,7 +15,7 @@
 		"prepare": "husky"
 	},
 	"lint-staged": {
-		"**/*.{js,jsx,ts,tsx,json,css,md,html,scss,tsx,ts,js,jsx}": [
+		"{app,components,lib,types,hooks,api,actions}/**/*.{js,jsx,ts,tsx,json,css,md,html,scss}": [
 			"biome format --write --no-errors-on-unmatched"
 		]
 	},

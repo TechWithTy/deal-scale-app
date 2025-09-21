@@ -1,0 +1,186 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Gaming Leaderboard Design System - All colors MUST be HSL */
+
+@layer base {
+	:root {
+		/* Light Theme - Gaming Style */
+		--background: 0 0% 100%;
+		--foreground: 240 10% 3.9%;
+
+		/* Card System */
+		--card: 0 0% 100%;
+		--card-foreground: 240 10% 3.9%;
+		--card-hover: 240 4.8% 95.9%;
+
+		/* Gaming Primary Colors - Purple Theme */
+		--primary: 262.1 83.3% 57.8%;
+		--primary-foreground: 210 20% 98%;
+		--primary-glow: 262.1 83.3% 67.8%;
+
+		/* Gaming Secondary */
+		--secondary: 220 14.3% 95.9%;
+		--secondary-foreground: 220.9 39.3% 11%;
+
+		/* Accent Colors for Ranks */
+		--accent: 220 14.3% 95.9%;
+		--accent-foreground: 220.9 39.3% 11%;
+
+		/* Success/Winner Colors */
+		--success: 142 76% 36%;
+		--success-foreground: 355.7 100% 97.3%;
+
+		/* Gaming Destructive */
+		--destructive: 0 84.2% 60.2%;
+		--destructive-foreground: 210 20% 98%;
+
+		/* Muted Elements */
+		--muted: 220 14.3% 95.9%;
+		--muted-foreground: 220 8.9% 46.1%;
+
+		/* Borders & Inputs */
+		--border: 220 13% 91%;
+		--input: 220 13% 91%;
+		--ring: 262.1 83.3% 57.8%;
+
+		/* Popover */
+		--popover: 0 0% 100%;
+		--popover-foreground: 240 10% 3.9%;
+
+		/* Gaming Gradients */
+		--gradient-primary: linear-gradient(
+			135deg,
+			hsl(var(--primary)),
+			hsl(var(--primary-glow))
+		);
+		--gradient-gold: linear-gradient(
+			135deg,
+			hsl(45 93.4% 47.1%),
+			hsl(45 100% 70%)
+		);
+		--gradient-silver: linear-gradient(135deg, hsl(0 0% 60%), hsl(0 0% 80%));
+		--gradient-bronze: linear-gradient(
+			135deg,
+			hsl(25 95% 53%),
+			hsl(25 100% 70%)
+		);
+		--gradient-bg: linear-gradient(
+			180deg,
+			hsl(var(--background)),
+			hsl(220 14.3% 95.9%)
+		);
+
+		/* Rank Colors - Light Theme */
+		--rank-1: 45 93.4% 47.1%;
+		--rank-2: 0 0% 60%;
+		--rank-3: 25 95% 53%;
+		--rank-top10: 262.1 83.3% 57.8%;
+		--rank-rising: 142 76% 36%;
+		--rank-falling: 0 84.2% 60.2%;
+
+		/* Gaming Shadows */
+		--shadow-glow: 0 0 40px hsl(var(--primary) / 0.2);
+		--shadow-rank: 0 8px 32px hsl(var(--primary) / 0.15);
+		--shadow-card: 0 4px 20px hsl(220 13% 91% / 0.3);
+
+		/* Animation Speeds */
+		--transition-fast: 0.15s;
+		--transition-smooth: 0.3s;
+		--transition-slow: 0.6s;
+
+		--radius: 0.75rem;
+	}
+
+	.dark {
+		/* Dark Theme - Gaming Style */
+		--background: 240 10% 3.9%;
+		--foreground: 0 0% 98%;
+
+		/* Card System */
+		--card: 240 10% 3.9%;
+		--card-foreground: 0 0% 98%;
+		--card-hover: 240 3.7% 15.9%;
+
+		/* Gaming Primary Colors */
+		--primary: 263.4 70% 50.4%;
+		--primary-foreground: 210 20% 98%;
+		--primary-glow: 263.4 70% 60.4%;
+
+		/* Gaming Secondary */
+		--secondary: 240 3.7% 15.9%;
+		--secondary-foreground: 0 0% 98%;
+
+		/* Accent Colors for Ranks */
+		--accent: 240 3.7% 15.9%;
+		--accent-foreground: 0 0% 98%;
+
+		/* Success/Winner Colors */
+		--success: 142 76% 36%;
+		--success-foreground: 355.7 100% 97.3%;
+
+		/* Gaming Destructive */
+		--destructive: 0 62.8% 30.6%;
+		--destructive-foreground: 0 0% 98%;
+
+		/* Muted Elements */
+		--muted: 240 3.7% 15.9%;
+		--muted-foreground: 240 5% 64.9%;
+
+		/* Borders & Inputs */
+		--border: 240 3.7% 15.9%;
+		--input: 240 3.7% 15.9%;
+		--ring: 263.4 70% 50.4%;
+
+		/* Popover */
+		--popover: 240 10% 3.9%;
+		--popover-foreground: 0 0% 98%;
+
+		/* Gaming Gradients - Dark Theme */
+		--gradient-primary: linear-gradient(
+			135deg,
+			hsl(var(--primary)),
+			hsl(var(--primary-glow))
+		);
+		--gradient-gold: linear-gradient(
+			135deg,
+			hsl(45 93.4% 47.1%),
+			hsl(45 100% 70%)
+		);
+		--gradient-silver: linear-gradient(135deg, hsl(0 0% 60%), hsl(0 0% 80%));
+		--gradient-bronze: linear-gradient(
+			135deg,
+			hsl(25 95% 53%),
+			hsl(25 100% 70%)
+		);
+		--gradient-bg: linear-gradient(
+			180deg,
+			hsl(var(--background)),
+			hsl(240 3.7% 15.9%)
+		);
+
+		/* Rank Colors - Dark Theme */
+		--rank-1: 45 93.4% 47.1%;
+		--rank-2: 0 0% 70%;
+		--rank-3: 25 95% 53%;
+		--rank-top10: 263.4 70% 50.4%;
+		--rank-rising: 142 76% 36%;
+		--rank-falling: 0 62.8% 30.6%;
+
+		/* Gaming Shadows - Dark Theme */
+		--shadow-glow: 0 0 40px hsl(var(--primary) / 0.4);
+		--shadow-rank: 0 8px 32px hsl(var(--primary) / 0.3);
+		--shadow-card: 0 4px 20px hsl(240 10% 3.9% / 0.8);
+	}
+}
+
+@layer base {
+	* {
+		@apply border-border;
+	}
+
+	body {
+		@apply bg-background text-foreground;
+	}
+}
