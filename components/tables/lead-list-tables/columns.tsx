@@ -1,7 +1,7 @@
 "use client";
 
 import { Checkbox } from "@/components/ui/checkbox";
-import { DataTableColumnHeader } from "@/external/shadcn-table/src/components/data-table/data-table-column-header";
+import { DataTableColumnHeader } from "external/shadcn-table/src/components/data-table/data-table-column-header";
 import { exportLeadListsToExcel } from "@/lib/_utils/files/loopDownload/leadExports";
 import type { LeadList } from "@/types/_dashboard/leadList";
 import type { ColumnDef } from "@tanstack/react-table";

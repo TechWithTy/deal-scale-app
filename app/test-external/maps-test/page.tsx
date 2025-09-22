@@ -1,6 +1,6 @@
 "use client";
 import { LoadScript } from "@react-google-maps/api";
-import { MapsTestComposite } from "@/external/google-maps-two/components";
+import { MapsTestComposite } from "external/google-maps-two/components";
 
 export default function MapsTestPage() {
 	const apiKey =

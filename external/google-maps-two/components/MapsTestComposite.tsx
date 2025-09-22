@@ -9,19 +9,19 @@ import {
 	DialogTrigger,
 } from "@/components/ui/dialog";
 import { StreetViewPreview } from "./StreetViewPreview";
-import { NestedMapDialog } from "@/external/google-maps-two/components/Controls/NestedMapDialog";
+import { NestedMapDialog } from "external/google-maps-two/components/Controls/NestedMapDialog";
 import { MapWithDrawing } from "./MapWithDrawing";
-import { SearchControls } from "@/external/google-maps-two/components/composit/components/SearchControls";
-import { ResultsList } from "@/external/google-maps-two/components/composit/components/ResultsList";
+import { SearchControls } from "external/google-maps-two/components/composit/components/SearchControls";
+import { ResultsList } from "external/google-maps-two/components/composit/components/ResultsList";
 import {
 	initAutocomplete,
 	type ACSeed,
-} from "@/external/google-maps-two/components/composit/utils/autocomplete";
-import { LocationInputs } from "@/external/google-maps-two/components/composit/components/LocationInputs";
+} from "external/google-maps-two/components/composit/utils/autocomplete";
+import { LocationInputs } from "external/google-maps-two/components/composit/components/LocationInputs";
 import {
 	PlaceSearchPanel,
 	type UIPanelPlace,
-} from "@/external/google-maps-two/components/composit/components/PlaceSearchPanel";
+} from "external/google-maps-two/components/composit/components/PlaceSearchPanel";
 import { SaveToListModal } from "@/components/property/modals/SaveToListModal";
 import {
 	createRentCastProperty,

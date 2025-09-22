@@ -1,13 +1,13 @@
 "use client";
 import React, { useCallback, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { DrawerFlow } from "../../../external/drawer-flow";
+import { DrawerFlow } from "external/drawer-flow";
 import type {
 	DrawerItem,
 	ListService,
 	LoadMoreArgs,
 	LoadMoreResult,
-} from "../../../external/drawer-flow";
+} from "external/drawer-flow";
 
 // Simple in-memory cache scoped to this page for demo/testing
 const demoCache = {

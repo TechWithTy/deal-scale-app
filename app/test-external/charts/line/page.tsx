@@ -3,8 +3,8 @@
 import {
 	ActivityLineGraphContainer,
 	TeamActivityFeed,
-} from "../../../../external/activity-graph/components";
-import type { ChartConfigLocal } from "../../../../external/activity-graph/types";
+} from "external/activity-graph/components";
+import type { ChartConfigLocal } from "external/activity-graph/types";
 
 function monthsAgoIso(n: number): string {
 	const d = new Date();

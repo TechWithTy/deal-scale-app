@@ -1,8 +1,8 @@
 "use client";
 
 import type { EditableUser } from "./userHelpers";
-import { CrudToggle } from "@/external/crud-toggle/components/CrudToggle";
-import type { CrudFlags } from "@/external/crud-toggle/utils/types";
+import { CrudToggle } from "external/crud-toggle/components/CrudToggle";
+import type { CrudFlags } from "external/crud-toggle/utils/types";
 
 export interface PermissionsEditorProps {
 	user: EditableUser;

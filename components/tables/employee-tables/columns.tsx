@@ -4,7 +4,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import type { TeamMember } from "@/types/userProfile";
 import type { ColumnDef } from "@tanstack/react-table";
 import { CellAction } from "./cell-action"; // Assuming you have a cell-action component
-import { DataTableColumnHeader } from "@/external/shadcn-table/src/components/data-table/data-table-column-header";
+import { DataTableColumnHeader } from "external/shadcn-table/src/components/data-table/data-table-column-header";
 
 // Columns definition for TeamMember
 export const columns: ColumnDef<TeamMember>[] = [

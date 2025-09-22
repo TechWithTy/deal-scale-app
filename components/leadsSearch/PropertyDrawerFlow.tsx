@@ -1,13 +1,13 @@
 "use client";
-import React, { useEffect, useMemo, useRef } from "react";
-import { DrawerFlow } from "@/external/drawer-flow";
+import { useEffect, useMemo, useRef } from "react";
+import { DrawerFlow } from "external/drawer-flow";
 import type {
 	DrawerItem,
 	ListService,
 	LoadMoreArgs,
 	LoadMoreResult,
 	DrawerFlowProps,
-} from "@/external/drawer-flow";
+} from "external/drawer-flow";
 import type { Property } from "@/types/_dashboard/property";
 import PropertyCard from "./propertyCard";
 
@@ -15,9 +15,7 @@ export interface PropertyDrawerFlowProps {
 	isOpen?: boolean;
 	onOpenChange?: (open: boolean) => void;
 	properties?: Property[]; // optional initial page
-	loadMore: (
-		args: LoadMoreArgs,
-	) => Promise<{
+	loadMore: (args: LoadMoreArgs) => Promise<{
 		properties: Property[];
 		hasMore: boolean;
 		cursor?: string | null;
@@ -31,13 +29,13 @@ export interface PropertyDrawerFlowProps {
 
 function mapPropertyToDrawerItem(p: Property): DrawerItem {
 	// Basic mapping; extend as needed
-	const addr = (p as any).address ?? {};
-	const details = (p as any).details ?? {};
-	const itemId = (p as any).id ?? `${addr.street ?? "id-missing"}`;
+	const addr = p.address;
+	const details = p.details;
+	const itemId = p.id;
 	return {
 		id: itemId,
 		display: {
-			title: `${addr.street ?? ""}`.trim(),
+			title: `${addr.street}`.trim(),
 			subtitle: [addr.city, addr.state, addr.zipCode]
 				.filter(Boolean)
 				.join(", "),
@@ -45,13 +43,13 @@ function mapPropertyToDrawerItem(p: Property): DrawerItem {
 		},
 		details: {
 			beds: details.beds,
-			baths: details.fullBaths ?? details.baths,
-			sqft: details.sqft,
+			baths: details.fullBaths,
+			sqft: details.sqft ?? undefined,
 		},
 	};
 }
 
-export const PropertyDrawerFlow: React.FC<PropertyDrawerFlowProps> = ({
+export const PropertyDrawerFlow = ({
 	isOpen,
 	onOpenChange,
 	properties,
@@ -61,7 +59,7 @@ export const PropertyDrawerFlow: React.FC<PropertyDrawerFlowProps> = ({
 	pageSizeOptions = [12, 24, 48, 96],
 	listSizeCalc,
 	onSelectionChange,
-}) => {
+}: PropertyDrawerFlowProps) => {
 	// Keep a map from DrawerItem.id -> Property for renderItem to resolve PropertyCard props
 	const propertyById = useRef<Map<string, Property>>(new Map());
 
@@ -70,7 +68,7 @@ export const PropertyDrawerFlow: React.FC<PropertyDrawerFlowProps> = ({
 		if (properties?.length) {
 			const m = new Map(propertyById.current);
 			for (const p of properties) {
-				const id = (p as any).id;
+				const id = p.id;
 				if (id) m.set(id, p);
 			}
 			propertyById.current = m;
@@ -142,14 +140,9 @@ export const PropertyDrawerFlow: React.FC<PropertyDrawerFlowProps> = ({
 					);
 				}
 				return (
-					<div
-						onClick={toggle}
-						role="button"
-						tabIndex={0}
-						onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && toggle()}
-					>
+					<button type="button" onClick={toggle} className="contents">
 						<PropertyCard property={p} selected={selected} onSelect={toggle} />
-					</div>
+					</button>
 				);
 			}}
 		/>

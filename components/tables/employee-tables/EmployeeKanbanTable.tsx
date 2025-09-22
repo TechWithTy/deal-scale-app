@@ -1,8 +1,8 @@
 "use client";
 import type { ColumnDef, Table as TanstackTable } from "@tanstack/react-table";
 import type { ReactNode } from "react";
-import { DataTable } from "@/external/shadcn-table/src/components/data-table/data-table";
-import { useDataTable } from "@/external/shadcn-table/src/hooks/use-data-table";
+import { DataTable } from "external/shadcn-table/src/components/data-table/data-table";
+import { useDataTable } from "external/shadcn-table/src/hooks/use-data-table";
 import type { TeamMember } from "@/types/userProfile";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";

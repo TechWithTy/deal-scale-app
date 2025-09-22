@@ -22,7 +22,8 @@
 		"paths": {
 			"@/*": ["./*"],
 			"@root/*": ["./*"],
-			"@ssf/*": ["external/score-streak-flow/src/*"]
+			"@ssf/*": ["external/score-streak-flow/src/*"],
+			"external/*": ["external/*"]
 		}
 	},
 	"include": [

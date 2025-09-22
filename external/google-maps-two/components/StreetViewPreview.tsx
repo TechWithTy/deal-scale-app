@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import {
 	initAutocomplete,
 	type ACSeed,
-} from "@/external/google-maps-two/components/composit/utils/autocomplete";
+} from "external/google-maps-two/components/composit/utils/autocomplete";
 
 /**
  * StreetViewPreview

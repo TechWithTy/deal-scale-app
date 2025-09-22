@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { ControlPanel } from "@/components/reusables/ControlPanel";
 import type { CallCampaign } from "@/types/_dashboard/campaign";
 import type { ColumnDef } from "@tanstack/react-table";
-import { PlaybackCell } from "@/external/audio-playback";
+import { PlaybackCell } from "external/audio-playback";
 
 // Use Partial because we also have a safe fallback when a status is not mapped
 const statusColor: Partial<Record<CallCampaign["status"], string>> = {

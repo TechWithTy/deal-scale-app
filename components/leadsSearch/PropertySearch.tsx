@@ -28,7 +28,7 @@ import { SaveToListModal } from "@/components/property/modals/SaveToListModal";
 import type { Property as DashboardProperty } from "@/types/_dashboard/property";
 import MapArea from "./search/MapArea";
 import { buildPropertyFromPlace, openStreetView } from "./search/helpers";
-import type { ACSeed } from "@/external/google-maps-two/components/composit/utils/autocomplete";
+import type { ACSeed } from "external/google-maps-two/components/composit/utils/autocomplete";
 
 interface PropertySearchProps {
 	initialProperties?: number;

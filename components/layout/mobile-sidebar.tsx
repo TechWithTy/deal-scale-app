@@ -5,9 +5,9 @@ import { navItems } from "@/constants/data";
 import { MenuIcon } from "lucide-react";
 import { useState } from "react";
 import { useSession } from "next-auth/react";
-import { CrudToggle } from "@/external/crud-toggle/components/CrudToggle";
-import type { CrudFlags } from "@/external/crud-toggle/utils/types";
-import { CreditsSummary } from "@/external/credit-view-purchase/components/CreditsSummary";
+import { CrudToggle } from "external/crud-toggle/components/CrudToggle";
+import type { CrudFlags } from "external/crud-toggle/utils/types";
+import { CreditsSummary } from "external/credit-view-purchase/components/CreditsSummary";
 
 // import { Playlist } from "../data/playlists";
 

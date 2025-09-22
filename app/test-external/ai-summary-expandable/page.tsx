@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import {
 	ExpandableAISummary,
 	ExpandableAISummarySkeleton,
-} from "@/external/ai-summary-expandable/components";
+} from "external/ai-summary-expandable/components";
 
 export default function AISummaryExpandableTestPage() {
 	// Simulate loading to showcase skeleton

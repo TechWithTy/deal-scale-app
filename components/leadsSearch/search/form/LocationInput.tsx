@@ -7,7 +7,7 @@ import { useEffect, useRef } from "react";
 import {
 	initAutocomplete,
 	type ACSeed,
-} from "@/external/google-maps-two/components/composit/utils/autocomplete";
+} from "external/google-maps-two/components/composit/utils/autocomplete";
 
 interface LocationInputProps {
 	control: Control<MapFormSchemaType>;

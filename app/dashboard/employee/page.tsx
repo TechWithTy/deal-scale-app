@@ -4,7 +4,7 @@ import { campaignSteps } from "@/_tests/tours/campaignTour";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import PageContainer from "@/components/layout/page-container";
 import WalkThroughModal from "../../../components/leadsSearch/search/WalkthroughModal";
-import { DataTableViewOptions } from "@/external/shadcn-table/src/components/data-table/data-table-view-options";
+import { DataTableViewOptions } from "external/shadcn-table/src/components/data-table/data-table-view-options";
 import { columns } from "@/components/tables/employee-tables/columns";
 import { buttonVariants } from "@/components/ui/button";
 import { Button } from "@/components/ui/button";
@@ -19,7 +19,7 @@ import { useEffect, useState } from "react"; // Import useState and useEffect fo
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import TeamActivityFeed from "@/external/activity-graph/components/TeamActivityFeed";
+import TeamActivityFeed from "external/activity-graph/components/TeamActivityFeed";
 import TeamCreditsBanner from "@/components/banners/TeamCreditsBanner";
 import InviteEmployeeModal from "@/components/tables/employee-tables/InviteEmployeeModal";
 import type { Table as TanstackTable } from "@tanstack/react-table";

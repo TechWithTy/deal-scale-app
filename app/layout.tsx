@@ -1,5 +1,5 @@
 import Providers from "@/components/layout/providers";
-import { CommandPaletteProvider, ActionBarRoot } from "@/external/action-bar";
+import { CommandPaletteProvider, ActionBarRoot } from "external/action-bar";
 import "@uploadthing/react/styles.css";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
