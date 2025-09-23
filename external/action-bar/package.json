@@ -1,0 +1,35 @@
+{
+	"name": "@deal-scale/action-bar",
+	"version": "0.1.0",
+	"description": "Global Command Palette (Action Bar) — React provider + Web Component with UMD build",
+	"private": false,
+	"type": "module",
+	"main": "dist/index.cjs",
+	"module": "dist/index.js",
+	"types": "dist/index.d.ts",
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js",
+			"require": "./dist/index.cjs"
+		},
+		"./umd": {
+			"default": "./dist/umd/index.js"
+		}
+	},
+	"files": ["dist", "_docs", "README.md"],
+	"sideEffects": ["**/web/**"],
+	"scripts": {
+		"build": "tsup --config tsup.config.ts",
+		"build:lib": "tsup index.ts --format esm,cjs --dts --sourcemap --clean --skip-node-modules-bundle --tsconfig ../../tsconfig.json",
+		"build:umd": "tsup web/index.ts --format iife --global-name DealActionBarUMD --minify --sourcemap --out-dir dist/umd --no-splitting --platform browser --tsconfig ../../tsconfig.json"
+	},
+	"peerDependencies": {
+		"react": ">=18",
+		"react-dom": ">=18"
+	},
+	"devDependencies": {
+		"tsup": "^8.0.1",
+		"typescript": "^5.6.2"
+	}
+}
