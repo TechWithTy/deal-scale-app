@@ -2,7 +2,7 @@
 
 import type { InputField } from "@/types/skip-trace/enrichment";
 import { useUserProfileStore } from "@/lib/stores/user/userProfile";
-import { useSkipTraceStore } from "@/lib/stores/user/skipTraceStore";
+import { useSkipTraceStore } from "@/lib/stores/user/skip_trace/skipTraceStore";
 import type React from "react";
 import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";

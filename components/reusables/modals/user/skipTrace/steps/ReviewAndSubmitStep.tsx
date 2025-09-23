@@ -13,7 +13,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { useSkipTraceStore } from "@/lib/stores/user/skipTraceStore";
+import { useSkipTraceStore } from "@/lib/stores/user/skip_trace/skipTraceStore";
 
 interface ReviewAndSubmitStepProps {
 	onSubmit: () => void;

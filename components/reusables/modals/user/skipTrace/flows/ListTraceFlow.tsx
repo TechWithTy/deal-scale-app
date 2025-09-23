@@ -3,7 +3,7 @@
 import type React from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import Papa from "papaparse";
-import { useSkipTraceStore } from "@/lib/stores/user/skipTraceStore";
+import { useSkipTraceStore } from "@/lib/stores/user/skip_trace/skipTraceStore";
 import { useUserProfileStore } from "@/lib/stores/user/userProfile";
 import { EnrichmentStep } from "../steps/EnrichmentStep";
 import MapHeadersStep from "../steps/MapHeadersStep";

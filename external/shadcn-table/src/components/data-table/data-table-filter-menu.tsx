@@ -108,16 +108,46 @@ export function DataTableFilterMenu<TData>({
 		[inputValue, selectedColumn],
 	);
 
-	const [filters, setFilters] = useQueryState(
-		FILTERS_KEY,
-		getFiltersStateParser<TData>(columns.map((field) => field.id))
-			.withDefault([])
-			.withOptions({
-				clearOnDefault: true,
-				shallow,
-				throttleMs,
-			}),
-	);
+	// Safe fallback: local state if nuqs adapter is missing
+	type Setter<T> = (
+		value: T | ((old: T | null) => T | null),
+	) => Promise<URLSearchParams>;
+	const makeLocalQueryState = <T,>(initial: T): [T, Setter<T>] => {
+		const [val, setVal] = React.useState<T>(initial);
+		const set: Setter<T> = async (next) => {
+			setVal((prev) =>
+				typeof next === "function"
+					? ((next as (o: T | null) => T | null)(prev) ?? prev)
+					: next,
+			);
+			return new URLSearchParams(
+				typeof window !== "undefined" ? window.location.search : "",
+			);
+		};
+		return [val, set];
+	};
+
+	type FilterArray<T> = ReturnType<typeof getFiltersStateParser<T>> extends {
+		parse: (v: string) => infer R;
+	}
+		? Exclude<R, null>
+		: never;
+	let filtersTuple: [FilterArray<TData>, Setter<FilterArray<TData>>];
+	try {
+		filtersTuple = useQueryState(
+			FILTERS_KEY,
+			getFiltersStateParser<TData>(columns.map((field) => field.id))
+				.withDefault([])
+				.withOptions({
+					clearOnDefault: true,
+					shallow,
+					throttleMs,
+				}),
+		) as unknown as [FilterArray<TData>, Setter<FilterArray<TData>>];
+	} catch {
+		filtersTuple = makeLocalQueryState<FilterArray<TData>>([]);
+	}
+	const [filters, setFilters] = filtersTuple;
 	const debouncedSetFilters = useDebouncedCallback(setFilters, debounceMs);
 
 	const onFilterAdd = React.useCallback(
@@ -169,7 +199,8 @@ export function DataTableFilterMenu<TData>({
 			updates: Partial<Omit<ExtendedColumnFilter<TData>, "filterId">>,
 		) => {
 			debouncedSetFilters((prevFilters) => {
-				const updatedFilters = prevFilters.map((filter) => {
+				const safePrev = (prevFilters ?? []) as FilterArray<TData>;
+				const updatedFilters = safePrev.map((filter) => {
 					if (filter.filterId === filterId) {
 						return { ...filter, ...updates } as ExtendedColumnFilter<TData>;
 					}

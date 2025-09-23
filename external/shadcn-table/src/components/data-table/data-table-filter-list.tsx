@@ -101,25 +101,66 @@ export function DataTableFilterList<TData>({
 			.filter((column) => column.columnDef.enableColumnFilter);
 	}, [table]);
 
-	const [filters, setFilters] = useQueryState(
-		FILTERS_KEY,
-		getFiltersStateParser<TData>(columns.map((field) => field.id))
-			.withDefault([])
-			.withOptions({
-				clearOnDefault: true,
-				shallow,
-				throttleMs,
-			}),
-	);
+	// Safe fallbacks in case nuqs adapter context is unavailable
+	type Setter<T> = (
+		value: T | ((old: T | null) => T | null),
+	) => Promise<URLSearchParams>;
+	const makeLocalQueryState = <T,>(initial: T): [T, Setter<T>] => {
+		const [val, setVal] = React.useState<T>(initial);
+		const set: Setter<T> = async (next) => {
+			setVal((prev) =>
+				typeof next === "function"
+					? ((next as (o: T | null) => T | null)(prev) ?? prev)
+					: next,
+			);
+			return new URLSearchParams(
+				typeof window !== "undefined" ? window.location.search : "",
+			);
+		};
+		return [val, set];
+	};
+
+	// Filters state
+	let filtersTuple: [
+		ExtendedColumnFilter<TData>[],
+		Setter<ExtendedColumnFilter<TData>[]>,
+	];
+	try {
+		filtersTuple = useQueryState(
+			FILTERS_KEY,
+			getFiltersStateParser<TData>(columns.map((field) => field.id))
+				.withDefault([])
+				.withOptions({
+					clearOnDefault: true,
+					shallow,
+					throttleMs,
+				}),
+		) as unknown as [
+			ExtendedColumnFilter<TData>[],
+			Setter<ExtendedColumnFilter<TData>[]>,
+		];
+	} catch {
+		filtersTuple = makeLocalQueryState<ExtendedColumnFilter<TData>[]>([]);
+	}
+	const [filters, setFilters] = filtersTuple;
 	const debouncedSetFilters = useDebouncedCallback(setFilters, debounceMs);
 
-	const [joinOperator, setJoinOperator] = useQueryState(
-		JOIN_OPERATOR_KEY,
-		parseAsStringEnum(["and", "or"]).withDefault("and").withOptions({
-			clearOnDefault: true,
-			shallow,
-		}),
-	);
+	// Join operator state
+	let joinOperatorTuple: [JoinOperator, Setter<JoinOperator>];
+	try {
+		joinOperatorTuple = useQueryState(
+			JOIN_OPERATOR_KEY,
+			parseAsStringEnum(["and", "or"]) 
+				.withDefault("and")
+				.withOptions({
+					clearOnDefault: true,
+					shallow,
+				}),
+		) as unknown as [JoinOperator, Setter<JoinOperator>];
+	} catch {
+		joinOperatorTuple = makeLocalQueryState<JoinOperator>("and");
+	}
+	const [joinOperator, setJoinOperator] = joinOperatorTuple;
 
 	const onFilterAdd = React.useCallback(() => {
 		const column = columns[0];

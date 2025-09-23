@@ -1,4 +1,4 @@
-import { useSkipTraceStore } from "@/lib/stores/user/skipTraceStore";
+import { useSkipTraceStore } from "@/lib/stores/user/skip_trace/skipTraceStore";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
