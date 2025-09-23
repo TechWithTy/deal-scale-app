@@ -7,7 +7,7 @@
 import * as React from "react";
 import LeadsDemoTable, {
 	type LeadsDemoTableProps,
-} from "@/external/shadcn-table/src/examples/Lead/LeadsDemoTable";
+} from "external/shadcn-table/src/examples/Lead/LeadsDemoTable";
 import LeadMainModal from "@/components/reusables/modals/user/lead/LeadModalMain";
 import SkipTraceModalMain from "@/components/reusables/modals/user/skipTrace/SkipTraceModalMain";
 

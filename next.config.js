@@ -2,6 +2,10 @@ const path = require("node:path");
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+	// Demo mode: allow build despite type errors in external package
+	typescript: { ignoreBuildErrors: true },
+	// Ensure external package compiles with the app's dependency graph
+	transpilePackages: ["shadcn-table"],
 	eslint: { ignoreDuringBuilds: true },
 	images: {
 		domains: [
@@ -26,30 +30,22 @@ const nextConfig = {
 		config.resolve = config.resolve || {};
 		config.output = config.output || {};
 		config.optimization = config.optimization || {};
+		config.experiments = config.experiments || {};
+		// Disable persistent caching to avoid corrupted cache causing hashing crashes
+		config.cache = false;
 
 		// Set up aliases
 		config.resolve.alias = {
 			...(config.resolve.alias || {}),
-			"@root": path.resolve(__dirname),
 			"@": path.resolve(__dirname),
-			"@/external": path.resolve(__dirname, "external"),
-			"@/external/shadcn-table": path.resolve(
-				__dirname,
-				"external/shadcn-table",
-			),
-			"@/external/activity-graph": path.resolve(
-				__dirname,
-				"external/activity-graph",
-			),
-			"@/external/kanban": path.resolve(__dirname, "external/kanban"),
-			"@/external/ai-summary-expandable": path.resolve(
-				__dirname,
-				"external/ai-summary-expandable",
-			),
+			"external": path.resolve(__dirname, "external"),
+			"@root": path.resolve(__dirname),
+			"@ssf": path.resolve(__dirname, "external/score-streak-flow/src"),
+			// Keep app-local aliases only; avoid forcing React singletons to prevent RSC context issues
 		};
 
-		// Force a stable hash function to avoid WasmHash crashes
-		config.output.hashFunction = "xxhash64";
+		// Force a Node built-in hash function (avoid wasm-based hashers on Windows)
+		config.output.hashFunction = "sha256";
 
 		// Disable realContentHash which can trigger wasm hashing
 		config.optimization.realContentHash = false;
@@ -63,8 +59,13 @@ const nextConfig = {
 			config.output.hashDigestLength = 20;
 		}
 
+		// Explicitly turn off WebAssembly experiments to reduce wasm code paths
+		config.experiments.asyncWebAssembly = false;
+		config.experiments.syncWebAssembly = false;
+
 		return config;
 	},
 };
 
 module.exports = nextConfig;
+

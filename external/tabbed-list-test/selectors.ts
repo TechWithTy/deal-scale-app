@@ -13,8 +13,8 @@ export const selectDrawer = (s: TabbedListStore) => s.drawer;
 type ItemWithId = { id: string };
 
 export const selectSelectedItems = <T extends ItemWithId>(
-	s: TabbedListStore<T>,
+  s: TabbedListStore<T>,
 ) => {
-	const set = s.selectedIds;
-	return s.items.filter((i) => set.has(i.id));
+  const set = s.selectedIds;
+  return s.items.filter((i) => set.has(i.id));
 };

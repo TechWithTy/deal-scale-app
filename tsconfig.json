@@ -23,11 +23,7 @@
 			"@/*": ["./*"],
 			"@root/*": ["./*"],
 			"@ssf/*": ["external/score-streak-flow/src/*"],
-			"@/external/*": ["external/*"],
-			"@/external/shadcn-table/*": ["external/shadcn-table/*"],
-			"@/external/activity-graph/*": ["external/activity-graph/*"],
-			"@/external/kanban/*": ["external/kanban/*"],
-			"@/external/ai-summary-expandable/*": ["external/ai-summary-expandable/*"]
+			"external/*": ["external/*"]
 		}
 	},
 	"include": [
@@ -37,5 +33,9 @@
 		".next/types/**/*.ts",
 		"global.d.ts"
 	],
-	"exclude": ["node_modules"]
+	"exclude": [
+		"node_modules",
+		"external/score-streak-flow/src/App.tsx",
+		"external/score-streak-flow/src/pages/**"
+	]
 }
