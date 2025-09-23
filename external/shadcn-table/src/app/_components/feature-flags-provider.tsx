@@ -1,6 +1,6 @@
 "use client";
 
-import { useQueryState } from "nuqs";
+import { useQueryState } from "../../nuqs-shared";
 import * as React from "react";
 
 import { ToggleGroup, ToggleGroupItem } from "../../components/ui/toggle-group";

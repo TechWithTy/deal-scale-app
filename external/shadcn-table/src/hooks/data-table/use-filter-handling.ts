@@ -52,7 +52,34 @@ export function useFilterHandling<TData>(props: FilterHandlingProps<TData>) {
 		}, {});
 	}, [filterableColumns, queryStateOptions, enableAdvancedFilter]);
 
-	const [filterValues, setFilterValues] = useQueryStates(filterParsers);
+	// Safe fallback: local state if nuqs adapter is missing
+	type FilterUpdates = Record<string, string | string[] | null>;
+	const [localFilterValues, setLocalFilterValues] = React.useState<FilterUpdates>(
+		{},
+	);
+	const setLocalFilterValuesAsync = React.useCallback(
+		async (values: FilterUpdates) => {
+			setLocalFilterValues((prev) => ({ ...prev, ...values }));
+			return new URLSearchParams(
+				typeof window !== "undefined" ? window.location.search : "",
+			);
+		},
+		[],
+	);
+
+	let filterTuple:
+		| [FilterUpdates, (values: FilterUpdates) => Promise<URLSearchParams>]
+		| undefined;
+	try {
+		filterTuple = useQueryStates(filterParsers) as unknown as [
+			FilterUpdates,
+			(values: FilterUpdates) => Promise<URLSearchParams>,
+		];
+	} catch {
+		filterTuple = [localFilterValues, setLocalFilterValuesAsync];
+	}
+
+	const [filterValues, setFilterValues] = filterTuple;
 
 	const debouncedSetFilterValues = useDebouncedCallback(
 		(values: typeof filterValues) => {
