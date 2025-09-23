@@ -1,7 +1,7 @@
 "use client";
 
 import type { ColumnDef } from "@tanstack/react-table";
-import { DataTableColumnHeader } from "@/external/shadcn-table/src/components/data-table/data-table-column-header";
+import { DataTableColumnHeader } from "external/shadcn-table/src/components/data-table/data-table-column-header";
 import type { AdminUser } from "./types";
 import { CellAction } from "./cell-action";
 

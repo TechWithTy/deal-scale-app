@@ -1,7 +1,7 @@
 "use client";
 
 import { Checkbox } from "@/components/ui/checkbox";
-import { DataTableColumnHeader } from "@/external/shadcn-table/src/components/data-table/data-table-column-header";
+import { DataTableColumnHeader } from "external/shadcn-table/src/components/data-table/data-table-column-header";
 import { exportLeadListsToExcel } from "@/lib/_utils/files/loopDownload/leadExports";
 import type { LeadList } from "@/types/_dashboard/leadList";
 import type { ColumnDef } from "@tanstack/react-table";
@@ -92,7 +92,15 @@ export const columns: ColumnDef<LeadList>[] = [
 						[leadList],
 						`${leadList.listName}.xlsx`,
 					);
-					const blob = new Blob([excelBuffer], {
+					let arrayBuffer: ArrayBuffer;
+					if (excelBuffer instanceof ArrayBuffer) {
+						arrayBuffer = excelBuffer;
+					} else {
+						// Copy into a new Uint8Array so the backing buffer is a regular ArrayBuffer
+						const view = excelBuffer as Uint8Array;
+						arrayBuffer = view.slice().buffer;
+					}
+					const blob = new Blob([arrayBuffer], {
 						type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
 					});
 					const url = window.URL.createObjectURL(blob);

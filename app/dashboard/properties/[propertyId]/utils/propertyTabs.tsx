@@ -19,6 +19,12 @@ type TabData = {
 // Define the props for the PropertyTabsList component
 interface PropertyTabsListProps {
 	tabsData: TabData[]; // Array of TabData
+	// Optional override to force a specific view regardless of screen size
+	view?: "table" | "tabbed";
+	// When view is not provided, use this as the initial mode (defaults to 'table')
+	defaultView?: "table" | "tabbed";
+	// Show a simple toggle to switch between views when view is not forced
+	enableToggle?: boolean;
 }
 
 // DesktopTabs component
@@ -121,7 +127,7 @@ const DesktopTabs: React.FC<PropertyTabsListProps> = ({ tabsData }) => {
 const MobileAccordion: React.FC<PropertyTabsListProps> = ({ tabsData }) => {
 	return (
 		<Accordion type="single" collapsible className="mt-6 w-full">
-			{tabsData.map((tab) => (
+			{tabsData.map((tab: TabData) => (
 				<AccordionItem key={tab.value} value={tab.value}>
 					<AccordionTrigger>{tab.label}</AccordionTrigger>
 					<AccordionContent>
@@ -134,19 +140,52 @@ const MobileAccordion: React.FC<PropertyTabsListProps> = ({ tabsData }) => {
 };
 
 // Main component to conditionally render Mobile or Desktop tabs
-const PropertyTabsList: React.FC<PropertyTabsListProps> = ({ tabsData }) => {
+const PropertyTabsList: React.FC<PropertyTabsListProps> = ({
+	tabsData,
+	view,
+	defaultView = "table",
+	enableToggle = true,
+}) => {
+	// If a view is explicitly requested, render that mode for all screen sizes
+	if (view === "table") {
+		return <MobileAccordion tabsData={tabsData} />;
+	}
+	if (view === "tabbed") {
+		return <DesktopTabs tabsData={tabsData} />;
+	}
+	// No forced view: maintain internal mode with default to 'table'
+	const [mode, setMode] = useState<"table" | "tabbed">(defaultView);
 	return (
-		<>
-			{/* Render the DesktopTabs component on larger screens */}
-			<div className="hidden sm:block">
-				<DesktopTabs tabsData={tabsData} />
-			</div>
-
-			{/* Render the MobileTabs component on smaller screens */}
-			<div className="block sm:hidden">
+		<div className="mt-4">
+			{enableToggle && (
+				<div className="mb-3 flex items-center gap-2">
+					<span className="text-sm text-muted-foreground">View:</span>
+					<div className="inline-flex border border-border rounded-md bg-card p-1">
+						<button
+							type="button"
+							aria-pressed={mode === "table"}
+							onClick={() => setMode("table")}
+							className={`rounded px-3 py-1 text-sm ${mode === "table" ? "bg-primary text-primary-foreground" : "hover:bg-muted"}`}
+						>
+							Table
+						</button>
+						<button
+							type="button"
+							aria-pressed={mode === "tabbed"}
+							onClick={() => setMode("tabbed")}
+							className={`rounded px-3 py-1 text-sm ${mode === "tabbed" ? "bg-primary text-primary-foreground" : "hover:bg-muted"}`}
+						>
+							Tabbed
+						</button>
+					</div>
+				</div>
+			)}
+			{mode === "table" ? (
 				<MobileAccordion tabsData={tabsData} />
-			</div>
-		</>
+			) : (
+				<DesktopTabs tabsData={tabsData} />
+			)}
+		</div>
 	);
 };
 

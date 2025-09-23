@@ -1,5 +1,5 @@
 import type { MapFormSchemaType } from "@/types/_dashboard/maps";
-import type { ACSeed } from "@/external/google-maps-two/components/composit/utils/autocomplete";
+import type { ACSeed } from "external/google-maps-two/components/composit/utils/autocomplete";
 import { useEffect } from "react";
 import type { Control, FieldErrors, UseFormSetValue } from "react-hook-form";
 import { useLeadSearchStore } from "@/lib/stores/leadSearch/leadSearch";

@@ -17,9 +17,9 @@ import {
 	type KeyboardEvent,
 } from "react";
 import { useSession } from "next-auth/react";
-import { CrudToggle } from "@/external/crud-toggle/components/CrudToggle";
-import { CreditsSummary } from "@/external/credit-view-purchase/components/CreditsSummary";
-import type { CrudFlags } from "@/external/crud-toggle/utils/types";
+import { CrudToggle } from "external/crud-toggle/components/CrudToggle";
+import { CreditsSummary } from "external/credit-view-purchase/components/CreditsSummary";
+import type { CrudFlags } from "external/crud-toggle/utils/types";
 
 export default function SidebarClient({ user }: { user: UserProfile | null }) {
 	const { isSidebarMinimized, toggleSidebar } = useNavbarStore();

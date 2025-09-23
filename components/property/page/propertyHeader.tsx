@@ -19,7 +19,11 @@ import {
 } from "@/components/ui/popover";
 import { mockGeneratedLeads } from "@/constants/data";
 import type { Property } from "@/types/_dashboard/property";
-import { isRealtorProperty } from "@/types/_dashboard/property";
+import {
+	isRealtorProperty,
+	isRentCastProperty,
+} from "@/types/_dashboard/property";
+import { computeOnMarket } from "@/lib/utils/rentcastListing";
 import {
 	CalendarIcon,
 	ChevronDownIcon,
@@ -138,13 +142,56 @@ export default function PropertyHeader({
 			<div className="w-full bg-card p-4 text-card-foreground shadow-sm">
 				<div className="flex flex-col items-center justify-center gap-2">
 					{/* Top row: Title + Help */}
-					<div className="flex w-full items-center justify-center gap-2">
+					<div className="flex w-full flex-wrap items-center justify-center gap-2">
 						<h1 className="flex items-center gap-2 text-center font-semibold text-foreground text-xl">
 							{property.address?.fullStreetLine || "N/A"},{" "}
 							{property.address?.city || "N/A"},{" "}
 							{property.address?.state || "N/A"}{" "}
 							{property.address?.zipCode || ""}
 						</h1>
+
+						{/* Small market badge and county */}
+						{(() => {
+							if (isRentCastProperty(property)) {
+								const result = computeOnMarket(property.listing);
+								const on = result.on_market === true;
+								const badgeClass = on
+									? "bg-green-600 text-white"
+									: "bg-muted text-muted-foreground";
+								return (
+									<div className="flex items-center gap-2">
+										<span
+											className={`rounded-full px-2 py-0.5 text-xs ${badgeClass}`}
+										>
+											{on ? "On-Market" : "Off-Market"}
+										</span>
+										{property.listing?.county && (
+											<span className="rounded-full bg-accent px-2 py-0.5 text-accent-foreground text-xs">
+												{property.listing?.county}
+											</span>
+										)}
+									</div>
+								);
+							}
+							// Realtor fallback: show status and city as county surrogate
+							if (isRealtorProperty(property)) {
+								return (
+									<div className="flex items-center gap-2">
+										{property.metadata?.status && (
+											<span className="rounded-full bg-muted px-2 py-0.5 text-muted-foreground text-xs">
+												{property.metadata.status}
+											</span>
+										)}
+										{property.address?.city && (
+											<span className="rounded-full bg-accent px-2 py-0.5 text-accent-foreground text-xs">
+												{property.address.city}
+											</span>
+										)}
+									</div>
+								);
+							}
+							return null;
+						})()}
 						<button
 							type="button"
 							onClick={openHelpModal}

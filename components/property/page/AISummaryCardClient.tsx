@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card";
 import {
 	ExpandableAISummary,
 	ExpandableAISummarySkeleton,
-} from "@/external/ai-summary-expandable/components";
+} from "external/ai-summary-expandable/components";
 import type { Property } from "@/types/_dashboard/property";
 import { useRemainingAI, useUserStore } from "@/lib/stores/userStore";
 

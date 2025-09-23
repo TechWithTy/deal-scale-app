@@ -12,11 +12,11 @@ import { Label } from "@/components/ui/label";
 import {
 	CommandPaletteProvider,
 	useCommandPalette,
-} from "../../../external/action-bar/components/providers/CommandPaletteProvider";
-import { registerStorybookDemoCommands } from "../../../external/action-bar/components/demo/storybookCommands";
-import { PlaybackCell } from "@/external/audio-playback";
-import { CloneModal } from "@/external/teleprompter-modal";
-import { MinimalWheel } from "@/external/wheel-spinner";
+} from "external/action-bar/components/providers/CommandPaletteProvider";
+import { registerStorybookDemoCommands } from "external/action-bar/components/demo/storybookCommands";
+import { PlaybackCell } from "external/audio-playback";
+import { CloneModal } from "external/teleprompter-modal";
+import { MinimalWheel } from "external/wheel-spinner";
 import type { CallInfo } from "@/types/_dashboard/campaign";
 import type { GetCallResponse } from "@/types/vapiAi/api/calls/get";
 import { LeaderboardContainer } from "@ssf/components/leaderboard/LeaderboardContainer";
@@ -192,6 +192,7 @@ export default function StorybookExternalPage() {
 		return null;
 	}, [videoUrl]);
 
+	// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
 	useEffect(() => {
 		registerStorybookDemoCommands({
 			registerDynamicCommands,

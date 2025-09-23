@@ -2,8 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import PropertyTabsList from "@/app/dashboard/properties/[propertyId]/utils/propertyTabs";
-import { toPropertySummary } from "@/external/tabbed-list-test";
-import type { PropertySummary } from "@/external/tabbed-list-test/schemas/types";
+import { toPropertySummary } from "external/tabbed-list-test";
+import type { PropertySummary } from "external/tabbed-list-test/schemas/types";
 import {
 	PropertyImage,
 	PropertyAddress,
@@ -11,7 +11,7 @@ import {
 	PropertyDetails,
 	PropertyBadges,
 	PropertySelectionButton,
-} from "@/external/tabbed-list-test/components/PropertyCardPrimitives";
+} from "external/tabbed-list-test/components/PropertyCardPrimitives";
 import {
 	Popover,
 	PopoverContent,
@@ -28,7 +28,7 @@ import { Settings2, GripVertical } from "lucide-react";
 import {
 	ExpandableAISummary,
 	ExpandableAISummarySkeleton,
-} from "@/external/ai-summary-expandable/components";
+} from "external/ai-summary-expandable/components";
 
 export default function TabbedListTestPage() {
 	// Loading showcase for AI Summary story

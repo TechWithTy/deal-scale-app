@@ -3,9 +3,9 @@
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { DataTable } from "@/external/shadcn-table/src/components/data-table/data-table";
-import { useDataTable } from "@/external/shadcn-table/src/hooks/use-data-table";
-import { DataTableViewOptions } from "@/external/shadcn-table/src/components/data-table/data-table-view-options";
+import { DataTable } from "external/shadcn-table/src/components/data-table/data-table";
+import { useDataTable } from "external/shadcn-table/src/hooks/use-data-table";
+import { DataTableViewOptions } from "external/shadcn-table/src/components/data-table/data-table-view-options";
 import type { AdminUser } from "./types";
 import { adminUserColumns } from "./columns";
 import AdminUserDetailModal from "@/components/admin/AdminUserDetailModal";

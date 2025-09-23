@@ -75,6 +75,13 @@ const PropertyMap: React.FC<PropertyMapProps> = ({
 					) {
 						console.log("Street View found at 50m radius.");
 						setPanoId(data.location.pano);
+						// Start Street View immediately
+						try {
+							const panorama = map.getStreetView();
+							panorama.setPano(data.location.pano);
+							panorama.setVisible(true);
+							setIsStreetView(true);
+						} catch {}
 					} else {
 						console.log(
 							"Street View not found at 50m, trying a wider search (1000m)...",
@@ -93,6 +100,13 @@ const PropertyMap: React.FC<PropertyMapProps> = ({
 								) {
 									console.log("Street View found at 1000m radius.");
 									setPanoId(data.location.pano);
+									// Start Street View immediately
+									try {
+										const panorama = map.getStreetView();
+										panorama.setPano(data.location.pano);
+										panorama.setVisible(true);
+										setIsStreetView(true);
+									} catch {}
 								} else {
 									console.error(
 										"Street View panorama not found even within a 1000m radius.",
