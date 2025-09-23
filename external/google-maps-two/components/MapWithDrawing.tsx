@@ -666,7 +666,7 @@ export function MapWithDrawing(props: MapWithDrawingProps) {
 			}}
 		>
 			{/* Loading overlay while Google libraries or map are initializing */}
-			{(!googleReady || !mapInit) && (
+			{(!mapInit) && (
 				<div className="absolute inset-0 z-20 overflow-hidden rounded-md">
 					<div className="h-full w-full animate-pulse bg-gradient-to-r from-muted/40 via-muted/80 to-muted/40 bg-[length:400%_100%]" />
 				</div>
@@ -691,6 +691,9 @@ export function MapWithDrawing(props: MapWithDrawingProps) {
 				onLoad={(map) => {
 					mapRef.current = map;
 					setMapInit(true);
+					// Ensure googleReady is true once the map instance is available,
+					// especially when a parent handles script loading (assumeLoaded=true).
+					setGoogleReady(true);
 					try {
 						placesRef.current = new google.maps.places.PlacesService(map);
 					} catch {

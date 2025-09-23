@@ -109,14 +109,10 @@ export function PlaceSearchPanel({
 	if (typeof window === "undefined" || !mounted) return null;
 
 	if (!libsReady) {
-		return (
-			<section className="mt-6">
-				<h2 className="mb-2 font-semibold text-lg">UI Kit: Place Search</h2>
-				<div className="relative h-64 w-full overflow-hidden rounded-md">
-					<div className="h-full w-full animate-pulse bg-gradient-to-r from-muted/40 via-muted/80 to-muted/40 bg-[length:400%_100%]" />
-				</div>
-			</section>
-		);
+		// Do not render a large placeholder while Google libraries load; this avoids a
+		// confusing dark shim appearing above the map on Lead Search. We simply return
+		// null here; once libsReady is true, the panel mounts with the correct UI.
+		return null;
 	}
 
 	return (

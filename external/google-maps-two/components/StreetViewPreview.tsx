@@ -25,6 +25,7 @@ export function StreetViewPreview({
 	const panoRef = useRef<google.maps.StreetViewPanorama | null>(null);
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string>("");
+	const [scriptReady, setScriptReady] = useState(false);
 
 	// Wire autocomplete, then on selection -> fetch and render SV
 	useEffect(() => {
@@ -108,7 +109,7 @@ export function StreetViewPreview({
 
 	const inner = (
 		<section className="container mx-auto max-w-5xl p-6">
-			<h2 className="mb-3 text-2xl font-semibold">Street View Preview</h2>
+			<h2 className="mb-3 font-semibold text-2xl">Street View Preview</h2>
 			<div className="mb-4 grid gap-2">
 				<Input
 					ref={inputRef}
@@ -116,13 +117,13 @@ export function StreetViewPreview({
 					autoComplete="off"
 				/>
 				{loading && (
-					<p className="text-sm text-muted-foreground">Loading Street View…</p>
+					<p className="text-muted-foreground text-sm">Loading Street View…</p>
 				)}
-				{error && <p className="text-sm text-red-500">{error}</p>}
+				{error && <p className="text-red-500 text-sm">{error}</p>}
 			</div>
 			<div
 				ref={panoHostRef}
-				className="border border-border rounded-md"
+				className="rounded-md border border-border"
 				style={{ width: "100%", height: 420 }}
 			/>
 		</section>
@@ -140,9 +141,11 @@ export function StreetViewPreview({
 	}
 	return (
 		<div className="relative">
-			<div className="absolute inset-0 z-10 overflow-hidden rounded-md">
-				<div className="h-full w-full animate-pulse bg-gradient-to-r from-muted/40 via-muted/80 to-muted/40 bg-[length:400%_100%]" />
-			</div>
+			{!scriptReady && (
+				<div className="pointer-events-none absolute inset-0 z-10 overflow-hidden rounded-md">
+					<div className="h-full w-full animate-pulse bg-[length:400%_100%] bg-gradient-to-r from-muted/40 via-muted/80 to-muted/40" />
+				</div>
+			)}
 			<LoadScript
 				googleMapsApiKey={
 					process.env.NEXT_PUBLIC_GMAPS_KEY ||
@@ -152,6 +155,8 @@ export function StreetViewPreview({
 				libraries={
 					SV_LIBS as unknown as ("drawing" | "marker" | "places" | "geometry")[]
 				}
+				onLoad={() => setScriptReady(true)}
+				onError={() => setScriptReady(true)}
 			>
 				{inner}
 			</LoadScript>
