@@ -1,4 +1,4 @@
-import { Before, After } from "@cucumber/cucumber";
+import { Before, After, AfterStep } from "@cucumber/cucumber";
 import "./index";
 
 class MemoryStorage {
@@ -42,4 +42,22 @@ After(() => {
 	try {
 		(globalThis as any).sessionStorage?.clear?.();
 	} catch {}
+});
+
+AfterStep(function (this: any, p) {
+	// Normalize status to lowercase for mapping regardless of enum/string case
+	const status = String(p.result?.status ?? "unknown").toLowerCase();
+	const emojiMap: Record<string, string> = {
+		passed: "✅",
+		failed: "❌",
+		skipped: "⏭️",
+		undefined: "❓",
+		pending: "⏳",
+		unknown: "❔",
+	};
+	const emoji = emojiMap[status] ?? "❔";
+	// Derive the current step text from the pickle using the hook index
+	const idx = (p as any).index ?? 0;
+	const text = (p as any).pickle?.steps?.[idx]?.text ?? "(unknown step)";
+	console.log(`${emoji} ${text} (${status})`);
 });
