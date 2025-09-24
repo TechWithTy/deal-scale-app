@@ -50,7 +50,7 @@ declare global {
 			open: () => void;
 			close: () => void;
 			toggle: () => void;
-			register: (items: any[]) => void; // using any[] here to avoid circular import, runtime-only surface
+			register: (items: unknown[]) => void; // using unknown[] to avoid circular import while staying type-safe
 			setVariant: (v: "dialog" | "floating") => void;
 			setInitialQuery: (q: string) => void;
 			setEndpoint: (ep: string) => void;
@@ -66,6 +66,17 @@ declare global {
 			) => HTMLElement;
 			element?: HTMLElement;
 		};
+		// Optional analytics SDKs injected at runtime
+		posthog?: {
+			capture: (event: string, properties?: Record<string, unknown>) => void;
+			identify?: (distinctId: string, properties?: Record<string, unknown>) => void;
+			group?: (groupType: string, groupKey: string) => void;
+		};
+		clarity?: (
+			type: "event",
+			name: string,
+			properties?: Record<string, unknown>,
+		) => void;
 	}
 }
 

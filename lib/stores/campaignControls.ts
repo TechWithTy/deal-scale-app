@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { withAnalytics } from "./_middleware/analytics";
 
 export type CampaignPlaybackState = "idle" | "playing" | "paused" | "stopped";
 
@@ -10,22 +11,24 @@ export interface CampaignControlState {
 	stop: (campaignId: string) => void;
 }
 
-export const useCampaignControls = create<CampaignControlState>((set, get) => ({
-	states: {},
-	getStateFor: (id) => get().states[id] ?? "idle",
-	play: (id) =>
-		set((s) => ({
-			states: { ...s.states, [id]: "playing" },
-		})),
-	pause: (id) =>
-		set((s) => ({
-			states: { ...s.states, [id]: "paused" },
-		})),
-	stop: (id) =>
-		set((s) => ({
-			states: { ...s.states, [id]: "stopped" },
-		})),
-}));
+export const useCampaignControls = create<CampaignControlState>(
+	withAnalytics<CampaignControlState>("campaign_controls", (set, get) => ({
+		states: {},
+		getStateFor: (id) => get().states[id] ?? "idle",
+		play: (id) =>
+			set((s) => ({
+				states: { ...s.states, [id]: "playing" },
+			})),
+		pause: (id) =>
+			set((s) => ({
+				states: { ...s.states, [id]: "paused" },
+			})),
+		stop: (id) =>
+			set((s) => ({
+				states: { ...s.states, [id]: "stopped" },
+			})),
+	})),
+);
 
 // Mock workflow triggers to simulate side-effects when controls are used
 export function mockStartWorkflow(campaignId: string) {

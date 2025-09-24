@@ -1,6 +1,7 @@
 // stores/useModalStore.ts
 
 import { create } from "zustand";
+import { withAnalytics } from "./_middleware/analytics";
 
 interface ModalState {
 	isUsageModalOpen: boolean;
@@ -32,37 +33,39 @@ interface ModalState {
 	closeEmployeeModal: () => void;
 }
 
-export const useModalStore = create<ModalState>((set) => ({
-	// Usage Modal
-	isUsageModalOpen: false,
-	openUsageModal: () => set({ isUsageModalOpen: true }),
-	closeUsageModal: () => set({ isUsageModalOpen: false }),
-	isSecurityModalOpen: false,
-	openSecurityModal: () => set({ isSecurityModalOpen: true }),
-	closeSecurityModal: () => set({ isSecurityModalOpen: false }),
-	// Billing Modal
-	isBillingModalOpen: false,
-	openBillingModal: () => set({ isBillingModalOpen: true }),
-	closeBillingModal: () => set({ isBillingModalOpen: false }),
+export const useModalStore = create<ModalState>(
+	withAnalytics<ModalState>("dashboard_modals", (set) => ({
+		// Usage Modal
+		isUsageModalOpen: false,
+		openUsageModal: () => set({ isUsageModalOpen: true }),
+		closeUsageModal: () => set({ isUsageModalOpen: false }),
+		isSecurityModalOpen: false,
+		openSecurityModal: () => set({ isSecurityModalOpen: true }),
+		closeSecurityModal: () => set({ isSecurityModalOpen: false }),
+		// Billing Modal
+		isBillingModalOpen: false,
+		openBillingModal: () => set({ isBillingModalOpen: true }),
+		closeBillingModal: () => set({ isBillingModalOpen: false }),
 
-	// Integrations Modal
-	isIntegrationsModalOpen: false,
-	openIntegrationsModal: () => set({ isIntegrationsModalOpen: true }),
-	closeIntegrationsModal: () => set({ isIntegrationsModalOpen: false }),
+		// Integrations Modal
+		isIntegrationsModalOpen: false,
+		openIntegrationsModal: () => set({ isIntegrationsModalOpen: true }),
+		closeIntegrationsModal: () => set({ isIntegrationsModalOpen: false }),
 
-	// Webhook Modal - Correctly tied to isWebhookModalOpen state
-	isWebhookModalOpen: false,
-	openWebhookModal: () => set({ isWebhookModalOpen: true }),
-	closeWebhookModal: () => set({ isWebhookModalOpen: false }),
+		// Webhook Modal - Correctly tied to isWebhookModalOpen state
+		isWebhookModalOpen: false,
+		openWebhookModal: () => set({ isWebhookModalOpen: true }),
+		closeWebhookModal: () => set({ isWebhookModalOpen: false }),
 
-	isUpgradeModalOpen: false,
-	openUpgradeModal: () => set({ isUpgradeModalOpen: true }),
-	closeUpgradeModal: () => set({ isUpgradeModalOpen: false }),
+		isUpgradeModalOpen: false,
+		openUpgradeModal: () => set({ isUpgradeModalOpen: true }),
+		closeUpgradeModal: () => set({ isUpgradeModalOpen: false }),
 
-	isEmployeeModalOpen: false,
-	openEmployeeModal: () => set({ isEmployeeModalOpen: true }),
-	closeEmployeeModal: () => set({ isEmployeeModalOpen: false }),
-}));
+		isEmployeeModalOpen: false,
+		openEmployeeModal: () => set({ isEmployeeModalOpen: true }),
+		closeEmployeeModal: () => set({ isEmployeeModalOpen: false }),
+	})),
+);
 
 // stores/useSecurityStore.ts
 interface SecurityState {
@@ -80,20 +83,22 @@ interface SecurityState {
 	setConfirmPassword: (value: string) => void;
 }
 
-export const useSecurityStore = create<SecurityState>((set) => ({
-	showCurrentPassword: false,
-	showNewPassword: false,
-	showConfirmPassword: false,
-	currentPassword: "",
-	newPassword: "",
-	confirmPassword: "",
-	toggleShowCurrentPassword: () =>
-		set((state) => ({ showCurrentPassword: !state.showCurrentPassword })),
-	toggleShowNewPassword: () =>
-		set((state) => ({ showNewPassword: !state.showNewPassword })),
-	toggleShowConfirmPassword: () =>
-		set((state) => ({ showConfirmPassword: !state.showConfirmPassword })),
-	setCurrentPassword: (value: string) => set({ currentPassword: value }),
-	setNewPassword: (value: string) => set({ newPassword: value }),
-	setConfirmPassword: (value: string) => set({ confirmPassword: value }),
-}));
+export const useSecurityStore = create<SecurityState>(
+	withAnalytics<SecurityState>("dashboard_security", (set) => ({
+		showCurrentPassword: false,
+		showNewPassword: false,
+		showConfirmPassword: false,
+		currentPassword: "",
+		newPassword: "",
+		confirmPassword: "",
+		toggleShowCurrentPassword: () =>
+			set((state) => ({ showCurrentPassword: !state.showCurrentPassword })),
+		toggleShowNewPassword: () =>
+			set((state) => ({ showNewPassword: !state.showNewPassword })),
+		toggleShowConfirmPassword: () =>
+			set((state) => ({ showConfirmPassword: !state.showConfirmPassword })),
+		setCurrentPassword: (value: string) => set({ currentPassword: value }),
+		setNewPassword: (value: string) => set({ newPassword: value }),
+		setConfirmPassword: (value: string) => set({ confirmPassword: value }),
+	})),
+);

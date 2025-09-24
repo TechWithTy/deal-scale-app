@@ -12,7 +12,7 @@ export default defineConfig({
       'lib/stores/user/_tests/**/*.spec.ts',
       'lib/stores/user/_tests/**/*.test.ts',
     ],
-    setupFiles: ['lib/stores/user/_tests/_features/setup.ts'],
+    setupFiles: ['lib/stores/user/_tests/_steps/setup.ts'],
   },
   resolve: {
     alias: {

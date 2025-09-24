@@ -26,6 +26,7 @@ export default async function RootLayout({
 	return (
 		<html lang="en">
 			<body className={`${inter.className}  `} suppressHydrationWarning={true}>
+				{/* Move to Providers Next Command Nuqs */}
 				<NextTopLoader showSpinner={false} />
 				<CommandPaletteProvider>
 					<NuqsAdapter>
