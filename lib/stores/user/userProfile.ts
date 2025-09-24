@@ -6,6 +6,24 @@ import { v4 as uuidv4 } from "uuid";
 import type { UserProfile } from "@/types/userProfile";
 import type { LeadList } from "@/types/_dashboard/leadList";
 import type { LeadTypeGlobal } from "@/types/_dashboard/leads";
+// Aggregated nested domain stores (AI, campaigns, leads, skip trace, company, credits, permissions, session)
+import { useAISettingsStore } from "./ai/ai";
+import { useAIActionsStore } from "./ai/actions";
+import { useAIChatStore } from "./ai/chat";
+import { useAIReportsStore } from "./ai/reports";
+import { useAITasksStore } from "./ai/tasks";
+import { useUserCampaignsStore } from "./campaigns/campaigns";
+import { useUserCampaignReportsStore } from "./campaigns/reports";
+import { useUserLeadsStore } from "./leads/leads";
+import { useUserLeadsReportsStore } from "./leads/reports";
+import { useSavedSearchesStore } from "./leads/savedSearches";
+import { useSkipTraceStore } from "./skip_trace/skipTraceStore";
+import { useSkipTraceReportsStore } from "./skip_trace/reports";
+import { useCompanyStore } from "./company";
+import { useUserCreditsStore } from "./credits";
+import { usePermissionsStore } from "./permissions";
+import { useSessionStore } from "./useSessionStore";
+import { useUserSubscriptionStore } from "./subscription";
 
 interface UserProfileState {
 	userProfile: UserProfile | null;
@@ -163,3 +181,54 @@ export const useUserProfileStore = create<UserProfileState>()(
 		{ name: "UserProfileStoreDevtools" },
 	),
 );
+
+// Re-export nested domain stores for single-top access from userProfile module
+export {
+  useAISettingsStore,
+  useAIActionsStore,
+  useAIChatStore,
+  useAIReportsStore,
+  useAITasksStore,
+  useUserCampaignsStore,
+  useUserCampaignReportsStore,
+  useUserLeadsStore,
+  useUserLeadsReportsStore,
+  useSavedSearchesStore,
+  useSkipTraceStore,
+  useSkipTraceReportsStore,
+  useCompanyStore,
+  useUserCreditsStore,
+  usePermissionsStore,
+  useSessionStore,
+  useUserSubscriptionStore,
+};
+
+// Optional: grouped access with nested namespaces for DX
+export const UserStores = {
+  profile: useUserProfileStore,
+  session: useSessionStore,
+  ai: {
+    settings: useAISettingsStore,
+    actions: useAIActionsStore,
+    chat: useAIChatStore,
+    reports: useAIReportsStore,
+    tasks: useAITasksStore,
+  },
+  campaigns: {
+    store: useUserCampaignsStore,
+    reports: useUserCampaignReportsStore,
+  },
+  leads: {
+    store: useUserLeadsStore,
+    reports: useUserLeadsReportsStore,
+    savedSearches: useSavedSearchesStore,
+  },
+  skipTrace: {
+    store: useSkipTraceStore,
+    reports: useSkipTraceReportsStore,
+  },
+  company: useCompanyStore,
+  credits: useUserCreditsStore,
+  permissions: usePermissionsStore,
+  subscription: useUserSubscriptionStore,
+} as const;

@@ -30,13 +30,13 @@ export const useCampaignControls = create<CampaignControlState>((set, get) => ({
 // Mock workflow triggers to simulate side-effects when controls are used
 export function mockStartWorkflow(campaignId: string) {
 	// eslint-disable-next-line no-console
-	console.log(`[mock] start workflow for`, campaignId);
+	console.log("[mock] start workflow for", campaignId);
 }
 export function mockPauseWorkflow(campaignId: string) {
 	// eslint-disable-next-line no-console
-	console.log(`[mock] pause workflow for`, campaignId);
+	console.log("[mock] pause workflow for", campaignId);
 }
 export function mockStopWorkflow(campaignId: string) {
 	// eslint-disable-next-line no-console
-	console.log(`[mock] stop workflow for`, campaignId);
+	console.log("[mock] stop workflow for", campaignId);
 }

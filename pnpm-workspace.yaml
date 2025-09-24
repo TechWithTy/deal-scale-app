@@ -1,5 +1,5 @@
 packages:
   # include the root package
   - '.'
-  # include all packages in external
-  - 'external/*'
+  # explicitly exclude external packages from the workspace
+  - '!external/**'
