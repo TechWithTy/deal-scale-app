@@ -32,7 +32,9 @@ export const useLeadStore = create<LeadState>((set, get) => ({
 				leadExcelColumns,
 				`filtered_leads_${new Date().toISOString().slice(0, 10)}.xlsx`,
 			);
-			const blob = new Blob([buffer], {
+			// Ensure Blob receives an ArrayBuffer to satisfy TS DOM typings
+			const arrayBuffer = buffer.buffer as ArrayBuffer;
+			const blob = new Blob([arrayBuffer], {
 				type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
 			});
 			const url = window.URL.createObjectURL(blob);

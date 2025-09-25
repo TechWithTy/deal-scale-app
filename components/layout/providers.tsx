@@ -4,6 +4,7 @@ import type React from "react";
 import ThemeProvider from "./ThemeToggle/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import Script from "next/script";
+import PostHogProviderBridge from "@/components/analytics/PostHogProviderBridge";
 export default function Providers({
 	session,
 	children,
@@ -16,7 +17,9 @@ export default function Providers({
 	return (
 		<>
 			<ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-				<SessionProvider session={session}>{children}</SessionProvider>
+				<SessionProvider session={session}>
+					<PostHogProviderBridge>{children}</PostHogProviderBridge>
+				</SessionProvider>
 				{/* Global toast container */}
 				<Toaster />
 				{/* Microsoft Clarity (gated by env) */}

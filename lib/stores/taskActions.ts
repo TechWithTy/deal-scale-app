@@ -14,6 +14,7 @@ export type KanbanTask = BaseKanbanTask & {
 };
 import { v4 as uuid } from "uuid";
 import { create } from "zustand";
+import { withAnalytics } from "./_middleware/analytics";
 import { persist } from "zustand/middleware";
 import { defaultCols } from "@/constants/_faker/kanban";
 
@@ -191,7 +192,7 @@ interface Actions {
 
 export const useTaskStore = create<KanbanState & Actions>()(
 	persist(
-		(set) => ({
+		withAnalytics<KanbanState & Actions>("task_store", (set, get) => ({
 			tasks: safeKanbanState.tasks,
 			columns: safeKanbanState.columns,
 			draggedTask: null,
@@ -270,7 +271,7 @@ export const useTaskStore = create<KanbanState & Actions>()(
 				})),
 			setTasks: (newTasks: KanbanTask[]) => set({ tasks: newTasks }),
 			setCols: (newCols: KanbanColumn[]) => set({ columns: newCols }),
-		}),
+		})),
 		{ name: "task-store", skipHydration: true },
 	),
 );

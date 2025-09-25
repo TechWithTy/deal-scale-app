@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { withAnalytics } from "./_middleware/analytics";
 
 interface ImpersonationState {
 	isImpersonating: boolean;
@@ -13,18 +14,20 @@ interface ImpersonationState {
 	endImpersonation: () => void;
 }
 
-export const useImpersonationStore = create<ImpersonationState>((set) => ({
-	isImpersonating: false,
-	adminToken: null,
-	userName: null,
-	userId: null,
-	startImpersonation: ({ adminToken, userName, userId }) =>
-		set({ isImpersonating: true, adminToken, userName, userId }),
-	endImpersonation: () =>
-		set({
-			isImpersonating: false,
-			adminToken: null,
-			userName: null,
-			userId: null,
-		}),
-}));
+export const useImpersonationStore = create<ImpersonationState>(
+	withAnalytics<ImpersonationState>("impersonation", (set) => ({
+		isImpersonating: false,
+		adminToken: null,
+		userName: null,
+		userId: null,
+		startImpersonation: ({ adminToken, userName, userId }) =>
+			set({ isImpersonating: true, adminToken, userName, userId }),
+		endImpersonation: () =>
+			set({
+				isImpersonating: false,
+				adminToken: null,
+				userName: null,
+				userId: null,
+			}),
+	})),
+);

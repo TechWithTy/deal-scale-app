@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { withAnalytics } from "./_middleware/analytics";
 
 // Types for agent selection
 export interface Agent {
@@ -132,7 +133,7 @@ export interface CampaignCreationState {
 }
 
 export const useCampaignCreationStore = create<CampaignCreationState>(
-	(set, get) => ({
+	withAnalytics<CampaignCreationState>("campaign_creation", (set, get) => ({
 		// Step 1: Channel Selection
 		primaryChannel: null,
 		setPrimaryChannel: (primaryChannel) => set({ primaryChannel }),
@@ -272,10 +273,11 @@ export const useCampaignCreationStore = create<CampaignCreationState>(
 
 			let chosen = eligible[0];
 			switch (s.numberSelectionStrategy) {
-				case "random":
+				case "random": {
 					chosen = eligible[Math.floor(Math.random() * eligible.length)];
 					break;
-				case "sticky_by_lead":
+				}
+				case "sticky_by_lead": {
 					if (leadKey) {
 						// Simple stable mapping: hash leadKey to index
 						let hash = 0;
@@ -284,13 +286,26 @@ export const useCampaignCreationStore = create<CampaignCreationState>(
 						chosen = eligible[hash % eligible.length];
 						break;
 					}
-				// fallback to round robin
-				case "round_robin":
-				default:
+					// No leadKey provided; fall back to round-robin logic explicitly (no switch fallthrough)
+					chosen = eligible.reduce((a, b) =>
+						(usage[a] || 0) <= (usage[b] || 0) ? a : b,
+					);
+					break;
+				}
+				case "round_robin": {
 					// pick the number with the least usage
 					chosen = eligible.reduce((a, b) =>
 						(usage[a] || 0) <= (usage[b] || 0) ? a : b,
 					);
+					break;
+				}
+				default: {
+					// default to least-used number when strategy is unrecognized
+					chosen = eligible.reduce((a, b) =>
+						(usage[a] || 0) <= (usage[b] || 0) ? a : b,
+					);
+					break;
+				}
 			}
 
 			// increment usage
@@ -351,5 +366,5 @@ export const useCampaignCreationStore = create<CampaignCreationState>(
 				senderUsageToday: {},
 				lastUsageResetDate: new Date().toISOString().slice(0, 10),
 			}),
-	}),
+	})),
 );

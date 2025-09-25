@@ -2,6 +2,7 @@
 
 import type { UserProfile } from "@/types/userProfile";
 import { create } from "zustand";
+import { withAnalytics } from "../_middleware/analytics";
 
 interface SessionState {
 	user: UserProfile | null; // ✅ Holds user context
@@ -9,10 +10,12 @@ interface SessionState {
 	clearUser: () => void; // ✅ Allows clearing session
 }
 
-export const useSessionStore = create<SessionState>((set) => ({
-	user: null, // ✅ Initially no user
+export const useSessionStore = create<SessionState>(
+	withAnalytics<SessionState>("session", (set) => ({
+		user: null, // ✅ Initially no user
 
-	setSessionUser: (user) => set({ user }),
+		setSessionUser: (user) => set({ user }),
 
-	clearUser: () => set({ user: null }),
-}));
+		clearUser: () => set({ user: null }),
+	})),
+);

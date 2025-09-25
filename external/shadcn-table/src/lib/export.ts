@@ -125,7 +125,8 @@ export async function exportTableToZipCSV<TData>(
 	}
 
 	const content: Uint8Array = await zip.generateAsync({ type: "uint8array" });
-	const blob = new Blob([content], { type: "application/zip" });
+	const arrayBuffer = content.buffer as ArrayBuffer;
+	const blob = new Blob([arrayBuffer], { type: "application/zip" });
 	downloadBlob(blob, `${filename}.zip`);
 }
 

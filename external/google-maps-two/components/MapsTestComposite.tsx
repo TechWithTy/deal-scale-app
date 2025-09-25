@@ -316,12 +316,8 @@ export function MapsTestComposite({
 				<Dialog open={svOpen} onOpenChange={setSvOpen}>
 					<DialogTrigger asChild>
 						{(() => {
-							const latNum = Number.isFinite
-								? parseFloat(String(lat).trim())
-								: Number(lat);
-							const lngNum = Number.isFinite
-								? parseFloat(String(lng).trim())
-								: Number(lng);
+							const latNum = Number.parseFloat(String(lat).trim());
+							const lngNum = Number.parseFloat(String(lng).trim());
 							const coordsValid =
 								Number.isFinite(latNum) && Number.isFinite(lngNum);
 							const canPreview =

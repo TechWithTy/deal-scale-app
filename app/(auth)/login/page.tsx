@@ -6,7 +6,6 @@ import { cn } from "@/lib/_utils";
 import { FlameIcon } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
-import QuoteSection from "../(signin)/QuoteSection";
 import AuthToggle from "../(signin)/authToggle";
 import AuthForm from "../(signin)/userAuth";
 
@@ -25,8 +24,6 @@ export default function AuthenticationPage() {
 				</div>
 
 				<Carousel />
-
-				<QuoteSection />
 			</div>
 
 			<div className="flex h-full items-center p-4 lg:p-8">

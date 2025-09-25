@@ -157,7 +157,9 @@ export const LoopDownloadMain = (props: LoopDownloadMainProps) => {
 		}
 		// * Trigger browser download
 		if (buffer) {
-			const blob = new Blob([buffer], {
+			// Ensure Blob receives an ArrayBuffer to satisfy TS DOM typings
+			const arrayBuffer = buffer.buffer as ArrayBuffer;
+			const blob = new Blob([arrayBuffer], {
 				type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
 			});
 			const url = window.URL.createObjectURL(blob);

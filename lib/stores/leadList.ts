@@ -95,7 +95,8 @@ export const useLeadListStore = create<LeadListState>(
 				return;
 			}
 			// Create a Blob from the ZIP buffer and trigger download
-			const blob = new Blob([zipBuffer], { type: "application/zip" });
+			const arrayBuffer = zipBuffer.buffer as ArrayBuffer;
+			const blob = new Blob([arrayBuffer], { type: "application/zip" });
 			const url = window.URL.createObjectURL(blob);
 
 			const a = document.createElement("a");

@@ -12,6 +12,7 @@
 		"resolveJsonModule": true,
 		"isolatedModules": true,
 		"jsx": "preserve",
+		"types": ["vitest/globals", "node"],
 		"incremental": true,
 		"plugins": [
 			{
@@ -23,11 +24,14 @@
 			"@/*": ["./*"],
 			"@root/*": ["./*"],
 			"@ssf/*": ["external/score-streak-flow/src/*"],
-			"external/*": ["external/*"]
+			"external/*": ["external/*"],
+			"@/store/*": ["lib/stores/*"],
+			"@/store/user": ["lib/stores/userStore"]
 		}
 	},
 	"include": [
 		"next-env.d.ts",
+		"types/**/*.d.ts",
 		"**/*.ts",
 		"**/*.tsx",
 		".next/types/**/*.ts",
@@ -35,7 +39,7 @@
 	],
 	"exclude": [
 		"node_modules",
-		"external/score-streak-flow/src/App.tsx",
-		"external/score-streak-flow/src/pages/**"
+		"external/**",
+		"_tests/**"
 	]
 }

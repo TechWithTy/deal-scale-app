@@ -155,3 +155,4 @@ const ChannelCustomizationStep: FC<ChannelCustomizationStepProps> = ({
 };
 
 export default ChannelCustomizationStep;
+export { ChannelCustomizationStep };
