@@ -59,8 +59,8 @@ const SkipTraceForm: React.FC<SkipTraceFormProps> = ({
 	};
 
 	return (
-		<div className="rounded-lg bg-card p-6 shadow-md">
-			<p className="mb-4 text-gray-500 text-sm dark:text-gray-400">
+		<div className="bg-card rounded-lg p-6 shadow-md">
+			<p className="mb-4 text-muted-foreground text-sm">
 				Select the number of leads to skip trace:
 			</p>
 
@@ -68,7 +68,7 @@ const SkipTraceForm: React.FC<SkipTraceFormProps> = ({
 			<div className="mb-4">
 				<label
 					htmlFor="recordsToSkip"
-					className="block font-medium text-gray-700 text-sm dark:text-gray-300"
+					className="block font-medium text-foreground text-sm"
 				>
 					Number of Leads to Skip
 				</label>
@@ -77,11 +77,11 @@ const SkipTraceForm: React.FC<SkipTraceFormProps> = ({
 						type="number"
 						value={recordsToSkip}
 						onChange={(e) => setRecordsToSkip(Number(e.target.value))}
-						className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+						className="mt-1 w-full sm:text-sm"
 						min={1}
 						max={leads.length}
 					/>
-					<span className="text-gray-500 text-sm dark:text-gray-400">
+					<span className="text-muted-foreground text-sm">
 						/ {leads.length}
 					</span>
 				</div>
@@ -97,14 +97,14 @@ const SkipTraceForm: React.FC<SkipTraceFormProps> = ({
 						onChange={() => setRedoSkipTrace(!redoSkipTrace)}
 						className="peer sr-only"
 					/>
-					<div className="h-6 w-11 rounded-full bg-gray-300 transition-colors duration-200 peer-checked:bg-blue-500 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-500 dark:bg-gray-700" />
+					<div className="h-6 w-11 rounded-full bg-muted transition-colors duration-200 peer-checked:bg-primary peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary" />
 					<span
-						className={`absolute top-0.5 left-0.5 h-5 w-5 transform rounded-full bg-white transition-transform duration-200 ${
+						className={`absolute top-0.5 left-0.5 h-5 w-5 transform rounded-full bg-background transition-transform duration-200 ${
 							redoSkipTrace ? "translate-x-5" : ""
 						}`}
 					/>
 				</label>
-				<FormLabel className="ml-3 font-medium text-gray-700 text-sm dark:text-gray-300">
+				<FormLabel className="ml-3 font-medium text-foreground text-sm">
 					Don’t redo skip traces on data you’ve already purchased in the past 2
 					months
 				</FormLabel>
@@ -112,16 +112,13 @@ const SkipTraceForm: React.FC<SkipTraceFormProps> = ({
 
 			{/* Total price */}
 			<div className="mb-6">
-				<p className="font-medium text-lg dark:text-white">
-					Total Price: <span className="text-blue-500">${calculateCost()}</span>
+				<p className="font-medium text-foreground text-lg">
+					Total Price: <span className="text-primary">${calculateCost()}</span>
 				</p>
 			</div>
 
 			{/* Submit button */}
-			<Button
-				onClick={handleSubmit}
-				className="w-full rounded-md bg-blue-500 py-2 text-white"
-			>
+			<Button onClick={handleSubmit} className="w-full">
 				Skip Trace
 			</Button>
 		</div>
@@ -155,11 +152,9 @@ const SkipTraceDialog: React.FC<SkipTraceDialogProps> = ({
 				</Button>
 			</DialogTrigger>
 
-			<DialogContent className="-translate-x-1/2 -translate-y-1/2 fixed top-1/2 left-1/2 z-50 transform rounded-lg bg-card shadow-lg sm:max-w-[425px]">
+			<DialogContent className="sm:max-w-[425px]">
 				<DialogHeader>
-					<DialogTitle className="dark:text-white">
-						Skip Trace Leads
-					</DialogTitle>
+					<DialogTitle>Skip Trace Leads</DialogTitle>
 				</DialogHeader>
 
 				<FormProvider {...form}>

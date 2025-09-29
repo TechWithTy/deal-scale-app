@@ -59,7 +59,7 @@ export function DataTableRowModalCarousel<TData>(
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent className="sm:max-w-3xl md:max-w-4xl max-h-[85vh] overflow-hidden flex flex-col">
+			<DialogContent className="flex flex-col overflow-hidden max-h-[85vh] sm:max-w-3xl md:max-w-4xl border border-border bg-card text-foreground shadow-xl">
 				<DialogHeader>
 					<DialogTitle>
 						{row && title
@@ -71,7 +71,7 @@ export function DataTableRowModalCarousel<TData>(
 					) : null}
 				</DialogHeader>
 				<div
-					className="grid gap-3 text-sm leading-6 overflow-y-auto pr-1"
+					className="grid gap-3 overflow-y-auto pr-1 text-sm leading-6"
 					style={{ maxHeight: "calc(85vh - 150px)" }}
 				>
 					{row ? (

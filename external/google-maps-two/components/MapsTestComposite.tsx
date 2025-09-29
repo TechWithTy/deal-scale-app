@@ -327,7 +327,7 @@ export function MapsTestComposite({
 							return (
 								<button
 									type="button"
-									className={`rounded px-3 py-2 text-sm font-medium ${
+									className={`rounded px-3 py-2 font-medium text-sm ${
 										canPreview
 											? "bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:text-white dark:hover:bg-gray-700"
 											: "cursor-not-allowed bg-muted text-muted-foreground"
@@ -369,7 +369,7 @@ export function MapsTestComposite({
 					lastACPlaceRef.current?.location ||
 					selectedPlace?.location
 				) && (
-					<p className="mt-2 text-xs text-muted-foreground">
+					<p className="mt-2 text-muted-foreground text-xs">
 						Select a valid address or enter valid coordinates to enable Street
 						View preview.
 					</p>

@@ -16,12 +16,16 @@ const Toaster = ({ ...props }: ToasterProps) => {
 			toastOptions={{
 				classNames: {
 					toast:
-						"group toast bg-background text-foreground border border-border shadow-lg opacity-100 group-[.toaster]:bg-background group-[.toaster]:text-foreground group-[.toaster]:border-border",
-					description: "group-[.toast]:text-muted-foreground",
+						"group toast border border-border bg-card text-foreground shadow-lg transition-all [&>[data-content]]:text-sm data-[type=success]:border-primary data-[type=success]:bg-primary data-[type=success]:text-primary-foreground data-[type=error]:border-destructive data-[type=error]:bg-destructive data-[type=error]:text-destructive-foreground data-[type=warning]:border-accent data-[type=warning]:bg-accent data-[type=warning]:text-accent-foreground data-[type=info]:border-secondary data-[type=info]:bg-secondary data-[type=info]:text-secondary-foreground",
+					title: "group-[.toast]:font-semibold group-[.toast]:text-inherit",
+					description: "group-[.toast]:text-sm group-[.toast]:text-inherit/90",
 					actionButton:
-						"group-[.toast]:bg-primary group-[.toast]:text-primary-foreground",
+						"group-[.toast]:bg-primary group-[.toast]:text-primary-foreground group-[.toast]:hover:bg-primary/90",
 					cancelButton:
-						"group-[.toast]:bg-muted group-[.toast]:text-muted-foreground",
+						"group-[.toast]:bg-muted group-[.toast]:text-muted-foreground group-[.toast]:hover:bg-muted/80",
+					closeButton:
+						"group-[.toast]:text-inherit/70 group-[.toast]:hover:text-inherit",
+					icon: "group-[.toast]:text-inherit",
 				},
 			}}
 			{...props}

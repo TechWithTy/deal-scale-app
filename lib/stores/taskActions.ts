@@ -226,7 +226,7 @@ export const useTaskStore = create<KanbanState & Actions>()(
 							...(appointmentDate ? { appointmentDate } : {}),
 							...(youtubeUrl ? { youtubeUrl } : {}),
 							...(outputVideoUrl ? { outputVideoUrl } : {}),
-							...(attachments && attachments.length ? { attachments } : {}),
+							...(attachments?.length ? { attachments } : {}),
 						},
 					],
 				})),

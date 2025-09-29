@@ -2,9 +2,195 @@
 import { GoogleMap, LoadScript, DrawingManager } from "@react-google-maps/api";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { getBoundsFromShape, generatePinsWithinBounds } from "../utils/bounds";
-import { AirQualityMount } from "./map/AirQualityMount";
+import {
+	AirQualityMount,
+	type GmpAirQualityMeterElement,
+} from "./map/AirQualityMount";
 import { DrawingControls } from "./map/DrawingControls";
 import { HoverOverlay } from "./map/HoverOverlay";
+
+type PhotoLikeObject = {
+	url?: string;
+	getURI?: (options: { maxHeight?: number; maxWidth?: number }) => string;
+	getUrl?: (options: { maxWidth?: number; maxHeight?: number }) => string;
+};
+
+type PhotoLike = string | google.maps.places.PlacePhoto | PhotoLikeObject;
+
+const hasGetUrl = (
+	value: PhotoLike,
+): value is {
+	getUrl: (options: { maxWidth?: number; maxHeight?: number }) => string;
+} => typeof value === "object" && value !== null && "getUrl" in value;
+
+const hasGetUri = (
+	value: PhotoLike,
+): value is {
+	getURI: (options: { maxHeight?: number; maxWidth?: number }) => string;
+} => typeof value === "object" && value !== null && "getURI" in value;
+
+const hasPhotoUrlProperty = (
+	value: PhotoLike,
+): value is {
+	url: string;
+} =>
+	typeof value === "object" &&
+	value !== null &&
+	typeof (value as PhotoLikeObject).url === "string";
+
+type AddressValidationRequest = {
+	address: {
+		addressLines: string[];
+		regionCode?: string;
+		languageCode?: string;
+	};
+};
+
+interface AddressValidationVerdict {
+	addressComplete?: boolean;
+	hasInferredComponents?: boolean;
+	hasReplacedComponents?: boolean;
+	hasUnconfirmedComponents?: boolean;
+}
+
+interface AddressValidationGeocode {
+	location?: google.maps.LatLngLiteral;
+	plusCode?: {
+		globalCode?: string;
+		compoundCode?: string;
+	};
+}
+
+interface AddressValidationPayload {
+	address?: {
+		formattedAddress?: string;
+		postalAddress?: {
+			regionCode?: string;
+			addressLines?: string[];
+			administrativeArea?: string;
+			locality?: string;
+			postalCode?: string;
+		};
+	};
+	geocode?: AddressValidationGeocode;
+	verdict?: AddressValidationVerdict;
+	responseId?: string;
+	[key: string]: unknown;
+}
+
+type AddressValidationLibrary = {
+	AddressValidation: {
+		fetchAddressValidation: (
+			request: AddressValidationRequest,
+		) => Promise<AddressValidationPayload>;
+	};
+};
+
+type AddressValidationImportResult = {
+	AddressValidation?: AddressValidationLibrary["AddressValidation"];
+};
+
+type PlacesLibraryWithPlace = google.maps.PlacesLibrary & {
+	Place?: typeof google.maps.places.Place;
+};
+
+type PlacesImportResult = {
+	Place?: typeof google.maps.places.Place;
+};
+
+type PlaceClass = typeof google.maps.places.Place;
+
+type PlaceFetchOptions = ConstructorParameters<PlaceClass>[0];
+
+const importAddressValidation = async (): Promise<
+	AddressValidationLibrary["AddressValidation"] | null
+> => {
+	if (typeof google === "undefined" || !google.maps) return null;
+	try {
+		const gm = google.maps as GoogleMapsWithImport;
+		const module = (await gm.importLibrary(
+			"addressValidation",
+		)) as AddressValidationImportResult;
+		return module.AddressValidation ?? null;
+	} catch {
+		return null;
+	}
+};
+
+const importPlaceConstructor = async (): Promise<PlaceClass | null> => {
+	if (typeof google === "undefined" || !google.maps) return null;
+	try {
+		const gm = google.maps as GoogleMapsWithImport;
+		const module = (await gm.importLibrary("places")) as PlacesImportResult;
+		return module.Place ?? null;
+	} catch {
+		return null;
+	}
+};
+
+type HoverDetails = {
+	name?: string;
+	formattedAddress?: string;
+	url?: string;
+	website?: string;
+	phone?: string;
+	rating?: number;
+	userRatingsTotal?: number;
+	openNow?: boolean;
+	placeId?: string;
+	googleMapsUri?: string;
+	priceLevel?: number;
+	businessStatus?: google.maps.places.BusinessStatus | string;
+	hoursToday?: string;
+	editorialSummary?: string;
+	photos?: PhotoLike[];
+	reviews?: google.maps.places.PlaceReview[];
+	country?: string;
+	addressType?: string;
+	neighborhood?: string;
+	city?: string;
+	county?: string;
+	state?: string;
+	postalCode?: string;
+};
+
+type CoreLibrary = {
+	ColorScheme?: typeof google.maps.ColorScheme;
+};
+
+type GoogleMapsWithImport = typeof google.maps & {
+	importLibrary(name: "core"): Promise<CoreLibrary>;
+	importLibrary(name: "addressValidation"): Promise<AddressValidationLibrary>;
+	importLibrary(name: "places"): Promise<PlacesLibraryWithPlace>;
+	importLibrary(name: string): Promise<unknown>;
+};
+
+type LegacyPlaceResult = google.maps.places.PlaceResult & {
+	price_level?: number;
+	business_status?: google.maps.places.BusinessStatus | string;
+	photos?: google.maps.places.PlacePhoto[];
+	reviews?: google.maps.places.PlaceReview[];
+};
+
+type PoiClickEvent = google.maps.MapMouseEvent & {
+	placeId?: string;
+	stop?: () => void;
+};
+
+const isPoiClickEvent = (
+	event: google.maps.MapMouseEvent,
+): event is PoiClickEvent =>
+	typeof (event as PoiClickEvent).placeId === "string";
+
+const getCurrentWeekdayDescription = (
+	descriptions?: readonly string[] | null,
+): string | undefined => {
+	if (!Array.isArray(descriptions) || descriptions.length === 0)
+		return undefined;
+	const today = new Date().getDay();
+	const normalizedIndex = today === 0 ? 6 : today - 1;
+	return descriptions[normalizedIndex];
+};
 
 export type MapWithDrawingProps = {
 	apiKey: string;
@@ -33,8 +219,7 @@ export type MapWithDrawingProps = {
 	validatePinsBeforeRender?: boolean; // default true
 	onPinValidated?: (payload: {
 		pin: google.maps.LatLngLiteral;
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		validation: any | null;
+		validation: AddressValidationPayload | null;
 		formattedAddress: string;
 	}) => void;
 	// Map color scheme: light, dark, or follow system/app theme
@@ -75,6 +260,41 @@ const DEFAULT_LIBRARIES: ("drawing" | "marker" | "places" | "geometry")[] = [
 ];
 
 const defaultContainer = { width: "100%", height: "500px" } as const;
+
+const PLACE_FIELDS = [
+	"displayName",
+	"formattedAddress",
+	"location",
+	"rating",
+	"userRatingCount",
+	"currentOpeningHours",
+	"internationalPhoneNumber",
+	"websiteUri",
+	"id",
+	"googleMapsUri",
+	"priceLevel",
+	"businessStatus",
+	"editorialSummary",
+	"photos",
+	"reviews",
+] as const;
+
+const LEGACY_PLACE_FIELDS = [
+	"name",
+	"formatted_address",
+	"geometry",
+	"url",
+	"website",
+	"international_phone_number",
+	"opening_hours",
+	"rating",
+	"user_ratings_total",
+	"place_id",
+	"price_level",
+	"business_status",
+	"photos",
+	"reviews",
+] as const;
 
 export function MapWithDrawing(props: MapWithDrawingProps) {
 	const {
@@ -127,36 +347,19 @@ export function MapWithDrawing(props: MapWithDrawingProps) {
 	const isUserDraggingRef = useRef(false);
 	// Air quality meter element host and ref
 	const meterHostRef = useRef<HTMLDivElement | null>(null);
-	const meterElRef = useRef<any>(null);
+	const meterElRef = useRef<GmpAirQualityMeterElement | null>(null);
 	// Hover InfoWindow state
 	const [hoverPosition, setHoverPosition] =
 		useState<google.maps.LatLngLiteral | null>(null);
 	const [hoverAddress, setHoverAddress] = useState<string>("");
-	const [hoverDetails, setHoverDetails] = useState<{
-		name?: string;
-		formattedAddress?: string;
-		url?: string;
-		website?: string;
-		phone?: string;
-		rating?: number;
-		userRatingsTotal?: number;
-		openNow?: boolean;
-		placeId?: string;
-		googleMapsUri?: string;
-		priceLevel?: number;
-		businessStatus?: string;
-		hoursToday?: string;
-		editorialSummary?: string;
-		photos?: any[];
-		reviews?: any[];
-		country?: string;
-		addressType?: string; // e.g., street_address, premise, plus_code, route
-	} | null>(null);
+	const [hoverDetails, setHoverDetails] = useState<HoverDetails | null>(null);
 	const geocodeCache = useRef<Map<string, string>>(new Map());
 	const placesRef = useRef<google.maps.places.PlacesService | null>(null);
 	const geocodeReqId = useRef(0);
 	const [validating, setValidating] = useState(false);
-	const [validation, setValidation] = useState<any | null>(null);
+	const [validation, setValidation] = useState<AddressValidationPayload | null>(
+		null,
+	);
 	const [reviewsExpanded, setReviewsExpanded] = useState(false);
 	const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
 	// Suppress hover popover right after a click to avoid double popover
@@ -167,6 +370,14 @@ export function MapWithDrawing(props: MapWithDrawingProps) {
 	>(undefined);
 	const [googleReady, setGoogleReady] = useState(false);
 	const [mapInit, setMapInit] = useState(false);
+	// Defensive fallback: in some environments, GoogleMap onLoad/tilesloaded may be delayed or skipped.
+	// Ensure the shim doesn't linger by force-hiding it shortly after mount when the script is assumed ready.
+	// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
+	useEffect(() => {
+		if (mapInit) return;
+		const t = setTimeout(() => setMapInit(true), 1800);
+		return () => clearTimeout(t);
+	}, [mapInit, assumeLoaded, googleReady]);
 	// If a parent already loaded the script, mark googleReady when available
 	useEffect(() => {
 		if (!assumeLoaded) return;
@@ -181,20 +392,25 @@ export function MapWithDrawing(props: MapWithDrawingProps) {
 	}>({ primary: "", background: "" });
 
 	// Helper to safely extract a photo URL from various SDK shapes
-	const getPhotoUrl = useCallback((photo: any, size = 320): string | null => {
-		try {
-			if (!photo) return null;
-			if (typeof photo.getURI === "function") {
-				return photo.getURI({ maxHeight: size, maxWidth: size });
-			}
-			if (typeof photo.getUrl === "function") {
-				return photo.getUrl({ maxWidth: size, maxHeight: size });
-			}
-			if (typeof photo === "string") return photo;
-			if (photo?.url) return photo.url;
-		} catch {}
-		return null;
-	}, []);
+	const getPhotoUrl = useCallback(
+		(photo: PhotoLike | null | undefined, size = 320): string | null => {
+			try {
+				if (!photo) return null;
+				if (typeof photo === "string") return photo;
+				if (hasGetUri(photo)) {
+					return photo.getURI({ maxHeight: size, maxWidth: size });
+				}
+				if (hasGetUrl(photo)) {
+					return photo.getUrl({ maxWidth: size, maxHeight: size });
+				}
+				if (hasPhotoUrlProperty(photo)) {
+					return photo.url;
+				}
+			} catch {}
+			return null;
+		},
+		[],
+	);
 
 	const clearShape = useCallback(() => {
 		if (shapeRef.current) {
@@ -209,17 +425,17 @@ export function MapWithDrawing(props: MapWithDrawingProps) {
 		let mounted = true;
 		(async () => {
 			try {
-				// eslint-disable-next-line @typescript-eslint/no-explicit-any
-				const core: any = await (google.maps as any).importLibrary("core");
-				const CS: typeof google.maps.ColorScheme =
-					core.ColorScheme ?? (google.maps as any).ColorScheme;
-				if (!mounted || !CS) return;
+				const gm = google.maps as GoogleMapsWithImport;
+				const coreLibrary = await gm.importLibrary("core");
+				const colorScheme =
+					coreLibrary.ColorScheme ?? google.maps.ColorScheme ?? undefined;
+				if (!mounted || !colorScheme) return;
 				if (mapColorScheme === "light") {
-					setColorSchemeEnum(CS.LIGHT);
+					setColorSchemeEnum(colorScheme.LIGHT);
 					return;
 				}
 				if (mapColorScheme === "dark") {
-					setColorSchemeEnum(CS.DARK);
+					setColorSchemeEnum(colorScheme.DARK);
 					return;
 				}
 				// system: force dark initially if app or system prefers dark; otherwise follow system
@@ -232,7 +448,9 @@ export function MapWithDrawing(props: MapWithDrawingProps) {
 						: undefined;
 				const prefersSystemDark = !!mql?.matches;
 				setColorSchemeEnum(
-					prefersAppDark || prefersSystemDark ? CS.DARK : CS.FOLLOW_SYSTEM,
+					prefersAppDark || prefersSystemDark
+						? colorScheme.DARK
+						: colorScheme.FOLLOW_SYSTEM,
 				);
 			} catch {
 				// Fallback: no enum -> undefined (map will use default light)
@@ -245,6 +463,7 @@ export function MapWithDrawing(props: MapWithDrawingProps) {
 	}, [googleReady, mapColorScheme]);
 
 	// Read CSS variables for tokens (HSL triplets) so we can feed Google Maps colors
+	// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
 	useEffect(() => {
 		if (typeof window === "undefined") return;
 		try {
@@ -264,25 +483,27 @@ export function MapWithDrawing(props: MapWithDrawingProps) {
 		if (!googleReady) return;
 		let disposed = false;
 		let observer: MutationObserver | null = null;
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		let CS: typeof google.maps.ColorScheme | undefined;
+		let colorScheme: typeof google.maps.ColorScheme | undefined;
 		// Setup listeners only for system mode
 		if (mapColorScheme !== "system") return;
 		(async () => {
 			try {
-				// eslint-disable-next-line @typescript-eslint/no-explicit-any
-				const core: any = await (google.maps as any).importLibrary("core");
-				CS = core.ColorScheme ?? (google.maps as any).ColorScheme;
+				const gm = google.maps as GoogleMapsWithImport;
+				const coreLibrary = await gm.importLibrary("core");
+				colorScheme = coreLibrary.ColorScheme ?? google.maps.ColorScheme;
 			} catch {
-				CS = undefined;
+				colorScheme = undefined;
 			}
 			if (disposed) return;
 			const mql = window.matchMedia("(prefers-color-scheme: dark)");
 			const evalAndSet = () => {
 				const prefersAppDark =
 					document.documentElement.classList.contains("dark");
-				if (!CS) return;
-				const next = prefersAppDark || mql.matches ? CS.DARK : CS.FOLLOW_SYSTEM;
+				if (!colorScheme) return;
+				const next =
+					prefersAppDark || mql.matches
+						? colorScheme.DARK
+						: colorScheme.FOLLOW_SYSTEM;
 				setColorSchemeEnum((prev) => {
 					if (prev !== next) {
 						setMapKey((k) => k + 1); // force remount of GoogleMap
@@ -340,18 +561,15 @@ export function MapWithDrawing(props: MapWithDrawingProps) {
 		async (address: string) => {
 			if (!enableAddressValidation || !address) return null;
 			try {
-				// eslint-disable-next-line @typescript-eslint/no-explicit-any
-				const { AddressValidation }: any = await (
-					google.maps as any
-				).importLibrary("addressValidation");
-				const result = await AddressValidation.fetchAddressValidation({
+				const addressValidation = await importAddressValidation();
+				if (!addressValidation) return null;
+				return await addressValidation.fetchAddressValidation({
 					address: {
 						addressLines: [address],
 						regionCode: validationRegionCode,
 						languageCode: validationLanguageCode,
 					},
 				});
-				return result;
 			} catch {
 				return null;
 			}
@@ -384,12 +602,13 @@ export function MapWithDrawing(props: MapWithDrawingProps) {
 		[],
 	);
 
-	const onShapeComplete = useCallback(
-		(
-			shape: google.maps.Polygon | google.maps.Rectangle | google.maps.Circle,
-		) => {
+	const onOverlayComplete = useCallback(
+		(e: google.maps.drawing.OverlayCompleteEvent) => {
 			clearShape();
-			shapeRef.current = shape;
+			shapeRef.current = e.overlay as
+				| google.maps.Polygon
+				| google.maps.Rectangle
+				| google.maps.Circle;
 			setDrawingMode(null);
 			setShapeDrawn(true);
 		},
@@ -423,14 +642,17 @@ export function MapWithDrawing(props: MapWithDrawingProps) {
 
 	// Render simulated pins as AdvancedMarkers (draggable; dblclick to delete)
 	useEffect(() => {
-		if (!mapRef.current) return;
+		const map = mapRef.current;
+		if (!map) return;
 		// Clear previous sim markers
-		for (const m of simMarkerRefs.current) m.map = null;
+		for (const marker of simMarkerRefs.current) {
+			marker.map = null;
+		}
 		simMarkerRefs.current = [];
-		if (results && results.length) {
+		if (results?.length) {
 			const buildMarker = (p: google.maps.LatLngLiteral, index: number) => {
 				const marker = new google.maps.marker.AdvancedMarkerElement({
-					map: mapRef.current!,
+					map,
 					position: p,
 					gmpDraggable: true,
 					zIndex: 10,
@@ -441,8 +663,8 @@ export function MapWithDrawing(props: MapWithDrawingProps) {
 					const next = results.slice();
 					let newPos = pos;
 					if (pinSnapToGrid && pinGridSizeDeg > 0) {
-						const snap = (v: number, step: number) =>
-							Math.round(v / step) * step;
+						const snap = (value: number, step: number) =>
+							Math.round(value / step) * step;
 						newPos = {
 							lat: snap(pos.lat, pinGridSizeDeg),
 							lng: snap(pos.lng, pinGridSizeDeg),
@@ -450,7 +672,6 @@ export function MapWithDrawing(props: MapWithDrawingProps) {
 					}
 					next[index] = newPos;
 					onResultsChange(next);
-					// After snapping, validate the new address for analytics/UX
 					(async () => {
 						const addr = await reverseGeocodeOnce(newPos);
 						const val = await fetchAddressValidation(addr);
@@ -461,7 +682,6 @@ export function MapWithDrawing(props: MapWithDrawingProps) {
 						});
 					})();
 				});
-				// Hover events for simulated pins
 				const onEnter = () => {
 					if (!addressHover) return;
 					if (suppressHoverRef.current) return;
@@ -477,38 +697,47 @@ export function MapWithDrawing(props: MapWithDrawingProps) {
 					setHoverDetails(null);
 					setValidation(null);
 				};
-				marker.addListener("gmp-mouseover", onEnter as any);
-				marker.addListener("mouseover", onEnter as any);
-				marker.addListener("gmp-mouseout", onLeave as any);
-				marker.addListener("mouseout", onLeave as any);
+				const advancedMarkerHandler = marker.addListener.bind(marker);
+				advancedMarkerHandler(
+					"gmp-mouseover",
+					onEnter as Parameters<typeof marker.addListener>[1],
+				);
+				advancedMarkerHandler("mouseover", onEnter);
+				advancedMarkerHandler(
+					"gmp-mouseout",
+					onLeave as Parameters<typeof marker.addListener>[1],
+				);
+				advancedMarkerHandler("mouseout", onLeave);
 				return marker;
 			};
 
 			if (validatePinsBeforeRender) {
-				// Validate pins sequentially before rendering to the map
 				(async () => {
 					const newMarkers: google.maps.marker.AdvancedMarkerElement[] = [];
 					for (let i = 0; i < results.length; i++) {
-						const p = results[i];
-						const addr = await reverseGeocodeOnce(p);
+						const pin = results[i];
+						const addr = await reverseGeocodeOnce(pin);
 						const val = await fetchAddressValidation(addr);
 						onPinValidated?.({
-							pin: p,
+							pin,
 							validation: val,
 							formattedAddress: addr,
 						});
-						// Regardless of verdict, we still render; adjust here if you want to filter
-						const m = buildMarker(p, i);
-						newMarkers.push(m);
+						const createdMarker = buildMarker(pin, i);
+						newMarkers.push(createdMarker);
 					}
 					simMarkerRefs.current = newMarkers;
 				})();
 			} else {
-				simMarkerRefs.current = results.map((p, i) => buildMarker(p, i));
+				simMarkerRefs.current = results.map((pin, index) =>
+					buildMarker(pin, index),
+				);
 			}
 		}
 		return () => {
-			for (const m of simMarkerRefs.current) m.map = null;
+			for (const marker of simMarkerRefs.current) {
+				marker.map = null;
+			}
 		};
 		// Note: reverseGeocode is intentionally omitted to avoid TDZ during initial render since it's defined later.
 	}, [
@@ -524,11 +753,13 @@ export function MapWithDrawing(props: MapWithDrawingProps) {
 	]);
 
 	// Initialize / update AdvancedMarker for primary pin
+	// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
 	useEffect(() => {
-		if (!mapRef.current || !center) return;
+		const map = mapRef.current;
+		if (!map || !center) return;
 		if (!markerRef.current) {
 			markerRef.current = new google.maps.marker.AdvancedMarkerElement({
-				map: mapRef.current,
+				map,
 				position: center,
 				gmpDraggable: true,
 			});
@@ -539,7 +770,6 @@ export function MapWithDrawing(props: MapWithDrawingProps) {
 					if (p) onCenterChange(p);
 				},
 			);
-			// Hover events for center marker
 			const onEnter = () => {
 				if (!addressHover) return;
 				if (suppressHoverRef.current) return;
@@ -555,20 +785,27 @@ export function MapWithDrawing(props: MapWithDrawingProps) {
 				setHoverDetails(null);
 				setValidation(null);
 			};
-			markerRef.current.addListener("gmp-mouseover", onEnter as any);
-			markerRef.current.addListener("mouseover", onEnter as any);
-			markerRef.current.addListener("gmp-mouseout", onLeave as any);
-			markerRef.current.addListener("mouseout", onLeave as any);
+			const addMarkerListener = markerRef.current.addListener.bind(
+				markerRef.current,
+			);
+			addMarkerListener(
+				"gmp-mouseover",
+				onEnter as Parameters<typeof markerRef.current.addListener>[1],
+			);
+			addMarkerListener("mouseover", onEnter);
+			addMarkerListener(
+				"gmp-mouseout",
+				onLeave as Parameters<typeof markerRef.current.addListener>[1],
+			);
+			addMarkerListener("mouseout", onLeave);
 		} else {
 			markerRef.current.position = center;
-			if (!markerRef.current.map) markerRef.current.map = mapRef.current;
+			if (!markerRef.current.map) markerRef.current.map = map;
 		}
-		// Pan map to keep marker in view when center changes
-		mapRef.current?.panTo(center);
+		map.panTo(center);
 		if (typeof centerChangeZoom === "number") {
-			mapRef.current?.setZoom(centerChangeZoom);
+			map.setZoom(centerChangeZoom);
 		}
-		// Update Air Quality meter location when center changes
 		if (meterElRef.current) {
 			meterElRef.current.setAttribute(
 				"location",
@@ -635,11 +872,9 @@ export function MapWithDrawing(props: MapWithDrawingProps) {
 			setValidating(true);
 			setValidation(null);
 			try {
-				// eslint-disable-next-line @typescript-eslint/no-explicit-any
-				const { AddressValidation }: any = await (
-					google.maps as any
-				).importLibrary("addressValidation");
-				const result = await AddressValidation.fetchAddressValidation({
+				const addressValidation = await importAddressValidation();
+				if (!addressValidation) return;
+				const result = await addressValidation.fetchAddressValidation({
 					address: {
 						addressLines: [address],
 						regionCode: validationRegionCode,
@@ -656,7 +891,7 @@ export function MapWithDrawing(props: MapWithDrawingProps) {
 		[enableAddressValidation, validationRegionCode, validationLanguageCode],
 	);
 
-	const content = (
+	const mapContent = (
 		<div
 			className="bg-background"
 			style={{
@@ -665,350 +900,74 @@ export function MapWithDrawing(props: MapWithDrawingProps) {
 				height: containerStyle.height,
 			}}
 		>
-			{/* Loading overlay while Google libraries or map are initializing */}
-			{(!mapInit) && (
-				<div className="absolute inset-0 z-20 overflow-hidden rounded-md">
-					<div className="h-full w-full animate-pulse bg-gradient-to-r from-muted/40 via-muted/80 to-muted/40 bg-[length:400%_100%]" />
-				</div>
-			)}
 			<GoogleMap
 				key={`map-${mapKey}-${colorSchemeEnum ?? "default"}`}
 				mapContainerStyle={containerStyle}
 				center={center}
 				zoom={defaultZoom}
+				onTilesLoaded={() => setMapInit(true)}
+				onIdle={() => setMapInit(true)}
 				options={{
 					mapTypeId: "roadmap",
 					disableDefaultUI: true,
 					clickableIcons: true,
 					gestureHandling: "greedy",
-					// Use theme background if available; otherwise let Google default
 					backgroundColor: themeHsl.background
-						? (`hsl(${themeHsl.background})` as unknown as string)
+						? `hsl(${themeHsl.background})`
 						: undefined,
 					...(colorSchemeEnum ? { colorScheme: colorSchemeEnum } : {}),
 					mapId: mapId,
 				}}
 				onLoad={(map) => {
 					mapRef.current = map;
-					setMapInit(true);
-					// Ensure googleReady is true once the map instance is available,
-					// especially when a parent handles script loading (assumeLoaded=true).
 					setGoogleReady(true);
-					try {
-						placesRef.current = new google.maps.places.PlacesService(map);
-					} catch {
-						placesRef.current = null;
-					}
-					// Map click: if POI, show its details; else reverse-geocode clicked position
-					map.addListener("click", (e: google.maps.MapMouseEvent) => {
-						suppressHoverRef.current = true;
-						setTimeout(() => {
-							suppressHoverRef.current = false;
-						}, 600);
-						const p = e.latLng?.toJSON();
-						// If user clicked a POI, use Place.fetchFields (new Places SDK) to fetch details
-						if ((e as any).placeId) {
-							if (typeof (e as any).stop === "function") (e as any).stop();
-							const placeId = (e as any).placeId as string;
-							setHoverAddress("");
-							setHoverDetails(null);
-							setValidation(null);
-							(async () => {
-								try {
-									// New Places SDK
-									// eslint-disable-next-line @typescript-eslint/no-explicit-any
-									const placesLib: any = await (
-										google.maps as any
-									).importLibrary("places");
-									const PlaceCtor = placesLib.Place as any;
-									const place = new PlaceCtor({
-										id: placeId,
-										requestedLanguage: "en",
-									});
-									await place.fetchFields({
-										fields: [
-											"displayName",
-											"formattedAddress",
-											"location",
-											"rating",
-											"userRatingCount",
-											"currentOpeningHours",
-											"internationalPhoneNumber",
-											"websiteUri",
-											"id",
-											"googleMapsUri",
-											"priceLevel",
-											"businessStatus",
-											"editorialSummary",
-											"photos",
-											"reviews",
-										],
-									});
-									const pos = place.location ? place.location.toJSON() : p!;
-									setHoverPosition(pos);
-									const title: string =
-										place.displayName?.toString?.() ?? place.displayName ?? "";
-									const addr: string = place.formattedAddress ?? "";
-									setHoverAddress(title ? `${title}, ${addr}` : addr);
-									const openNow =
-										typeof place.currentOpeningHours?.openNow === "boolean"
-											? place.currentOpeningHours.openNow
-											: undefined;
-									setHoverDetails({
-										name: title || undefined,
-										formattedAddress: addr || undefined,
-										url: undefined, // not exposed in new fields; keep undefined
-										website: place.websiteUri ?? undefined,
-										phone: place.internationalPhoneNumber ?? undefined,
-										rating:
-											typeof place.rating === "number"
-												? place.rating
-												: undefined,
-										userRatingsTotal:
-											typeof place.userRatingCount === "number"
-												? place.userRatingCount
-												: undefined,
-										openNow,
-										placeId: place.id ?? placeId,
-										googleMapsUri: place.googleMapsUri ?? undefined,
-										priceLevel:
-											typeof place.priceLevel === "number"
-												? place.priceLevel
-												: undefined,
-										businessStatus: place.businessStatus ?? undefined,
-										hoursToday: Array.isArray(
-											place.currentOpeningHours?.weekdayDescriptions,
-										)
-											? place.currentOpeningHours.weekdayDescriptions[
-													new Date().getDay() === 0
-														? 6
-														: new Date().getDay() - 1
-												]
-											: undefined,
-										editorialSummary:
-											typeof place.editorialSummary?.text === "string"
-												? place.editorialSummary.text
-												: undefined,
-										photos: Array.isArray(place.photos)
-											? place.photos.slice(0, 6)
-											: undefined,
-										reviews: Array.isArray(place.reviews)
-											? place.reviews.slice(0, 3)
-											: undefined,
-									});
-									validateAddressIfEnabled(addr || title);
-								} catch {
-									// Fallback to legacy PlacesService if importLibrary or fields fail
-									if (placesRef.current) {
-										placesRef.current.getDetails(
-											{
-												placeId,
-												fields: [
-													"name",
-													"formatted_address",
-													"geometry",
-													"url",
-													"website",
-													"international_phone_number",
-													"opening_hours",
-													"rating",
-													"user_ratings_total",
-													"place_id",
-													// best-effort legacy extras
-													// @ts-ignore
-													"price_level",
-													// @ts-ignore
-													"business_status",
-													// @ts-ignore
-													"photos",
-													// @ts-ignore
-													"reviews",
-												],
-											},
-											(place, status) => {
-												if (
-													status ===
-														google.maps.places.PlacesServiceStatus.OK &&
-													place
-												) {
-													const pos = place.geometry?.location?.toJSON() ?? p!;
-													setHoverPosition(pos);
-													const title = place.name ?? "";
-													const addr = place.formatted_address ?? "";
-													setHoverAddress(title ? `${title}, ${addr}` : addr);
-													const openNow =
-														place.opening_hours?.isOpen?.() ?? undefined;
-													setHoverDetails({
-														name: place.name ?? undefined,
-														formattedAddress:
-															place.formatted_address ?? undefined,
-														url: place.url ?? undefined,
-														website: place.website ?? undefined,
-														phone:
-															place.international_phone_number ?? undefined,
-														rating: place.rating ?? undefined,
-														userRatingsTotal:
-															place.user_ratings_total ?? undefined,
-														openNow,
-														placeId: place.place_id ?? undefined,
-														googleMapsUri: place.url ?? undefined,
-														// @ts-ignore legacy typings
-														priceLevel:
-															typeof (place as any).price_level === "number"
-																? (place as any).price_level
-																: undefined,
-														// @ts-ignore legacy typings
-														businessStatus:
-															(place as any).business_status ?? undefined,
-														// @ts-ignore legacy typings
-														photos: Array.isArray((place as any).photos)
-															? (place as any).photos.slice(0, 6)
-															: undefined,
-														// @ts-ignore legacy typings
-														reviews: Array.isArray((place as any).reviews)
-															? (place as any).reviews.slice(0, 3)
-															: undefined,
-													});
-													validateAddressIfEnabled(addr || title);
-												}
-											},
-										);
-									}
-								}
-							})();
-							return;
-						}
-						// Non-POI: show address for clicked lat/lng and also update center
-						if (p) {
-							setHoverAddress("");
-							setHoverDetails(null);
-							setValidation(null);
-							setHoverPosition(p);
-							reverseGeocode(p);
-							onCenterChange(p);
-							// Run validation after reverse geocode fills address
-							// Defer slightly to allow reverseGeocode state to populate
-							setTimeout(() => {
-								validateAddressIfEnabled(
-									geocodeCache.current.get(
-										`${p.lat.toFixed(6)},${p.lng.toFixed(6)}`,
-									) || "",
-								);
-							}, 150);
-						}
-					});
-					map.addListener("dragstart", () => {
-						isUserDraggingRef.current = true;
-					});
-					map.addListener("idle", () => {
-						if (!isUserDraggingRef.current) return;
-						const c = map.getCenter()?.toJSON();
-						if (c) onCenterChange(c);
-						isUserDraggingRef.current = false;
-					});
+					setMapInit(true);
+					const markLoaded = () => setMapInit(true);
+					map.addListener("tilesloaded", markLoaded);
+					map.addListener("idle", markLoaded);
 				}}
 			>
-				{showAirQualityMeter && (
-					<div
-						ref={meterHostRef}
-						className="absolute bottom-4 left-4 z-10"
-						style={{ pointerEvents: "auto" }}
-					>
-						{/* We attach the custom element on first render */}
-						{!meterElRef.current && (
-							<AirQualityMount
-								center={center}
-								onReady={(el) => {
-									meterElRef.current = el;
-									// Also append into host to ensure it's in DOM
-									if (
-										meterHostRef.current &&
-										el &&
-										!meterHostRef.current.contains(el)
-									) {
-										meterHostRef.current.appendChild(el);
-									}
-								}}
-							/>
-						)}
-						{/* Lightbox overlay */}
-						{lightboxUrl && (
-							<div
-								className="absolute inset-0 z-50 flex items-center justify-center bg-background/70"
-								style={{ pointerEvents: "auto" }}
-							>
-								<div className="relative max-h-[90%] max-w-[90%]">
-									{/* eslint-disable-next-line @next/next/no-img-element */}
-									<img
-										src={lightboxUrl}
-										alt="Preview"
-										className="max-h-[90vh] max-w-[90vw] rounded object-contain"
-									/>
-									<button
-										type="button"
-										className="absolute top-2 right-2 rounded border border-border bg-card/90 px-2 py-1 text-foreground text-xs"
-										onClick={() => setLightboxUrl(null)}
-									>
-										Close
-									</button>
-								</div>
-							</div>
-						)}
-					</div>
-				)}
-				<DrawingControls
-					drawingMode={drawingMode}
-					setDrawingMode={setDrawingMode}
-					shapeDrawn={shapeDrawn}
-					boundaryApplied={boundaryApplied}
-					onCancelDrawing={handleCancelDrawing}
-					onApplyDrawing={handleApplyDrawing}
-					onRemoveBoundaries={handleRemoveBoundaries}
-				/>
+				{/* Render DrawingManager to enable drawing tools */}
 				<DrawingManager
-					onPolygonComplete={onShapeComplete}
-					onRectangleComplete={onShapeComplete}
-					onCircleComplete={onShapeComplete}
+					drawingMode={drawingMode}
+					onOverlayComplete={onOverlayComplete}
 					options={{
-						drawingControl: false,
-						drawingMode: drawingMode,
-						polygonOptions: {
-							// Use theme primary for shapes if available
-							fillColor: themeHsl.primary
-								? (`hsl(${themeHsl.primary})` as unknown as string)
-								: undefined,
-							fillOpacity: 0.5,
-							strokeColor: themeHsl.primary
-								? (`hsl(${themeHsl.primary})` as unknown as string)
-								: undefined,
-							strokeWeight: 2,
-							clickable: false,
-							editable: true,
-							zIndex: 1,
-						},
+						drawingControl: false, // We use our custom controls below
 					}}
 				/>
-				{addressHover && hoverPosition && (
-					<HoverOverlay
-						position={hoverPosition}
-						address={hoverAddress}
-						details={hoverDetails}
-						validation={validation}
-						validating={validating}
-						reviewsExpanded={reviewsExpanded}
-						setReviewsExpanded={setReviewsExpanded}
-						getPhotoUrl={getPhotoUrl}
-						setLightboxUrl={setLightboxUrl}
-						onViewPlace={onViewPlace}
-						onAddToList={onAddToList}
-					/>
-				)}
 			</GoogleMap>
+			{/* Render custom controls for drawing */}
+			<DrawingControls
+				drawingMode={drawingMode}
+				setDrawingMode={setDrawingMode}
+				shapeDrawn={shapeDrawn}
+				boundaryApplied={boundaryApplied}
+				onApplyDrawing={handleApplyDrawing}
+				onCancelDrawing={handleCancelDrawing}
+				onRemoveBoundaries={handleRemoveBoundaries}
+			/>
+
+			{/* Render the overlay for hover information only when a position is set */}
+			{hoverPosition && (
+				<HoverOverlay
+					position={hoverPosition}
+					address={hoverAddress}
+					details={hoverDetails}
+					validating={validating}
+					validation={validation}
+					reviewsExpanded={reviewsExpanded}
+					setReviewsExpanded={setReviewsExpanded}
+					getPhotoUrl={getPhotoUrl}
+					setLightboxUrl={setLightboxUrl}
+					onViewPlace={onViewPlace}
+					onAddToList={onAddToList}
+				/>
+			)}
 		</div>
 	);
 
 	if (assumeLoaded) {
-		return content;
+		return mapContent;
 	}
 
 	return (
@@ -1017,7 +976,7 @@ export function MapWithDrawing(props: MapWithDrawingProps) {
 			libraries={libraries}
 			onLoad={() => setGoogleReady(true)}
 		>
-			{content}
+			{mapContent}
 		</LoadScript>
 	);
 }
