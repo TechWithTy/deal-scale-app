@@ -1,20 +1,98 @@
 "use client";
 
 import * as React from "react";
+import { useState, useMemo } from "react";
 import type { Row, Table } from "@tanstack/react-table";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogHeader,
-	DialogTitle,
-} from "../ui/dialog";
 import { Button } from "../ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
+import { ActivityLineGraphContainer } from "../../../../activity-graph/components";
+import type {
+	ChartConfigLocal,
+	ActivityDataPoint,
+} from "../../../../activity-graph/types";
+import type { LeadTypeGlobal } from "../../../../../../types/_dashboard/leads";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@radix-ui/react-tabs";
+
+// Define interface for row data that contains leads
+interface RowDataWithLeads {
+	leads?: LeadTypeGlobal[];
+	[key: string]: unknown;
+}
+
+// Define interface for comparison lead
+interface ComparisonLead {
+	id: string;
+	name: string;
+}
+
+// Generate activity data for multiple leads with different interaction types
+const generateActivityDataForLeads = (
+	leads: { id: string; name: string }[],
+): ActivityDataPoint[] => {
+	const monthsAgoIso = (n: number): string => {
+		const d = new Date();
+		d.setMonth(d.getMonth() - n);
+		d.setDate(1);
+		d.setHours(0, 0, 0, 0);
+		return d.toISOString();
+	};
+
+	// Generate base data points
+	const baseData = [
+		{ timestamp: monthsAgoIso(5), calls: 12, texts: 8, social: 3 },
+		{ timestamp: monthsAgoIso(4), calls: 19, texts: 15, social: 5 },
+		{ timestamp: monthsAgoIso(3), calls: 8, texts: 12, social: 2 },
+		{ timestamp: monthsAgoIso(2), calls: 25, texts: 20, social: 7 },
+		{ timestamp: monthsAgoIso(1), calls: 22, texts: 18, social: 6 },
+		{ timestamp: monthsAgoIso(0), calls: 30, texts: 25, social: 9 },
+	];
+
+	// For each lead, create slightly different activity patterns
+	return leads.flatMap((lead, index) => {
+		const leadMultiplier = 0.5 + index * 0.3; // Different activity levels per lead
+		return baseData.map((dataPoint) => ({
+			...dataPoint,
+			[`${lead.id}_calls`]: Math.floor(dataPoint.calls * leadMultiplier),
+			[`${lead.id}_texts`]: Math.floor(dataPoint.texts * leadMultiplier),
+			[`${lead.id}_social`]: Math.floor(dataPoint.social * leadMultiplier),
+		}));
+	});
+};
+
+const activityConfigMultiLead: ChartConfigLocal = {
+	calls: { label: "Calls", color: "hsl(var(--chart-1))" },
+	texts: { label: "Texts", color: "hsl(var(--chart-2))" },
+	social: { label: "Social", color: "hsl(var(--chart-3))" },
+};
+
+const generateActivityData = (leadId: string): ActivityDataPoint[] => {
+	const monthsAgoIso = (n: number): string => {
+		const d = new Date();
+		d.setMonth(d.getMonth() - n);
+		d.setDate(1);
+		d.setHours(0, 0, 0, 0);
+		return d.toISOString();
+	};
+
+	return [
+		{ timestamp: monthsAgoIso(5), calls: 12, emails: 8, meetings: 3 },
+		{ timestamp: monthsAgoIso(4), calls: 19, emails: 15, meetings: 5 },
+		{ timestamp: monthsAgoIso(3), calls: 8, emails: 12, meetings: 2 },
+		{ timestamp: monthsAgoIso(2), calls: 25, emails: 20, meetings: 7 },
+		{ timestamp: monthsAgoIso(1), calls: 22, emails: 18, meetings: 6 },
+		{ timestamp: monthsAgoIso(0), calls: 30, emails: 25, meetings: 9 },
+	];
+};
+
+const activityConfig: ChartConfigLocal = {
+	calls: { label: "Calls", color: "hsl(var(--chart-1))" },
+	emails: { label: "Emails", color: "hsl(var(--chart-2))" },
+	meetings: { label: "Meetings", color: "hsl(var(--chart-3))" },
+};
 
 export interface DataTableRowModalCarouselProps<TData> {
-	table: Table<TData>;
+	table: Table<TData>; // TODO: Evaluate if this prop is actually needed
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
 	index: number;
@@ -27,6 +105,7 @@ export interface DataTableRowModalCarouselProps<TData> {
 	render: (row: Row<TData>, index: number) => React.ReactNode;
 	actions?: (row: Row<TData>, index: number) => React.ReactNode;
 	counter?: (row: Row<TData>, index: number) => React.ReactNode;
+	comparisonLeads?: ComparisonLead[]; // Optional comparison leads for better customization
 }
 
 export function DataTableRowModalCarousel<TData>(
@@ -44,8 +123,96 @@ export function DataTableRowModalCarousel<TData>(
 		render,
 		actions,
 		counter,
+		comparisonLeads: propComparisonLeads,
 	} = props;
+
+	// Sample comparison leads (could come from API or user input)
+	const sampleComparisonLeads = propComparisonLeads || [
+		{ id: "comp_1", name: "Alex" },
+		{ id: "comp_2", name: "Jordan" },
+		{ id: "comp_3", name: "Taylor" },
+	];
+
 	const row = rows[index];
+	const [comparisonLeads, setComparisonLeads] = useState<string[]>([]);
+
+	// Combine selected leads with comparison leads for data generation
+	// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
+	const allLeadsForData = useMemo(() => {
+		if (!row?.original) return [];
+		const rowLeads = (row.original as RowDataWithLeads)?.leads || [];
+		const allLeads = [...rowLeads, ...sampleComparisonLeads];
+		// Remove duplicates based on ID
+		return allLeads.filter(
+			(lead, index, self) => index === self.findIndex((l) => l.id === lead.id),
+		);
+	}, [row]);
+
+	// Combine comparison leads for chart data
+	const allChartLeads = useMemo(() => {
+		return comparisonLeads;
+	}, [comparisonLeads]);
+
+	// Generate activity data for all leads in the current row
+	const allActivityData = useMemo(() => {
+		if (allLeadsForData.length === 0) return [];
+		return generateActivityDataForLeads(allLeadsForData);
+	}, [allLeadsForData]);
+
+	// Filter activity data based on comparison leads
+	const filteredActivityData = useMemo(() => {
+		if (allChartLeads.length === 0) return [];
+
+		return allActivityData.map((dataPoint) => {
+			const filtered: ActivityDataPoint = { timestamp: dataPoint.timestamp };
+
+			// Include only data for comparison leads
+			for (const leadId of allChartLeads) {
+				filtered[`${leadId}_calls`] = dataPoint[`${leadId}_calls`] || 0;
+				filtered[`${leadId}_texts`] = dataPoint[`${leadId}_texts`] || 0;
+				filtered[`${leadId}_social`] = dataPoint[`${leadId}_social`] || 0;
+			}
+
+			return filtered;
+		});
+	}, [allActivityData, allChartLeads]);
+
+	// Generate dynamic config based on comparison leads
+	const dynamicActivityConfig = useMemo(() => {
+		if (!row?.original) return {};
+		const config: ChartConfigLocal = {};
+
+		allChartLeads.forEach((leadId, index) => {
+			const leads = (row.original as RowDataWithLeads)?.leads || [];
+			const comparisonLead = sampleComparisonLeads.find((l) => l.id === leadId);
+			const lead = leads.find((l: LeadTypeGlobal) => l.id === leadId) || comparisonLead;
+			const colorIndex = (index % 3) + 1; // Cycle through chart colors
+
+			config[`${leadId}_calls`] = {
+				label: `${lead?.contactInfo?.firstName || lead?.name || `Lead ${leadId}`} - Calls`,
+				color: `hsl(var(--chart-${colorIndex}))`,
+			};
+			config[`${leadId}_texts`] = {
+				label: `${lead?.contactInfo?.firstName || lead?.name || `Lead ${leadId}`} - Texts`,
+				color: `hsl(var(--chart-${colorIndex}))`,
+			};
+			config[`${leadId}_social`] = {
+				label: `${lead?.contactInfo?.firstName || lead?.name || `Lead ${leadId}`} - Social`,
+				color: `hsl(var(--chart-${colorIndex}))`,
+			};
+		});
+
+		return config;
+	}, [allChartLeads, row, sampleComparisonLeads]);
+
+	// Get available lines for selected leads
+	const availableLines = useMemo(() => {
+		return allChartLeads.flatMap((leadId) => [
+			`${leadId}_calls`,
+			`${leadId}_texts`,
+			`${leadId}_social`,
+		]);
+	}, [allChartLeads]);
 
 	React.useEffect(() => {
 		if (!open) return;
@@ -60,31 +227,101 @@ export function DataTableRowModalCarousel<TData>(
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
 			<DialogContent className="flex max-h-[85vh] w-full max-w-4xl flex-col overflow-hidden border border-border bg-card text-foreground shadow-xl">
-				<DialogHeader className="border-b border-border pb-4 pl-6 pr-6 pt-6">
-					<DialogTitle className="flex items-center gap-2 text-xl font-semibold">
-						{row && title
-							? title(row, index)
-							: "Lead Details"}
+				<DialogHeader className="border-border border-b pt-6 pr-6 pb-4 pl-6">
+					<DialogTitle className="flex items-center gap-2 font-semibold text-xl">
+						{row && title ? title(row, index) : "Lead Details"}
 						{row && (
-							<span className="rounded-full bg-primary/10 px-2 py-1 text-xs font-medium text-primary">
+							<span className="rounded-full bg-primary/10 px-2 py-1 font-medium text-primary text-xs">
 								{index + 1} of {rows.length}
 							</span>
 						)}
 					</DialogTitle>
 				</DialogHeader>
 				<div className="flex-1 overflow-y-auto px-6 py-4">
-					{row ? (
-						render(row, index)
-					) : (
-						<div className="flex h-32 items-center justify-center">
-							<div className="text-center text-muted-foreground">
-								<div className="mb-2 text-4xl">📋</div>
-								<p>No lead data available</p>
+					<Tabs defaultValue="details" className="h-full">
+						<TabsList className="grid w-full grid-cols-2">
+							<TabsTrigger value="details">Lead Details</TabsTrigger>
+							<TabsTrigger value="activity">Activity</TabsTrigger>
+						</TabsList>
+
+						<TabsContent value="details" className="mt-4 space-y-4">
+							{row ? (
+								render(row, index)
+							) : (
+								<div className="flex h-32 items-center justify-center">
+									<div className="text-center text-muted-foreground">
+										<div className="mb-2 text-4xl">📋</div>
+										<p>No lead data available</p>
+									</div>
+								</div>
+							)}
+						</TabsContent>
+
+						<TabsContent value="activity" className="mt-4">
+							<div className="space-y-4">
+								<div className="text-center">
+									<h3 className="font-semibold text-lg">Activity Overview</h3>
+									<p className="text-muted-foreground text-sm">
+										Select leads to view their activity timeline
+									</p>
+								</div>
+
+								{/* Comparison Leads Selection */}
+								<div className="space-y-3">
+									<h4 className="font-medium text-muted-foreground text-sm">
+										Compare With
+									</h4>
+									<div className="flex flex-wrap gap-2">
+										{sampleComparisonLeads.map((lead) => (
+											<button
+												key={lead.id}
+												type="button"
+												onClick={() => {
+													if (comparisonLeads.includes(lead.id)) {
+														setComparisonLeads((prev) =>
+															prev.filter((id) => id !== lead.id),
+														);
+													} else {
+														setComparisonLeads((prev) => [...prev, lead.id]);
+													}
+												}}
+												className={`inline-flex items-center rounded-full border px-3 py-1 font-medium text-xs transition-colors ${
+													comparisonLeads.includes(lead.id)
+														? "border-secondary bg-secondary text-secondary-foreground"
+														: "border-border bg-muted/50 text-muted-foreground hover:bg-muted/80"
+												}`}
+											>
+												{lead.name}
+											</button>
+										))}
+									</div>
+								</div>
+
+								{/* Activity Chart */}
+								{allChartLeads.length > 0 && (
+									<ActivityLineGraphContainer
+										data={filteredActivityData}
+										config={dynamicActivityConfig}
+										defaultLines={availableLines.slice(0, 12)} // Show up to 12 lines max
+										defaultRange="30d"
+										title="Lead Activity Trends"
+										description={`Showing activity for ${allChartLeads.length} lead${allChartLeads.length > 1 ? "s" : ""} (${comparisonLeads.length} comparison)`}
+									/>
+								)}
+
+								{allChartLeads.length === 0 && (
+									<div className="py-8 text-center text-muted-foreground">
+										<div className="mb-2 text-4xl">📊</div>
+										<p>
+											Select one or more leads to view their activity timeline
+										</p>
+									</div>
+								)}
 							</div>
-						</div>
-					)}
+						</TabsContent>
+					</Tabs>
 				</div>
-				<div className="border-t border-border bg-muted/30 px-6 py-4">
+				<div className="border-border border-t bg-muted/30 px-6 py-4">
 					<div className="flex items-center justify-between">
 						<Button
 							type="button"

@@ -1,0 +1,19 @@
+flowchart LR
+    A["Dashboard: Upload Leads / Find Properties"]
+
+    A --> B["Upload CSV (Card)"]
+    B --> C["Map Fields (Modal)"]
+    C --> D["List Created (from CSV)"]
+
+    A --> E["Search Properties (Card)"]
+    E --> F["Select Properties (Modal)"]
+    F --> G["List Created (from Search)"]
+
+    D --> H["Skip Trace (Modal)"]
+    G --> H["Skip Trace (Modal)"]
+
+    H --> I["Select List (Card/Step)"]
+    I --> J["Campaign Setup (Modal: Goal, Script, Channels)"]
+    J --> K["Review & Launch (Modal)"]
+    K --> L["Campaign Live (Dashboard)"]
+      
