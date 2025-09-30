@@ -1,13 +1,51 @@
 import { create } from "zustand";
+import type {
+	PermissionAction,
+	PermissionMatrix,
+	PermissionResource,
+	UserQuotas,
+	UserRole,
+	UserTier,
+} from "@/types/user";
 
 interface UserCredits {
 	used: number;
 	allotted: number;
 }
 
+type QuotaKey = keyof UserQuotas;
+
+const DEFAULT_MATRIX: PermissionMatrix = {};
+
+function matrixFromList(list: string[] | undefined): PermissionMatrix {
+	if (!list || list.length === 0) return {} as PermissionMatrix;
+	const matrix: PermissionMatrix = {};
+	for (const entry of list) {
+		const [resource, action] = entry.split(":");
+		if (!resource || !action) continue;
+		const r = resource.trim() as PermissionResource;
+		const a = action.trim() as PermissionAction;
+		const arr = matrix[r] ?? [];
+		if (!arr.includes(a)) {
+			arr.push(a);
+			matrix[r] = arr;
+		}
+	}
+	return matrix;
+}
+
+const zeroQuota = (): UserQuotas => ({
+	ai: { allotted: 0, used: 0, resetInDays: 0 },
+	leads: { allotted: 0, used: 0, resetInDays: 0 },
+	skipTraces: { allotted: 0, used: 0, resetInDays: 0 },
+});
+
 interface UserState {
-	role?: string;
-	permissions: string[];
+	role?: UserRole;
+	tier?: UserTier;
+	permissionList: string[];
+	permissionMatrix: PermissionMatrix;
+	quotas: UserQuotas;
 	credits: {
 		ai: UserCredits;
 		leads: UserCredits;
@@ -16,8 +54,12 @@ interface UserState {
 	setUser: (
 		session: {
 			user?: {
-				role?: string;
+				role?: UserRole;
+				tier?: UserTier;
 				permissions?: string[];
+				permissionMatrix?: PermissionMatrix;
+				permissionList?: string[];
+				quotas?: UserQuotas;
 				subscription?: {
 					aiCredits?: UserCredits;
 					leads?: UserCredits;
@@ -28,43 +70,75 @@ interface UserState {
 	) => void;
 	consumeLeads: (amount: number) => void;
 	consumeAI: (amount: number) => void;
+	hasPermission: (
+		resource: PermissionResource,
+		action: PermissionAction,
+	) => boolean;
+	hasQuota: (key: QuotaKey, amount?: number) => boolean;
 }
 
-const initialState = {
-	role: undefined,
-	permissions: [],
+const createBaseState = () => ({
+	role: undefined as UserRole | undefined,
+	tier: undefined as UserTier | undefined,
+	permissionList: [] as string[],
+	permissionMatrix: {} as PermissionMatrix,
+	quotas: zeroQuota(),
 	credits: {
 		ai: { used: 0, allotted: 0 },
 		leads: { used: 0, allotted: 0 },
 		skipTraces: { used: 0, allotted: 0 },
 	},
-};
+});
 
-export const useUserStore = create<UserState>((set) => ({
-	...initialState,
+export const useUserStore = create<UserState>((set, get) => ({
+	...createBaseState(),
 	setUser: (session) => {
 		if (!session?.user) {
-			// reset to initial state on sign out or missing user
-			set({ ...initialState });
+			set({ ...createBaseState() });
 			return;
 		}
 
 		const u = session.user;
+		const permissionList = u.permissionList || u.permissions || [];
+		const baseState = createBaseState();
+		const permissionMatrix =
+			u.permissionMatrix && Object.keys(u.permissionMatrix).length
+				? u.permissionMatrix
+				: matrixFromList(permissionList);
+		const quotas = u.quotas ?? {
+			ai: {
+				allotted: u.subscription?.aiCredits?.allotted || 0,
+				used: u.subscription?.aiCredits?.used || 0,
+			},
+			leads: {
+				allotted: u.subscription?.leads?.allotted || 0,
+				used: u.subscription?.leads?.used || 0,
+			},
+			skipTraces: {
+				allotted: u.subscription?.skipTraces?.allotted || 0,
+				used: u.subscription?.skipTraces?.used || 0,
+			},
+		};
+
 		set({
+			...baseState,
 			role: u.role,
-			permissions: u.permissions || [],
+			tier: u.tier,
+			permissionList,
+			permissionMatrix,
+			quotas,
 			credits: {
 				ai: {
-					used: u.subscription?.aiCredits?.used || 0,
-					allotted: u.subscription?.aiCredits?.allotted || 0,
+					used: quotas.ai.used ?? 0,
+					allotted: quotas.ai.allotted ?? 0,
 				},
 				leads: {
-					used: u.subscription?.leads?.used || 0,
-					allotted: u.subscription?.leads?.allotted || 0,
+					used: quotas.leads.used ?? 0,
+					allotted: quotas.leads.allotted ?? 0,
 				},
 				skipTraces: {
-					used: u.subscription?.skipTraces?.used || 0,
-					allotted: u.subscription?.skipTraces?.allotted || 0,
+					used: quotas.skipTraces.used ?? 0,
+					allotted: quotas.skipTraces.allotted ?? 0,
 				},
 			},
 		});
@@ -76,13 +150,15 @@ export const useUserStore = create<UserState>((set) => ({
 			const current = state.credits.leads;
 			const remaining = Math.max(0, current.allotted - current.used);
 			const delta = Math.min(remaining, safeAmount);
+			const newUsed = Math.min(current.allotted, current.used + delta);
 			return {
 				credits: {
 					...state.credits,
-					leads: {
-						...current,
-						used: Math.min(current.allotted, current.used + delta),
-					},
+					leads: { ...current, used: newUsed },
+				},
+				quotas: {
+					...state.quotas,
+					leads: { ...state.quotas.leads, used: newUsed },
 				},
 			};
 		});
@@ -94,16 +170,30 @@ export const useUserStore = create<UserState>((set) => ({
 			const current = state.credits.ai;
 			const remaining = Math.max(0, current.allotted - current.used);
 			const delta = Math.min(remaining, safeAmount);
+			const newUsed = Math.min(current.allotted, current.used + delta);
 			return {
 				credits: {
 					...state.credits,
-					ai: {
-						...current,
-						used: Math.min(current.allotted, current.used + delta),
-					},
+					ai: { ...current, used: newUsed },
+				},
+				quotas: {
+					...state.quotas,
+					ai: { ...state.quotas.ai, used: newUsed },
 				},
 			};
 		});
+	},
+	hasPermission: (resource, action) => {
+		const matrix = get().permissionMatrix;
+		const actions = matrix[resource];
+		if (!actions || actions.length === 0) return false;
+		return actions.includes(action);
+	},
+	hasQuota: (key, amount = 1) => {
+		const bucket = get().quotas[key];
+		if (!bucket) return false;
+		const remaining = Math.max(0, (bucket.allotted ?? 0) - (bucket.used ?? 0));
+		return remaining >= amount;
 	},
 }));
 

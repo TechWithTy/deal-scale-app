@@ -44,6 +44,7 @@ const LeadSearchForm: React.FC<LeadSearchFormProps> = ({
 				<LocationInput
 					control={control}
 					errors={errors}
+					setValue={setValue}
 					onPlaceSelected={onPlaceSelected}
 				/>
 				<MarketStatusSelect control={control} />

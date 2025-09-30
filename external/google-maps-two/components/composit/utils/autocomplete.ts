@@ -32,6 +32,9 @@ export async function initAutocomplete(
 		window.addEventListener("load", () => resolve(), { once: true });
 	});
 
+	// Ensure the Google Maps script has finished loading so importLibrary exists.
+	await waitForGoogleMaps();
+
 	// Use traditional Places Autocomplete with proper error handling
 	try {
 		const googleMaps = window.google?.maps;
@@ -83,6 +86,18 @@ export async function initAutocomplete(
 
 	// If all else fails, no-op but do not crash
 	return () => {};
+}
+
+async function waitForGoogleMaps(timeoutMs = 10000) {
+	const start = Date.now();
+	while (Date.now() - start < timeoutMs) {
+		const maps = window.google?.maps;
+		if (typeof maps?.importLibrary === "function") {
+			return;
+		}
+		await new Promise((resolve) => setTimeout(resolve, 50));
+	}
+	throw new Error("Timed out waiting for Google Maps to load");
 }
 
 type PlacesImport = {

@@ -29,6 +29,8 @@ export const mapFormSchema = z.object({
 		.string()
 		.max(10, "Market status must be 10 characters or less")
 		.optional(),
+	persona: z.string().optional(),
+	goal: z.string().optional(),
 	beds: z.string().max(3, "Beds must be 3 characters or less").optional(),
 	baths: z.string().max(3, "Baths must be 3 characters or less").optional(),
 	propertyType: z.string().optional(),
@@ -71,6 +73,55 @@ export const mapFormSchema = z.object({
 			),
 		extraPropertyData: z.boolean().optional(),
 		excludePending: z.boolean().optional(),
+		ownerOccupiedOnly: z.boolean().optional(),
+		hasPool: z.boolean().optional(),
+		hasGarage: z.boolean().optional(),
+		minEquityPercent: z
+			.string()
+			.optional()
+			.refine(
+				(val) =>
+					val === undefined ||
+					(/^\d{1,3}(\.\d{1,2})?$/.test(val) && Number.parseFloat(val) <= 100),
+				{
+					message: "Equity % must be between 0 and 100",
+				},
+			),
+		lastSaleWithinYears: z
+			.string()
+			.optional()
+			.refine(
+				(val) =>
+					val === undefined ||
+					(/^\d{1,2}$/.test(val) && Number.parseInt(val, 10) <= 30),
+				{
+					message: "Years must be 30 or less",
+				},
+			),
+		minAssessedValue: z
+			.string()
+			.optional()
+			.refine((val) => val === undefined || /^\d{3,9}$/.test(val), {
+				message: "Min value must be numeric",
+			})
+			.refine(
+				(val) => val === undefined || Number.parseInt(val, 10) <= 10000000,
+				{
+					message: "Value must be <= 10,000,000",
+				},
+			),
+		maxAssessedValue: z
+			.string()
+			.optional()
+			.refine((val) => val === undefined || /^\d{3,9}$/.test(val), {
+				message: "Max value must be numeric",
+			})
+			.refine(
+				(val) => val === undefined || Number.parseInt(val, 10) <= 10000000,
+				{
+					message: "Value must be <= 10,000,000",
+				},
+			),
 		limit: z
 			.string()
 			.optional()

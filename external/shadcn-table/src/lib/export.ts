@@ -2,6 +2,28 @@ import type { Table } from "@tanstack/react-table";
 
 type ExportMode = "all" | "page" | "selected";
 
+type TableRow<TData> = ReturnType<Table<TData>["getRowModel"]>["rows"][number];
+type JSZipConstructor = typeof import("jszip");
+type JSZipInstance = InstanceType<JSZipConstructor>;
+type WorkbookConstructor = typeof import("exceljs")["Workbook"];
+
+function resolveJSZipConstructor(candidate: unknown): JSZipConstructor {
+	if (typeof candidate === "function") {
+		return candidate as JSZipConstructor;
+	}
+	if (
+		typeof candidate === "object" &&
+		candidate !== null &&
+		"default" in candidate &&
+		typeof (candidate as { default: unknown }).default === "function"
+	) {
+		return (candidate as { default: unknown }).default as JSZipConstructor;
+	}
+	throw new TypeError(
+		"Unable to resolve JSZip constructor from module import.",
+	);
+}
+
 function getVisibleHeaderIds<TData>(
 	table: Table<TData>,
 	excludeColumns: (keyof TData | "select" | "actions")[],
@@ -12,13 +34,16 @@ function getVisibleHeaderIds<TData>(
 		.filter((id) => !excludeColumns.includes(id as keyof TData));
 }
 
-function getRowsByMode<TData>(table: Table<TData>, mode: ExportMode) {
+function getRowsByMode<TData>(
+	table: Table<TData>,
+	mode: ExportMode,
+): TableRow<TData>[] {
 	switch (mode) {
 		case "selected":
 			return table.getFilteredSelectedRowModel().rows;
 		case "page":
 			return table.getPaginationRowModel().rows;
-		case "all":
+
 		default:
 			return table.getPrePaginationRowModel().rows;
 	}
@@ -33,10 +58,7 @@ function toCsvLine(value: unknown): string {
 	return str;
 }
 
-function buildCsv<TData>(
-	headers: string[],
-	rows: Array<ReturnType<Table<TData>["getRowModel"]>["rows"][number]>,
-) {
+function buildCsv<TData>(headers: string[], rows: TableRow<TData>[]) {
 	const lines: string[] = [];
 	lines.push(headers.join(","));
 	for (const row of rows) {
@@ -44,6 +66,17 @@ function buildCsv<TData>(
 		lines.push(cols.join(","));
 	}
 	return lines.join("\n");
+}
+
+function toArrayBuffer(view: Uint8Array): ArrayBuffer {
+	if (
+		view.byteOffset === 0 &&
+		view.byteLength === view.buffer.byteLength &&
+		view.buffer instanceof ArrayBuffer
+	) {
+		return view.buffer;
+	}
+	return view.slice().buffer;
 }
 
 function downloadBlob(blob: Blob, filename: string) {
@@ -76,7 +109,7 @@ export function exportTableToCSV<TData>(
 
 	const headers = getVisibleHeaderIds(table, excludeColumns);
 	const rows = getRowsByMode(table, mode);
-	const csvContent = buildCsv(headers, rows as any);
+	const csvContent = buildCsv(headers, rows);
 	const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
 	downloadBlob(blob, `${filename}.csv`);
 }
@@ -101,9 +134,10 @@ export async function exportTableToZipCSV<TData>(
 		filePrefix = "part",
 	} = opts;
 
-	let JSZip: any;
+	let JSZipCtor: JSZipConstructor;
 	try {
-		JSZip = (await import("jszip")).default;
+		const jszipModule = await import("jszip");
+		JSZipCtor = resolveJSZipConstructor(jszipModule);
 	} catch (err) {
 		console.error(
 			"exportTableToZipCSV requires 'jszip' to be installed. Please add it to your dependencies.",
@@ -115,18 +149,17 @@ export async function exportTableToZipCSV<TData>(
 	const headers = getVisibleHeaderIds(table, excludeColumns);
 	const rows = getRowsByMode(table, mode);
 
-	const zip = new JSZip();
+	const zip: JSZipInstance = new JSZipCtor();
 	let fileIndex = 1;
 	for (let i = 0; i < rows.length; i += chunkSize) {
-		const chunk = rows.slice(i, i + chunkSize) as any;
+		const chunk = rows.slice(i, i + chunkSize);
 		const csv = buildCsv(headers, chunk);
 		zip.file(`${filePrefix}_${fileIndex}.csv`, csv);
 		fileIndex++;
 	}
 
 	const content: Uint8Array = await zip.generateAsync({ type: "uint8array" });
-	const arrayBuffer = content.buffer as ArrayBuffer;
-	const blob = new Blob([arrayBuffer], { type: "application/zip" });
+	const blob = new Blob([toArrayBuffer(content)], { type: "application/zip" });
 	downloadBlob(blob, `${filename}.zip`);
 }
 
@@ -147,9 +180,9 @@ export async function exportTableToExcel<TData>(
 		sheetName = "Sheet1",
 	} = opts;
 
-	let ExcelJS: any;
+	let WorkbookCtor: WorkbookConstructor;
 	try {
-		ExcelJS = (await import("exceljs")).Workbook;
+		({ Workbook: WorkbookCtor } = await import("exceljs"));
 	} catch (err) {
 		console.error(
 			"exportTableToExcel requires 'exceljs' to be installed. Please add it to your dependencies.",
@@ -161,10 +194,10 @@ export async function exportTableToExcel<TData>(
 	const headers = getVisibleHeaderIds(table, excludeColumns);
 	const rows = getRowsByMode(table, mode);
 
-	const wb = new ExcelJS();
+	const wb = new WorkbookCtor();
 	const ws = wb.addWorksheet(sheetName);
 	ws.addRow(headers);
-	for (const row of rows as any) {
+	for (const row of rows) {
 		ws.addRow(headers.map((h) => row.getValue(h)));
 	}
 	const buf = await wb.xlsx.writeBuffer();
@@ -185,11 +218,12 @@ export async function exportTablesToZipExcel<TData>(
 	}>,
 	zipName = "tables_export",
 ): Promise<void> {
-	let ExcelJS: any;
-	let JSZip: any;
+	let WorkbookCtor: WorkbookConstructor;
+	let JSZipCtor: JSZipConstructor;
 	try {
-		ExcelJS = (await import("exceljs")).Workbook;
-		JSZip = (await import("jszip")).default;
+		({ Workbook: WorkbookCtor } = await import("exceljs"));
+		const jszipModule = await import("jszip");
+		JSZipCtor = resolveJSZipConstructor(jszipModule);
 	} catch (err) {
 		console.error(
 			"exportTablesToZipExcel requires both 'exceljs' and 'jszip' to be installed.",
@@ -198,23 +232,23 @@ export async function exportTablesToZipExcel<TData>(
 		throw err;
 	}
 
-	const zip = new JSZip();
+	const zip = new JSZipCtor();
 
 	for (const item of items) {
 		const headers = getVisibleHeaderIds(item.table, item.excludeColumns ?? []);
 		const rows = getRowsByMode(item.table, item.mode ?? "all");
 
-		const wb = new ExcelJS();
+		const wb = new WorkbookCtor();
 		const ws = wb.addWorksheet(item.sheetName ?? "Sheet1");
 		ws.addRow(headers);
-		for (const row of rows as any) {
+		for (const row of rows) {
 			ws.addRow(headers.map((h) => row.getValue(h)));
 		}
-		const buf: ArrayBuffer = await wb.xlsx.writeBuffer();
+		const buf = await wb.xlsx.writeBuffer();
 		zip.file(`${item.filename}.xlsx`, buf);
 	}
 
 	const content: Uint8Array = await zip.generateAsync({ type: "uint8array" });
-	const blob = new Blob([content], { type: "application/zip" });
+	const blob = new Blob([toArrayBuffer(content)], { type: "application/zip" });
 	downloadBlob(blob, `${zipName}.zip`);
 }

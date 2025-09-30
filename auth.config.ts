@@ -1,8 +1,140 @@
 import type { NextAuthConfig } from "next-auth";
+import type { User as NextAuthUser } from "next-auth";
 import type { JWT } from "next-auth/jwt";
 import type { UserProfileSubscription } from "@/constants/_faker/profile/userSubscription";
 import Credentials from "next-auth/providers/credentials";
 import { getUserByEmail } from "@/lib/mock-db";
+import {
+	ensureValidTier,
+	type SubscriptionTier,
+} from "@/constants/subscription/tiers";
+import type {
+	PermissionAction,
+	PermissionMatrix,
+	PermissionResource,
+	User,
+	UserQuotas,
+	UserRole,
+} from "@/types/user";
+
+const VALID_ROLES: UserRole[] = ["admin", "manager", "member"];
+
+const PERMISSION_RESOURCES: PermissionResource[] = [
+	"users",
+	"leads",
+	"campaigns",
+	"reports",
+	"team",
+	"subscription",
+	"ai",
+	"tasks",
+	"companyProfile",
+];
+
+const PERMISSION_ACTIONS: PermissionAction[] = [
+	"create",
+	"read",
+	"update",
+	"delete",
+];
+
+function toMatrixFromList(
+	list: string[] | undefined,
+): PermissionMatrix | undefined {
+	if (!list || list.length === 0) return undefined;
+	const matrix: PermissionMatrix = {};
+	for (const entry of list) {
+		const [resourceRaw, actionRaw] = entry.split(":");
+		if (!resourceRaw || !actionRaw) continue;
+		const resource = resourceRaw.trim() as PermissionResource;
+		const action = actionRaw.trim() as PermissionAction;
+		if (!PERMISSION_RESOURCES.includes(resource)) continue;
+		if (!PERMISSION_ACTIONS.includes(action)) continue;
+		const actions = matrix[resource] ?? [];
+		if (!actions.includes(action)) {
+			actions.push(action);
+			matrix[resource] = actions;
+		}
+	}
+	return matrix;
+}
+
+function toMatrixFromObject(value: unknown): PermissionMatrix | undefined {
+	if (!value || typeof value !== "object") return undefined;
+	const matrix: PermissionMatrix = {};
+	for (const [resourceKey, actionsValue] of Object.entries(value)) {
+		if (!PERMISSION_RESOURCES.includes(resourceKey as PermissionResource))
+			continue;
+		const arr = Array.isArray(actionsValue)
+			? actionsValue
+			: typeof actionsValue === "string"
+				? [actionsValue]
+				: [];
+		const normalized = arr
+			.map((action) => String(action).trim())
+			.filter((action): action is PermissionAction =>
+				PERMISSION_ACTIONS.includes(action as PermissionAction),
+			);
+		if (normalized.length) {
+			matrix[resourceKey as PermissionResource] = Array.from(
+				new Set(normalized),
+			);
+		}
+	}
+	return Object.keys(matrix).length ? matrix : undefined;
+}
+
+function flattenMatrix(matrix: PermissionMatrix): string[] {
+	return Object.entries(matrix).flatMap(
+		([resource, actions]) =>
+			actions?.map((action) => `${resource}:${action}`) ?? [],
+	);
+}
+
+function mergeMatrix(
+	base: PermissionMatrix,
+	override?: PermissionMatrix,
+): PermissionMatrix {
+	if (!override) return base;
+	const result: PermissionMatrix = { ...base };
+	for (const [resource, actions] of Object.entries(override)) {
+		if (!actions || actions.length === 0) continue;
+		const existing = new Set(result[resource as PermissionResource] ?? []);
+		for (const action of actions) existing.add(action);
+		result[resource as PermissionResource] = Array.from(existing);
+	}
+	return result;
+}
+
+function normalizeQuotas(
+	base: UserQuotas,
+	overrides: {
+		aiAllotted?: number;
+		aiUsed?: number;
+		leadsAllotted?: number;
+		leadsUsed?: number;
+		skipAllotted?: number;
+		skipUsed?: number;
+	},
+): UserQuotas {
+	const clamp = (used: number | undefined, allotted: number | undefined) => {
+		if (allotted === undefined || used === undefined) return used;
+		return Math.min(used, allotted);
+	};
+	const aiAllotted = overrides.aiAllotted ?? base.ai.allotted;
+	const aiUsed = clamp(overrides.aiUsed, aiAllotted) ?? base.ai.used;
+	const leadsAllotted = overrides.leadsAllotted ?? base.leads.allotted;
+	const leadsUsed =
+		clamp(overrides.leadsUsed, leadsAllotted) ?? base.leads.used;
+	const skipAllotted = overrides.skipAllotted ?? base.skipTraces.allotted;
+	const skipUsed =
+		clamp(overrides.skipUsed, skipAllotted) ?? base.skipTraces.used;
+	return {
+		ai: { ...base.ai, allotted: aiAllotted, used: aiUsed },
+		leads: { ...base.leads, allotted: leadsAllotted, used: leadsUsed },
+		skipTraces: { ...base.skipTraces, allotted: skipAllotted, used: skipUsed },
+	};
+}
 
 const authConfig = {
 	pages: {
@@ -16,6 +148,7 @@ const authConfig = {
 				password: { label: "Password", type: "password" },
 				// Optional overrides from TestUsers UI
 				role: { label: "Role", type: "text", required: false },
+				tier: { label: "Tier", type: "text", required: false },
 				permissions: {
 					label: "Permissions JSON",
 					type: "text",
@@ -50,86 +183,91 @@ const authConfig = {
 
 				// build a mutable copy
 				const roleOverride = (credentials?.role as string | undefined)?.trim();
-				let permsOverride: string[] | undefined;
+				const tierOverride = (credentials?.tier as string | undefined)?.trim();
+
+				let permsOverrideMatrix: PermissionMatrix | undefined;
+				let permsOverrideList: string[] | undefined;
 				try {
 					const raw = credentials?.permissions as string | undefined;
-					permsOverride = raw ? (JSON.parse(raw) as string[]) : undefined;
+					if (raw) {
+						const parsed = JSON.parse(raw) as unknown;
+						permsOverrideMatrix =
+							toMatrixFromObject(parsed) ??
+							toMatrixFromList(
+								Array.isArray(parsed) ? (parsed as string[]) : undefined,
+							);
+						if (permsOverrideMatrix) {
+							permsOverrideList = flattenMatrix(permsOverrideMatrix);
+						}
+					}
 				} catch (_) {
-					permsOverride = undefined;
+					permsOverrideMatrix = undefined;
+					permsOverrideList = undefined;
 				}
 				const num = (v: unknown) => {
 					const n = Number(v);
 					return Number.isFinite(n) && n >= 0 ? n : undefined;
 				};
 				const aiAllotted = num(credentials?.aiAllotted);
-				let aiUsed = num(credentials?.aiUsed);
+				const aiUsed = num(credentials?.aiUsed);
 				const leadsAllotted = num(credentials?.leadsAllotted);
-				let leadsUsed = num(credentials?.leadsUsed);
+				const leadsUsed = num(credentials?.leadsUsed);
 				const skipAllotted = num(credentials?.skipAllotted);
-				let skipUsed = num(credentials?.skipUsed);
+				const skipUsed = num(credentials?.skipUsed);
 
-				// clamp used to allotted when both exist
-				if (
-					aiAllotted !== undefined &&
-					aiUsed !== undefined &&
-					aiUsed > aiAllotted
-				)
-					aiUsed = aiAllotted;
-				if (
-					leadsAllotted !== undefined &&
-					leadsUsed !== undefined &&
-					leadsUsed > leadsAllotted
-				)
-					leadsUsed = leadsAllotted;
-				if (
-					skipAllotted !== undefined &&
-					skipUsed !== undefined &&
-					skipUsed > skipAllotted
-				)
-					skipUsed = skipAllotted;
+				const overrides = {
+					aiAllotted,
+					aiUsed,
+					leadsAllotted,
+					leadsUsed,
+					skipAllotted,
+					skipUsed,
+				};
+
+				const updatedQuotas = normalizeQuotas(user.quotas, overrides);
 
 				const sub = user.subscription;
 				const updatedSub = {
 					...sub,
 					aiCredits: {
 						...sub.aiCredits,
-						allotted: aiAllotted ?? sub.aiCredits.allotted,
-						used: aiUsed ?? sub.aiCredits.used,
+						allotted: updatedQuotas.ai.allotted,
+						used: updatedQuotas.ai.used,
 					},
 					leads: {
 						...sub.leads,
-						allotted: leadsAllotted ?? sub.leads.allotted,
-						used: leadsUsed ?? sub.leads.used,
+						allotted: updatedQuotas.leads.allotted,
+						used: updatedQuotas.leads.used,
 					},
 					skipTraces: {
 						...sub.skipTraces,
-						allotted: skipAllotted ?? sub.skipTraces.allotted,
-						used: skipUsed ?? sub.skipTraces.used,
+						allotted: updatedQuotas.skipTraces.allotted,
+						used: updatedQuotas.skipTraces.used,
 					},
 				};
+
+				const mergedMatrix = mergeMatrix(user.permissions, permsOverrideMatrix);
+				const permissionList = permsOverrideList ?? flattenMatrix(mergedMatrix);
+
+				const role = VALID_ROLES.includes(roleOverride as UserRole)
+					? (roleOverride as UserRole)
+					: user.role;
+				const tier: SubscriptionTier = tierOverride
+					? ensureValidTier(tierOverride)
+					: user.tier;
 
 				return {
 					id: user.id,
 					name: user.name,
 					email: user.email,
-					role:
-						roleOverride &&
-						(roleOverride === "admin" || roleOverride === "user")
-							? roleOverride
-							: user.role,
-					permissions:
-						permsOverride && Array.isArray(permsOverride)
-							? permsOverride
-							: user.permissions,
+					role,
+					tier,
+					permissions: permissionList,
+					permissionMatrix: mergedMatrix,
+					permissionList,
+					quotas: updatedQuotas,
 					subscription: updatedSub,
-				} as unknown as {
-					id: string;
-					name: string;
-					email: string;
-					role: string;
-					permissions: string[];
-					subscription: UserProfileSubscription;
-				};
+				} as NextAuthUser;
 			},
 		}),
 	],
@@ -151,27 +289,87 @@ const authConfig = {
 				// Persist role/permissions/subscription on initial sign-in
 				const u = user as {
 					role?: string;
+					tier?: SubscriptionTier;
 					permissions?: string[];
+					permissionMatrix?: PermissionMatrix;
+					permissionList?: string[];
+					quotas?: UserQuotas;
 					subscription?: UserProfileSubscription;
 				};
 				(
 					token as JWT & {
-						role?: string;
+						role?: "admin" | "manager" | "member";
+						tier?: SubscriptionTier;
 						permissions?: string[];
+						permissionMatrix?: PermissionMatrix;
+						permissionList?: string[];
+						quotas?: UserQuotas;
 						subscription?: UserProfileSubscription;
 					}
-				).role = u.role;
+				).role = u.role as "admin" | "manager" | "member" | undefined;
 				(
 					token as JWT & {
 						role?: string;
+						tier?: SubscriptionTier;
 						permissions?: string[];
+						permissionMatrix?: PermissionMatrix;
+						permissionList?: string[];
+						quotas?: UserQuotas;
+						subscription?: UserProfileSubscription;
+					}
+				).tier = u.tier;
+				(
+					token as JWT & {
+						role?: string;
+						tier?: SubscriptionTier;
+						permissions?: string[];
+						permissionMatrix?: PermissionMatrix;
+						permissionList?: string[];
+						quotas?: UserQuotas;
 						subscription?: UserProfileSubscription;
 					}
 				).permissions = u.permissions;
 				(
 					token as JWT & {
 						role?: string;
+						tier?: SubscriptionTier;
 						permissions?: string[];
+						permissionMatrix?: PermissionMatrix;
+						permissionList?: string[];
+						quotas?: UserQuotas;
+						subscription?: UserProfileSubscription;
+					}
+				).permissionMatrix = u.permissionMatrix;
+				(
+					token as JWT & {
+						role?: string;
+						tier?: SubscriptionTier;
+						permissions?: string[];
+						permissionMatrix?: PermissionMatrix;
+						permissionList?: string[];
+						quotas?: UserQuotas;
+						subscription?: UserProfileSubscription;
+					}
+				).permissionList = u.permissionList ?? u.permissions;
+				(
+					token as JWT & {
+						role?: string;
+						tier?: SubscriptionTier;
+						permissions?: string[];
+						permissionMatrix?: PermissionMatrix;
+						permissionList?: string[];
+						quotas?: UserQuotas;
+						subscription?: UserProfileSubscription;
+					}
+				).quotas = u.quotas;
+				(
+					token as JWT & {
+						role?: string;
+						tier?: SubscriptionTier;
+						permissions?: string[];
+						permissionMatrix?: PermissionMatrix;
+						permissionList?: string[];
+						quotas?: UserQuotas;
 						subscription?: UserProfileSubscription;
 					}
 				).subscription = u.subscription;
@@ -182,11 +380,37 @@ const authConfig = {
 			if (session.user) {
 				const t = token as JWT & {
 					role?: string;
+					tier?: SubscriptionTier;
 					permissions?: string[];
+					permissionMatrix?: PermissionMatrix;
+					permissionList?: string[];
+					quotas?: UserQuotas;
 					subscription?: UserProfileSubscription;
 				};
-				session.user.role = t.role as string | undefined;
+				session.user.role = t.role as UserRole | undefined;
+				session.user.tier = t.tier as SubscriptionTier | undefined;
 				session.user.permissions = t.permissions as string[] | undefined;
+				(
+					session.user as {
+						permissionMatrix?: PermissionMatrix;
+						permissionList?: string[];
+						quotas?: UserQuotas;
+					}
+				).permissionMatrix = t.permissionMatrix;
+				(
+					session.user as {
+						permissionMatrix?: PermissionMatrix;
+						permissionList?: string[];
+						quotas?: UserQuotas;
+					}
+				).permissionList = t.permissionList ?? t.permissions;
+				(
+					session.user as {
+						permissionMatrix?: PermissionMatrix;
+						permissionList?: string[];
+						quotas?: UserQuotas;
+					}
+				).quotas = t.quotas;
 				// Expose subscription to the client session for dashboard credits
 				(
 					session.user as { subscription?: UserProfileSubscription }

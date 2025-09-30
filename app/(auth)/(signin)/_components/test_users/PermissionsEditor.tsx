@@ -46,9 +46,12 @@ export function PermissionsEditor({
 	const handleChange = (entity: Entity, flags: CrudFlags) => {
 		onUpdateUser((u) => {
 			// Remove existing entity permissions and add new from flags
-			const filtered = u.permissions.filter((p) => !p.startsWith(`${entity}:`));
+			const permissionList = u.permissionList || [];
+			const filtered = permissionList.filter(
+				(p) => !p.startsWith(`${entity}:`),
+			);
 			const added = fromFlags(flags, entity);
-			return { ...u, permissions: [...filtered, ...added] };
+			return { ...u, permissionList: [...filtered, ...added] };
 		});
 	};
 
@@ -59,7 +62,7 @@ export function PermissionsEditor({
 			</div>
 			<div className="max-h-64 space-y-3 overflow-y-auto rounded-md border border-border bg-card p-3 pr-1">
 				{ENTITIES.map((entity) => {
-					const flags = toFlags(user.permissions, entity);
+					const flags = toFlags(user.permissionList, entity);
 					const label =
 						entity === "ai"
 							? "AI"

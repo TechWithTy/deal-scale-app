@@ -33,12 +33,12 @@ interface UserCardProps {
 export function UserCard({ user, onUpdateUser, onLogin }: UserCardProps) {
 	const { theme } = useTheme();
 
-	const handleRoleChange = (role: "admin" | "user") => {
+	const handleRoleChange = (role: "admin" | "member") => {
 		onUpdateUser(user.id, (u: EditableUser) => ({
 			...u,
 			role,
 			// Adjust permissions based on role selection
-			permissions:
+			permissionList:
 				role === "admin"
 					? ["users:create", "users:read", "users:update", "users:delete"]
 					: ["users:read"],
@@ -95,12 +95,12 @@ export function UserCard({ user, onUpdateUser, onLogin }: UserCardProps) {
 						<select
 							value={user.role}
 							onChange={(e) =>
-								handleRoleChange(e.target.value as "admin" | "user")
+								handleRoleChange(e.target.value as "admin" | "member")
 							}
 							className="rounded-md border bg-background"
 						>
 							<option value="admin">admin</option>
-							<option value="user">user</option>
+							<option value="member">member</option>
 						</select>
 					</div>
 					<CreditsComponent

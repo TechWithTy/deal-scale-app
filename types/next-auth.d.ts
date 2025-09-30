@@ -1,5 +1,11 @@
 import type { DefaultSession } from "next-auth";
 import type { JWT as NextAuthJWT } from "next-auth/jwt";
+import type {
+	PermissionMatrix,
+	UserQuotas,
+	UserRole,
+	UserTier,
+} from "@/types/user";
 
 declare module "next-auth" {
 	/**
@@ -7,24 +13,33 @@ declare module "next-auth" {
 	 */
 	interface Session {
 		user: {
-			/** The user's role. */
-			role?: string;
-			/** The user's permissions. */
+			role?: UserRole;
+			tier?: UserTier;
 			permissions?: string[];
+			permissionMatrix?: PermissionMatrix;
+			permissionList?: string[];
+			quotas?: UserQuotas;
 		} & DefaultSession["user"];
 	}
 
 	interface User {
-		role?: string;
+		role?: UserRole;
+		tier?: UserTier;
+		permissions?: string[];
+		permissionMatrix?: PermissionMatrix;
+		permissionList?: string[];
+		quotas?: UserQuotas;
 	}
 }
 
 declare module "next-auth/jwt" {
 	/** Returned by the `jwt` callback and `getToken`, when using JWT sessions */
 	interface JWT extends NextAuthJWT {
-		/** The user's role. */
-		role?: string;
-		/** The user's permissions. */
+		role?: UserRole;
+		tier?: UserTier;
 		permissions?: string[];
+		permissionMatrix?: PermissionMatrix;
+		permissionList?: string[];
+		quotas?: UserQuotas;
 	}
 }

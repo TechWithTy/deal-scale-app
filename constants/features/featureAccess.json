@@ -1,0 +1,42 @@
+{
+  "campaigns": {
+    "directMailModal": {
+      "requiredTier": "Enterprise",
+      "mode": "overlay",
+      "permission": { "resource": "campaigns", "action": "create" },
+      "quota": "leads"
+    },
+    "directMailTableTab": {
+      "requiredTier": "Enterprise",
+      "mode": "hide",
+      "permission": { "resource": "campaigns", "action": "read" }
+    },
+    "socialMediaCampaigns": {
+      "requiredTier": "Starter",
+      "mode": "overlay",
+      "permission": { "resource": "campaigns", "action": "update" }
+    }
+  },
+  "aiAssistants": {
+    "page": {
+      "requiredTier": "Starter",
+      "mode": "hide",
+      "permission": { "resource": "ai", "action": "read" }
+    }
+  },
+  "userProfile": {
+    "cloneVoice": {
+      "requiredTier": "Starter",
+      "mode": "disable",
+      "permission": { "resource": "ai", "action": "update" },
+      "quota": "ai"
+    }
+  },
+  "boards": {
+    "kanban": {
+      "requiredTier": "Enterprise",
+      "mode": "overlay",
+      "permission": { "resource": "tasks", "action": "update" }
+    }
+  }
+}

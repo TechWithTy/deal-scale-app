@@ -27,7 +27,7 @@ interface PermissionsStoreState {
 function hasPermissionImpl<K extends PermissionKey>(k: K): boolean {
 	const perms = currentPermissions();
 	if (perms && typeof perms[k] === "boolean") return Boolean(perms[k]);
-	const strings = useUserStore.getState().permissions ?? [];
+	const strings = useUserStore.getState().permissionList ?? [];
 	return strings.includes(String(k));
 }
 

@@ -5,11 +5,31 @@ import { mockUserProfile } from "@/constants/_faker/profile/userProfile";
 
 const initialFilters: MapFormSchemaType = {
 	location: "",
-	marketStatus: undefined,
+	marketStatus: "off_market",
+	persona: "investor",
+	goal: "cashflow",
 	beds: undefined,
 	baths: undefined,
 	propertyType: undefined,
-	advanced: {},
+	advanced: {
+		ownerOccupiedOnly: true,
+		hasPool: false,
+		hasGarage: false,
+		minEquityPercent: undefined,
+		lastSaleWithinYears: "10",
+		minAssessedValue: undefined,
+		maxAssessedValue: undefined,
+		radius: undefined,
+		pastDays: undefined,
+		dateFrom: undefined,
+		dateTo: undefined,
+		mlsOnly: false,
+		foreclosure: false,
+		proxy: undefined,
+		extraPropertyData: false,
+		excludePending: false,
+		limit: undefined,
+	},
 };
 
 interface LeadSearchState {
@@ -28,7 +48,16 @@ export const useLeadSearchStore = create<LeadSearchState>((set, get) => ({
 	savedSearches: mockUserProfile?.savedSearches ?? [],
 
 	setFilters: (filters) =>
-		set((state) => ({ filters: { ...state.filters, ...filters } })),
+		set((state) => ({
+			filters: {
+				...state.filters,
+				...filters,
+				advanced: {
+					...state.filters.advanced,
+					...(filters.advanced ?? {}),
+				},
+			},
+		})),
 
 	addSavedSearch: (name) => {
 		const { filters, savedSearches } = get();
@@ -76,13 +105,11 @@ export const useLeadSearchStore = create<LeadSearchState>((set, get) => ({
 			) {
 				switch (advancedKeyTyped) {
 					case "mlsOnly":
-					case "foreclosure":
-					case "extraPropertyData":
-					case "excludePending":
 						advancedFilters[advancedKeyTyped] = value === "true";
 						break;
 					default:
-						advancedFilters[advancedKeyTyped] = value;
+						// biome-ignore lint/suspicious/noExplicitAny: Type assertion needed for URL params
+						advancedFilters[advancedKeyTyped] = value as any;
 				}
 			} else if (keyTyped in initialFilters) {
 				urlFilters[keyTyped as keyof MapFormSchemaType] = value;

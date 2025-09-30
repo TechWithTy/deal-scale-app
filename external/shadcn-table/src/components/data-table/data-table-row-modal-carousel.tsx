@@ -110,6 +110,7 @@ export interface DataTableRowModalCarouselProps<TData> {
 	render: (row: Row<TData>, index: number) => React.ReactNode;
 	actions?: (row: Row<TData>, index: number) => React.ReactNode;
 	counter?: (row: Row<TData>, index: number) => React.ReactNode;
+	activityRender?: (row: Row<TData>, index: number) => React.ReactNode;
 	comparisonLeads?: ComparisonLead[]; // Optional comparison leads for better customization
 }
 
@@ -128,6 +129,7 @@ export function DataTableRowModalCarousel<TData>(
 		render,
 		actions,
 		counter,
+		activityRender,
 		comparisonLeads: propComparisonLeads,
 	} = props;
 
@@ -279,9 +281,11 @@ export function DataTableRowModalCarousel<TData>(
 							)}
 						</TabsContent>
 
-						<TabsContent value="activity" className="mt-4">
-							<div className="space-y-4">
-								{(() => {
+					<TabsContent value="activity" className="mt-4">
+						<div className="space-y-4">
+							{activityRender && row
+								? activityRender(row, index)
+								: (() => {
 									// Check if this is campaign data
 									const isCampaign = isCampaignData(row?.original);
 
@@ -448,8 +452,8 @@ export function DataTableRowModalCarousel<TData>(
 										</>
 									);
 								})()}
-							</div>
-						</TabsContent>
+						</div>
+					</TabsContent>
 					</Tabs>
 				</div>
 				<div className="border-border border-t bg-muted/30 px-6 py-4">
