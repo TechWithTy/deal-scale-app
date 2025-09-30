@@ -49,9 +49,15 @@ export function validateLeadStep(
 		socialHandle,
 	} = input;
 
+	const effectiveStep = listMode === "create" && step > 1 ? step - 1 : step;
+	const isMappingStep = listMode === "create" && step === 1;
 	const errors: Record<string, string> = {};
 
-	if (step === 0) {
+	if (isMappingStep) {
+		return errors;
+	}
+
+	if (effectiveStep === 0) {
 		if (listMode === "create") {
 			if (!newListName.trim()) errors.list = "List name is required";
 		} else if (!selectedListId) {
@@ -59,7 +65,7 @@ export function validateLeadStep(
 		}
 	}
 
-	if (step === 1) {
+	if (effectiveStep === 1) {
 		if (!firstName.trim()) errors.firstName = "First name is required";
 		else if (!nameRegex.test(firstName.trim()))
 			errors.firstName = "First name must be valid (letters only)";
@@ -68,7 +74,7 @@ export function validateLeadStep(
 			errors.lastName = "Last name must be valid (letters only)";
 	}
 
-	if (step === 2) {
+	if (effectiveStep === 2) {
 		if (!address.trim()) errors.address = "Address is required";
 		else if (!addressRegex.test(address.trim()))
 			errors.address = "Enter a valid address";
@@ -83,7 +89,7 @@ export function validateLeadStep(
 			errors.zipCode = "Enter a valid zip code";
 	}
 
-	if (step === 3) {
+	if (effectiveStep === 3) {
 		if (!phoneNumber.trim()) errors.phoneNumber = "Phone number is required";
 		else if (!phoneRegex.test(phoneNumber.trim()))
 			errors.phoneNumber = "Enter a valid phone number";
@@ -92,7 +98,7 @@ export function validateLeadStep(
 			errors.email = "Enter a valid email address";
 	}
 
-	if (step === 4) {
+	if (effectiveStep === 4) {
 		const socials = [facebook, linkedin, socialHandle];
 		if (socials.every((s) => !s.trim())) {
 			errors.socials = "At least one social profile or handle is required";

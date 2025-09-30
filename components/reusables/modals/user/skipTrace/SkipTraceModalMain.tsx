@@ -61,14 +61,29 @@ const SkipTraceModalMain: React.FC<SkipTraceModalMainProps> = ({
 	if (!isOpen) return null;
 
 	const content = (
-		<div className="fixed inset-0 z-[100] flex items-center justify-center bg-background/80 backdrop-blur-sm">
-			<div className="relative z-[101] flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-lg border border-border bg-card p-6 text-foreground shadow-lg">
+		<div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
+			<div className="relative z-50 flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-lg border border-border bg-card p-6 text-foreground shadow-lg">
+				{/* Close button with proper spacing */}
 				<button
 					type="button"
-					className="absolute top-2 right-2 text-muted-foreground hover:text-foreground"
+					className="absolute top-4 right-4 z-10 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none"
 					onClick={handleClose}
 				>
-					&times;
+					<svg
+						className="h-4 w-4"
+						fill="none"
+						viewBox="0 0 24 24"
+						stroke="currentColor"
+						aria-hidden="true"
+					>
+						<path
+							strokeLinecap="round"
+							strokeLinejoin="round"
+							strokeWidth={2}
+							d="M6 18L18 6M6 6l12 12"
+						/>
+					</svg>
+					<span className="sr-only">Close</span>
 				</button>
 
 				{currentFlow === "list" && (

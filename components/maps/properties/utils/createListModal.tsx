@@ -244,8 +244,8 @@ const SkipTraceDialog: React.FC = () => {
 	}
 
 	return (
-		<Dialog open onOpenChange={closeModal}>
-			<DialogContent className="-translate-x-1/2 -translate-y-1/2 fixed top-1/2 left-1/2 z-50 transform rounded-lg bg-card shadow-lg sm:max-w-[425px]">
+		<Dialog open={activeModal === "skipTrace"} onOpenChange={closeModal}>
+			<DialogContent className="sm:max-w-[425px]">
 				<DialogHeader className="flex w-full flex-row items-center justify-between">
 					<DialogTitle>Create Your List</DialogTitle>
 				</DialogHeader>
