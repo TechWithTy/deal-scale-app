@@ -246,7 +246,7 @@ const CampaignHeader: React.FC = () => {
 				{/* Credits Remaining Text and Help Button */}
 				<div className="my-4 flex flex-col items-center justify-center space-y-4 sm:flex-row sm:space-x-4 sm:space-y-0 ">
 					{/* Credits Remaining */}
-					<div className="text-lg font-semibold text-foreground">
+					<div className="font-semibold text-foreground text-lg">
 						Credits Remaining: {creditsRemaining}
 					</div>
 
@@ -255,7 +255,7 @@ const CampaignHeader: React.FC = () => {
 						type="button"
 						onClick={handleOpenModal}
 						title="Get More help"
-						className="animate-bounce rounded-full bg-primary p-2 text-primary-foreground hover:animate-none"
+						className="my-2 animate-bounce rounded-full bg-primary p-2 text-primary-foreground hover:animate-none"
 					>
 						<HelpCircle size={20} />
 					</button>
@@ -264,7 +264,7 @@ const CampaignHeader: React.FC = () => {
 
 			{/* Search Bar */}
 			<div className="relative mb-4">
-				<Search className="absolute left-3 top-1/2 -translate-y-1/2 transform text-muted-foreground" />
+				<Search className="-translate-y-1/2 absolute top-1/2 left-3 transform text-muted-foreground" />
 				<input
 					type="text"
 					placeholder="Search"

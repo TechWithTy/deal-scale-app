@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/select";
 import { useLeadSearchStore } from "@/lib/stores/leadSearch/leadSearch";
 import type { MapFormSchemaType } from "@/types/_dashboard/maps";
+import { useRemainingLeads } from "@/lib/stores/userStore";
 
 interface MarketStatusSelectProps {
 	control: Control<MapFormSchemaType>;
@@ -16,6 +17,7 @@ interface MarketStatusSelectProps {
 
 const MarketStatusSelect: React.FC<MarketStatusSelectProps> = ({ control }) => {
 	const { setFilters } = useLeadSearchStore();
+	const remainingLeads = useRemainingLeads();
 
 	return (
 		<Controller
@@ -37,6 +39,20 @@ const MarketStatusSelect: React.FC<MarketStatusSelectProps> = ({ control }) => {
 							<SelectValue placeholder="Select status" />
 						</SelectTrigger>
 						<SelectContent>
+							<SelectItem
+								value="off_market"
+								disabled={remainingLeads < 1}
+								className={remainingLeads < 1 ? "opacity-50" : ""}
+							>
+								<div className="flex items-center justify-between w-full">
+									<span>Off Market</span>
+									{remainingLeads < 1 && (
+										<span className="ml-2 text-muted-foreground text-xs">
+											(Requires 1+ credits)
+										</span>
+									)}
+								</div>
+							</SelectItem>
 							<SelectItem value="for_sale">For Sale</SelectItem>
 							<SelectItem value="pending">Pending</SelectItem>
 							<SelectItem value="sold">Sold</SelectItem>

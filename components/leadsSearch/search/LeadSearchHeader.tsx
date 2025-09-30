@@ -36,7 +36,7 @@ const LeadSearchHeader: FC<LeadSearchHeaderProps> = ({
 				<div className="my-4 flex flex-col items-center justify-center space-y-4 sm:flex-row sm:space-x-4 sm:space-y-0">
 					{/* Credits Remaining */}
 					<div className="font-semibold text-gray-900 text-lg dark:text-white">
-						Credits Remaining: {credits}
+						Lead Credits Remaining: {credits}
 					</div>
 					{/* Help Button (moves to new line on mobile) */}
 

@@ -22,11 +22,6 @@ export default async function Page() {
 
 	return (
 		<PageContainer scrollable={true}>
-			<div className="p-6">
-				<h1 className="mb-4 font-bold text-3xl text-foreground">
-					Welcome{user?.name ? `, ${user.name}` : ""}!
-				</h1>
-			</div>
 			<PropertySearch />
 		</PageContainer>
 	);
