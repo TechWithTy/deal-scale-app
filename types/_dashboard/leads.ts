@@ -63,4 +63,5 @@ export type LeadTypeGlobal = {
 	tcpaOptedIn?: boolean;
 	/** Timestamp when TCPA consent was obtained */
 	tcpaConsentDate?: string;
+	tcpaSource?: string;
 };

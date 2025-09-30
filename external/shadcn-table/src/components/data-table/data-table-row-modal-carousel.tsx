@@ -11,24 +11,29 @@ import type {
 	ChartConfigLocal,
 	ActivityDataPoint,
 } from "../../../../activity-graph/types";
-import type { LeadTypeGlobal } from "../../../../../../types/_dashboard/leads";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@radix-ui/react-tabs";
 
-// Define interface for row data that contains leads
-interface RowDataWithLeads {
-	leads?: LeadTypeGlobal[];
-	[key: string]: unknown;
-}
+// Helper function to safely check if data is campaign data
+const isCampaignData = (data: unknown): data is { calls: number; leads: number; inQueue: number } => {
+	return (
+		data !== null &&
+		typeof data === 'object' &&
+		'calls' in data &&
+		'leads' in data &&
+		'inQueue' in data
+	);
+};
 
 // Define interface for comparison lead
 interface ComparisonLead {
 	id: string;
 	name: string;
+	contactInfo?: { firstName?: string };
 }
 
 // Generate activity data for multiple leads with different interaction types
 const generateActivityDataForLeads = (
-	leads: { id: string; name: string }[],
+	leads: { id: string; name?: string }[],
 ): ActivityDataPoint[] => {
 	const monthsAgoIso = (n: number): string => {
 		const d = new Date();
@@ -140,9 +145,17 @@ export function DataTableRowModalCarousel<TData>(
 	// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
 	const allLeadsForData = useMemo(() => {
 		if (!row?.original) return [];
-		const rowLeads = (row.original as RowDataWithLeads)?.leads;
+		const rowLeads = (row.original as { leads?: { id: string; name?: string; contactInfo?: { firstName?: string } }[] })?.leads;
 		const safeRowLeads = Array.isArray(rowLeads) ? rowLeads : [];
-		const allLeads = [...safeRowLeads, ...sampleComparisonLeads];
+		// Convert leads to the expected format for generateActivityDataForLeads
+		const convertedLeads = safeRowLeads.map((lead) => ({
+			id: lead.id,
+			name: lead.name || lead.contactInfo?.firstName || `Lead ${lead.id}`,
+		}));
+		const allLeads = [...convertedLeads, ...sampleComparisonLeads] as {
+			id: string;
+			name?: string;
+		}[];
 		// Remove duplicates based on ID
 		return allLeads.filter(
 			(lead, index, self) => index === self.findIndex((l) => l.id === lead.id),
@@ -184,10 +197,17 @@ export function DataTableRowModalCarousel<TData>(
 		const config: ChartConfigLocal = {};
 
 		allChartLeads.forEach((leadId, index) => {
-			const leads = (row.original as RowDataWithLeads)?.leads;
+			const leads = (row.original as { leads?: { id: string; name?: string; contactInfo?: { firstName?: string } }[] })?.leads;
 			const safeLeads = Array.isArray(leads) ? leads : [];
 			const comparisonLead = sampleComparisonLeads.find((l) => l.id === leadId);
-			const lead = safeLeads.find((l: LeadTypeGlobal) => l.id === leadId) || comparisonLead;
+			const lead =
+				safeLeads.find(
+					(l: {
+						id: string;
+						contactInfo?: { firstName?: string };
+						name?: string;
+					}) => l.id === leadId,
+				) || comparisonLead;
 			const colorIndex = (index % 3) + 1; // Cycle through chart colors
 
 			config[`${leadId}_calls`] = {
@@ -261,64 +281,173 @@ export function DataTableRowModalCarousel<TData>(
 
 						<TabsContent value="activity" className="mt-4">
 							<div className="space-y-4">
-								<div className="text-center">
-									<h3 className="font-semibold text-lg">Activity Overview</h3>
-									<p className="text-muted-foreground text-sm">
-										Select leads to view their activity timeline
-									</p>
-								</div>
+								{(() => {
+									// Check if this is campaign data
+									const isCampaign = isCampaignData(row?.original);
 
-								{/* Comparison Leads Selection */}
-								<div className="space-y-3">
-									<h4 className="font-medium text-muted-foreground text-sm">
-										Compare With
-									</h4>
-									<div className="flex flex-wrap gap-2">
-										{sampleComparisonLeads.map((lead) => (
-											<button
-												key={lead.id}
-												type="button"
-												onClick={() => {
-													if (comparisonLeads.includes(lead.id)) {
-														setComparisonLeads((prev) =>
-															prev.filter((id) => id !== lead.id),
-														);
-													} else {
-														setComparisonLeads((prev) => [...prev, lead.id]);
-													}
-												}}
-												className={`inline-flex items-center rounded-full border px-3 py-1 font-medium text-xs transition-colors ${
-													comparisonLeads.includes(lead.id)
-														? "border-secondary bg-secondary text-secondary-foreground"
-														: "border-border bg-muted/50 text-muted-foreground hover:bg-muted/80"
-												}`}
-											>
-												{lead.name}
-											</button>
-										))}
-									</div>
-								</div>
+									if (isCampaign) {
+										// Campaign-specific activity content
+										const campaign = row.original as {
+											calls?: number;
+											leads?: number;
+											inQueue?: number;
+											dnc?: number;
+											status?: string;
+											startDate?: string;
+											name?: string;
+											callerNumber?: string;
+											textStats?: {
+												sent?: number;
+												delivered?: number;
+												failed?: number;
+											};
+											platform?: string;
+										};
 
-								{/* Activity Chart */}
-								{allChartLeads.length > 0 && (
-									<ActivityLineGraphContainer
-										data={filteredActivityData}
-										config={dynamicActivityConfig}
-										defaultLines={availableLines.slice(0, 12)} // Show up to 12 lines max
-										defaultRange="30d"
-										title="Lead Activity Trends"
-										description={`Showing activity for ${allChartLeads.length} lead${allChartLeads.length > 1 ? "s" : ""} (${comparisonLeads.length} comparison)`}
-									/>
-								)}
+										return (
+											<>
+												<div className="text-center">
+													<h3 className="font-semibold text-lg">
+														Campaign Activity
+													</h3>
+													<p className="text-muted-foreground text-sm">
+														View{" "}
+														{campaign.callerNumber
+															? "call"
+															: campaign.textStats
+																? "text"
+																: campaign.platform
+																	? "social"
+																	: "email"}{" "}
+														campaign metrics for "{campaign.name || "Campaign"}"
+													</p>
+												</div>
 
-								{allChartLeads.length === 0 && (
-									<div className="py-8 text-center text-muted-foreground">
-										<div className="mb-2 text-4xl">📊</div>
-										<p>
-											Select one or more leads to view their activity timeline
-										</p>
-									</div>
-								)}
+												<div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+													<div className="rounded-lg border bg-card p-4">
+														<div className="font-bold text-2xl text-primary">
+															{campaign.calls || 0}
+														</div>
+														<div className="text-muted-foreground text-sm">
+															Total Calls
+														</div>
+													</div>
+													<div className="rounded-lg border bg-card p-4">
+														<div className="font-bold text-2xl text-primary">
+															{campaign.leads || 0}
+														</div>
+														<div className="text-muted-foreground text-sm">
+															Leads Generated
+														</div>
+													</div>
+													<div className="rounded-lg border bg-card p-4">
+														<div className="font-bold text-2xl text-primary">
+															{campaign.inQueue || 0}
+														</div>
+														<div className="text-muted-foreground text-sm">
+															In Queue
+														</div>
+													</div>
+													<div className="rounded-lg border bg-card p-4">
+														<div className="font-bold text-2xl text-primary">
+															{campaign.dnc || 0}
+														</div>
+														<div className="text-muted-foreground text-sm">
+															DNC Count
+														</div>
+													</div>
+												</div>
+
+												<div className="rounded-lg border bg-card p-4">
+													<h4 className="mb-2 font-medium">Campaign Status</h4>
+													<div className="flex flex-wrap gap-2">
+														<span className="rounded-full bg-primary/10 px-2 py-1 text-primary text-xs">
+															{campaign.status || "Unknown Status"}
+														</span>
+														<span className="rounded-full bg-muted px-2 py-1 text-muted-foreground text-xs">
+															Started:{" "}
+															{campaign.startDate
+																? new Date(
+																		campaign.startDate,
+																	).toLocaleDateString()
+																: "Unknown Date"}
+														</span>
+													</div>
+												</div>
+											</>
+										);
+									}
+
+									// Default lead activity content (existing logic)
+									return (
+										<>
+											<div className="text-center">
+												<h3 className="font-semibold text-lg">
+													Activity Overview
+												</h3>
+												<p className="text-muted-foreground text-sm">
+													Select leads to view their activity timeline
+												</p>
+											</div>
+
+											{/* Comparison Leads Selection */}
+											<div className="space-y-3">
+												<h4 className="font-medium text-muted-foreground text-sm">
+													Compare With
+												</h4>
+												<div className="flex flex-wrap gap-2">
+													{sampleComparisonLeads.map((lead) => (
+														<button
+															key={lead.id}
+															type="button"
+															onClick={() => {
+																if (comparisonLeads.includes(lead.id)) {
+																	setComparisonLeads((prev) =>
+																		prev.filter((id) => id !== lead.id),
+																	);
+																} else {
+																	setComparisonLeads((prev) => [
+																		...prev,
+																		lead.id,
+																	]);
+																}
+															}}
+															className={`inline-flex items-center rounded-full border px-3 py-1 font-medium text-xs transition-colors ${
+																comparisonLeads.includes(lead.id)
+																	? "border-secondary bg-secondary text-secondary-foreground"
+																	: "border-border bg-muted/50 text-muted-foreground hover:bg-muted/80"
+															}`}
+														>
+															{lead.name}
+														</button>
+													))}
+												</div>
+											</div>
+
+											{/* Activity Chart */}
+											{allChartLeads.length > 0 && (
+												<ActivityLineGraphContainer
+													data={filteredActivityData}
+													config={dynamicActivityConfig}
+													defaultLines={availableLines.slice(0, 12)} // Show up to 12 lines max
+													defaultRange="30d"
+													title="Lead Activity Trends"
+													description={`Showing activity for ${allChartLeads.length} lead${allChartLeads.length > 1 ? "s" : ""} (${comparisonLeads.length} comparison)`}
+												/>
+											)}
+
+											{allChartLeads.length === 0 && (
+												<div className="py-8 text-center text-muted-foreground">
+													<div className="mb-2 text-4xl">📊</div>
+													<p>
+														Select one or more leads to view their activity
+														timeline
+													</p>
+												</div>
+											)}
+										</>
+									);
+								})()}
 							</div>
 						</TabsContent>
 					</Tabs>

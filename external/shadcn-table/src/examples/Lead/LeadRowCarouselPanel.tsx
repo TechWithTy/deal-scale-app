@@ -104,7 +104,9 @@ export function LeadRowCarouselPanel(props: LeadRowCarouselPanelProps) {
 								<div className="text-left text-xs leading-5">
 									{(() => {
 										const lead = row.leads[leadIndex];
-										return lead ? formatLeadDossierSummary(lead) : "No lead data";
+										return lead
+											? formatLeadDossierSummary(lead)
+											: "No lead data";
 									})()}
 								</div>
 							</TooltipContent>
@@ -126,122 +128,136 @@ export function LeadRowCarouselPanel(props: LeadRowCarouselPanelProps) {
 				</div>
 				<div className="space-y-4">
 					{row.leads.map((lead) => (
-						<div key={lead.id} className="rounded-lg border border-border bg-card p-4 shadow-sm transition-shadow hover:shadow-md">
-						<div className="grid grid-cols-12 gap-4">
-							{/* Left Column - Lead Info & Status */}
-							<div className="col-span-8 space-y-3">
-								{/* Status dropdown at the top */}
-								<div className="flex items-start justify-between">
-									<div className="flex-1">
-										<h3 className="font-semibold text-lg text-foreground">{lead.name}</h3>
-										<p className="text-muted-foreground text-sm">{lead.address}</p>
+						<div
+							key={lead.id}
+							className="rounded-lg border border-border bg-card p-4 shadow-sm transition-shadow hover:shadow-md"
+						>
+							<div className="grid grid-cols-12 gap-4">
+								{/* Left Column - Lead Info & Status */}
+								<div className="col-span-8 space-y-3">
+									{/* Status dropdown at the top */}
+									<div className="flex items-start justify-between">
+										<div className="flex-1">
+											<h3 className="font-semibold text-foreground text-lg">
+												{lead.name}
+											</h3>
+											<p className="text-muted-foreground text-sm">
+												{lead.address}
+											</p>
+										</div>
+										<div className="w-[130px]">
+											<Select
+												value={lead.status}
+												onValueChange={(val) => {
+													setData((prev) =>
+														prev.map((r) =>
+															r.id === row.id
+																? {
+																		...r,
+																		leads: r.leads.map((l) =>
+																			l.id === lead.id
+																				? {
+																						...l,
+																						status: val as DemoLead["status"],
+																					}
+																				: l,
+																		),
+																	}
+																: r,
+														),
+													);
+												}}
+											>
+												<SelectTrigger className="h-8">
+													<SelectValue placeholder="Status" />
+												</SelectTrigger>
+												<SelectContent>
+													<SelectItem value="New Lead">New Lead</SelectItem>
+													<SelectItem value="Contacted">Contacted</SelectItem>
+													<SelectItem value="Qualified">Qualified</SelectItem>
+													<SelectItem value="Do Not Contact">
+														Do Not Contact
+													</SelectItem>
+												</SelectContent>
+											</Select>
+										</div>
 									</div>
-									<div className="w-[130px]">
-										<Select
-											value={lead.status}
-											onValueChange={(val) => {
-												setData((prev) =>
-													prev.map((r) =>
-														r.id === row.id
-															? {
-																	...r,
-																	leads: r.leads.map((l) =>
-																		l.id === lead.id
-																			? {
-																					...l,
-																					status: val as DemoLead["status"],
-																				}
-																			: l,
-																	),
-																}
-															: r,
-													),
-												);
-											}}
+
+									<div className="space-y-2">
+										<div className="flex items-center gap-2">
+											<span className="text-muted-foreground text-sm">📞</span>
+											<span className="font-medium tabular-nums">
+												{lead.phone}
+											</span>
+										</div>
+										<div className="flex items-center gap-2">
+											<span className="text-muted-foreground text-sm">✉️</span>
+											<a
+												href={`mailto:${lead.email}`}
+												className="text-primary underline-offset-2 hover:underline"
+											>
+												{lead.email}
+											</a>
+										</div>
+									</div>
+
+									<div className="text-muted-foreground text-xs">
+										<span className="font-medium">Associated Address:</span>{" "}
+										{lead.associatedAddress}
+									</div>
+
+									{/* Horizontal verification badges that wrap */}
+									<div className="flex flex-wrap gap-1.5 text-[11px]">
+										<span
+											className={`inline-flex items-center rounded-full border px-2 py-1 ${lead.isIPhone ? "border-emerald-400 text-emerald-600" : "border-red-300 text-red-600"}`}
 										>
-											<SelectTrigger className="h-8">
-												<SelectValue placeholder="Status" />
-											</SelectTrigger>
-											<SelectContent>
-												<SelectItem value="New Lead">New Lead</SelectItem>
-												<SelectItem value="Contacted">Contacted</SelectItem>
-												<SelectItem value="Qualified">Qualified</SelectItem>
-												<SelectItem value="Do Not Contact">
-													Do Not Contact
-												</SelectItem>
-											</SelectContent>
-										</Select>
-									</div>
-								</div>
-
-								<div className="space-y-2">
-									<div className="flex items-center gap-2">
-										<span className="text-muted-foreground text-sm">📞</span>
-										<span className="font-medium tabular-nums">{lead.phone}</span>
-									</div>
-									<div className="flex items-center gap-2">
-										<span className="text-muted-foreground text-sm">✉️</span>
-										<a
-											href={`mailto:${lead.email}`}
-											className="text-primary underline-offset-2 hover:underline"
+											📱 iPhone: {lead.isIPhone ? "Yes" : "No"}
+										</span>
+										<span
+											className={`inline-flex items-center rounded-full border px-2 py-1 ${lead.addressVerified ? "border-emerald-400 text-emerald-600" : "border-red-300 text-red-600"}`}
 										>
-											{lead.email}
-										</a>
+											🏠 Address:{" "}
+											{lead.addressVerified ? "Verified" : "Unverified"}
+										</span>
+										<span
+											className={`inline-flex items-center rounded-full border px-2 py-1 ${lead.phoneVerified ? "border-emerald-400 text-emerald-600" : "border-red-300 text-red-600"}`}
+										>
+											📞 Phone: {lead.phoneVerified ? "Verified" : "Unverified"}
+										</span>
+										<span
+											className={`inline-flex items-center rounded-full border px-2 py-1 ${lead.emailVerified ? "border-emerald-400 text-emerald-600" : "border-red-300 text-red-600"}`}
+										>
+											✉️ Email: {lead.emailVerified ? "Verified" : "Unverified"}
+										</span>
+										<span
+											className={`inline-flex items-center rounded-full border px-2 py-1 ${lead.socialVerified ? "border-emerald-400 text-emerald-600" : "border-red-300 text-red-600"}`}
+										>
+											🌐 Social:{" "}
+											{lead.socialVerified ? "Verified" : "Unverified"}
+										</span>
 									</div>
 								</div>
 
-								<div className="text-muted-foreground text-xs">
-									<span className="font-medium">Associated Address:</span> {lead.associatedAddress}
-								</div>
-
-								{/* Horizontal verification badges that wrap */}
-								<div className="flex flex-wrap gap-1.5 text-[11px]">
-									<span
-										className={`inline-flex items-center rounded-full border px-2 py-1 ${lead.isIPhone ? "border-emerald-400 text-emerald-600" : "border-red-300 text-red-600"}`}
-									>
-										📱 iPhone: {lead.isIPhone ? "Yes" : "No"}
-									</span>
-									<span
-										className={`inline-flex items-center rounded-full border px-2 py-1 ${lead.addressVerified ? "border-emerald-400 text-emerald-600" : "border-red-300 text-red-600"}`}
-									>
-										🏠 Address: {lead.addressVerified ? "Verified" : "Unverified"}
-									</span>
-									<span
-										className={`inline-flex items-center rounded-full border px-2 py-1 ${lead.phoneVerified ? "border-emerald-400 text-emerald-600" : "border-red-300 text-red-600"}`}
-									>
-										📞 Phone: {lead.phoneVerified ? "Verified" : "Unverified"}
-									</span>
-									<span
-										className={`inline-flex items-center rounded-full border px-2 py-1 ${lead.emailVerified ? "border-emerald-400 text-emerald-600" : "border-red-300 text-red-600"}`}
-									>
-										✉️ Email: {lead.emailVerified ? "Verified" : "Unverified"}
-									</span>
-									<span
-										className={`inline-flex items-center rounded-full border px-2 py-1 ${lead.socialVerified ? "border-emerald-400 text-emerald-600" : "border-red-300 text-red-600"}`}
-									>
-										🌐 Social: {lead.socialVerified ? "Verified" : "Unverified"}
-									</span>
+								{/* Right Column - Social Media */}
+								<div className="col-span-4">
+									<h4 className="mb-2 font-medium text-muted-foreground text-sm">
+										Social Media
+									</h4>
+									<div className="flex min-h-[24px] flex-wrap gap-2">
+										{lead.socials.map((s) => (
+											<a
+												key={s.label}
+												href={s.url}
+												target="_blank"
+												rel="noreferrer"
+												className="max-w-[110px] truncate text-primary underline-offset-2 hover:underline"
+											>
+												{s.label}
+											</a>
+										))}
+									</div>
 								</div>
 							</div>
-
-							{/* Right Column - Social Media */}
-							<div className="col-span-4">
-								<h4 className="mb-2 font-medium text-sm text-muted-foreground">Social Media</h4>
-								<div className="flex min-h-[24px] flex-wrap gap-2">
-									{lead.socials.map((s) => (
-										<a
-											key={s.label}
-											href={s.url}
-											target="_blank"
-											rel="noreferrer"
-											className="max-w-[110px] text-primary truncate underline-offset-2 hover:underline"
-										>
-											{s.label}
-										</a>
-									))}
-								</div>
-							</div>
-						</div>
 						</div>
 					))}
 				</div>
@@ -275,9 +291,7 @@ export function LeadRowCarouselPanel(props: LeadRowCarouselPanelProps) {
 								size="icon"
 								onClick={async (e) => {
 									e.stopPropagation();
-									await navigator.clipboard.writeText(
-										formatLeadDossier(lead),
-									);
+									await navigator.clipboard.writeText(formatLeadDossier(lead));
 								}}
 								aria-label="Copy social dossier"
 							>
@@ -298,9 +312,7 @@ export function LeadRowCarouselPanel(props: LeadRowCarouselPanelProps) {
 						type="button"
 						variant="outline"
 						size="sm"
-						onClick={() =>
-							onOpenSkipTrace?.(buildSingleInit(lead, row.list))
-						}
+						onClick={() => onOpenSkipTrace?.(buildSingleInit(lead, row.list))}
 					>
 						Skip Trace
 					</Button>
@@ -314,7 +326,9 @@ export function LeadRowCarouselPanel(props: LeadRowCarouselPanelProps) {
 						{/* Status dropdown at the top */}
 						<div className="flex items-start justify-between">
 							<div className="flex-1">
-								<h3 className="font-semibold text-lg text-foreground">{lead.name}</h3>
+								<h3 className="font-semibold text-foreground text-lg">
+									{lead.name}
+								</h3>
 								<p className="text-muted-foreground text-sm">{lead.address}</p>
 							</div>
 							<div className="w-[130px]">
@@ -344,7 +358,9 @@ export function LeadRowCarouselPanel(props: LeadRowCarouselPanelProps) {
 										<SelectItem value="New Lead">New Lead</SelectItem>
 										<SelectItem value="Contacted">Contacted</SelectItem>
 										<SelectItem value="Qualified">Qualified</SelectItem>
-										<SelectItem value="Do Not Contact">Do Not Contact</SelectItem>
+										<SelectItem value="Do Not Contact">
+											Do Not Contact
+										</SelectItem>
 									</SelectContent>
 								</Select>
 							</div>
@@ -367,7 +383,8 @@ export function LeadRowCarouselPanel(props: LeadRowCarouselPanelProps) {
 						</div>
 
 						<div className="text-muted-foreground text-xs">
-							<span className="font-medium">Associated Address:</span> {lead.associatedAddress}
+							<span className="font-medium">Associated Address:</span>{" "}
+							{lead.associatedAddress}
 						</div>
 
 						{/* Horizontal verification badges that wrap */}
@@ -402,7 +419,9 @@ export function LeadRowCarouselPanel(props: LeadRowCarouselPanelProps) {
 
 					{/* Right Column - Social Media */}
 					<div className="col-span-4">
-						<h4 className="mb-2 font-medium text-sm text-muted-foreground">Social Media</h4>
+						<h4 className="mb-2 font-medium text-muted-foreground text-sm">
+							Social Media
+						</h4>
 						<div className="flex min-h-[24px] flex-wrap gap-2">
 							{lead.socials.map((s) => (
 								<a
@@ -410,7 +429,7 @@ export function LeadRowCarouselPanel(props: LeadRowCarouselPanelProps) {
 									href={s.url}
 									target="_blank"
 									rel="noreferrer"
-									className="max-w-[110px] text-primary truncate underline-offset-2 hover:underline"
+									className="max-w-[110px] truncate text-primary underline-offset-2 hover:underline"
 								>
 									{s.label}
 								</a>
