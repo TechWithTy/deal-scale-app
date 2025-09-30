@@ -96,7 +96,8 @@ export const leadListColumns: ColumnDef<LeadTypeGlobal>[] = [
 		header: "DNC Source",
 		accessorFn: (row) => {
 			const r = row as LeadTypeGlobal;
-			if (r.dncSource && r.dncSource.trim()) return r.dncSource;
+			if (r.dncSource && typeof r.dncSource === "string" && r.dncSource.trim())
+				return r.dncSource;
 			const pick =
 				(r.smsOptOut && "Text Opt-out") ||
 				(r.emailOptOut && "Email Unsubscribe") ||
@@ -108,7 +109,7 @@ export const leadListColumns: ColumnDef<LeadTypeGlobal>[] = [
 		cell: ({ row }: { row: Row<LeadTypeGlobal> }) => {
 			const r = row.original;
 			const label =
-				r.dncSource && r.dncSource.trim()
+				r.dncSource && typeof r.dncSource === "string" && r.dncSource.trim()
 					? r.dncSource
 					: (r.smsOptOut && "Text Opt-out") ||
 						(r.emailOptOut && "Email Unsubscribe") ||

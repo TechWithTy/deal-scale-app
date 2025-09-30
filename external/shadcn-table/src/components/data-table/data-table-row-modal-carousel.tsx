@@ -59,20 +59,17 @@ export function DataTableRowModalCarousel<TData>(
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent className="flex flex-col overflow-hidden max-h-[85vh] sm:max-w-3xl md:max-w-4xl border border-border bg-card text-foreground shadow-xl">
-				<DialogHeader>
+			<DialogContent className="-translate-x-1/2 -translate-y-1/2 border border-border bg-card fixed left-1/2 max-h-[90vh] max-w-4xl overflow-hidden p-0 shadow-lg top-1/2 w-full">
+				<DialogHeader className="p-6 pb-4">
 					<DialogTitle>
 						{row && title
 							? title(row, index)
-							: `Row ${index + 1} of ${rows.length}`}
+							: "Lead Details"}
 					</DialogTitle>
-					{row && description ? (
-						<DialogDescription>{description(row, index)}</DialogDescription>
-					) : null}
 				</DialogHeader>
 				<div
-					className="grid gap-3 overflow-y-auto pr-1 text-sm leading-6"
-					style={{ maxHeight: "calc(85vh - 150px)" }}
+					className="px-6 overflow-y-auto"
+					style={{ maxHeight: "calc(90vh - 200px)" }}
 				>
 					{row ? (
 						render(row, index)
@@ -80,31 +77,21 @@ export function DataTableRowModalCarousel<TData>(
 						<div className="text-muted-foreground">No row</div>
 					)}
 				</div>
-				<div className="mt-4 flex items-center justify-between gap-2 border-t pt-4">
+				<div className="mt-4 flex items-center justify-between gap-2 border-t p-6 pt-4">
 					<Button
 						type="button"
 						variant="outline"
-						size="sm"
-						onClick={onPrev}
-						aria-label="Previous"
-						className="gap-1.5"
+						onClick={() => onOpenChange(false)}
 					>
-						<ChevronLeft />
-						Prev
+						Close
 					</Button>
-					<div className="flex items-center gap-3">
-						{row && actions ? (
-							<div className="flex items-center gap-2">
-								{actions(row, index)}
-							</div>
-						) : null}
-						<div className="text-muted-foreground text-xs sm:text-sm">
-							{row && counter
-								? counter(row, index)
-								: rows.length > 0
-									? `${index + 1} / ${rows.length}`
-									: "0 / 0"}
-						</div>
+					<div className="flex gap-2">
+						{actions && actions(row, index)}
+						{row && counter
+							? counter(row, index)
+							: rows.length > 0
+								? `${index + 1} / ${rows.length}`
+								: "0 / 0"}
 					</div>
 					<Button
 						type="button"

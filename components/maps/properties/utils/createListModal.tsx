@@ -75,7 +75,7 @@ const SkipTraceForm: React.FC<SkipTraceFormProps> = ({
 
 	return (
 		<>
-			<p className="mb-4 text-sm text-muted-foreground">
+			<p className="mb-4 text-muted-foreground text-sm">
 				Skip trace and create a list.
 			</p>
 
@@ -85,7 +85,7 @@ const SkipTraceForm: React.FC<SkipTraceFormProps> = ({
 					<div className="flex items-center justify-between">
 						<label
 							htmlFor="use-existing-list"
-							className="text-sm font-medium text-foreground"
+							className="font-medium text-foreground text-sm"
 						>
 							Add to an existing list({availableListNames.length}):
 						</label>
@@ -120,7 +120,7 @@ const SkipTraceForm: React.FC<SkipTraceFormProps> = ({
 				<div className="mb-4">
 					<label
 						htmlFor="target-list"
-						className="block text-sm font-medium text-foreground"
+						className="block font-medium text-foreground text-sm"
 					>
 						Select a target list
 					</label>
@@ -136,7 +136,7 @@ const SkipTraceForm: React.FC<SkipTraceFormProps> = ({
 				<div className="mb-4">
 					<label
 						htmlFor="new-list-name"
-						className="block text-sm font-medium text-foreground"
+						className="block font-medium text-foreground text-sm"
 					>
 						New List Name
 					</label>
@@ -154,7 +154,7 @@ const SkipTraceForm: React.FC<SkipTraceFormProps> = ({
 			<div className="mb-4">
 				<label
 					htmlFor="records-to-skip"
-					className="block text-sm font-medium text-foreground"
+					className="block font-medium text-foreground text-sm"
 				>
 					Records to skip
 				</label>
@@ -167,7 +167,7 @@ const SkipTraceForm: React.FC<SkipTraceFormProps> = ({
 						min={1}
 						max={properties.length}
 					/>
-					<span className="text-sm text-muted-foreground">
+					<span className="text-muted-foreground text-sm">
 						/ {properties.length}
 					</span>
 				</div>
@@ -193,7 +193,7 @@ const SkipTraceForm: React.FC<SkipTraceFormProps> = ({
 
 				<label
 					htmlFor="redo-skip-trace"
-					className="ml-3 text-sm font-medium text-foreground"
+					className="ml-3 font-medium text-foreground text-sm"
 				>
 					Don’t redo skip traces on data you’ve already purchased in the past 2
 					months
@@ -202,7 +202,7 @@ const SkipTraceForm: React.FC<SkipTraceFormProps> = ({
 
 			{/* Total credits */}
 			<div className="mb-6">
-				<p className="text-lg font-medium text-foreground">
+				<p className="font-medium text-foreground text-lg">
 					Total Credits: <span className="text-primary">{recordsToSkip}</span>
 				</p>
 			</div>

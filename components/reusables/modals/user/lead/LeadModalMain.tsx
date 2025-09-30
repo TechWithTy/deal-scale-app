@@ -8,6 +8,10 @@ import LeadListSelectStep from "./steps/LeadListSelectStep";
 import { LEAD_LISTS_MOCK } from "@/constants/dashboard/leadLists.mock";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useLeadModalState } from "./hooks/useLeadModalState";
+import FieldMappingStep, {
+	REQUIRED_FIELD_MAPPING_KEYS,
+} from "../skipTrace/steps/FieldMappingStep";
+import { useState } from "react";
 
 // * Main Lead Modal Component: Combines all modular steps
 interface LeadMainModalProps {
@@ -92,6 +96,29 @@ function LeadMainModal({
 		v: "morning" | "afternoon" | "evening" | "any",
 	) => setBestContactTime(v);
 
+	// Field mapping state (only used when creating a list)
+	const [csvHeaders, setCsvHeaders] = useState<string[]>([
+		"First Name",
+		"Last Name",
+		"Email",
+		"Phone",
+		"Address",
+		"City",
+		"State",
+		"Zip Code",
+	]);
+	const [selectedHeadersState, setSelectedHeadersState] = useState<
+		Record<string, string | undefined>
+	>({});
+	const [canProceedFromMapping, setCanProceedFromMapping] = useState(false);
+
+	const handleHeaderSelect = (fieldName: string, value: string) => {
+		setSelectedHeadersState((prev: Record<string, string | undefined>) => ({
+			...prev,
+			[fieldName]: value || undefined,
+		}));
+	};
+
 	// Validation
 	const validateStep = () => validateStepNow();
 
@@ -124,10 +151,21 @@ function LeadMainModal({
 	const handleNext = () => {
 		const problems = validateStep();
 		setErrors(problems);
-		if (Object.keys(problems).length === 0) setStep((s) => Math.min(4, s + 1));
+		if (Object.keys(problems).length === 0) {
+			// Special logic for mapping step when creating a list
+			if (step === 1 && listMode === "create") {
+				// If we're on the mapping step and can proceed, move to basic info
+				if (canProceedFromMapping) {
+					setStep(2);
+				}
+			} else {
+				// Normal progression for other steps
+				setStep((s: number) => Math.min(5, s + 1));
+			}
+		}
 	};
 
-	const handleBack = () => setStep((s) => Math.max(0, s - 1));
+	const handleBack = () => setStep((s: number) => Math.max(0, s - 1));
 
 	const buttonClass =
 		"px-4 py-2 rounded-md bg-primary text-primary-foreground disabled:opacity-50";
@@ -161,7 +199,17 @@ function LeadMainModal({
 						/>
 					)}
 
-					{step === 1 && (
+					{step === 1 && listMode === "create" && (
+						<FieldMappingStep
+							headers={csvHeaders}
+							selectedHeaders={selectedHeadersState}
+							onHeaderSelect={handleHeaderSelect}
+							errors={{}}
+							onCanProceedChange={setCanProceedFromMapping}
+						/>
+					)}
+
+					{step === 1 && listMode === "select" && (
 						<LeadBasicInfoStep
 							firstName={firstName}
 							lastName={lastName}
@@ -171,7 +219,7 @@ function LeadMainModal({
 						/>
 					)}
 
-					{step === 2 && (
+					{step === 3 && (
 						<LeadAddressStep
 							address={address}
 							city={city}
@@ -185,7 +233,7 @@ function LeadMainModal({
 						/>
 					)}
 
-					{step === 3 && (
+					{step === 4 && (
 						<LeadContactStep
 							phoneNumber={phoneNumber}
 							email={email}
@@ -207,7 +255,7 @@ function LeadMainModal({
 						/>
 					)}
 
-					{step === 4 && (
+					{step === 5 && (
 						<LeadSocialsStep
 							facebook={facebook}
 							linkedin={linkedin}
@@ -235,7 +283,7 @@ function LeadMainModal({
 								Back
 							</button>
 						)}
-						{step !== 4 ? (
+						{step !== 5 ? (
 							<button
 								type="button"
 								className={buttonClass}
