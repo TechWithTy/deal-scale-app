@@ -14,7 +14,6 @@ import { AiActions } from "./Phone/call/components/AiActions";
 import { CallDetailsModal } from "./Phone/call/components/CallDetailsModal";
 import { useRowCarousel } from "../hooks/use-row-carousel";
 import { SummaryCard } from "./Phone/call/components/SummaryCard";
-import { StatusQuickActions } from "./Phone/call/components/StatusQuickActions";
 import {
 	buildCallCampaignColumns,
 	type CampaignType,
@@ -44,11 +43,6 @@ export default function CallCampaignsDemoTable({
 		"today",
 	);
 	const [createOpen, setCreateOpen] = React.useState(false);
-	// In-memory DNC list keyed by campaign id or name for demo purposes
-	const [dncSet, setDncSet] = React.useState<Set<string>>(new Set());
-	const [dncFilter, setDncFilter] = React.useState<"all" | "only" | "hide">(
-		"all",
-	);
 	// Per-row feedback store: sentiment and optional note
 	const [feedback, setFeedback] = React.useState<
 		Record<string, { sentiment: "up" | "down" | null; note: string }>
@@ -75,7 +69,7 @@ export default function CallCampaignsDemoTable({
 
 	const filtered = React.useMemo(() => {
 		const q = query.toLowerCase().trim();
-		const byQuery = !q
+		return !q
 			? data
 			: data.filter((r) =>
 					[
@@ -89,12 +83,7 @@ export default function CallCampaignsDemoTable({
 						.map((v) => String(v).toLowerCase())
 						.some((s) => s.includes(q)),
 				);
-		if (dncFilter === "only")
-			return byQuery.filter((r) => dncSet.has(getKey(r)));
-		if (dncFilter === "hide")
-			return byQuery.filter((r) => !dncSet.has(getKey(r)));
-		return byQuery;
-	}, [data, query, dncFilter, dncSet, getKey]);
+	}, [data, query]);
 
 	const pageSize = 10;
 	// useDataTable is optional; DataTable supports being driven by a table instance.
@@ -329,42 +318,6 @@ export default function CallCampaignsDemoTable({
 						>
 							Clear
 						</Button>
-						<Button
-							variant="outline"
-							size="sm"
-							type="button"
-							onClick={() => {
-								const next = new Set(dncSet);
-								for (const r of table.getFilteredSelectedRowModel().rows) {
-									next.add(getKey(r.original as CallCampaign));
-								}
-								setDncSet(next);
-								table.resetRowSelection();
-							}}
-						>
-							Add to DNC
-						</Button>
-						<Button
-							variant="outline"
-							size="sm"
-							type="button"
-							onClick={() => {
-								const next = new Set(dncSet);
-								for (const r of table.getFilteredSelectedRowModel().rows) {
-									next.delete(getKey(r.original as CallCampaign));
-								}
-								setDncSet(next);
-								table.resetRowSelection();
-							}}
-						>
-							Remove from DNC
-						</Button>
-						<AiActions table={table} />
-						<DataTableExportButton
-							table={table}
-							filename="call-campaigns"
-							excludeColumns={["select"]}
-						/>
 					</div>
 				}
 			>
@@ -376,35 +329,6 @@ export default function CallCampaignsDemoTable({
 						onChange={(e) => setQuery(e.target.value)}
 						className="h-8 w-64"
 					/>
-					<div className="hidden items-center gap-1 md:flex">
-						<StatusQuickActions table={table} />
-					</div>
-					<div className="flex items-center gap-1">
-						<Button
-							type="button"
-							size="sm"
-							variant={dncFilter === "all" ? "default" : "outline"}
-							onClick={() => setDncFilter("all")}
-						>
-							DNC: All
-						</Button>
-						<Button
-							type="button"
-							size="sm"
-							variant={dncFilter === "only" ? "default" : "outline"}
-							onClick={() => setDncFilter("only")}
-						>
-							DNC: Only
-						</Button>
-						<Button
-							type="button"
-							size="sm"
-							variant={dncFilter === "hide" ? "default" : "outline"}
-							onClick={() => setDncFilter("hide")}
-						>
-							DNC: Hide
-						</Button>
-					</div>
 					<AiActions table={table} />
 					<DataTableExportButton
 						table={table}
