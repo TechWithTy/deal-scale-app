@@ -15,11 +15,11 @@ import { ActionBar } from "./Social/components/ActionBar";
 import { AIDialog } from "./Social/components/AIDialog";
 import { summarizeRows } from "./Social/utils/summarize";
 import { SocialRowCarousel } from "./Social/components/SocialRowCarousel";
-import { generateSocialCampaignData } from "./Social/utils/mock";
-
-import type { CallCampaign } from "../../../../types/_dashboard/campaign";
 import { buildSocialColumns } from "./Social/utils/buildColumns-refactored";
+import { FeatureGuard } from "../../../../components/access/FeatureGuard";
+import { CallCampaign } from "../../../../types/_dashboard/campaign";
 import CampaignModalMain from "./campaigns/modal/CampaignModalMain";
+import { generateSocialCampaignData } from "./Social/utils/mock";
 
 type ParentTab = "calls" | "text" | "social" | "directMail";
 
@@ -198,47 +198,7 @@ export default function SocialCampaignsDemoTable({
 							Search, selection, filtering, and details.
 						</p>
 					</div>
-					<div className="flex items-center gap-2">
-						{onNavigate && (
-							<>
-								<Button
-									type="button"
-									variant="outline"
-									size="sm"
-									onClick={() => onNavigate("calls")}
-								>
-									Calls
-								</Button>
-								<Button
-									type="button"
-									variant="outline"
-									size="sm"
-									onClick={() => onNavigate("text")}
-								>
-									Text
-								</Button>
-								<Button
-									type="button"
-									variant="default"
-									size="sm"
-									onClick={() => onNavigate("social")}
-								>
-									Social
-								</Button>
-								<Button
-									type="button"
-									variant="outline"
-									size="sm"
-									onClick={() => onNavigate("directMail")}
-								>
-									Direct Mail
-								</Button>
-							</>
-						)}
-						<Button type="button" size="sm" onClick={() => setCreateOpen(true)}>
-							Create Campaign
-						</Button>
-					</div>
+			
 				</div>
 			</header>
 			<SummaryCard

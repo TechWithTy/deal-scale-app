@@ -1,33 +1,31 @@
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
 	Controller,
-	useWatch,
 	type Control,
 	type FieldErrors,
 	type UseFormSetValue,
+	useWatch,
 } from "react-hook-form";
-import {
-	Popover,
-	PopoverContent,
-	PopoverTrigger,
-} from "@/components/ui/popover";
 import { useLeadSearchStore } from "@/lib/stores/leadSearch/leadSearch";
-import { cn } from "@/lib/_utils";
 import type { MapFormSchemaType } from "@/types/_dashboard/maps";
-import { Sparkles } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
 	initAutocomplete,
 	type ACSeed,
 } from "external/google-maps-two/components/composit/utils/autocomplete";
+import { cn } from "@/lib/_utils";
 import {
-	GOAL_OPTIONS,
+	Popover,
+	PopoverTrigger,
+	PopoverContent,
+} from "@/components/ui/popover";
+import { Sparkles } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
 	PERSONA_OPTIONS,
+	GOAL_OPTIONS,
 	deriveSuggestion,
-	type Goal,
-	type Persona,
 } from "./locationSuggestions";
 
 interface LocationInputProps {
@@ -35,6 +33,11 @@ interface LocationInputProps {
 	errors: FieldErrors<MapFormSchemaType>;
 	setValue: UseFormSetValue<MapFormSchemaType>;
 	onPlaceSelected?: (seed: ACSeed) => void;
+	aiSummary?: {
+		message?: string;
+		zipCodes?: string[];
+		title?: string;
+	};
 }
 
 const LocationInput: React.FC<LocationInputProps> = ({
@@ -45,29 +48,22 @@ const LocationInput: React.FC<LocationInputProps> = ({
 }) => {
 	const { setFilters } = useLeadSearchStore();
 	const inputRef = useRef<HTMLInputElement | null>(null);
-	const watchedPersona =
-		(useWatch({ control, name: "persona" }) as Persona | undefined) ||
-		"investor";
-	const watchedGoal =
-		(useWatch({ control, name: "goal" }) as Goal | undefined) || "cashflow";
 	const [popoverOpen, setPopoverOpen] = useState(false);
 
-	const suggestion = useMemo(
-		() => deriveSuggestion(watchedPersona, watchedGoal),
-		[watchedGoal, watchedPersona],
+	// Watch persona and goal from the form to drive AI suggestions
+	const watchedPersona = useWatch({ control, name: "persona" });
+	const watchedGoal = useWatch({ control, name: "goal" });
+
+	const personaDescription =
+		PERSONA_OPTIONS.find((o) => o.value === watchedPersona)?.description ??
+		"Choose a persona to tailor suggestions.";
+	const goalLabel =
+		GOAL_OPTIONS.find((o) => o.value === watchedGoal)?.label ??
+		"Balanced Growth";
+	const suggestion = deriveSuggestion(
+		(watchedPersona as unknown as string) ?? "investor",
+		(watchedGoal as unknown as string) ?? "cashflow",
 	);
-	const personaDescription = useMemo(() => {
-		return (
-			PERSONA_OPTIONS.find((option) => option.value === watchedPersona)
-				?.description ?? ""
-		);
-	}, [watchedPersona]);
-	const goalLabel = useMemo(() => {
-		return (
-			GOAL_OPTIONS.find((option) => option.value === watchedGoal)?.label ??
-			"Balanced Growth"
-		);
-	}, [watchedGoal]);
 
 	return (
 		<Controller
@@ -75,6 +71,7 @@ const LocationInput: React.FC<LocationInputProps> = ({
 			control={control}
 			render={({ field }) => {
 				const { onChange, ref: rhfRef, ...restField } = field;
+
 				const handleApplySuggestion = () => {
 					const nextValue = suggestion.zip;
 					onChange(nextValue as unknown as string);
@@ -101,7 +98,7 @@ const LocationInput: React.FC<LocationInputProps> = ({
 				};
 
 				// Wire Google Autocomplete once the input is mounted
-				// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
+				// biome-ignore lint/correctness/useExhaustiveDependencies: we only want to rewire when deps change
 				useEffect(() => {
 					if (!inputRef.current) return;
 					let cleanup: (() => void) | undefined;
@@ -126,7 +123,6 @@ const LocationInput: React.FC<LocationInputProps> = ({
 								} catch {}
 							},
 							{
-								// Restrict to US while allowing broad prediction types (matches test page behavior)
 								fields: ["place_id", "geometry", "name", "formatted_address"],
 								componentRestrictions: { country: "us" },
 							},
@@ -146,7 +142,6 @@ const LocationInput: React.FC<LocationInputProps> = ({
 						</Label>
 						<Input
 							id="location"
-							// Merge RHF ref with our local ref
 							ref={(el) => {
 								inputRef.current = el;
 								rhfRef(el);
@@ -244,7 +239,7 @@ const LocationInput: React.FC<LocationInputProps> = ({
 										{suggestion.zip}
 									</p>
 									<p className="text-muted-foreground text-xs">
-										Based on RentCast trends for {watchedPersona} pursuing{" "}
+										Based on Deal Scale trends for {watchedPersona} pursuing{" "}
 										{goalLabel}
 									</p>
 								</div>

@@ -1,7 +1,6 @@
 "use client";
 
 import { Icons } from "@/components/icons";
-
 import { cn } from "@/lib/_utils";
 import type { NavItem } from "@/types";
 import Link from "next/link";
@@ -14,6 +13,7 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from "./ui/tooltip";
+import { FeatureGuard } from "./access/FeatureGuard";
 
 interface DashboardNavProps {
 	items: NavItem[];
@@ -52,41 +52,79 @@ export function DashboardNav({
 				{items.map((item, index) => {
 					const Icon = Icons[item.icon || "arrowRight"];
 
+					// Determine feature key based on item title
+					const getFeatureKey = (title: string): string | null => {
+						switch (title) {
+							case "Assistants":
+								return "aiAssistants.page";
+							case "Kanban":
+								return "boards.kanban";
+							case "Campaign Manager":
+								// For campaigns, we need to check both direct mail and social media features
+								// The specific feature will be determined by the context where this is used
+								return null; // Let specific components handle their own feature guards
+							default:
+								return null;
+						}
+					};
+
+					const featureKey = getFeatureKey(item.title);
+
+					const navContent = (
+						<>
+							{item.title === "Logout" ? (
+								<button
+									type="button"
+									onClick={handleLogout}
+									className={cn(
+										"flex w-full items-center gap-2 overflow-hidden rounded-md py-2 font-medium text-sm hover:bg-accent hover:text-accent-foreground transition-colors",
+										item.disabled && "cursor-not-allowed opacity-80",
+									)}
+									disabled={loading}
+								>
+									<Icon className="ml-3 size-5 flex-none" />
+									{isMobileNav || (!isMinimized && !isMobileNav) ? (
+										<span className="mr-2 truncate">Logout</span>
+									) : null}
+								</button>
+							) : (
+								<Link
+									href={item.disabled ? "/" : item.href || "/"}
+									className={cn(
+										"flex items-center gap-2 overflow-hidden rounded-md py-2 font-medium text-sm hover:bg-accent hover:text-accent-foreground transition-colors group relative",
+										path === item.href ? "bg-accent" : "transparent",
+										item.disabled && "cursor-not-allowed opacity-80",
+										featureKey && "opacity-75", // Slightly dim blocked features
+									)}
+									onClick={() => {
+										if (setOpen) setOpen(false);
+									}}
+								>
+									<Icon className="ml-3 size-5 flex-none" />
+									{isMobileNav || (!isMinimized && !isMobileNav) ? (
+										<span className="mr-2 truncate">{item.title}</span>
+									) : null}
+									{/* Visual indicator for blocked features */}
+									{featureKey && (
+										<div className="absolute -right-1 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-orange-400 opacity-60" />
+									)}
+								</Link>
+							)}
+						</>
+					);
+
 					return (
 						<Tooltip key={item.title}>
 							<TooltipTrigger asChild>
-								{item.title === "Logout" ? (
-									<button
-										type="button"
-										onClick={handleLogout}
-										className={cn(
-											"flex w-full items-center gap-2 overflow-hidden rounded-md py-2 font-medium text-sm hover:bg-accent hover:text-accent-foreground",
-											item.disabled && "cursor-not-allowed opacity-80",
-										)}
-										disabled={loading}
+								{featureKey ? (
+									<FeatureGuard
+										featureKey={featureKey}
+										wrapperClassName="nav-item"
 									>
-										<Icon className="ml-3 size-5 flex-none" />
-										{isMobileNav || (!isMinimized && !isMobileNav) ? (
-											<span className="mr-2 truncate">Logout</span>
-										) : null}
-									</button>
+										{navContent}
+									</FeatureGuard>
 								) : (
-									<Link
-										href={item.disabled ? "/" : item.href || "/"}
-										className={cn(
-											"flex items-center gap-2 overflow-hidden rounded-md py-2 font-medium text-sm hover:bg-accent hover:text-accent-foreground",
-											path === item.href ? "bg-accent" : "transparent",
-											item.disabled && "cursor-not-allowed opacity-80",
-										)}
-										onClick={() => {
-											if (setOpen) setOpen(false);
-										}}
-									>
-										<Icon className="ml-3 size-5 flex-none" />
-										{isMobileNav || (!isMinimized && !isMobileNav) ? (
-											<span className="mr-2 truncate">{item.title}</span>
-										) : null}
-									</Link>
+									navContent
 								)}
 							</TooltipTrigger>
 							{isMinimized && (

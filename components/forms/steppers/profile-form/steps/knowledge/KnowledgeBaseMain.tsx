@@ -16,13 +16,14 @@ import { KnowledgeSalesScriptUpload } from "./KnowledgeSalesScriptUpload";
 
 import VoicemailModal from "./voice/VoicemailModal";
 import VoiceFeatureTabs from "./voice/utils/VoiceFeatureTabs";
+import { useFormContext } from "react-hook-form";
 import CreateVoiceModal from "./voice/CreateVoiceModal";
 
-import { useFormContext } from "react-hook-form";
 import { KnowledgeVoiceSelector } from "./KnowledgeVoiceSelector";
-import CloneModal from "./voice/CloneModal";
 import { FormLabel } from "@/components/ui/form";
 import type { PlayButtonTimeLineHandle } from "@/components/reusables/audio/timeline/types";
+import { FeatureGuard } from "@/components/access/FeatureGuard";
+import { CloneModal } from "@/external/teleprompter-modal";
 
 export interface KnowledgeBaseMainProps {
 	loading: boolean;
@@ -109,14 +110,16 @@ export const KnowledgeBaseMain: React.FC<KnowledgeBaseMainProps> = ({
 						{
 							label: "Clone Voice",
 							content: (
-								<button
-									type="button"
-									className="w-56 rounded-lg bg-purple-600 px-4 py-2 font-semibold text-white shadow hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-2 dark:bg-purple-500 dark:hover:bg-purple-600"
-									onClick={() => setShowVoiceCloneModal(true)}
-									aria-label="Clone Voice"
-								>
-									+ Clone Voice
-								</button>
+								<FeatureGuard featureKey="userProfile.cloneVoice">
+									<button
+										type="button"
+										className="w-56 rounded-lg bg-purple-600 px-4 py-2 font-semibold text-white shadow hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-2 dark:bg-purple-500 dark:hover:bg-purple-600"
+										onClick={() => setShowVoiceCloneModal(true)}
+										aria-label="Clone Voice"
+									>
+										+ Clone Voice
+									</button>
+								</FeatureGuard>
 							),
 						},
 						{

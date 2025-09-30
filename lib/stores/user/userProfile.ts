@@ -23,7 +23,6 @@ import { useCompanyStore } from "./company";
 import { useUserCreditsStore } from "./credits";
 import { usePermissionsStore } from "./permissions";
 import { useSessionStore } from "./useSessionStore";
-import { useUserSubscriptionStore } from "./subscription";
 
 interface UserProfileState {
 	userProfile: UserProfile | null;
@@ -184,51 +183,49 @@ export const useUserProfileStore = create<UserProfileState>()(
 
 // Re-export nested domain stores for single-top access from userProfile module
 export {
-  useAISettingsStore,
-  useAIActionsStore,
-  useAIChatStore,
-  useAIReportsStore,
-  useAITasksStore,
-  useUserCampaignsStore,
-  useUserCampaignReportsStore,
-  useUserLeadsStore,
-  useUserLeadsReportsStore,
-  useSavedSearchesStore,
-  useSkipTraceStore,
-  useSkipTraceReportsStore,
-  useCompanyStore,
-  useUserCreditsStore,
-  usePermissionsStore,
-  useSessionStore,
-  useUserSubscriptionStore,
+	useAISettingsStore,
+	useAIActionsStore,
+	useAIChatStore,
+	useAIReportsStore,
+	useAITasksStore,
+	useUserCampaignsStore,
+	useUserCampaignReportsStore,
+	useUserLeadsStore,
+	useUserLeadsReportsStore,
+	useSavedSearchesStore,
+	useSkipTraceStore,
+	useSkipTraceReportsStore,
+	useCompanyStore,
+	useUserCreditsStore,
+	usePermissionsStore,
+	useSessionStore,
 };
 
 // Optional: grouped access with nested namespaces for DX
 export const UserStores = {
-  profile: useUserProfileStore,
-  session: useSessionStore,
-  ai: {
-    settings: useAISettingsStore,
-    actions: useAIActionsStore,
-    chat: useAIChatStore,
-    reports: useAIReportsStore,
-    tasks: useAITasksStore,
-  },
-  campaigns: {
-    store: useUserCampaignsStore,
-    reports: useUserCampaignReportsStore,
-  },
-  leads: {
-    store: useUserLeadsStore,
-    reports: useUserLeadsReportsStore,
-    savedSearches: useSavedSearchesStore,
-  },
-  skipTrace: {
-    store: useSkipTraceStore,
-    reports: useSkipTraceReportsStore,
-  },
-  company: useCompanyStore,
-  credits: useUserCreditsStore,
-  permissions: usePermissionsStore,
-  subscription: useUserSubscriptionStore,
+	profile: useUserProfileStore,
+	session: useSessionStore,
+	ai: {
+		settings: useAISettingsStore,
+		actions: useAIActionsStore,
+		chat: useAIChatStore,
+		reports: useAIReportsStore,
+		tasks: useAITasksStore,
+	},
+	campaigns: {
+		store: useUserCampaignsStore,
+		reports: useUserCampaignReportsStore,
+	},
+	leads: {
+		store: useUserLeadsStore,
+		reports: useUserLeadsReportsStore,
+		savedSearches: useSavedSearchesStore,
+	},
+	skipTrace: {
+		store: useSkipTraceStore,
+		reports: useSkipTraceReportsStore,
+	},
+	company: useCompanyStore,
+	credits: useUserCreditsStore,
+	permissions: usePermissionsStore,
 } as const;

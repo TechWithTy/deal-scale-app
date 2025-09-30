@@ -241,53 +241,7 @@ export default function CallCampaignsDemoTable({
 							Search, selection, filtering, and details.
 						</p>
 					</div>
-					<div className="flex items-center gap-2">
-						<Button
-							type="button"
-							variant={campaignType === "Calls" ? "default" : "outline"}
-							size="sm"
-							onClick={() =>
-								onNavigate ? onNavigate("calls") : setCampaignType("Calls")
-							}
-						>
-							Calls
-						</Button>
-						<Button
-							type="button"
-							variant={campaignType === "Text" ? "default" : "outline"}
-							size="sm"
-							onClick={() =>
-								onNavigate ? onNavigate("text") : setCampaignType("Text")
-							}
-						>
-							Text
-						</Button>
-						<Button
-							type="button"
-							variant={campaignType === "Social" ? "default" : "outline"}
-							size="sm"
-							onClick={() =>
-								onNavigate ? onNavigate("social") : setCampaignType("Social")
-							}
-						>
-							Social
-						</Button>
-						<Button
-							type="button"
-							variant={campaignType === "Direct Mail" ? "default" : "outline"}
-							size="sm"
-							onClick={() =>
-								onNavigate
-									? onNavigate("directMail")
-									: setCampaignType("Direct Mail")
-							}
-						>
-							Direct Mail
-						</Button>
-						<Button type="button" size="sm" onClick={() => setCreateOpen(true)}>
-							Create Campaign
-						</Button>
-					</div>
+					
 				</div>
 			</header>
 

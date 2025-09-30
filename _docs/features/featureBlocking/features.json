@@ -24,19 +24,20 @@
     "aiAssistants": {
       "page": {
         "requiredTier": "Starter",
-        "mode": "disable"
+        "mode": "overlay"
       }
     },
     "userProfile": {
       "cloneVoice": {
         "requiredTier": "Starter",
-        "mode": "overlay"
+        "mode": "disable"
       }
     },
     "boards": {
       "kanban": {
         "requiredTier": "Enterprise",
-        "mode": "overlay"
+        "mode": "disable"
       }
     }
   }
+  

@@ -210,47 +210,7 @@ export default function TextCampaignsDemoTable({
 							Search, selection, filtering, and details.
 						</p>
 					</div>
-					<div className="flex items-center gap-2">
-						{onNavigate && (
-							<>
-								<Button
-									type="button"
-									variant="outline"
-									size="sm"
-									onClick={() => onNavigate("calls")}
-								>
-									Calls
-								</Button>
-								<Button
-									type="button"
-									variant="default"
-									size="sm"
-									onClick={() => onNavigate("text")}
-								>
-									Text
-								</Button>
-								<Button
-									type="button"
-									variant="outline"
-									size="sm"
-									onClick={() => onNavigate("social")}
-								>
-									Social
-								</Button>
-								<Button
-									type="button"
-									variant="outline"
-									size="sm"
-									onClick={() => onNavigate("directMail")}
-								>
-									Direct Mail
-								</Button>
-							</>
-						)}
-						<Button type="button" size="sm" onClick={() => setCreateOpen(true)}>
-							Create Campaign
-						</Button>
-					</div>
+				
 				</div>
 			</header>
 

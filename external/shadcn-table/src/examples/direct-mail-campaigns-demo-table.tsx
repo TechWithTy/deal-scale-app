@@ -11,14 +11,15 @@ import { useRowCarousel } from "../hooks/use-row-carousel";
 import { buildDirectMailColumns } from "./DirectMail/utils/columns";
 import { filterCampaigns, summarizeRows } from "./DirectMail/utils/helpers";
 import { SummaryPanel } from "./DirectMail/components/SummaryPanel";
-import { SelectionBar } from "./DirectMail/components/SelectionBar";
 import { AIMenu } from "./DirectMail/components/AIMenu";
-import { AIDialogPanel } from "./DirectMail/components/AIDialogPanel";
 import type { DirectMailCampaign } from "./DirectMail/utils/mock";
 import { generateDirectMailCampaignData } from "./DirectMail/utils/mock";
 import { DirectMailRowCarousel } from "./DirectMail/components/DirectMailRowCarousel";
 import type { CallCampaign } from "../../../../types/_dashboard/campaign";
+import { FeatureGuard } from "../../../../components/access/FeatureGuard";
 import CampaignModalMain from "./campaigns/modal/CampaignModalMain";
+import { AIDialogPanel } from "./DirectMail/components/AIDialogPanel";
+import { SelectionBar } from "./DirectMail/components/SelectionBar";
 
 type ParentTab = "calls" | "text" | "social" | "directMail";
 
@@ -240,47 +241,7 @@ export default function DirectMailCampaignsDemoTable({
 							Search, selection, filtering, and details.
 						</p>
 					</div>
-					<div className="flex items-center gap-2">
-						{onNavigate && (
-							<>
-								<Button
-									type="button"
-									variant="outline"
-									size="sm"
-									onClick={() => onNavigate("calls")}
-								>
-									Calls
-								</Button>
-								<Button
-									type="button"
-									variant="outline"
-									size="sm"
-									onClick={() => onNavigate("text")}
-								>
-									Text
-								</Button>
-								<Button
-									type="button"
-									variant="outline"
-									size="sm"
-									onClick={() => onNavigate("social")}
-								>
-									Social
-								</Button>
-								<Button
-									type="button"
-									variant="default"
-									size="sm"
-									onClick={() => onNavigate("directMail")}
-								>
-									Direct Mail
-								</Button>
-							</>
-						)}
-						<Button type="button" size="sm" onClick={() => setCreateOpen(true)}>
-							Create Campaign
-						</Button>
-					</div>
+					
 				</div>
 			</header>
 			<SummaryPanel
