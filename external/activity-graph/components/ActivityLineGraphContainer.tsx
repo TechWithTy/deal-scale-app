@@ -48,7 +48,7 @@ export default function ActivityLineGraphContainer({
 	return (
 		<div className="flex flex-col gap-3">
 			{/* Controls */}
-			<div className="flex flex-wrap items-center justify-between gap-2 rounded-md border bg-background p-2">
+			<div className="flex flex-wrap items-center justify-between gap-2 rounded-md border bg-card p-3 shadow-sm">
 				{/* Quick actions: series toggles */}
 				<div className="flex flex-wrap items-center gap-2">
 					{availableKeys.map((key) => (
@@ -56,10 +56,10 @@ export default function ActivityLineGraphContainer({
 							key={key}
 							type="button"
 							onClick={() => toggleLine(key)}
-							className={`rounded-md border px-2 py-1 text-xs transition-colors ${
+							className={`rounded-md border px-2 py-1 text-xs font-medium transition-colors ${
 								selectedLines.includes(key)
-									? "border-primary bg-primary text-primary-foreground"
-									: "bg-muted text-muted-foreground hover:bg-accent"
+									? "border-primary bg-primary text-primary-foreground shadow-sm"
+									: "border-border bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground"
 							}`}
 							aria-pressed={selectedLines.includes(key)}
 						>
@@ -69,13 +69,13 @@ export default function ActivityLineGraphContainer({
 				</div>
 
 				{/* Time range select */}
-				<div className="flex items-center gap-1">
-					<label htmlFor="time-range" className="text-muted-foreground text-xs">
+				<div className="flex items-center gap-2">
+					<label htmlFor="time-range" className="text-muted-foreground text-xs font-medium">
 						Time Range
 					</label>
 					<select
 						id="time-range"
-						className="rounded-md border bg-background px-2 py-1 text-xs"
+						className="rounded-md border bg-background px-2 py-1 text-xs focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
 						value={range}
 						onChange={(e) => setRange(e.target.value as TimeRangeKey)}
 					>

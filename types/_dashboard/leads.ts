@@ -59,4 +59,8 @@ export type LeadTypeGlobal = {
 	emailOptOut?: boolean;
 	callOptOut?: boolean;
 	dmOptOut?: boolean;
+	/** TCPA (Telephone Consumer Protection Act) compliance - whether lead has opted in */
+	tcpaOptedIn?: boolean;
+	/** Timestamp when TCPA consent was obtained */
+	tcpaConsentDate?: string;
 };

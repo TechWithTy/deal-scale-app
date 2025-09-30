@@ -92,32 +92,16 @@ export const leadListColumns: ColumnDef<LeadTypeGlobal>[] = [
 		},
 	},
 	{
-		id: "dncSource",
-		header: "DNC Source",
-		accessorFn: (row) => {
-			const r = row as LeadTypeGlobal;
-			if (r.dncSource && typeof r.dncSource === "string" && r.dncSource.trim())
-				return r.dncSource;
-			const pick =
-				(r.smsOptOut && "Text Opt-out") ||
-				(r.emailOptOut && "Email Unsubscribe") ||
-				(r.callOptOut && "Call Blocked") ||
-				(r.dmOptOut && "DM Opt-out") ||
-				"";
-			return pick;
-		},
+		id: "tcpa",
+		header: "TCPA",
+		accessorFn: (row) => (row as LeadTypeGlobal).tcpaOptedIn ?? false,
 		cell: ({ row }: { row: Row<LeadTypeGlobal> }) => {
-			const r = row.original;
-			const label =
-				r.dncSource && typeof r.dncSource === "string" && r.dncSource.trim()
-					? r.dncSource
-					: (r.smsOptOut && "Text Opt-out") ||
-						(r.emailOptOut && "Email Unsubscribe") ||
-						(r.callOptOut && "Call Blocked") ||
-						(r.dmOptOut && "DM Opt-out") ||
-						"";
-			if (!label) return <span className="text-muted-foreground">—</span>;
-			return <Badge variant="secondary">{label}</Badge>;
+			const isOptedIn = Boolean(row.original.tcpaOptedIn);
+			return (
+				<Badge variant={isOptedIn ? "default" : "outline"}>
+					{isOptedIn ? "Opted In" : "Not Opted"}
+				</Badge>
+			);
 		},
 	},
 	{

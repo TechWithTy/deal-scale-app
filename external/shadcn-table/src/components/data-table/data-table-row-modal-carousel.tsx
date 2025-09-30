@@ -140,8 +140,9 @@ export function DataTableRowModalCarousel<TData>(
 	// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
 	const allLeadsForData = useMemo(() => {
 		if (!row?.original) return [];
-		const rowLeads = (row.original as RowDataWithLeads)?.leads || [];
-		const allLeads = [...rowLeads, ...sampleComparisonLeads];
+		const rowLeads = (row.original as RowDataWithLeads)?.leads;
+		const safeRowLeads = Array.isArray(rowLeads) ? rowLeads : [];
+		const allLeads = [...safeRowLeads, ...sampleComparisonLeads];
 		// Remove duplicates based on ID
 		return allLeads.filter(
 			(lead, index, self) => index === self.findIndex((l) => l.id === lead.id),
@@ -183,22 +184,23 @@ export function DataTableRowModalCarousel<TData>(
 		const config: ChartConfigLocal = {};
 
 		allChartLeads.forEach((leadId, index) => {
-			const leads = (row.original as RowDataWithLeads)?.leads || [];
+			const leads = (row.original as RowDataWithLeads)?.leads;
+			const safeLeads = Array.isArray(leads) ? leads : [];
 			const comparisonLead = sampleComparisonLeads.find((l) => l.id === leadId);
-			const lead = leads.find((l: LeadTypeGlobal) => l.id === leadId) || comparisonLead;
+			const lead = safeLeads.find((l: LeadTypeGlobal) => l.id === leadId) || comparisonLead;
 			const colorIndex = (index % 3) + 1; // Cycle through chart colors
 
 			config[`${leadId}_calls`] = {
 				label: `${lead?.contactInfo?.firstName || lead?.name || `Lead ${leadId}`} - Calls`,
-				color: `hsl(var(--chart-${colorIndex}))`,
+				color: "hsl(var(--chart-1))",
 			};
 			config[`${leadId}_texts`] = {
 				label: `${lead?.contactInfo?.firstName || lead?.name || `Lead ${leadId}`} - Texts`,
-				color: `hsl(var(--chart-${colorIndex}))`,
+				color: "hsl(var(--chart-2))",
 			};
 			config[`${leadId}_social`] = {
 				label: `${lead?.contactInfo?.firstName || lead?.name || `Lead ${leadId}`} - Social`,
-				color: `hsl(var(--chart-${colorIndex}))`,
+				color: "hsl(var(--chart-3))",
 			};
 		});
 

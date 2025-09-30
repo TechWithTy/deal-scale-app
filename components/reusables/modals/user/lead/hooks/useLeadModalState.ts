@@ -35,6 +35,10 @@ export function useLeadModalState(
 	>("any");
 	const [leadNotes, setLeadNotes] = useState("");
 	const [listNotes, setListNotes] = useState("");
+	// DNC and TCPA fields
+	const [dncStatus, setDncStatus] = useState<boolean>(false);
+	const [dncSource, setDncSource] = useState<string>("");
+	const [tcpaOptedIn, setTcpaOptedIn] = useState<boolean>(false);
 
 	// ui
 	const [step, setStep] = useState(0);
@@ -45,6 +49,10 @@ export function useLeadModalState(
 		if (isOpen) {
 			setStep(0);
 			setListMode(initialListMode);
+			// Reset DNC and TCPA fields
+			setDncStatus(false);
+			setDncSource("");
+			setTcpaOptedIn(false);
 		}
 	}, [isOpen, initialListMode]);
 
@@ -135,6 +143,13 @@ export function useLeadModalState(
 		setLeadNotes,
 		listNotes,
 		setListNotes,
+		// DNC and TCPA fields
+		dncStatus,
+		setDncStatus,
+		dncSource,
+		setDncSource,
+		tcpaOptedIn,
+		setTcpaOptedIn,
 		// ui
 		step,
 		setStep,

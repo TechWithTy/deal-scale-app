@@ -14,10 +14,10 @@ export default function CustomPopover({
 	if (!activeNode) return null;
 
 	return (
-		<div className="min-w-[220px] rounded-lg border bg-background p-3 shadow-md">
+		<div className="min-w-[220px] rounded-lg border bg-popover p-3 shadow-md">
 			<div className="mb-2">
 				<div className="text-muted-foreground text-xs">Time</div>
-				<div className="font-medium text-sm">
+				<div className="font-medium text-sm text-foreground">
 					{new Date(activeNode.timestamp).toLocaleString()}
 				</div>
 			</div>
@@ -27,7 +27,7 @@ export default function CustomPopover({
 					.map(([key, value]) => {
 						const entry = config[key];
 						const label = entry?.label ?? key;
-						const color = entry?.color ?? "#8884d8";
+						const color = entry?.color ?? "hsl(var(--primary))";
 						return (
 							<div
 								key={key}
@@ -41,7 +41,7 @@ export default function CustomPopover({
 									/>
 									<span className="text-muted-foreground text-xs">{label}</span>
 								</div>
-								<span className="font-medium text-sm">{String(value)}</span>
+								<span className="font-medium text-sm text-foreground">{String(value)}</span>
 							</div>
 						);
 					})}

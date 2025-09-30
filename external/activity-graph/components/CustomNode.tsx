@@ -33,7 +33,7 @@ export default function CustomNode({
 			strokeWidth={2}
 			onMouseEnter={() => onHover?.(payload ?? null)}
 			onMouseLeave={() => onHover?.(null)}
-			className="hover:r-7 cursor-pointer transition-all"
+			className="cursor-pointer transition-all hover:r-6 hover:stroke-3"
 		/>
 	);
 }

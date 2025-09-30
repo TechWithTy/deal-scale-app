@@ -29,6 +29,13 @@ const fieldConfigs: FieldConfig[] = [
 	{ name: "linkedinField", label: "LinkedIn (Optional)", optional: true },
 	{ name: "instagramField", label: "Instagram (Optional)", optional: true },
 	{ name: "twitterField", label: "Twitter (Optional)", optional: true },
+	{ name: "dncStatusField", label: "DNC Status (Optional)", optional: true },
+	{ name: "dncSourceField", label: "DNC Source (Optional)", optional: true },
+	{
+		name: "tcpaOptedInField",
+		label: "TCPA Opted In (Optional)",
+		optional: true,
+	},
 ];
 
 export const REQUIRED_FIELD_MAPPING_KEYS = fieldConfigs

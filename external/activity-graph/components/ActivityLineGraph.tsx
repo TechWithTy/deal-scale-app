@@ -48,8 +48,8 @@ export default function ActivityLineGraph({
 	}, {} as React.CSSProperties);
 
 	return (
-		<div className="flex flex-col gap-4" style={colorVars}>
-			{title && <h3 className="font-semibold text-lg">{title}</h3>}
+		<div className="flex flex-col gap-4 rounded-lg border bg-card p-4 shadow-sm" style={colorVars}>
+			{title && <h3 className="font-semibold text-lg text-foreground">{title}</h3>}
 			{description && (
 				<p className="text-muted-foreground text-sm">{description}</p>
 			)}
@@ -63,6 +63,7 @@ export default function ActivityLineGraph({
 						strokeDasharray="3 3"
 						vertical={false}
 						stroke="hsl(var(--border))"
+						opacity={0.3}
 					/>
 					<XAxis
 						dataKey="timestamp"
@@ -76,16 +77,24 @@ export default function ActivityLineGraph({
 						tickLine={false}
 						axisLine={false}
 						tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }}
+						tickMargin={8}
 					/>
 					<Tooltip
 						cursor={{
 							stroke: "hsl(var(--muted-foreground))",
 							strokeDasharray: "4 4",
+							opacity: 0.5,
 						}}
 						content={({ active, payload }) => {
 							if (!active || !payload || payload.length === 0) return null;
 							const node = payload[0]?.payload as ActivityDataPoint;
 							return <CustomPopover config={config} activeNode={node} />;
+						}}
+						contentStyle={{
+							backgroundColor: "hsl(var(--popover))",
+							border: "1px solid hsl(var(--border))",
+							borderRadius: "8px",
+							boxShadow: "0 4px 12px hsl(var(--popover-foreground) / 0.15)",
 						}}
 					/>
 
@@ -105,13 +114,14 @@ export default function ActivityLineGraph({
 								/>
 							)}
 							activeDot={<CustomNode config={config} dataKey={lineKey} />}
+							connectNulls={false}
 						>
 							{showLabels && (
 								<LabelList
 									dataKey={lineKey}
 									position="top"
 									offset={10}
-									className="fill-foreground text-xs"
+									className="fill-foreground text-xs font-medium"
 									formatter={(value: unknown) =>
 										labelFormatter ? labelFormatter(lineKey) : String(value)
 									}

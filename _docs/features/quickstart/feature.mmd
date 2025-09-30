@@ -1,14 +1,20 @@
 flowchart LR
     A["Dashboard: Upload Leads / Find Properties"]
 
+    %% Upload Path
     A --> B["Upload CSV (Card)"]
     B --> C["Map Fields (Modal)"]
     C --> D["List Created (from CSV)"]
 
+    %% Search Path
     A --> E["Search Properties (Card)"]
     E --> F["Select Properties (Modal)"]
-    F --> G["List Created (from Search)"]
+    F --> Z["Optional: Analyze ZIP Codes\n(Investment Opportunities)"]
+    Z --> Y["Scope Into Off-Market Properties"]
+    Y --> X["Analyze Property"]
+    X --> G["List Created (from Search)"]
 
+    %% Common Path
     D --> H["Skip Trace (Modal)"]
     G --> H["Skip Trace (Modal)"]
 
@@ -16,4 +22,4 @@ flowchart LR
     I --> J["Campaign Setup (Modal: Goal, Script, Channels)"]
     J --> K["Review & Launch (Modal)"]
     K --> L["Campaign Live (Dashboard)"]
-      
+   

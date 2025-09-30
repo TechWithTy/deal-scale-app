@@ -71,6 +71,13 @@ function LeadMainModal({
 		setLeadNotes,
 		listNotes,
 		setListNotes,
+		// DNC and TCPA fields
+		dncStatus,
+		setDncStatus,
+		dncSource,
+		setDncSource,
+		tcpaOptedIn,
+		setTcpaOptedIn,
 		// ui
 		step,
 		setStep,
@@ -142,6 +149,10 @@ function LeadMainModal({
 				email,
 				communication: { preferCall, preferSms },
 				socials: { facebook, linkedin, socialHandle, socialSummary },
+				// DNC and TCPA fields
+				dncList: dncStatus,
+				dncSource: dncSource || undefined,
+				tcpaOptedIn: tcpaOptedIn,
 			},
 		};
 		console.log("Add lead payload", payload);
