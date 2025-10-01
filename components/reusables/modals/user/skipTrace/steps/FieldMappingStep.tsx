@@ -36,7 +36,11 @@ const generateFieldConfigs = (): FieldConfig[] => {
 
 		// Phone fields
 		{ name: "phone1Field", label: "Phone 1", optional: true },
-		{ name: "possiblePhonesField", label: "Possible Phones", optional: true },
+		{ name: "phone2Field", label: "Phone 2", optional: true },
+
+		// Email fields
+		{ name: "emailField", label: "Primary Email", optional: true },
+		{ name: "possibleEmailsField", label: "Possible Emails", optional: true },
 
 		// Social media fields
 		{ name: "facebookField", label: "Facebook", optional: true },
@@ -64,6 +68,7 @@ const generateFieldConfigs = (): FieldConfig[] => {
 		{ name: "isIphoneField", label: "Is iPhone", optional: true },
 		// Professional information
 		{ name: "companyField", label: "Company", optional: true },
+		{ name: "domainField", label: "Domain Name", optional: true },
 		{ name: "jobTitleField", label: "Job Title", optional: true },
 		{ name: "anniversaryField", label: "Anniversary", optional: true },
 	];

@@ -88,7 +88,7 @@ export type LeadTypeGlobal = {
 	// Professional information
 	company?: string;
 	jobTitle?: string;
-	website?: string;
+	domain?: string;
 	birthday?: string;
 	anniversary?: string;
 };

@@ -120,7 +120,7 @@ function extractLeadFromRow(
 		const isIphone = extractFieldValue(row, fieldMappings.isIphoneField);
 		const company = extractFieldValue(row, fieldMappings.companyField);
 		const jobTitle = extractFieldValue(row, fieldMappings.jobTitleField);
-		const website = extractFieldValue(row, fieldMappings.websiteField);
+		const domain = extractFieldValue(row, fieldMappings.domainField);
 		const birthday = extractFieldValue(row, fieldMappings.birthdayField);
 		const anniversary = extractFieldValue(row, fieldMappings.anniversaryField);
 		const possibleEmails = extractFieldValue(
@@ -232,7 +232,7 @@ function extractLeadFromRow(
 			priority: priority || undefined,
 			company: company || undefined,
 			jobTitle: jobTitle || undefined,
-			website: website || undefined,
+			domain: domain || undefined,
 			birthday: birthday || undefined,
 			anniversary: anniversary || undefined,
 		};

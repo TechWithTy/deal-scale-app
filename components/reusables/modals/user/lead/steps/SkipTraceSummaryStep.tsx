@@ -23,6 +23,8 @@ const FIELD_TO_INPUT_FIELDS: Record<string, InputField[] | undefined> = {
 	phone1Field: ["phone", "knownPhone"],
 	phone2Field: ["phone"],
 	emailField: ["email"],
+	possibleEmailsField: ["email"],
+	domainField: ["domain"],
 	facebookField: ["facebookUrl", "socialTag"],
 	linkedinField: ["linkedinUrl", "socialTag"],
 	instagramField: ["socialHandle", "socialTag"],
