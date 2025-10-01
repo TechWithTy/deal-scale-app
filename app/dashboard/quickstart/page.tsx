@@ -14,8 +14,11 @@ import {
 	CardTitle,
 } from "@/components/ui/card";
 import LeadModalMain from "@/components/reusables/modals/user/lead/LeadModalMain";
+import LeadBulkSuiteModal from "@/components/reusables/modals/user/lead/LeadBulkSuiteModal";
+import CampaignModalMain from "@/components/reusables/modals/user/campaign/CampaignModalMain";
 import WalkThroughModal from "@/components/leadsSearch/search/WalkthroughModal";
 import { campaignSteps } from "@/_tests/tours/campaignTour";
+import { useCampaignCreationStore } from "@/lib/stores/campaignCreation";
 
 export default function QuickStartPage() {
 	const [showLeadModal, setShowLeadModal] = useState(false);
@@ -24,18 +27,70 @@ export default function QuickStartPage() {
 	);
 	const [showWalkthrough, setShowWalkthrough] = useState(false);
 	const [isTourOpen, setIsTourOpen] = useState(false);
-	const [csvFile, setCsvFile] = useState<File | null>(null);
-	const [csvHeaders, setCsvHeaders] = useState<string[]>([]);
+	const [bulkCsvFile, setBulkCsvFile] = useState<File | null>(null);
+	const [bulkCsvHeaders, setBulkCsvHeaders] = useState<string[]>([]);
+	const [showBulkSuiteModal, setShowBulkSuiteModal] = useState(false);
+	const [showCampaignModal, setShowCampaignModal] = useState(false);
+	const [campaignModalContext, setCampaignModalContext] = useState<{
+		leadListId: string;
+		leadListName: string;
+		leadCount: number;
+	} | null>(null);
 	const fileInputRef = useRef<HTMLInputElement>(null);
+
+	const resetCampaignStore = useCampaignCreationStore((state) => state.reset);
+	const setAreaMode = useCampaignCreationStore((state) => state.setAreaMode);
+	const setSelectedLeadListId = useCampaignCreationStore(
+		(state) => state.setSelectedLeadListId,
+	);
+	const setLeadCount = useCampaignCreationStore((state) => state.setLeadCount);
+	const setCampaignName = useCampaignCreationStore(
+		(state) => state.setCampaignName,
+	);
 
 	const handleSelectList = () => {
 		setLeadModalMode("select");
 		setShowLeadModal(true);
 	};
 
+	const handleLaunchCampaign = ({
+		leadListId,
+		leadListName,
+		leadCount,
+	}: {
+		leadListId: string;
+		leadListName: string;
+		leadCount: number;
+	}) => {
+		resetCampaignStore();
+		setAreaMode("leadList");
+		setSelectedLeadListId(leadListId);
+		setLeadCount(leadCount);
+		setCampaignName(`${leadListName} Campaign`);
+		setCampaignModalContext({ leadListId, leadListName, leadCount });
+		setShowCampaignModal(true);
+		setShowLeadModal(false);
+	};
+
+	const handleSuiteLaunchComplete = ({
+		leadListId,
+		leadListName,
+		leadCount,
+	}: {
+		leadListId: string;
+		leadListName: string;
+		leadCount: number;
+	}) => {
+		handleLaunchCampaign({ leadListId, leadListName, leadCount });
+		return true;
+	};
+
+	const handleCloseLeadModal = () => {
+		setShowLeadModal(false);
+	};
+
 	const handleImportData = () => {
-		setLeadModalMode("create");
-		setShowLeadModal(true);
+		setShowBulkSuiteModal(true);
 	};
 
 	const handleStartTour = () => setIsTourOpen(true);
@@ -54,7 +109,7 @@ export default function QuickStartPage() {
 			return;
 		}
 
-		setCsvFile(file);
+		setBulkCsvFile(file);
 
 		const reader = new FileReader();
 		reader.onload = (e) => {
@@ -78,15 +133,14 @@ export default function QuickStartPage() {
 				return;
 			}
 
-			setCsvHeaders(headers);
+			setBulkCsvHeaders(headers);
 			toast.success(
 				`Found ${headers.length} columns in CSV: ${headers
 					.slice(0, 3)
 					.join(", ")}${headers.length > 3 ? "..." : ""}`,
 			);
 
-			setLeadModalMode("create");
-			setShowLeadModal(true);
+			setShowBulkSuiteModal(true);
 		};
 
 		reader.onerror = () => {
@@ -94,6 +148,20 @@ export default function QuickStartPage() {
 		};
 
 		reader.readAsText(file);
+	};
+
+	const handleCampaignModalToggle = (open: boolean) => {
+		setShowCampaignModal(open);
+		if (!open) {
+			setCampaignModalContext(null);
+			resetCampaignStore();
+		}
+	};
+
+	const handleCloseBulkModal = () => {
+		setShowBulkSuiteModal(false);
+		setBulkCsvFile(null);
+		setBulkCsvHeaders([]);
 	};
 
 	return (
@@ -134,14 +202,14 @@ export default function QuickStartPage() {
 								type="button"
 							>
 								<Upload className="mr-2 h-4 w-4" />
-								{csvFile ? "Change CSV File" : "Upload CSV File"}
+								{bulkCsvFile ? "Change CSV File" : "Upload CSV File"}
 							</Button>
 
-							{csvFile && (
+							{bulkCsvFile && (
 								<div className="text-center text-sm text-muted-foreground">
-									<p className="font-medium">{csvFile.name}</p>
+									<p className="font-medium">{bulkCsvFile.name}</p>
 									<p className="text-xs">
-										{csvHeaders.length} columns detected
+										{bulkCsvHeaders.length} columns detected
 									</p>
 									<p className="text-xs">
 										We’ll open the list wizard to finish setup.
@@ -209,10 +277,30 @@ export default function QuickStartPage() {
 
 			<LeadModalMain
 				isOpen={showLeadModal}
-				onClose={() => setShowLeadModal(false)}
+				onClose={handleCloseLeadModal}
 				initialListMode={leadModalMode}
-				csvFile={csvFile}
-				csvHeaders={csvHeaders}
+				onLaunchCampaign={handleLaunchCampaign}
+			/>
+
+			<LeadBulkSuiteModal
+				isOpen={showBulkSuiteModal}
+				onClose={handleCloseBulkModal}
+				initialCsvFile={bulkCsvFile}
+				initialCsvHeaders={bulkCsvHeaders}
+				onSuiteLaunchComplete={(payload) => {
+					handleSuiteLaunchComplete(payload);
+					handleCloseBulkModal();
+					return true;
+				}}
+			/>
+
+			<CampaignModalMain
+				isOpen={showCampaignModal && Boolean(campaignModalContext)}
+				onOpenChange={handleCampaignModalToggle}
+				initialLeadListId={campaignModalContext?.leadListId}
+				initialLeadListName={campaignModalContext?.leadListName}
+				initialLeadCount={campaignModalContext?.leadCount ?? 0}
+				initialStep={0}
 			/>
 
 			<WalkThroughModal

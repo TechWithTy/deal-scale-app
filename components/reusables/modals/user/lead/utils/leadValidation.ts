@@ -51,10 +51,11 @@ export function validateLeadStep(
 
 	const effectiveStep = listMode === "create" && step > 1 ? step - 1 : step;
 	const isMappingStep = listMode === "create" && step === 1;
+	const isSkipTraceStep = listMode === "create" && step === 2; // Skip trace summary step
 	const errors: Record<string, string> = {};
 
-	if (isMappingStep) {
-		return errors;
+	if (isMappingStep || isSkipTraceStep) {
+		return errors; // No validation needed for mapping or skip trace steps
 	}
 
 	if (effectiveStep === 0) {

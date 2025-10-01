@@ -1,14 +1,65 @@
-"use client";
-
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { enrichmentOptions } from "@/constants/skip-trace/enrichmentOptions";
-import type { InputField } from "@/types/skip-trace/enrichment";
 import { cn } from "@/lib/_utils";
-import { FIELD_MAPPING_CONFIGS } from "../../skipTrace/steps/FieldMappingStep";
-import { EnrichmentCard } from "../../skipTrace/steps/enrichment/EnrichmentCard";
 import { useUserStore } from "@/lib/stores/userStore";
-import { useEffect } from "react";
+import type { InputField } from "@/types/skip-trace/enrichment";
 import { Loader2 } from "lucide-react";
+import { useEffect } from "react";
+import { EnrichmentCard } from "../../skipTrace/steps/enrichment/EnrichmentCard";
+
+type FieldConfig = {
+	name: string;
+	label: string;
+	optional?: boolean;
+};
+
+const generateFieldConfigs = (): FieldConfig[] => {
+	return [
+		// Core required fields
+		{ name: "firstNameField", label: "First Name" },
+		{ name: "lastNameField", label: "Last Name" },
+		{ name: "streetAddressField", label: "Street Address" },
+		{ name: "cityField", label: "City" },
+		{ name: "stateField", label: "State" },
+		{ name: "zipCodeField", label: "Zip Code", optional: true },
+
+		// Phone fields
+		{ name: "phone1Field", label: "Phone 1", optional: true },
+		{ name: "possiblePhonesField", label: "Possible Phones", optional: true },
+
+		// Social media fields
+		{ name: "facebookField", label: "Facebook", optional: true },
+		{ name: "linkedinField", label: "LinkedIn", optional: true },
+		{ name: "instagramField", label: "Instagram", optional: true },
+		{ name: "twitterField", label: "Twitter", optional: true },
+		{ name: "tiktokField", label: "TikTok", optional: true },
+		{ name: "youtubeField", label: "YouTube", optional: true },
+
+		// Compliance fields (required when corresponding status is set)
+		{ name: "dncStatusField", label: "DNC Status" },
+		{ name: "dncSourceField", label: "DNC Source (Required if DNC)" },
+		{ name: "tcpaOptedInField", label: "TCPA Opted In" },
+		{ name: "tcpaSourceField", label: "TCPA Source (Required if Opted In)" },
+
+		{ name: "socialSummary", label: "Social Summary", optional: true },
+
+		// Property information
+		{ name: "bedroomsField", label: "Bedrooms", optional: true },
+		{
+			name: "communicationPreferencesField",
+			label: "Communication Preferences",
+			optional: true,
+		},
+		{ name: "isIphoneField", label: "Is iPhone", optional: true },
+		// Professional information
+		{ name: "companyField", label: "Company", optional: true },
+		{ name: "jobTitleField", label: "Job Title", optional: true },
+		{ name: "anniversaryField", label: "Anniversary", optional: true },
+	];
+};
+
+const fieldConfigs = generateFieldConfigs();
+const FIELD_MAPPING_CONFIGS = fieldConfigs;
 
 const FIELD_TO_INPUT_FIELDS: Record<string, InputField[] | undefined> = {
 	firstNameField: ["firstName"],
@@ -70,7 +121,7 @@ export function SkipTraceSummaryStep({
 	onCostDetailsChange,
 	isLaunching = false,
 }: SkipTraceSummaryStepProps) {
-	const mappedFields = FIELD_MAPPING_CONFIGS.map((config) => {
+	const mappedFields = FIELD_MAPPING_CONFIGS.map((config: FieldConfig) => {
 		const value = selectedHeaders[config.name];
 		const headerLabel = value ? value.split("__")[0] : "";
 		return {
@@ -82,9 +133,9 @@ export function SkipTraceSummaryStep({
 
 	const availableInputs = new Set<InputField>();
 
-	const hasStreet = Boolean(selectedHeaders["streetAddressField"]);
-	const hasCity = Boolean(selectedHeaders["cityField"]);
-	const hasState = Boolean(selectedHeaders["stateField"]);
+	const hasStreet = Boolean(selectedHeaders.streetAddressField);
+	const hasCity = Boolean(selectedHeaders.cityField);
+	const hasState = Boolean(selectedHeaders.stateField);
 
 	if (hasStreet && hasCity && hasState) {
 		availableInputs.add("address");
@@ -166,23 +217,29 @@ export function SkipTraceSummaryStep({
 	return (
 		<div className="space-y-6">
 			<section className="rounded-lg border border-border bg-card">
-				<header className="border-b border-border px-4 py-3">
-					<h3 className="text-base font-semibold">Mapped CSV Fields</h3>
-					<p className="text-xs text-muted-foreground">
+				<header className="border-border border-b px-4 py-3">
+					<h3 className="font-semibold text-base">Mapped CSV Fields</h3>
+					<p className="text-muted-foreground text-xs">
 						Review which lead fields were matched to your CSV columns. Any field
 						marked with an asterisk is required to continue.
 					</p>
 				</header>
 				<div className="grid gap-4 px-4 py-3 md:grid-cols-2">
 					{mappedFields.map(
-						({ name, label, optional, headerLabel, mapped }) => (
+						({
+							name,
+							label,
+							optional,
+							headerLabel,
+							mapped,
+						}: FieldConfig & { headerLabel: string; mapped: boolean }) => (
 							<div key={name} className="space-y-1">
-								<p className="text-sm font-medium text-foreground">
+								<p className="font-medium text-foreground text-sm">
 									{label}
 									<span
 										className={cn(
 											optional
-												? "ml-1 text-xs font-normal text-muted-foreground"
+												? "ml-1 font-normal text-muted-foreground text-xs"
 												: "ml-0.5 text-destructive",
 										)}
 									>
@@ -207,9 +264,9 @@ export function SkipTraceSummaryStep({
 
 			<TooltipProvider>
 				<section className="rounded-lg border border-border bg-card">
-					<header className="border-b border-border px-4 py-3">
-						<h3 className="text-base font-semibold">Choose Skip Trace Tools</h3>
-						<p className="text-xs text-muted-foreground">
+					<header className="border-border border-b px-4 py-3">
+						<h3 className="font-semibold text-base">Choose Skip Trace Tools</h3>
+						<p className="text-muted-foreground text-xs">
 							Pick the automations to run on your mapped list. Tools that need
 							more data will be disabled until required fields are mapped.
 						</p>
@@ -226,7 +283,7 @@ export function SkipTraceSummaryStep({
 							</div>
 						))}
 						{toolAvailability.length === 0 && (
-							<p className="text-sm text-muted-foreground">
+							<p className="text-muted-foreground text-sm">
 								No enrichment tools available yet. Map additional fields to
 								unlock automations.
 							</p>
@@ -236,43 +293,43 @@ export function SkipTraceSummaryStep({
 			</TooltipProvider>
 
 			<section className="rounded-lg border border-border bg-card">
-				<header className="border-b border-border px-4 py-3">
-					<h3 className="text-base font-semibold">Automation Cost Summary</h3>
-					<p className="text-xs text-muted-foreground">
+				<header className="border-border border-b px-4 py-3">
+					<h3 className="font-semibold text-base">Automation Cost Summary</h3>
+					<p className="text-muted-foreground text-xs">
 						Preview the credits required before launching enrichment. Premium
 						tools charge per lead; free tools remain included at no cost.
 					</p>
 				</header>
 				<div className="grid gap-4 px-4 py-4 md:grid-cols-2">
 					<div className="rounded-md border border-border bg-muted/40 p-4">
-						<p className="text-xs text-muted-foreground">Total Leads</p>
-						<p className="text-lg font-semibold text-foreground">
+						<p className="text-muted-foreground text-xs">Total Leads</p>
+						<p className="font-semibold text-foreground text-lg">
 							{leadCountLabel}
 						</p>
 					</div>
 					<div className="rounded-md border border-border bg-muted/40 p-4">
-						<p className="text-xs text-muted-foreground">Tools Selected</p>
-						<p className="text-lg font-semibold text-foreground">
+						<p className="text-muted-foreground text-xs">Tools Selected</p>
+						<p className="font-semibold text-foreground text-lg">
 							{selectedToolDetails.length.toLocaleString()}
 						</p>
 					</div>
 					<div className="rounded-md border border-border bg-muted/40 p-4">
-						<p className="text-xs text-muted-foreground">
+						<p className="text-muted-foreground text-xs">
 							Premium Cost Per Lead
 						</p>
-						<p className="text-lg font-semibold text-foreground">
+						<p className="font-semibold text-foreground text-lg">
 							{premiumPerLeadDisplay}
 						</p>
 					</div>
 					<div className="rounded-md border border-border bg-muted/40 p-4">
-						<p className="text-xs text-muted-foreground">Estimated Credits</p>
-						<p className="text-lg font-semibold text-foreground">
+						<p className="text-muted-foreground text-xs">Estimated Credits</p>
+						<p className="font-semibold text-foreground text-lg">
 							{estimatedCreditsDisplay}
 						</p>
 					</div>
 				</div>
 				<div className="space-y-3 px-4 pb-4">
-					<div className="rounded-md border border-border/60 bg-muted/30 p-3 text-xs text-muted-foreground">
+					<div className="rounded-md border border-border/60 bg-muted/30 p-3 text-muted-foreground text-xs">
 						<p>
 							Available credits:{" "}
 							<span className="font-semibold text-foreground">
@@ -286,28 +343,28 @@ export function SkipTraceSummaryStep({
 						)}
 					</div>
 					{premiumTools.length > 0 ? (
-						<p className="text-xs text-muted-foreground">
+						<p className="text-muted-foreground text-xs">
 							Premium tools: {premiumTools.map((tool) => tool.title).join(", ")}
 						</p>
 					) : (
-						<p className="text-xs text-muted-foreground">
+						<p className="text-muted-foreground text-xs">
 							No premium tools selected. Choose a premium option to estimate
 							credits.
 						</p>
 					)}
 					{freeTools.length > 0 && (
-						<p className="text-xs text-muted-foreground">
+						<p className="text-muted-foreground text-xs">
 							Free inclusions: {freeTools.map((tool) => tool.title).join(", ")}
 						</p>
 					)}
 					{!hasEnoughCredits && estimatedCredits > 0 && (
-						<p className="text-xs text-destructive">
+						<p className="text-destructive text-xs">
 							Need {creditsShortfallDisplay} more skip trace credits to launch
 							this suite.
 						</p>
 					)}
 					{isLaunching && selectedToolDetails.length > 0 && (
-						<div className="flex items-center gap-2 rounded-md border border-primary/40 bg-primary/10 p-3 text-xs text-primary">
+						<div className="flex items-center gap-2 rounded-md border border-primary/40 bg-primary/10 p-3 text-primary text-xs">
 							<Loader2 className="h-4 w-4 animate-spin" />
 							<span>
 								Launching enrichment on{" "}

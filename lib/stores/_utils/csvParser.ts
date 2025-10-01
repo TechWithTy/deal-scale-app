@@ -1,5 +1,5 @@
 import Papa from "papaparse";
-import type { LeadTypeGlobal } from "@/types/_dashboard/leads";
+import type { LeadTypeGlobal, LeadStatus } from "@/types/_dashboard/leads";
 import type { SocialsCount } from "@/types/_dashboard/leadList";
 
 /**
@@ -64,9 +64,13 @@ function extractLeadFromRow(
 		const firstName = extractFieldValue(row, fieldMappings.firstNameField);
 		const lastName = extractFieldValue(row, fieldMappings.lastNameField);
 		const email = extractFieldValue(row, fieldMappings.emailField);
-		const phone =
-			extractFieldValue(row, fieldMappings.phone1Field) ||
-			extractFieldValue(row, fieldMappings.phone2Field);
+		const phone = extractFieldValue(row, fieldMappings.phone1Field);
+		const possiblePhones = [
+			extractFieldValue(row, fieldMappings.phone2Field),
+			extractFieldValue(row, fieldMappings.phone3Field),
+		]
+			.filter(Boolean)
+			.join(", ");
 
 		// Extract address fields
 		const streetAddress = extractFieldValue(
@@ -82,10 +86,55 @@ function extractLeadFromRow(
 		const linkedin = extractFieldValue(row, fieldMappings.linkedinField);
 		const instagram = extractFieldValue(row, fieldMappings.instagramField);
 		const twitter = extractFieldValue(row, fieldMappings.twitterField);
+		const tiktok = extractFieldValue(row, fieldMappings.tiktokField);
+		const youtube = extractFieldValue(row, fieldMappings.youtubeField);
 
 		// Extract DNC and TCPA fields
 		const dncStatus = extractFieldValue(row, fieldMappings.dncStatusField);
+		const dncSource = extractFieldValue(row, fieldMappings.dncSourceField);
 		const tcpaOptedIn = extractFieldValue(row, fieldMappings.tcpaOptedInField);
+		const tcpaSource = extractFieldValue(row, fieldMappings.tcpaSourceField);
+
+		// Extract additional fields
+		const socialSummary = extractFieldValue(row, fieldMappings.socialSummary);
+		const bedrooms = extractFieldValue(row, fieldMappings.bedroomsField);
+		const bathrooms = extractFieldValue(row, fieldMappings.bathroomsField);
+		const squareFootage = extractFieldValue(
+			row,
+			fieldMappings.squareFootageField,
+		);
+		const propertyValue = extractFieldValue(
+			row,
+			fieldMappings.propertyValueField,
+		);
+		const yearBuilt = extractFieldValue(row, fieldMappings.yearBuiltField);
+		const leadStatus = extractFieldValue(row, fieldMappings.leadStatusField);
+		const leadSource = extractFieldValue(row, fieldMappings.leadSourceField);
+		const notes = extractFieldValue(row, fieldMappings.notesField);
+		const tags = extractFieldValue(row, fieldMappings.tagsField);
+		const priority = extractFieldValue(row, fieldMappings.priorityField);
+		const communicationPreferences = extractFieldValue(
+			row,
+			fieldMappings.communicationPreferencesField,
+		);
+		const isIphone = extractFieldValue(row, fieldMappings.isIphoneField);
+		const company = extractFieldValue(row, fieldMappings.companyField);
+		const jobTitle = extractFieldValue(row, fieldMappings.jobTitleField);
+		const website = extractFieldValue(row, fieldMappings.websiteField);
+		const birthday = extractFieldValue(row, fieldMappings.birthdayField);
+		const anniversary = extractFieldValue(row, fieldMappings.anniversaryField);
+		const possibleEmails = extractFieldValue(
+			row,
+			fieldMappings.possibleEmailsField,
+		);
+		const emailVerified = extractFieldValue(
+			row,
+			fieldMappings.emailVerifiedField,
+		);
+		const socialVerified = extractFieldValue(
+			row,
+			fieldMappings.socialVerifiedField,
+		);
 
 		// Skip if no name or contact data
 		if (!firstName && !lastName && !email && !phone) {
@@ -101,6 +150,10 @@ function extractLeadFromRow(
 			address: streetAddress || "",
 			domain: "", // Not available from CSV
 			social: "", // Not available from CSV
+			emailVerified: emailVerified === "true" || emailVerified === "1",
+			socialVerified: socialVerified === "true" || socialVerified === "1",
+			possiblePhones: possiblePhones || undefined,
+			possibleEmails: possibleEmails || undefined,
 		};
 
 		// Create social links object
@@ -109,6 +162,8 @@ function extractLeadFromRow(
 			linkedin: linkedin || "",
 			instagram: instagram || "",
 			twitter: twitter || "",
+			tiktok: tiktok || "",
+			youtube: youtube || "",
 		};
 
 		// Create lead object
@@ -116,10 +171,10 @@ function extractLeadFromRow(
 			id: `lead_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
 			contactInfo,
 			summary: "",
-			bed: 0,
-			bath: 0,
-			sqft: 0,
-			status: "New Lead",
+			bed: bedrooms ? parseInt(String(bedrooms), 10) || 0 : 0,
+			bath: bathrooms ? parseInt(String(bathrooms), 10) || 0 : 0,
+			sqft: squareFootage ? parseInt(String(squareFootage), 10) || 0 : 0,
+			status: (leadStatus as LeadStatus) || "New Lead",
 			followUp: null,
 			lastUpdate: new Date().toISOString(),
 			address1: {
@@ -136,12 +191,21 @@ function extractLeadFromRow(
 				extractFieldValue(row, fieldMappings.instagramField) ||
 				extractFieldValue(row, fieldMappings.twitterField) ||
 				"",
-			socialSummary: extractFieldValue(row, fieldMappings.socialSummary) || "",
-			isIphone: false, // Not available from CSV
-			communicationPreferences: [], // Not available from CSV
+			socialSummary: socialSummary || "",
+			isIphone: isIphone === "true" || isIphone === "1",
+			communicationPreferences: communicationPreferences
+				? communicationPreferences
+						.split(/[,;]/)
+						.map((s) => s.trim())
+						.filter(Boolean)
+				: [],
 			dncList: dncStatus === "true" || dncStatus === "1",
 			dncSource:
-				dncStatus === "true" || dncStatus === "1" ? "CSV Import" : undefined,
+				(dncStatus === "true" || dncStatus === "1") && dncSource
+					? dncSource
+					: dncStatus === "true" || dncStatus === "1"
+						? "CSV Import"
+						: undefined,
 			smsOptOut: false,
 			emailOptOut: false,
 			callOptOut: false,
@@ -154,8 +218,23 @@ function extractLeadFromRow(
 					: undefined,
 			tcpaSource:
 				tcpaOptedIn === "true" || tcpaOptedIn === "1" || tcpaOptedIn === "yes"
-					? "CSV Import"
+					? tcpaSource || "CSV Import"
 					: undefined,
+			propertyValue: propertyValue
+				? parseFloat(String(propertyValue)) || undefined
+				: undefined,
+			yearBuilt: yearBuilt
+				? parseInt(String(yearBuilt), 10) || undefined
+				: undefined,
+			leadSource: leadSource || undefined,
+			notes: notes || undefined,
+			tags: tags || undefined,
+			priority: priority || undefined,
+			company: company || undefined,
+			jobTitle: jobTitle || undefined,
+			website: website || undefined,
+			birthday: birthday || undefined,
+			anniversary: anniversary || undefined,
 		};
 
 		return lead;
@@ -193,6 +272,8 @@ export function calculateLeadStatistics(leads: LeadTypeGlobal[]) {
 			linkedin: 0,
 			instagram: 0,
 			twitter: 0,
+			tiktok: 0,
+			youtube: 0,
 		} as SocialsCount,
 	};
 
@@ -207,6 +288,10 @@ export function calculateLeadStatistics(leads: LeadTypeGlobal[]) {
 			stats.socials.instagram = (stats.socials.instagram || 0) + 1;
 		if (lead.socials?.twitter)
 			stats.socials.twitter = (stats.socials.twitter || 0) + 1;
+		if (lead.socials?.tiktok)
+			stats.socials.tiktok = (stats.socials.tiktok || 0) + 1;
+		if (lead.socials?.youtube)
+			stats.socials.youtube = (stats.socials.youtube || 0) + 1;
 	}
 
 	return stats;

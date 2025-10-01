@@ -36,6 +36,7 @@ interface ChannelCustomizationStepProps {
 	onNext: () => void;
 	onBack: () => void;
 	form: UseFormReturn<z.input<typeof FormSchema>>;
+	onCreateVariant?: (label?: string) => void;
 }
 
 export const FormSchema = z
@@ -96,9 +97,16 @@ export const FormSchema = z
 			.refine((val) => !val || /^MG[a-zA-Z0-9]{32}$/.test(val), {
 			}),
 		senderPoolNumbersCsv: z.string().default(""), // CSV of E.164 numbers
-		smartEncodingEnabled: z.boolean().default(true),
-		optOutHandlingEnabled: z.boolean().default(true),
-		perNumberDailyLimit: z.number().int().nonnegative().default(75),
+		// TCPA and compliance fields
+		tcpaSourceLink: z.string().url({ message: "Please enter a valid URL for TCPA source" }),
+		skipName: z.boolean().default(false),
+		addressVerified: z.boolean().default(false),
+		phoneVerified: z.boolean().default(false),
+		emailAddress: z.string().email().optional(),
+		emailVerified: z.boolean().default(false),
+		possiblePhones: z.string().optional(),
+		possibleEmails: z.string().optional(),
+		possibleHandles: z.string().optional(),
 	})
 	.refine(
 		(data) => {
@@ -181,6 +189,7 @@ const ChannelCustomizationStep: FC<ChannelCustomizationStepProps> = ({
 	onNext,
 	onBack,
 	form,
+	onCreateVariant,
 }) => {
 	const {
 		primaryChannel,

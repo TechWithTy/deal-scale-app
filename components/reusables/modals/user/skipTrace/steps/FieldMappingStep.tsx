@@ -1,3 +1,5 @@
+"use client";
+
 import {
 	Select,
 	SelectContent,
@@ -6,10 +8,10 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/_utils";
-import type { FC } from "react";
-import React from "react";
+import { useEffect, type FC } from "react";
+import type { LeadTypeGlobal } from "@/types/_dashboard/leads";
 
-type FieldConfig = {
+export type FieldConfig = {
 	name: string;
 	label: string;
 	optional?: boolean;
@@ -22,24 +24,52 @@ interface FieldMappingStepProps {
 	errors: Record<string, { message?: string }>;
 }
 
-const fieldConfigs: FieldConfig[] = [
-	{ name: "firstNameField", label: "First Name" },
-	{ name: "lastNameField", label: "Last Name" },
-	{ name: "streetAddressField", label: "Street Address" },
-	{ name: "cityField", label: "City" },
-	{ name: "stateField", label: "State" },
-	{ name: "zipCodeField", label: "Zip Code", optional: true },
-	{ name: "phone1Field", label: "Phone 1", optional: true },
-	{ name: "phone2Field", label: "Phone 2", optional: true },
-	{ name: "facebookField", label: "Facebook", optional: true },
-	{ name: "linkedinField", label: "LinkedIn", optional: true },
-	{ name: "instagramField", label: "Instagram", optional: true },
-	{ name: "twitterField", label: "Twitter", optional: true },
-	{ name: "dncStatusField", label: "DNC Status" },
-	{ name: "dncSourceField", label: "DNC Source", optional: true },
-	{ name: "tcpaOptedInField", label: "TCPA Opted In" },
-	{ name: "socialSummary", label: "Social Summary", optional: true },
-];
+const generateFieldConfigs = (): FieldConfig[] => {
+	return [
+		// Core required fields
+		{ name: "firstNameField", label: "First Name" },
+		{ name: "lastNameField", label: "Last Name" },
+		{ name: "streetAddressField", label: "Street Address" },
+		{ name: "cityField", label: "City" },
+		{ name: "stateField", label: "State" },
+		{ name: "zipCodeField", label: "Zip Code", optional: true },
+
+		// Phone fields
+		{ name: "phone1Field", label: "Phone 1", optional: true },
+		{ name: "possiblePhonesField", label: "Possible Phones", optional: true },
+
+		// Social media fields
+		{ name: "facebookField", label: "Facebook", optional: true },
+		{ name: "linkedinField", label: "LinkedIn", optional: true },
+		{ name: "instagramField", label: "Instagram", optional: true },
+		{ name: "twitterField", label: "Twitter", optional: true },
+		{ name: "tiktokField", label: "TikTok", optional: true },
+		{ name: "youtubeField", label: "YouTube", optional: true },
+
+		// Compliance fields (required when corresponding status is set)
+		{ name: "dncStatusField", label: "DNC Status" },
+		{ name: "dncSourceField", label: "DNC Source (Required if DNC)" },
+		{ name: "tcpaOptedInField", label: "TCPA Opted In" },
+		{ name: "tcpaSourceField", label: "TCPA Source (Required if Opted In)" },
+
+		{ name: "socialSummary", label: "Social Summary", optional: true },
+
+		// Property information
+		{ name: "bedroomsField", label: "Bedrooms", optional: true },
+		{
+			name: "communicationPreferencesField",
+			label: "Communication Preferences",
+			optional: true,
+		},
+		{ name: "isIphoneField", label: "Is iPhone", optional: true },
+		// Professional information
+		{ name: "companyField", label: "Company", optional: true },
+		{ name: "jobTitleField", label: "Job Title", optional: true },
+		{ name: "anniversaryField", label: "Anniversary", optional: true },
+	];
+};
+
+export const fieldConfigs = generateFieldConfigs();
 
 export const REQUIRED_FIELD_MAPPING_KEYS = fieldConfigs
 	.filter((config) => !config.optional)
@@ -57,12 +87,11 @@ const FieldMappingStep: FC<
 	const allRequiredFieldsMapped = REQUIRED_FIELD_MAPPING_KEYS.every(
 		(fieldName: string) => !!selectedHeaders[fieldName],
 	);
-
-	React.useEffect(() => {
+	useEffect(() => {
 		if (onCanProceedChange) onCanProceedChange(allRequiredFieldsMapped);
 	}, [allRequiredFieldsMapped, onCanProceedChange]);
 
-	const headerOptions = headers.map((header, idx) => ({
+	const headerOptions = headers.map((header: string, idx: number) => ({
 		key: `${header}__${idx}`,
 		label: header,
 		name: header,
@@ -164,5 +193,3 @@ const FieldMappingStep: FC<
 };
 
 export default FieldMappingStep;
-
-export { fieldConfigs as FIELD_MAPPING_CONFIGS };

@@ -385,3 +385,5 @@ const TimingPreferencesStep: FC<TimingPreferencesStepProps> = ({
 		</div>
 	);
 };
+
+export { TimingPreferencesStep };

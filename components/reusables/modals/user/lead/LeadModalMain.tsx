@@ -15,13 +15,14 @@ import SkipTraceSummaryStep from "./steps/SkipTraceSummaryStep";
 import { Button } from "@/components/ui/button";
 import { Upload } from "lucide-react";
 import { toast } from "sonner";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLeadListStore } from "@/lib/stores/leadList";
 import {
 	parseCsvToLeads,
 	calculateLeadStatistics,
 } from "@/lib/stores/_utils/csvParser";
 import Papa from "papaparse";
+import { areRequiredFieldsMapped, autoMapCsvHeaders } from "./utils/csvAutoMap";
 
 const INITIAL_COST_DETAILS = {
 	availableCredits: 0,
@@ -37,6 +38,16 @@ interface LeadMainModalProps {
 	initialListMode?: "select" | "create";
 	csvFile?: File | null;
 	csvHeaders?: string[];
+	onLaunchCampaign?: (payload: {
+		leadListId: string;
+		leadListName: string;
+		leadCount: number;
+	}) => void;
+	onSuiteLaunchComplete?: (payload: {
+		leadListId: string;
+		leadListName: string;
+		leadCount: number;
+	}) => boolean | void;
 }
 
 function LeadMainModal({
@@ -45,6 +56,8 @@ function LeadMainModal({
 	initialListMode = "create",
 	csvFile,
 	csvHeaders: externalCsvHeaders,
+	onLaunchCampaign,
+	onSuiteLaunchComplete,
 }: LeadMainModalProps) {
 	// Field mapping state (only used when creating a list)
 	// Initialize with external CSV data if provided
@@ -69,10 +82,42 @@ function LeadMainModal({
 
 	// Get the lead list store
 	const addLeadList = useLeadListStore((state) => state.addLeadList);
+	const leadLists = useLeadListStore((state) => state.leadLists);
 
 	const resetCostDetails = useCallback(() => {
 		setCostDetails({ ...INITIAL_COST_DETAILS });
 	}, []);
+
+	const combinedExistingLists = useMemo(() => {
+		const storeLists = leadLists.map((list) => ({
+			id: list.id,
+			name: list.listName ?? "Lead List",
+		}));
+		const seen = new Set(storeLists.map((list) => list.id));
+		const fallbackLists = LEAD_LISTS_MOCK.filter((mock) => !seen.has(mock.id));
+		return [...storeLists, ...fallbackLists];
+	}, [leadLists]);
+
+	const launchCampaignIfPossible = useCallback(
+		(payload: {
+			leadListId: string;
+			leadListName: string;
+			leadCount: number;
+		}) => {
+			if (!onLaunchCampaign) {
+				console.warn(
+					"launchCampaignIfPossible called without onLaunchCampaign handler",
+				);
+				return false;
+			}
+			console.log("📨 Launching campaign with payload", payload);
+			resetCostDetails();
+			onLaunchCampaign(payload);
+			onClose();
+			return true;
+		},
+		[onLaunchCampaign, resetCostDetails, onClose],
+	);
 
 	const handleCostDetailsChange = useCallback(
 		(details: {
@@ -204,9 +249,15 @@ function LeadMainModal({
 		setModalCsvFile(csvFile ?? null);
 		if (externalCsvHeaders && externalCsvHeaders.length) {
 			setCsvHeaders(externalCsvHeaders);
+			setSelectedHeadersState((prev) => {
+				const autoMapped = autoMapCsvHeaders(externalCsvHeaders, prev);
+				setCanProceedFromMapping(areRequiredFieldsMapped(autoMapped));
+				return autoMapped;
+			});
+			setSelectedEnrichmentOptions([]);
+		} else {
 			setSelectedHeadersState({});
 			setCanProceedFromMapping(false);
-			setSelectedEnrichmentOptions([]);
 		}
 		if (csvFile) {
 			csvFile
@@ -258,6 +309,7 @@ function LeadMainModal({
 			.text()
 			.then((text) => {
 				if (!isActive) return;
+				setCsvContent(text);
 				deriveRowCount(text);
 			})
 			.catch(() => {
@@ -270,10 +322,11 @@ function LeadMainModal({
 	}, [modalCsvFile, deriveRowCount]);
 
 	const handleHeaderSelect = (fieldName: string, value: string) => {
-		setSelectedHeadersState((prev: Record<string, string | undefined>) => ({
-			...prev,
-			[fieldName]: value || undefined,
-		}));
+		setSelectedHeadersState((prev: Record<string, string | undefined>) => {
+			const next = { ...prev, [fieldName]: value || undefined };
+			setCanProceedFromMapping(areRequiredFieldsMapped(next));
+			return next;
+		});
 	};
 
 	// CSV file upload and header extraction (inside modal)
@@ -316,9 +369,13 @@ function LeadMainModal({
 			}
 
 			setCsvHeaders(headers);
-			setSelectedHeadersState({});
-			setCanProceedFromMapping(false);
+			setSelectedHeadersState((prev) => {
+				const autoMapped = autoMapCsvHeaders(headers, prev);
+				setCanProceedFromMapping(areRequiredFieldsMapped(autoMapped));
+				return autoMapped;
+			});
 			setSelectedEnrichmentOptions([]);
+			setCsvContent(csvText);
 			deriveRowCount(csvText);
 			toast.success(
 				`Found ${headers.length} columns in CSV: ${headers
@@ -348,12 +405,34 @@ function LeadMainModal({
 
 	const handleLaunchSuite = () => {
 		console.log("🚀 handleLaunchSuite called");
-		const problems = validateStep();
-		setErrors(problems);
-		console.log("Validation problems:", problems);
+		const baseProblems = validateStepNow();
+		const combinedProblems: Record<string, string> = { ...baseProblems };
 
-		if (Object.keys(problems).length !== 0 || isLaunchingSuite) {
-			console.log("❌ Launch blocked due to validation or already launching");
+		if (step === 2 && listMode === "create") {
+			if (selectedEnrichmentOptions.length === 0) {
+				combinedProblems.enrichment =
+					"Select at least one enrichment tool to continue.";
+			}
+
+			const missingMappings = REQUIRED_FIELD_MAPPING_KEYS.filter(
+				(field: string) => !selectedHeadersState[field],
+			);
+			if (missingMappings.length > 0) {
+				combinedProblems.mappings = `Please map required fields: ${missingMappings.join(", ")}`;
+			}
+
+			if (!hasEnoughCredits) {
+				combinedProblems.credits =
+					"Add more skip trace credits or deselect premium tools before launching.";
+			}
+		}
+
+		setErrors(combinedProblems);
+
+		if (Object.keys(combinedProblems).length !== 0 || isLaunchingSuite) {
+			console.log(
+				"❌ Launch blocked due to validation errors or active launch",
+			);
 			return;
 		}
 
@@ -361,7 +440,6 @@ function LeadMainModal({
 		console.log("⏳ Setting launching state");
 		const launchToastId = toast.loading("Launching enrichment suite...");
 
-		// Parse CSV and create lead list
 		if (csvContent && newListName.trim()) {
 			console.log("📄 Processing CSV content, length:", csvContent.length);
 			console.log("📋 Selected headers:", selectedHeadersState);
@@ -386,7 +464,34 @@ function LeadMainModal({
 				};
 
 				console.log("💾 Adding lead list to store...");
-				addLeadList(newLeadList);
+				const newLeadListId = addLeadList(newLeadList);
+				const launchPayload = newLeadListId
+					? {
+							leadListId: newLeadListId,
+							leadListName: newLeadList.listName,
+							leadCount: leads.length,
+						}
+					: null;
+
+				if (launchPayload) {
+					console.log("📨 Launch suite generated lead list", launchPayload);
+					const handledBySuiteCallback = Boolean(
+						onSuiteLaunchComplete?.(launchPayload),
+					);
+					if (!handledBySuiteCallback && onLaunchCampaign) {
+						launchCampaignIfPossible(launchPayload);
+					}
+
+					onClose();
+					setIsLaunchingSuite(false);
+					toast.dismiss(launchToastId);
+					toast.success(
+						`Skip trace suite launched for ${
+							leads.length > 0 ? leads.length.toLocaleString() : "your"
+						} leads and saved to lead lists`,
+					);
+					return;
+				}
 
 				setTimeout(() => {
 					setIsLaunchingSuite(false);
@@ -418,9 +523,6 @@ function LeadMainModal({
 			}, 1600);
 		}
 	};
-
-	// Validation
-	const validateStep = () => validateStepNow();
 
 	const handleAddLead = () => {
 		const targetList =
@@ -457,10 +559,33 @@ function LeadMainModal({
 
 	const handleNext = () => {
 		if (isLaunchingSuite) return;
-		const problems = validateStep();
+		const problems = validateStepNow();
 		setErrors(problems);
 		if (Object.keys(problems).length !== 0) {
 			return;
+		}
+
+		if (
+			onLaunchCampaign &&
+			step === 0 &&
+			listMode === "select" &&
+			selectedListId
+		) {
+			const existingList = leadLists.find((list) => list.id === selectedListId);
+			const fallbackList = LEAD_LISTS_MOCK.find(
+				(list) => list.id === selectedListId,
+			);
+			const leadListName =
+				existingList?.listName ?? fallbackList?.name ?? "Selected Lead List";
+			const leadCountValue = existingList?.records ?? 0;
+			const launched = launchCampaignIfPossible({
+				leadListId: selectedListId,
+				leadListName,
+				leadCount: leadCountValue,
+			});
+			if (launched) {
+				return;
+			}
 		}
 
 		if (step === 0 && listMode === "create") {
@@ -492,6 +617,16 @@ function LeadMainModal({
 		}
 
 		if (step === 2 && listMode === "create") {
+			// If launching, don't change step - let handleLaunchSuite handle it
+			if (isLaunchingSuite) {
+				return;
+			}
+			if (onLaunchCampaign) {
+				if (selectedEnrichmentOptions.length === 0) {
+					toast.error("Select at least one enrichment tool to continue.");
+				}
+				return;
+			}
 			if (selectedEnrichmentOptions.length === 0) {
 				setStep(3);
 			}
@@ -514,7 +649,7 @@ function LeadMainModal({
 	const hasSelectedTools = selectedEnrichmentOptions.length > 0;
 	const showLaunchAction =
 		step === 2 && listMode === "create" && hasSelectedTools;
-	const validationPasses = Object.keys(validateStep()).length === 0;
+	const validationPasses = Object.keys(validateStepNow()).length === 0;
 	const canGoNext = (() => {
 		if (isLaunchingSuite) {
 			return false;
@@ -526,7 +661,9 @@ function LeadMainModal({
 			return canProceedFromMapping;
 		}
 		if (step === 2 && listMode === "create") {
-			return showLaunchAction ? hasEnoughCredits : validationPasses;
+			return showLaunchAction
+				? hasEnoughCredits && validationPasses
+				: validationPasses;
 		}
 		return validationPasses;
 	})();
@@ -591,7 +728,7 @@ function LeadMainModal({
 							onListNameChange={setNewListName}
 							selectedListId={selectedListId}
 							onSelectedListIdChange={setSelectedListId}
-							existingLists={LEAD_LISTS_MOCK}
+							existingLists={combinedExistingLists}
 							bestContactTime={bestContactTime}
 							onBestContactTimeChange={handleBestTimeChange}
 							listNotes={listNotes}

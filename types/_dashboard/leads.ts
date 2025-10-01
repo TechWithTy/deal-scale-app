@@ -5,6 +5,8 @@ export type SocialLinks = {
 	linkedin: string;
 	instagram: string;
 	twitter: string;
+	tiktok: string;
+	youtube: string;
 };
 
 export type Address = {
@@ -25,8 +27,19 @@ export type ContactInfo = {
 	domain: string;
 	// Generic social tag/handle (e.g., @username)
 	social: string;
+	// Additional contact verification
+	emailVerified?: boolean;
+	socialVerified?: boolean;
+	// Possible alternative contact information
+	possiblePhones?: string;
+	possibleEmails?: string;
 };
 
+// LeadTypeGlobal - Single source of truth for lead data structure
+// SYNC REQUIREMENT: Keep FieldMappingStep.tsx fieldConfigs in sync with this type
+// Required fields: firstName, lastName, streetAddress, city, state, dncStatus, tcpaOptedIn
+// Conditional fields: dncSource (required if dncList is true), tcpaSource (required if tcpaOptedIn is true)
+// All other fields are optional for CSV mapping
 export type LeadTypeGlobal = {
 	id: string; // Unique identifier for the lead
 
@@ -64,4 +77,57 @@ export type LeadTypeGlobal = {
 	/** Timestamp when TCPA consent was obtained */
 	tcpaConsentDate?: string;
 	tcpaSource?: string;
+	// Property information
+	propertyValue?: number;
+	yearBuilt?: number;
+	// Lead metadata
+	leadSource?: string;
+	notes?: string;
+	tags?: string;
+	priority?: string;
+	// Professional information
+	company?: string;
+	jobTitle?: string;
+	website?: string;
+	birthday?: string;
+	anniversary?: string;
 };
+
+// Lead List Types
+export type SocialsCount = {
+	facebook?: number; // Number of Facebook accounts in the list
+	linkedin?: number; // Number of LinkedIn accounts in the list
+	instagram?: number; // Number of Instagram accounts in the list
+	twitter?: number; // Number of Twitter accounts in the list
+	tiktok?: number; // Number of TikTok accounts in the list
+	youtube?: number; // Number of YouTube accounts in the list
+};
+
+export type LeadList = {
+	id: string; // Unique identifier for the lead list
+	listName: string; // Name of the list
+	uploadDate: string; // Date when the list was uploaded
+	leads: LeadTypeGlobal[];
+	records: number; // Number of records in the list
+	phone: number; // Number of phone numbers in the list
+	dataLink: string; // Where the list is stored
+	socials: SocialsCount; // Social media account counts
+	emails: number; // Number of email addresses in the list
+};
+
+// Contact Field Types (for field mapping)
+export type ContactFieldType =
+	| "firstName"
+	| "lastName"
+	| "address"
+	| "email"
+	| "phone"
+	| "social"
+	| "domain";
+
+export interface ContactField {
+	id: string;
+	type: ContactFieldType;
+	value: string;
+	label: string;
+}

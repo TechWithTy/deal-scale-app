@@ -1,15 +1,2 @@
-export type ContactFieldType =
-	| "firstName"
-	| "lastName"
-	| "address"
-	| "email"
-	| "phone"
-	| "social"
-	| "domain";
-
-export interface ContactField {
-	id: string;
-	type: ContactFieldType;
-	value: string;
-	label: string;
-}
+// Re-export contact field types from the main leads file for convenience
+export type { ContactField, ContactFieldType } from "../types/_dashboard/leads";

@@ -32,3 +32,16 @@ export interface FooterItem {
 export type MainNavItem = NavItemWithOptionalChildren;
 
 export type SidebarNavItem = NavItemWithChildren;
+
+// Re-export all lead-related types from the centralized location
+export type {
+	LeadTypeGlobal,
+	LeadStatus,
+	SocialLinks,
+	Address,
+	ContactInfo,
+	ContactField,
+	ContactFieldType,
+	LeadList,
+	SocialsCount,
+} from "./_dashboard/leads";

@@ -34,8 +34,10 @@ const MOCK_AGENTS: Agent[] = [
 // * Campaign Creation Store for multi-step modal context
 export interface CampaignCreationState {
 	// Step 1: Channel Selection
-	primaryChannel: "email" | "call" | "text" | "social" | null;
-	setPrimaryChannel: (channel: "email" | "call" | "text" | "social") => void;
+	primaryChannel: "directmail" | "call" | "text" | "email" | "social" | null;
+	setPrimaryChannel: (
+		channel: "directmail" | "call" | "text" | "email" | "social",
+	) => void;
 
 	// Campaign Name
 	campaignName: string;

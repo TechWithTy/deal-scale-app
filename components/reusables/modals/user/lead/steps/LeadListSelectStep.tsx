@@ -139,20 +139,22 @@ const LeadListSelectStep: React.FC<LeadListSelectStepProps> = ({
 					<label htmlFor="existingList" className="block font-medium text-sm">
 						Existing Lists
 					</label>
-					<select
-						id="existingList"
-						value={selectedListId}
-						onChange={(e) => onSelectedListIdChange(e.target.value)}
-						className="mt-1 block w-full rounded-md border border-border bg-background px-3 py-2 text-foreground shadow-sm focus:outline-none focus:ring-2 focus:ring-ring"
-						aria-invalid={Boolean(errors.list)}
-					>
-						<option value="">Select a list...</option>
-						{existingLists.map((l) => (
-							<option key={l.id} value={l.id}>
-								{l.name}
-							</option>
-						))}
-					</select>
+					<Select value={selectedListId} onValueChange={onSelectedListIdChange}>
+						<SelectTrigger
+							id="existingList"
+							className="mt-1"
+							aria-invalid={Boolean(errors.list)}
+						>
+							<SelectValue placeholder="Select a list..." />
+						</SelectTrigger>
+						<SelectContent>
+							{existingLists.map((list) => (
+								<SelectItem key={list.id} value={list.id}>
+									{list.name}
+								</SelectItem>
+							))}
+						</SelectContent>
+					</Select>
 					{errors.list && (
 						<p className="mt-1 text-destructive text-sm">{errors.list}</p>
 					)}

@@ -1,8 +1,6 @@
 import type { FC } from "react";
-import { useCallback, useEffect, useState } from "react";
+import { useMemo } from "react";
 
-import type { LeadList } from "@/constants/_faker/_api/mockLeadListApi";
-import { fetchFakeLeadLists } from "@/constants/_faker/_api/mockLeadListApi";
 import {
 	Select,
 	SelectContent,
@@ -16,14 +14,13 @@ import {
 	FormControl,
 	FormMessage,
 } from "../../../../../components/ui/form";
-import { Loader2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { useLeadListStore } from "@/lib/stores/leadList";
+import { LEAD_LISTS_MOCK } from "@/constants/dashboard/leadLists.mock";
 
 interface LeadListSelectorProps {
 	value: string;
 	onChange: (value: string, recordCount: number) => void;
 	disabled?: boolean;
-	// Optional A/B testing support
 	abTestingEnabled?: boolean;
 	valueB?: string;
 	onChangeB?: (value: string, recordCount: number) => void;
@@ -37,49 +34,52 @@ const LeadListSelector: FC<LeadListSelectorProps> = ({
 	valueB = "",
 	onChangeB,
 }) => {
-	const [items, setItems] = useState<LeadList[]>([]);
-	const [page, setPage] = useState(0);
-	const [hasMore, setHasMore] = useState(true);
-	const [loading, setLoading] = useState(false);
+	const leadLists = useLeadListStore((state) => state.leadLists);
 
-	const loadMoreLeadLists = useCallback(async () => {
-		if (loading || !hasMore) return;
-		setLoading(true);
-		const nextPage = page + 1;
-		const { items: newItems, hasMore: newHasMore } =
-			await fetchFakeLeadLists(nextPage);
-		setItems((prev) => [...prev, ...newItems]);
-		setPage(nextPage);
-		setHasMore(newHasMore);
-		setLoading(false);
-	}, [loading, hasMore, page]);
+	const storeItems = useMemo(
+		() =>
+			leadLists.map((list) => ({
+				id: list.id,
+				listName: list.listName ?? "Lead List",
+				records:
+					list.records ??
+					(Array.isArray(list.leads) ? list.leads.length : 0),
+			})),
+		[leadLists],
+	);
 
-	useEffect(() => {
-		const init = async () => {
-			setLoading(true);
-			const { items: newItems, hasMore: newHasMore } =
-				await fetchFakeLeadLists(0);
-			setItems(newItems);
-			setPage(0);
-			setHasMore(newHasMore);
-			setLoading(false);
-		};
-		void init();
-	}, []);
+	const baseItems = useMemo(() => {
+		if (storeItems.length > 0) return storeItems;
+		return LEAD_LISTS_MOCK.map((mock) => ({
+			id: mock.id,
+			listName: mock.name,
+			records: 0,
+		}));
+	}, [storeItems]);
+
+	const options = useMemo(() => {
+		const map = new Map<string, { id: string; listName: string; records: number }>();
+		for (const item of baseItems) {
+			map.set(item.id, item);
+		}
+		if (value && !map.has(value)) {
+			map.set(value, { id: value, listName: "Selected Lead List", records: 0 });
+		}
+		if (abTestingEnabled && valueB && !map.has(valueB)) {
+			map.set(valueB, { id: valueB, listName: "Selected Lead List", records: 0 });
+		}
+		return Array.from(map.values());
+	}, [baseItems, value, valueB, abTestingEnabled]);
 
 	const handleValueChange = (selectedValue: string) => {
-		const selectedItem = items.find((item) => item.id === selectedValue);
-		if (selectedItem) {
-			onChange(selectedValue, selectedItem.records);
-		}
+		const selectedItem = options.find((item) => item.id === selectedValue);
+		onChange(selectedValue, selectedItem?.records ?? 0);
 	};
 
 	const handleValueChangeB = (selectedValue: string) => {
 		if (!onChangeB) return;
-		const selectedItem = items.find((item) => item.id === selectedValue);
-		if (selectedItem) {
-			onChangeB(selectedValue, selectedItem.records);
-		}
+		const selectedItem = options.find((item) => item.id === selectedValue);
+		onChangeB(selectedValue, selectedItem?.records ?? 0);
 	};
 
 	return (
@@ -88,7 +88,7 @@ const LeadListSelector: FC<LeadListSelectorProps> = ({
 				{abTestingEnabled ? "Select Lead List A" : "Select Lead List"}
 			</FormLabel>
 			<Select
-				disabled={disabled}
+				disabled={disabled || options.length === 0}
 				onValueChange={handleValueChange}
 				value={value}
 				defaultValue={value}
@@ -104,12 +104,9 @@ const LeadListSelector: FC<LeadListSelectorProps> = ({
 					sideOffset={4}
 					avoidCollisions={false}
 					className="max-h-72 overflow-y-auto overscroll-contain"
-					onWheel={(e) => {
-						// Ensure scrolling is captured by the dropdown, not the dialog/page
-						e.stopPropagation();
-					}}
+					onWheel={(e) => e.stopPropagation()}
 				>
-					{items.map((list) => (
+					{options.map((list) => (
 						<SelectItem key={list.id} value={list.id}>
 							{list.listName}
 						</SelectItem>
@@ -121,7 +118,7 @@ const LeadListSelector: FC<LeadListSelectorProps> = ({
 				<div className="mt-4">
 					<FormLabel>Select Lead List B</FormLabel>
 					<Select
-						disabled={disabled}
+						disabled={disabled || options.length === 0}
 						onValueChange={handleValueChangeB}
 						value={valueB}
 						defaultValue={valueB}
@@ -137,11 +134,9 @@ const LeadListSelector: FC<LeadListSelectorProps> = ({
 							sideOffset={4}
 							avoidCollisions={false}
 							className="max-h-72 overflow-y-auto overscroll-contain"
-							onWheel={(e) => {
-								e.stopPropagation();
-							}}
+							onWheel={(e) => e.stopPropagation()}
 						>
-							{items.map((list) => (
+							{options.map((list) => (
 								<SelectItem key={list.id} value={list.id}>
 									{list.listName}
 								</SelectItem>
@@ -150,30 +145,16 @@ const LeadListSelector: FC<LeadListSelectorProps> = ({
 					</Select>
 				</div>
 			)}
-			<div className="mt-2 flex items-center gap-2">
-				<Button
-					type="button"
-					size="sm"
-					variant="outline"
-					disabled={loading || !hasMore}
-					onClick={() => void loadMoreLeadLists()}
-				>
-					{loading ? (
-						<span className="inline-flex items-center gap-1">
-							<Loader2 className="h-3 w-3 animate-spin" /> Loading...
-						</span>
-					) : hasMore ? (
-						"Load more"
-					) : (
-						"No more"
-					)}
-				</Button>
-			</div>
 			<FormMessage />
 			{abTestingEnabled && (!value || !valueB) ? (
 				<div className="mt-2 text-destructive text-xs">
 					A/B testing requires two lead lists.
 				</div>
+			) : null}
+			{options.length === 0 && !disabled ? (
+				<p className="mt-2 text-muted-foreground text-xs">
+					No lead lists available yet. Create a list to enable this step.
+				</p>
 			) : null}
 		</FormItem>
 	);

@@ -87,7 +87,6 @@ const LeadListSelector: FC<LeadListSelectorProps> = ({
 				disabled={disabled}
 				onValueChange={handleValueChange}
 				value={value}
-				defaultValue={value}
 			>
 				<FormControl>
 					<SelectTrigger>

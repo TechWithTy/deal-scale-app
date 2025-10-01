@@ -27,10 +27,18 @@ export default function CampaignModalMain({
 	open: controlledOpen,
 	onOpenChange,
 	defaultChannel,
+	initialLeadListId,
+	initialLeadListName,
+	initialLeadCount,
+	initialStep = 0,
 }: {
 	open?: boolean;
 	onOpenChange?: (open: boolean) => void;
 	defaultChannel?: "directmail" | "call" | "text" | "social";
+	initialLeadListId?: string;
+	initialLeadListName?: string;
+	initialLeadCount?: number;
+	initialStep?: number;
 }) {
 	const {
 		areaMode,
@@ -159,7 +167,7 @@ export default function CampaignModalMain({
 	useEffect(() => {
 		if (open) {
 			// ensure we always start at step 0 when opening
-			setStep(0);
+			setStep(initialStep);
 			// Always set provided default channel on open to reflect tab source
 			if (defaultChannel) {
 				// Map unsupported local label 'directmail' to the store's 'email' channel
@@ -168,6 +176,26 @@ export default function CampaignModalMain({
 				(
 					setPrimaryChannel as (c: "email" | "call" | "text" | "social") => void
 				)(mapped);
+			}
+
+			// Handle initial lead list setup
+			if (initialLeadListId && initialLeadListId !== selectedLeadListId) {
+				setSelectedLeadListId(initialLeadListId);
+				customizationForm.setValue("selectedLeadListId", initialLeadListId);
+				if (abTestingEnabled && !selectedLeadListAId) {
+					setSelectedLeadListAId(initialLeadListId);
+				}
+			}
+
+			// Handle initial lead count
+			if (typeof initialLeadCount === "number" && !Number.isNaN(initialLeadCount)) {
+				// Note: There's no setLeadCount in the store, this might need to be handled differently
+				// For now, we'll rely on the store already being set by the parent component
+			}
+
+			// Handle initial campaign name
+			if (initialLeadListName) {
+				setCampaignName(`${initialLeadListName} Campaign`);
 			}
 		} else {
 			// On close, reset to step 0 for the next open and clear transient errors
@@ -193,7 +221,7 @@ export default function CampaignModalMain({
 				transferPrompt: "",
 			});
 		}
-	}, [open]);
+	}, [open, initialStep, defaultChannel, initialLeadListId, initialLeadListName, initialLeadCount, selectedLeadListId, abTestingEnabled, selectedLeadListAId, setSelectedLeadListId, setSelectedLeadListAId, setPrimaryChannel, setCampaignName, customizationForm, areaMode, reset]);
 
 	return (
 		<Dialog open={open} onOpenChange={setOpen}>

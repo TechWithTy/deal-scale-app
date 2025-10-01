@@ -14,7 +14,7 @@ interface LeadListState {
 	) => void; // Filter by upload date
 	resetFilters: () => void; // Reset all filters
 	exportFilteredLeadListsToZip: () => Promise<void>; // New export function
-	addLeadList: (list: Omit<LeadList, "id" | "uploadDate">) => void; // Add new lead list
+	addLeadList: (list: Omit<LeadList, "id" | "uploadDate">) => string; // Add new lead list and return its ID
 }
 
 // Create Zustand store for lead list management
@@ -38,6 +38,7 @@ export const useLeadListStore = create<LeadListState>(
 			console.log("📦 Updated lead lists count:", updatedLists.length);
 			set({ leadLists: updatedLists, filteredLeadLists: updatedLists });
 			toast.success(`Added new lead list: ${newList.listName}`);
+			return listWithMetadata.id;
 		},
 
 		// Filter lead lists by records range

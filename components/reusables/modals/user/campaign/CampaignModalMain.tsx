@@ -1,41 +1,54 @@
-import { useState, useEffect } from "react";
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import type * as z from "zod";
-import { mockUserProfile } from "@/constants/_faker/profile/userProfile";
 import ChannelCustomizationStep, {
+	TransferConditionalSchema,
 	FormSchema,
-} from "./steps/ChannelCustomizationStep";
-import ChannelSelectionStep from "./steps/ChannelSelectionStep";
-import FinalizeCampaignStep from "./steps/FinalizeCampaignStep";
-import { TimingPreferencesStep } from "./steps/TimingPreferencesStep";
-import { useCampaignCreationStore } from "@/lib/stores/campaignCreation"; // Zustand campaign creation store
+} from "../../../../../external/shadcn-table/src/examples/campaigns/modal/steps/ChannelCustomizationStep";
+import ChannelSelectionStep from "../../../../../external/shadcn-table/src/examples/campaigns/modal/steps/ChannelSelectionStep";
+import FinalizeCampaignStep from "../../../../../external/shadcn-table/src/examples/campaigns/modal/steps/FinalizeCampaignStep";
+import { TimingPreferencesStep } from "../../../../../external/shadcn-table/src/examples/campaigns/modal/steps/TimingPreferencesStep";
+import { useCampaignCreationStore } from "@/lib/stores/campaignCreation";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { X } from "lucide-react";
+import type { z } from "zod";
+import CampaignSettingsDebug from "./CampaignSettingsDebug";
 
-// * Centralized Campaign Main Component
-const allChannels: ("email" | "call" | "text" | "social")[] = [
+interface CampaignModalMainProps {
+	isOpen: boolean;
+	onOpenChange: (open: boolean) => void;
+	initialLeadListId?: string;
+	initialLeadListName?: string;
+	initialLeadCount?: number;
+	initialStep?: number;
+	defaultChannel?: "call" | "text" | "social" | "directmail";
+}
+
+const allChannels: ("directmail" | "call" | "text" | "social")[] = [
 	"call",
 	"text",
-	"email",
+	"directmail",
 	"social",
 ];
-const disabledChannels: ("email" | "call" | "text" | "social")[] = [
-	"email",
-	"social",
-];
+const disabledChannels: ("directmail" | "call" | "text" | "social")[] = [];
 
-const CampaignModalMain = () => {
-	// * Zustand campaign creation store
+export default function CampaignModalMain({
+	isOpen,
+	onOpenChange,
+	initialLeadListId,
+	initialLeadListName,
+	initialLeadCount,
+	initialStep = 0,
+	defaultChannel,
+}: CampaignModalMainProps) {
 	const {
-		primaryChannel,
-		setPrimaryChannel,
 		areaMode,
 		setAreaMode,
 		selectedLeadListId,
 		setSelectedLeadListId,
-		campaignArea,
-		setCampaignArea,
+		selectedLeadListAId,
+		setSelectedLeadListAId,
 		leadCount,
 		setLeadCount,
 		daysSelected,
@@ -44,105 +57,209 @@ const CampaignModalMain = () => {
 		reachAfterBusiness,
 		reachOnWeekend,
 		startDate,
-		setStartDate,
 		endDate,
-		setEndDate,
+		primaryChannel,
+		setPrimaryChannel,
+		campaignName,
+		setCampaignName,
+		abTestingEnabled,
+		setAbTestingEnabled,
+		isLeadListSelectionValid,
 		reset,
 	} = useCampaignCreationStore();
 
-	// Helper to count only weekdays (Mon-Fri) between two dates
-	function countWeekdays(start: Date, end: Date): number {
-		let count = 0;
-		const current = new Date(start);
-		while (current <= end) {
-			const day = current.getDay();
-			if (day !== 0 && day !== 6) count++;
-			current.setDate(current.getDate() + 1);
-		}
-		return count;
-	}
+	const [step, setStep] = useState(initialStep);
 
-	const days =
-		startDate && endDate
-			? Math.max(
-					1,
-					Math.ceil(
-						(endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24),
-					) + 1,
-				)
-			: 0;
+	const customizationForm = useForm<z.input<typeof FormSchema>>({
+		resolver: zodResolver(TransferConditionalSchema),
+		defaultValues: {
+			primaryPhoneNumber: "+11234567890",
+			areaMode: areaMode || "leadList",
+			selectedLeadListId: selectedLeadListId || "",
+			templates: [],
+			transferEnabled: true,
+			transferType: "inbound_call",
+			transferAgentId: "",
+			transferGuidelines: "",
+			transferPrompt: "",
+			numberPoolingEnabled: false,
+			senderPoolNumbersCsv: "",
+			smartEncodingEnabled: true,
+			optOutHandlingEnabled: true,
+			perNumberDailyLimit: 75,
+			messagingServiceSid: "",
+			tcpaSourceLink: "",
+			skipName: false,
+			addressVerified: false,
+			phoneVerified: false,
+			emailAddress: "",
+			emailVerified: false,
+			possiblePhones: "",
+			possibleEmails: "",
+			possibleHandles: "",
+		} as z.input<typeof FormSchema>,
+	});
 
-	// Use reachOnWeekend (from Zustand) for all weekend logic
-	// Apply 35% increase/decrease to the number of days, not credits
-	const mutatedDays =
-		days > 0 ? Math.round(days * (reachOnWeekend ? 1.35 : 1)) : 0;
+	const days = useMemo(() => {
+		if (!startDate || !endDate) return 0;
+		const diff =
+			Math.ceil(
+				(endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24),
+			) + 1;
+		return Math.max(diff, 1);
+	}, [startDate, endDate]);
 
-	// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
+	const mutatedDays = useMemo(() => {
+		if (days <= 0) return 0;
+		return Math.round(days * (reachOnWeekend ? 1.35 : 1));
+	}, [days, reachOnWeekend]);
+
 	useEffect(() => {
 		setDaysSelected(mutatedDays);
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [mutatedDays, reachOnWeekend]);
+	}, [mutatedDays, setDaysSelected]);
 
 	const estimatedCredits =
 		leadCount > 0 && mutatedDays > 0 ? Math.round(leadCount * mutatedDays) : 0;
 
-	// * Modal open state
-	const [open, setOpen] = useState(true);
-	const [step, setStep] = useState(0);
+	useEffect(() => {
+		if (!isOpen) {
+			setStep(initialStep);
+			return;
+		}
 
-	// * Form for ChannelCustomizationStep
-	const customizationForm = useForm<z.infer<typeof FormSchema>>({
-		resolver: zodResolver(FormSchema),
-		defaultValues: {
-			primaryPhoneNumber: mockUserProfile?.personalNum ?? "",
-			areaMode: areaMode || "leadList",
-			selectedLeadListId: selectedLeadListId || "",
-		},
-	});
+		if (!primaryChannel && defaultChannel) {
+			setPrimaryChannel(
+				defaultChannel === "directmail" ? "email" : defaultChannel,
+			);
+		}
 
-	// * Step navigation handlers
+		if (initialLeadListId && initialLeadListId !== selectedLeadListId) {
+			setAreaMode("leadList");
+			setSelectedLeadListId(initialLeadListId);
+			customizationForm.setValue("areaMode", "leadList");
+			customizationForm.setValue("selectedLeadListId", initialLeadListId);
+			if (abTestingEnabled && !selectedLeadListAId) {
+				setSelectedLeadListAId(initialLeadListId);
+			}
+		}
+
+		if (
+			typeof initialLeadCount === "number" &&
+			!Number.isNaN(initialLeadCount)
+		) {
+			setLeadCount(initialLeadCount);
+		}
+
+		if (initialLeadListName) {
+			setCampaignName(`${initialLeadListName} Campaign`);
+		}
+
+		setStep(initialStep);
+	}, [
+		isOpen,
+		initialLeadListId,
+		initialLeadListName,
+		initialLeadCount,
+		initialStep,
+		defaultChannel,
+		primaryChannel,
+		selectedLeadListId,
+		abTestingEnabled,
+		selectedLeadListAId,
+		setAreaMode,
+		setSelectedLeadListId,
+		setSelectedLeadListAId,
+		setPrimaryChannel,
+		setLeadCount,
+		setCampaignName,
+		customizationForm,
+	]);
+
+	const closeModal = () => {
+		reset();
+		onOpenChange(false);
+	};
+
 	const nextStep = async () => {
 		if (step === 1) {
-			console.log("Validating form data:", customizationForm.getValues());
 			const isValid = await customizationForm.trigger();
-			if (!isValid) {
-				console.error(
-					"Validation failed. Errors:",
-					customizationForm.formState.errors,
-				);
-				return; // * Don't advance if validation fails
+			if (!isValid) return;
+			if (
+				areaMode === "leadList" &&
+				abTestingEnabled &&
+				!isLeadListSelectionValid()
+			) {
+				return;
 			}
 		}
 		setStep((s) => s + 1);
 	};
+
 	const prevStep = () => setStep((s) => Math.max(0, s - 1));
-	const closeModal = () => setOpen(false);
+
 	const launchCampaign = () => {
-		// todo: Implement campaign launch logic
+		// TODO: real launch logic
+		closeModal();
 	};
 
+	const handleCreateAbTest = (label?: string) => {
+		// Only create A/B test if explicitly requested
+		console.log("Creating A/B test variant:", label);
+		setAbTestingEnabled(true);
+		const variantLabel = (label || "Variant B").trim();
+		if (campaignName) {
+			const base = campaignName.replace(/\s*\(Variant[^)]*\)$/i, "").trim();
+			setCampaignName(`${base} (${variantLabel})`);
+		}
+		if (areaMode === "leadList" && selectedLeadListId && !selectedLeadListAId) {
+			setSelectedLeadListAId(selectedLeadListId);
+			setSelectedLeadListId("");
+		}
+		// Don't automatically go back to step 0 - let user continue with A/B setup
+		// setStep(0);
+	};
+
+	useEffect(() => {
+		if (!isOpen) {
+			customizationForm.reset({
+				primaryPhoneNumber: "+11234567890",
+				areaMode: areaMode || "leadList",
+				selectedLeadListId: selectedLeadListId || "",
+				templates: [],
+				transferEnabled: true,
+				transferType: "inbound_call",
+				transferAgentId: "",
+				transferGuidelines: "",
+				transferPrompt: "",
+				numberPoolingEnabled: false,
+				senderPoolNumbersCsv: "",
+				smartEncodingEnabled: true,
+				optOutHandlingEnabled: true,
+				perNumberDailyLimit: 75,
+				messagingServiceSid: "",
+				tcpaSourceLink: "",
+				skipName: false,
+				addressVerified: false,
+				phoneVerified: false,
+				emailAddress: "",
+				emailVerified: false,
+				possiblePhones: "",
+				possibleEmails: "",
+				possibleHandles: "",
+			} as z.input<typeof FormSchema>);
+		}
+	}, [isOpen, customizationForm, areaMode, selectedLeadListId]);
+
 	return (
-		<Dialog open={open} onOpenChange={setOpen}>
-			<DialogContent className="w-full max-w-xl bg-card p-0 text-card-foreground shadow-lg sm:rounded-lg">
-				<button
-					onClick={closeModal}
-					className="absolute top-4 right-4 rounded-full p-2 text-muted-foreground hover:bg-muted hover:text-foreground focus:outline-none"
-					aria-label="Close"
-					type="button"
-				>
-					<X size={20} />
-				</button>
+		<Dialog open={isOpen} onOpenChange={onOpenChange}>
+			<DialogContent className="-translate-x-1/2 -translate-y-1/2 fixed top-1/2 left-1/2 z-50 flex h-[85vh] max-h-[85vh] min-h-0 w-full max-w-xl flex-col gap-0 overflow-hidden rounded-xl border bg-background p-0 text-foreground shadow-lg outline-none">
 				<div className="min-h-0 flex-1 overflow-y-auto bg-card px-6 pr-7 pb-6 text-card-foreground">
 					{step === 0 && (
 						<ChannelSelectionStep
 							onNext={nextStep}
 							onClose={closeModal}
-							allChannels={
-								allChannels as ("email" | "call" | "text" | "social")[]
-							}
-							disabledChannels={
-								disabledChannels as ("email" | "call" | "text" | "social")[]
-							}
+							allChannels={allChannels}
+							disabledChannels={disabledChannels}
 						/>
 					)}
 					{step === 1 && (
@@ -150,6 +267,7 @@ const CampaignModalMain = () => {
 							onNext={nextStep}
 							onBack={prevStep}
 							form={customizationForm}
+							onCreateVariant={handleCreateAbTest}
 						/>
 					)}
 					{step === 2 && (
@@ -162,10 +280,11 @@ const CampaignModalMain = () => {
 							estimatedCredits={estimatedCredits}
 						/>
 					)}
+
+					{/* Debug Log - Shows all selected campaign settings */}
+					<CampaignSettingsDebug formData={customizationForm.getValues()} />
 				</div>
 			</DialogContent>
 		</Dialog>
 	);
-};
-
-export default CampaignModalMain;
+}
