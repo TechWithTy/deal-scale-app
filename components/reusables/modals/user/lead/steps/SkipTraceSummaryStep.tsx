@@ -1,3 +1,5 @@
+"use client";
+
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { enrichmentOptions } from "@/constants/skip-trace/enrichmentOptions";
 import { cn } from "@/lib/_utils";
@@ -5,61 +7,11 @@ import { useUserStore } from "@/lib/stores/userStore";
 import type { InputField } from "@/types/skip-trace/enrichment";
 import { Loader2 } from "lucide-react";
 import { useEffect } from "react";
+import {
+	FIELD_MAPPING_CONFIGS,
+	type FieldConfig,
+} from "../../skipTrace/steps/FieldMappingStep";
 import { EnrichmentCard } from "../../skipTrace/steps/enrichment/EnrichmentCard";
-
-type FieldConfig = {
-	name: string;
-	label: string;
-	optional?: boolean;
-};
-
-const generateFieldConfigs = (): FieldConfig[] => {
-	return [
-		// Core required fields
-		{ name: "firstNameField", label: "First Name" },
-		{ name: "lastNameField", label: "Last Name" },
-		{ name: "streetAddressField", label: "Street Address" },
-		{ name: "cityField", label: "City" },
-		{ name: "stateField", label: "State" },
-		{ name: "zipCodeField", label: "Zip Code", optional: true },
-
-		// Phone fields
-		{ name: "phone1Field", label: "Phone 1", optional: true },
-		{ name: "possiblePhonesField", label: "Possible Phones", optional: true },
-
-		// Social media fields
-		{ name: "facebookField", label: "Facebook", optional: true },
-		{ name: "linkedinField", label: "LinkedIn", optional: true },
-		{ name: "instagramField", label: "Instagram", optional: true },
-		{ name: "twitterField", label: "Twitter", optional: true },
-		{ name: "tiktokField", label: "TikTok", optional: true },
-		{ name: "youtubeField", label: "YouTube", optional: true },
-
-		// Compliance fields (required when corresponding status is set)
-		{ name: "dncStatusField", label: "DNC Status" },
-		{ name: "dncSourceField", label: "DNC Source (Required if DNC)" },
-		{ name: "tcpaOptedInField", label: "TCPA Opted In" },
-		{ name: "tcpaSourceField", label: "TCPA Source (Required if Opted In)" },
-
-		{ name: "socialSummary", label: "Social Summary", optional: true },
-
-		// Property information
-		{ name: "bedroomsField", label: "Bedrooms", optional: true },
-		{
-			name: "communicationPreferencesField",
-			label: "Communication Preferences",
-			optional: true,
-		},
-		{ name: "isIphoneField", label: "Is iPhone", optional: true },
-		// Professional information
-		{ name: "companyField", label: "Company", optional: true },
-		{ name: "jobTitleField", label: "Job Title", optional: true },
-		{ name: "anniversaryField", label: "Anniversary", optional: true },
-	];
-};
-
-const fieldConfigs = generateFieldConfigs();
-const FIELD_MAPPING_CONFIGS = fieldConfigs;
 
 const FIELD_TO_INPUT_FIELDS: Record<string, InputField[] | undefined> = {
 	firstNameField: ["firstName"],

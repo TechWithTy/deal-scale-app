@@ -193,3 +193,5 @@ const FieldMappingStep: FC<
 };
 
 export default FieldMappingStep;
+
+export { fieldConfigs as FIELD_MAPPING_CONFIGS };

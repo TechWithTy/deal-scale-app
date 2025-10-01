@@ -484,12 +484,14 @@ function LeadMainModal({
 
 					onClose();
 					setIsLaunchingSuite(false);
-					toast.dismiss(launchToastId);
-					toast.success(
-						`Skip trace suite launched for ${
-							leads.length > 0 ? leads.length.toLocaleString() : "your"
-						} leads and saved to lead lists`,
-					);
+					setTimeout(() => {
+						toast.dismiss(launchToastId);
+						toast.success(
+							`Skip trace suite launched for ${
+								leads.length > 0 ? leads.length.toLocaleString() : "your"
+							} leads and saved to lead lists`,
+						);
+					}, 0);
 					return;
 				}
 
@@ -506,8 +508,10 @@ function LeadMainModal({
 			} catch (error) {
 				console.error("❌ Error launching suite:", error);
 				setIsLaunchingSuite(false);
-				toast.dismiss(launchToastId);
-				toast.error("Failed to launch enrichment suite. Please try again.");
+				setTimeout(() => {
+					toast.dismiss(launchToastId);
+					toast.error("Failed to launch enrichment suite. Please try again.");
+				}, 0);
 			}
 		} else {
 			console.log("❌ Missing CSV content or list name");
