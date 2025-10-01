@@ -34,14 +34,10 @@ export default function SocialCampaignsDemoTable({
 	const [aiRows, setAiRows] = React.useState<CallCampaign[]>([]);
 	const [createOpen, setCreateOpen] = React.useState(false);
 	const campaignType = "Social" as const;
-	const [dateChip, setDateChip] = React.useState<DateChip>("today");
-	// Toolbar filters
-	const [statusFilter, setStatusFilter] = React.useState<
-		"all" | "scheduled" | "active" | "completed" | "canceled"
-	>("all");
-	const [dncFilter, setDncFilter] = React.useState<"all" | "only" | "hide">(
-		"all",
+	const [dateChip, setDateChip] = React.useState<"today" | "7d" | "30d">(
+		"today",
 	);
+	// Filter state variables removed - now handled globally
 	// Per-row feedback (by id or name)
 	const [feedback, setFeedback] = React.useState<
 		Record<string, { sentiment: "up" | "down" | null; note: string }>
@@ -57,42 +53,8 @@ export default function SocialCampaignsDemoTable({
 		[],
 	);
 
-	const filtered = React.useMemo(() => {
-		const base = (() => {
-			if (!query.trim()) return data;
-			const q = query.toLowerCase();
-			return data.filter((r) =>
-				[r.name, r.status, String(r.calls), String(r.leads), String(r.inQueue)]
-					.filter(Boolean)
-					.map((v) => String(v).toLowerCase())
-					.some((s) => s.includes(q)),
-			);
-		})();
-
-		const byStatus = base.filter((r) => {
-			if (statusFilter === "all") return true;
-			const s = String(r.status ?? "").toLowerCase();
-			if (statusFilter === "scheduled")
-				return s === "queued" || s === "pending";
-			if (statusFilter === "active")
-				return ["delivering", "delivered", "read", "unread", "paused"].includes(
-					s,
-				);
-			if (statusFilter === "completed") return s === "completed";
-			if (statusFilter === "canceled") return s === "failed" || s === "missed"; // heuristic mapping
-			return true;
-		});
-
-		const byDnc = byStatus.filter((r) => {
-			const d = Number(r.dnc ?? 0);
-			if (dncFilter === "all") return true;
-			if (dncFilter === "only") return d > 0;
-			if (dncFilter === "hide") return d === 0;
-			return true;
-		});
-
-		return byDnc;
-	}, [data, query, statusFilter, dncFilter]);
+	// Filter logic removed - now handled globally
+	const filtered = data; // Use all data since filtering is handled globally
 
 	const pageSize = 10;
 	const { table } = useDataTable<CallCampaign>({
@@ -233,75 +195,7 @@ export default function SocialCampaignsDemoTable({
 						className="h-8 w-64"
 					/>
 					{/* Status chips */}
-					<div className="hidden items-center gap-1 md:flex">
-						<Button
-							type="button"
-							size="sm"
-							variant={statusFilter === "all" ? "secondary" : "outline"}
-							onClick={() => setStatusFilter("all")}
-						>
-							All
-						</Button>
-						<Button
-							type="button"
-							size="sm"
-							variant={statusFilter === "scheduled" ? "secondary" : "outline"}
-							onClick={() => setStatusFilter("scheduled")}
-						>
-							Scheduled
-						</Button>
-						<Button
-							type="button"
-							size="sm"
-							variant={statusFilter === "active" ? "secondary" : "outline"}
-							onClick={() => setStatusFilter("active")}
-						>
-							Active
-						</Button>
-						<Button
-							type="button"
-							size="sm"
-							variant={statusFilter === "completed" ? "secondary" : "outline"}
-							onClick={() => setStatusFilter("completed")}
-						>
-							Completed
-						</Button>
-						<Button
-							type="button"
-							size="sm"
-							variant={statusFilter === "canceled" ? "secondary" : "outline"}
-							onClick={() => setStatusFilter("canceled")}
-						>
-							Canceled
-						</Button>
-					</div>
-					{/* DNC chips */}
-					<div className="hidden items-center gap-1 md:flex">
-						<Button
-							type="button"
-							size="sm"
-							variant={dncFilter === "all" ? "secondary" : "outline"}
-							onClick={() => setDncFilter("all")}
-						>
-							DNC: All
-						</Button>
-						<Button
-							type="button"
-							size="sm"
-							variant={dncFilter === "only" ? "secondary" : "outline"}
-							onClick={() => setDncFilter("only")}
-						>
-							DNC: Only
-						</Button>
-						<Button
-							type="button"
-							size="sm"
-							variant={dncFilter === "hide" ? "secondary" : "outline"}
-							onClick={() => setDncFilter("hide")}
-						>
-							DNC: Hide
-						</Button>
-					</div>
+		
 					<ActionBar
 						table={table}
 						getSelectedRows={getSelectedRows}
@@ -333,11 +227,6 @@ export default function SocialCampaignsDemoTable({
 				index={carousel.index}
 				setIndex={carousel.setIndex}
 				rows={carousel.rows}
-			/>
-			<CampaignModalMain
-				open={createOpen}
-				onOpenChange={setCreateOpen}
-				defaultChannel="social"
 			/>
 		</main>
 	);

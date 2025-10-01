@@ -155,18 +155,29 @@ export const navItems: NavItem[] = [
 		href: "/dashboard/agents",
 		icon: "bot",
 		label: "Ai Agents",
+		featureKey: "navigation.aiAssistants",
 	},
 	{
 		title: "Property Search",
 		href: "/dashboard",
 		icon: "search",
 		label: "Search Properties",
+		featureKey: "navigation.propertySearch",
 	},
+	// {
+	// 	title: "Create Automation",
+	// 	href: "/dashboard/quick-start",
+	// 	icon: "add",
+	// 	label: "Quick Start",
+	// 	featureKey: "navigation.quickStart",
+	// 	variant: "primary",
+	// },
 	{
 		title: "Campaign Manager",
 		href: "/dashboard/campaigns",
 		icon: "campaigns",
 		label: "Campaigns",
+		featureKey: "navigation.campaignManager",
 	},
 
 	{
@@ -174,24 +185,28 @@ export const navItems: NavItem[] = [
 		href: "/dashboard/leadList",
 		icon: "scribe",
 		label: "Lead Lists",
+		featureKey: "navigation.leadLists",
 	},
 	{
 		title: "Kanban",
 		href: "/dashboard/kanban",
 		icon: "kanban",
 		label: "AI Kanban Board",
+		featureKey: "navigation.kanban",
 	},
 	{
 		title: "Chat",
 		href: "/dashboard/chat",
 		icon: "messageCircle",
 		label: "AI Chat",
+		featureKey: "navigation.chat",
 	},
 	{
 		title: "Employee",
 		href: "/dashboard/employee",
 		icon: "employee",
 		label: "Employees",
+		featureKey: "navigation.employee",
 	},
 	{
 		title: "Logout",

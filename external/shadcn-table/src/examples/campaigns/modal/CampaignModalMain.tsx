@@ -177,6 +177,7 @@ export default function CampaignModalMain({
 			customizationForm.reset({
 				primaryPhoneNumber: "+11234567890",
 				areaMode: areaMode || "leadList",
+				zipCode: "",
 				selectedLeadListId: selectedLeadListId || "",
 				templates: [],
 				numberPoolingEnabled: false,

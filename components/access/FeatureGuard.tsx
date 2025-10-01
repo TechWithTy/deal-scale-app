@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReactNode } from "react";
+import type { MouseEvent, ReactNode } from "react";
 import { cn } from "@/lib/_utils";
 import {
 	useFeatureAccessGuard,
@@ -92,10 +92,30 @@ export function FeatureGuard({
 			: !quotaAllowed
 				? "quota"
 				: null;
+	const blockedPrimaryMessage =
+		denialReason === "tier"
+			? `Upgrade to ${guard.requiredTier}`
+			: denialReason === "permission"
+				? "Permission required"
+				: denialReason === "quota"
+					? "Quota exceeded"
+					: "Feature unavailable";
+	const blockedSecondaryMessage =
+		denialReason === "tier"
+			? `Current plan: ${guard.userTier}`
+			: denialReason === "permission"
+				? "Contact your administrator"
+				: denialReason === "quota"
+					? "Usage limit reached"
+					: "This item is currently unavailable";
 
 	// Handle blocked click actions
-	const handleBlockedClick = () => {
-		if (!onBlockedClick || finalAllowed) return;
+	const handleBlockedClick = (event?: MouseEvent<HTMLButtonElement>) => {
+		if (event) {
+			event.preventDefault();
+			event.stopPropagation();
+		}
+		if (finalAllowed) return;
 
 		// Mock API call to send result to admin for permission requests
 		const sendToAdmin = async (featureKey: string, reason: string) => {
@@ -129,17 +149,139 @@ export function FeatureGuard({
 		}
 
 		// Call the callback with the reason
-		onBlockedClick(denialReason!);
+		if (denialReason && onBlockedClick) {
+			onBlockedClick(denialReason);
+		}
 	};
 
 	if (finalAllowed) {
 		return <>{children}</>;
 	}
 
+	const isNavigationItem = Boolean(
+		wrapperClassName?.includes("nav-item") ||
+			wrapperClassName?.includes("nav ") ||
+			wrapperClassName?.includes("sidebar"),
+	);
+	const isNavMinimized =
+		isNavigationItem &&
+		Boolean(wrapperClassName?.includes("nav-item--minimized"));
+	const isNavExpanded = isNavigationItem && !isNavMinimized;
+	const computeIsSmallScreen = () =>
+		typeof window !== "undefined" && window.innerWidth < 640;
+
 	switch (mode) {
 		case "hide":
 			return <>{fallback}</>;
-		case "disable":
+		case "none":
+			return <>{children}</>;
+		case "disable": {
+			if (isNavigationItem) {
+				if (isNavMinimized) {
+					return (
+						<div
+							className={cn("relative", wrapperClassName)}
+							aria-disabled="true"
+							data-feature-guard="nav-disabled-minimized"
+							data-feature-denial={denialReason ?? undefined}
+						>
+							<div className="pointer-events-none select-none opacity-60">
+								{children}
+							</div>
+							<div
+								className="absolute inset-0 flex items-center justify-center pointer-events-auto"
+								onPointerDown={(event) => event.stopPropagation()}
+								onClick={(event) => event.stopPropagation()}
+							>
+								{showPopover ? (
+									<TooltipProvider>
+										<Tooltip delayDuration={popoverDelay}>
+											<TooltipTrigger asChild>
+												<button
+													type="button"
+													className="pointer-events-auto flex size-8 items-center justify-center rounded-full border border-orange-300/60 bg-orange-100/80 text-xs text-orange-900 shadow-sm hover:bg-orange-200/80 focus:outline-none focus:ring-2 focus:ring-orange-300"
+													onClick={handleBlockedClick}
+													aria-label={blockedPrimaryMessage}
+												>
+													🔒
+												</button>
+											</TooltipTrigger>
+											<TooltipContent
+												side="right"
+												className="max-w-[220px] p-2 text-sm"
+											>
+												<p className="font-semibold">{blockedPrimaryMessage}</p>
+												<p className="text-xs text-muted-foreground">
+													{blockedSecondaryMessage}
+												</p>
+											</TooltipContent>
+										</Tooltip>
+									</TooltipProvider>
+								) : (
+									<span className="pointer-events-none text-xs">🔒</span>
+								)}
+							</div>
+							{fallback}
+						</div>
+					);
+				}
+
+				return (
+					<div
+						className={cn("relative", wrapperClassName)}
+						aria-disabled="true"
+						data-feature-guard="nav-disabled"
+						data-feature-denial={denialReason ?? undefined}
+					>
+						<div className="pointer-events-none select-none opacity-60">
+							{children}
+						</div>
+						<div
+							className="absolute inset-y-0 right-3 flex items-center gap-2 pointer-events-auto"
+							onPointerDown={(event) => event.stopPropagation()}
+							onClick={(event) => event.stopPropagation()}
+						>
+							{showPopover ? (
+								<TooltipProvider>
+									<Tooltip delayDuration={popoverDelay}>
+										<TooltipTrigger asChild>
+											<button
+												type="button"
+												className="pointer-events-auto flex size-8 items-center justify-center rounded-full border border-orange-300/60 bg-orange-100/80 text-xs text-orange-900 shadow-sm hover:bg-orange-200/80 focus:outline-none focus:ring-2 focus:ring-orange-300"
+												onClick={handleBlockedClick}
+												aria-label={blockedPrimaryMessage}
+											>
+												🔒
+											</button>
+										</TooltipTrigger>
+										<TooltipContent
+											side="top"
+											align="center"
+											className="max-w-[240px] p-2 text-sm"
+										>
+											<p className="font-semibold">{blockedPrimaryMessage}</p>
+											<p className="text-xs text-muted-foreground">
+												{blockedSecondaryMessage}
+											</p>
+										</TooltipContent>
+									</Tooltip>
+								</TooltipProvider>
+							) : (
+								<div className="pointer-events-none rounded-full bg-background/95 p-1 shadow-sm border border-orange-200">
+									<span className="text-xs">🔒</span>
+								</div>
+							)}
+							{isNavExpanded && (
+								<span className="pointer-events-none rounded-full border border-orange-200/70 bg-orange-100/70 px-3 py-1 text-[11px] font-semibold text-orange-900">
+									{blockedPrimaryMessage}
+								</span>
+							)}
+						</div>
+						{fallback}
+					</div>
+				);
+			}
+
 			return (
 				<div
 					className={cn(
@@ -153,6 +295,7 @@ export function FeatureGuard({
 					{fallback}
 				</div>
 			);
+		}
 		default: {
 			const content =
 				typeof overlayContent === "function"
@@ -161,24 +304,118 @@ export function FeatureGuard({
 							userTier: guard.userTier,
 						})
 					: overlayContent;
+			const isSmallScreen = computeIsSmallScreen();
 
-			// Check if this is for navigation items (sidebar)
-			const isNavigationItem =
-				wrapperClassName?.includes("nav-item") ||
-				wrapperClassName?.includes("nav") ||
-				wrapperClassName?.includes("sidebar");
+			if (isNavigationItem) {
+				if (isNavMinimized) {
+					return (
+						<div
+							className={cn("relative", wrapperClassName)}
+							data-feature-guard="overlay-nav-minimized"
+							data-feature-denial={denialReason ?? undefined}
+						>
+							<div
+								aria-hidden="true"
+								className="pointer-events-none select-none opacity-70"
+							>
+								{children}
+							</div>
+							<div
+								className="absolute inset-0 flex items-center justify-center pointer-events-auto"
+								onPointerDown={(event) => event.stopPropagation()}
+								onClick={(event) => event.stopPropagation()}
+							>
+								{showPopover ? (
+									<TooltipProvider>
+										<Tooltip delayDuration={popoverDelay}>
+											<TooltipTrigger asChild>
+												<button
+													type="button"
+													className="pointer-events-auto flex size-8 items-center justify-center rounded-full border border-orange-300/60 bg-orange-100/85 text-xs text-orange-900 shadow-sm hover:bg-orange-200/85 focus:outline-none focus:ring-2 focus:ring-orange-300"
+													onClick={handleBlockedClick}
+													aria-label={blockedPrimaryMessage}
+												>
+													🔒
+												</button>
+											</TooltipTrigger>
+											<TooltipContent
+												side="right"
+												className="max-w-[220px] p-2 text-sm"
+											>
+												<p className="font-semibold">{blockedPrimaryMessage}</p>
+												<p className="text-xs text-muted-foreground">
+													{blockedSecondaryMessage}
+												</p>
+											</TooltipContent>
+										</Tooltip>
+									</TooltipProvider>
+								) : (
+									<span className="pointer-events-none text-xs">🔒</span>
+								)}
+							</div>
+							{fallback}
+						</div>
+					);
+				}
 
-			// Determine orientation automatically if set to 'auto'
+				return (
+					<div
+						className={cn("relative", wrapperClassName)}
+						data-feature-guard="overlay-nav-expanded"
+						data-feature-denial={denialReason ?? undefined}
+					>
+						<div
+							aria-hidden="true"
+							className="pointer-events-none select-none opacity-70"
+						>
+							{children}
+						</div>
+						<div
+							className="absolute inset-y-0 right-3 flex items-center gap-2 pointer-events-auto"
+							onPointerDown={(event) => event.stopPropagation()}
+							onClick={(event) => event.stopPropagation()}
+						>
+							{showPopover ? (
+								<TooltipProvider>
+									<Tooltip delayDuration={popoverDelay}>
+										<TooltipTrigger asChild>
+											<button
+												type="button"
+												className="pointer-events-auto flex size-8 items-center justify-center rounded-full border border-orange-300/60 bg-orange-100/85 text-xs text-orange-900 shadow-sm hover:bg-orange-200/85 focus:outline-none focus:ring-2 focus:ring-orange-300"
+												onClick={handleBlockedClick}
+												aria-label={blockedPrimaryMessage}
+											>
+												🔒
+											</button>
+										</TooltipTrigger>
+										<TooltipContent
+											side="top"
+											align="center"
+											className="max-w-[240px] p-2 text-sm"
+										>
+											<p className="font-semibold">{blockedPrimaryMessage}</p>
+											<p className="text-xs text-muted-foreground">
+												{blockedSecondaryMessage}
+											</p>
+										</TooltipContent>
+									</Tooltip>
+								</TooltipProvider>
+							) : (
+								<div className="pointer-events-none rounded-full bg-background/95 p-1 shadow-sm border border-orange-200">
+									<span className="text-xs">🔒</span>
+								</div>
+							)}
+							<span className="pointer-events-none rounded-full border border-orange-200/80 bg-orange-100/80 px-3 py-1 text-[11px] font-semibold text-orange-900">
+								{blockedPrimaryMessage}
+							</span>
+						</div>
+						{fallback}
+					</div>
+				);
+			}
+
 			const effectiveOrientation =
-				orientation === "auto"
-					? isNavigationItem
-						? "horizontal"
-						: "vertical"
-					: orientation;
-
-			// Responsive styling based on container size
-			const isSmallScreen =
-				typeof window !== "undefined" && window.innerWidth < 640;
+				orientation === "auto" ? "vertical" : orientation;
 
 			return (
 				<div
@@ -189,54 +426,7 @@ export function FeatureGuard({
 					<div aria-hidden="true" className="pointer-events-none">
 						{children}
 					</div>
-					{isNavigationItem ? (
-						// Horizontal blocking for navigation items
-						<div className="absolute inset-x-0 top-1/2 h-0.5 -translate-y-1/2 bg-gradient-to-r from-transparent via-orange-400/60 to-transparent pointer-events-none">
-							<div className="absolute inset-0 flex items-center justify-center pointer-events-auto">
-								{showPopover ? (
-									<TooltipProvider>
-										<Tooltip>
-											<TooltipTrigger asChild>
-												<button
-													type="button"
-													className="flex items-center justify-center rounded-full bg-orange-100/80 border border-orange-300/60 hover:bg-orange-200/80 transition-all hover:scale-105 cursor-pointer focus:outline-none focus:ring-2 focus:ring-orange-300"
-													onClick={handleBlockedClick}
-													aria-label={`Access blocked: ${denialReason === "tier" ? "Upgrade required" : denialReason === "permission" ? "Permission required" : "Quota exceeded"}`}
-												>
-													<span className="text-xs">🔒</span>
-												</button>
-											</TooltipTrigger>
-											<TooltipContent side="top" className="max-w-xs p-2">
-												<div className="text-center">
-													{denialReason === "tier" ? (
-														<p className="text-sm font-medium">
-															Upgrade to {guard.requiredTier} required
-														</p>
-													) : denialReason === "permission" ? (
-														<p className="text-sm font-medium">
-															Permission required
-														</p>
-													) : denialReason === "quota" ? (
-														<p className="text-sm font-medium">
-															Quota exceeded
-														</p>
-													) : (
-														<p className="text-sm font-medium">
-															Feature not available
-														</p>
-													)}
-												</div>
-											</TooltipContent>
-										</Tooltip>
-									</TooltipProvider>
-								) : (
-									<div className="rounded-full bg-background/95 p-1 shadow-sm border border-orange-200 backdrop-blur-sm">
-										<span className="text-xs">🔒</span>
-									</div>
-								)}
-							</div>
-						</div>
-					) : effectiveOrientation === "horizontal" ? (
+					{effectiveOrientation === "horizontal" ? (
 						// Horizontal overlay for horizontal button layouts
 						<div
 							className={`absolute inset-0 flex items-center justify-center pointer-events-auto ${
@@ -262,7 +452,7 @@ export function FeatureGuard({
 															isSmallScreen ? "w-8 h-8" : "w-10 h-10"
 														}`}
 														onClick={handleBlockedClick}
-														aria-label={`Access blocked: ${denialReason === "tier" ? "Upgrade required" : denialReason === "permission" ? "Permission required" : "Quota exceeded"}`}
+														aria-label={`Access blocked: ${blockedPrimaryMessage}`}
 													>
 														<span
 															className={isSmallScreen ? "text-xs" : "text-sm"}
@@ -415,7 +605,7 @@ export function FeatureGuard({
 															isSmallScreen ? "w-8 h-8" : "w-10 h-10"
 														}`}
 														onClick={handleBlockedClick}
-														aria-label={`Access blocked: ${denialReason === "tier" ? "Upgrade required" : denialReason === "permission" ? "Permission required" : "Quota exceeded"}`}
+														aria-label={`Access blocked: ${blockedPrimaryMessage}`}
 													>
 														<span
 															className={isSmallScreen ? "text-xs" : "text-sm"}

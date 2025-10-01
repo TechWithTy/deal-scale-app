@@ -52,23 +52,23 @@ export function DashboardNav({
 				{items.map((item, index) => {
 					const Icon = Icons[item.icon || "arrowRight"];
 
-					// Determine feature key based on item title
-					const getFeatureKey = (title: string): string | null => {
-						switch (title) {
-							case "Assistants":
-								return "aiAssistants.page";
-							case "Kanban":
-								return "boards.kanban";
-							case "Campaign Manager":
-								// For campaigns, we need to check both direct mail and social media features
-								// The specific feature will be determined by the context where this is used
-								return null; // Let specific components handle their own feature guards
-							default:
-								return null;
-						}
-					};
-
-					const featureKey = getFeatureKey(item.title);
+					const featureKey = item.featureKey;
+					const isPrimary = item.variant === "primary";
+					const guardWrapperClass = cn(
+						"nav-item",
+						isMinimized ? "nav-item--minimized" : "nav-item--expanded",
+						item.disabled && "is-disabled",
+						isPrimary && "nav-item--primary",
+					);
+					const itemClasses = cn(
+						"flex items-center gap-2 overflow-hidden rounded-md py-2 font-medium text-sm transition-colors group relative",
+						!isPrimary && "hover:bg-accent hover:text-accent-foreground",
+						path === item.href && !isPrimary ? "bg-accent" : "transparent",
+						item.disabled && "cursor-not-allowed opacity-80",
+						featureKey && "opacity-75",
+						isPrimary &&
+							"bg-slate-900 text-slate-50 shadow-lg hover:bg-slate-800 border border-slate-800 dark:bg-slate-50 dark:text-slate-900 dark:border-slate-200 dark:hover:bg-slate-100",
+					);
 
 					const navContent = (
 						<>
@@ -90,12 +90,7 @@ export function DashboardNav({
 							) : (
 								<Link
 									href={item.disabled ? "/" : item.href || "/"}
-									className={cn(
-										"flex items-center gap-2 overflow-hidden rounded-md py-2 font-medium text-sm hover:bg-accent hover:text-accent-foreground transition-colors group relative",
-										path === item.href ? "bg-accent" : "transparent",
-										item.disabled && "cursor-not-allowed opacity-80",
-										featureKey && "opacity-75", // Slightly dim blocked features
-									)}
+									className={itemClasses}
 									onClick={() => {
 										if (setOpen) setOpen(false);
 									}}
@@ -119,7 +114,8 @@ export function DashboardNav({
 								{featureKey ? (
 									<FeatureGuard
 										featureKey={featureKey}
-										wrapperClassName="nav-item"
+										wrapperClassName={guardWrapperClass}
+										orientation={isMinimized ? "vertical" : "auto"}
 									>
 										{navContent}
 									</FeatureGuard>

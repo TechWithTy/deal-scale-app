@@ -1,23 +1,30 @@
-import type { FC } from "react";
-import { useCampaignCreationStore } from "@/lib/stores/campaignCreation";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
-import { Calendar } from "@/components/ui/calendar";
-import { Input } from "@/components/ui/input";
+import { Calendar } from "../../../../components/ui/calendar";
 import {
 	Popover,
 	PopoverContent,
 	PopoverTrigger,
-} from "@/components/ui/popover";
+} from "../../../../components/ui/popover";
 import Holidays from "date-holidays";
+import { useCampaignCreationStore } from "../../../../lib/stores/campaignCreation";
+import { Input } from "@/components/ui/input";
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuTrigger,
+} from "../../../../components/ui/dropdown-menu";
+import { Play, Pause, ChevronDown } from "lucide-react";
+import type { FC } from "react";
+import { Label } from "@/components/ui/label";
 
 interface TimingPreferencesStepProps {
 	onNext: () => void;
 	onBack: () => void;
 }
 
-export const TimingPreferencesStep: FC<TimingPreferencesStepProps> = ({
+const TimingPreferencesStep: FC<TimingPreferencesStepProps> = ({
 	onNext,
 	onBack,
 }) => {
@@ -88,7 +95,7 @@ export const TimingPreferencesStep: FC<TimingPreferencesStepProps> = ({
 							<Calendar
 								mode="single"
 								selected={startDate ?? undefined}
-								onSelect={handleStartSelect}
+								onSelect={(date: Date | undefined) => handleStartSelect(date)}
 								fromDate={new Date()}
 								disabled={(date) => {
 									const weekendDisabled = !reachOnWeekend && isWeekend(date);
@@ -108,7 +115,7 @@ export const TimingPreferencesStep: FC<TimingPreferencesStepProps> = ({
 							<Calendar
 								mode="single"
 								selected={(endDate as Date) ?? undefined}
-								onSelect={handleEndSelect}
+								onSelect={(date: Date | undefined) => handleEndSelect(date)}
 								fromDate={startDate ?? new Date()}
 								disabled={(date) => {
 									const weekendDisabled = !reachOnWeekend && isWeekend(date);
@@ -122,12 +129,12 @@ export const TimingPreferencesStep: FC<TimingPreferencesStepProps> = ({
 			</div>
 
 			<div className="space-y-4">
-				<h3 className="font-medium text-sm">Timing preferences</h3>
+				<h3 className="font-medium text-sm">Call Settings</h3>
 				{/* Dial attempt limits per day */}
-				<h4 className="font-medium text-muted-foreground text-xs">Dialing</h4>
+				<h4 className="font-medium text-muted-foreground text-xs">Daily Limits</h4>
 				<div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
 					<div className="space-y-1">
-						<Label htmlFor="minDailyAttempts">Min attempts per day</Label>
+						<Label htmlFor="minDailyAttempts">Minimum calls per day</Label>
 						<Input
 							id="minDailyAttempts"
 							type="number"
@@ -143,12 +150,12 @@ export const TimingPreferencesStep: FC<TimingPreferencesStepProps> = ({
 						/>
 						{minAttemptsError && (
 							<p className="text-destructive text-xs">
-								Minimum attempts must be at least 1.
+								Minimum calls must be at least 1.
 							</p>
 						)}
 					</div>
 					<div className="space-y-1">
-						<Label htmlFor="maxDailyAttempts">Max attempts per day</Label>
+						<Label htmlFor="maxDailyAttempts">Maximum calls per day</Label>
 						<Input
 							id="maxDailyAttempts"
 							type="number"
@@ -164,11 +171,117 @@ export const TimingPreferencesStep: FC<TimingPreferencesStepProps> = ({
 						/>
 						{maxAttemptsError && (
 							<p className="text-destructive text-xs">
-								Max attempts must be greater than or equal to Min attempts.
+								Max calls must be greater than or equal to minimum calls.
 							</p>
 						)}
 					</div>
 				</div>
+				<div className="space-y-3">
+					<Label>Preferred Voicemail Messages</Label>
+					<div className="space-y-2">
+						<DropdownMenu>
+							<DropdownMenuTrigger asChild>
+								<Button variant="outline" className="w-full justify-between">
+									<span>Select a voicemail message</span>
+									<ChevronDown className="h-4 w-4 opacity-50" />
+								</Button>
+							</DropdownMenuTrigger>
+							<DropdownMenuContent className="w-full min-w-[300px]">
+								<DropdownMenuItem
+									onSelect={() => console.log("Selected: Professional Business Message")}
+								>
+									<div className="flex items-center justify-between w-full">
+										<span>Professional Business Message</span>
+										<Button
+											type="button"
+											variant="ghost"
+											size="sm"
+											className="h-6 w-6 p-0"
+											onClick={(e) => {
+												e.stopPropagation();
+												console.log("Play Professional Business Message");
+											}}
+										>
+											<Play className="h-3 w-3" />
+										</Button>
+									</div>
+								</DropdownMenuItem>
+								<DropdownMenuItem
+									onSelect={() => console.log("Selected: Friendly Personal Message")}
+								>
+									<div className="flex items-center justify-between w-full">
+										<span>Friendly Personal Message</span>
+										<Button
+											type="button"
+											variant="ghost"
+											size="sm"
+											className="h-6 w-6 p-0"
+											onClick={(e) => {
+												e.stopPropagation();
+												console.log("Play Friendly Personal Message");
+											}}
+										>
+											<Play className="h-3 w-3" />
+										</Button>
+									</div>
+								</DropdownMenuItem>
+								<DropdownMenuItem
+									onSelect={() => console.log("Selected: Urgent Callback Message")}
+								>
+									<div className="flex items-center justify-between w-full">
+										<span>Urgent Callback Message</span>
+										<Button
+											type="button"
+											variant="ghost"
+											size="sm"
+											className="h-6 w-6 p-0"
+											onClick={(e) => {
+												e.stopPropagation();
+												console.log("Play Urgent Callback Message");
+											}}
+										>
+											<Play className="h-3 w-3" />
+										</Button>
+									</div>
+								</DropdownMenuItem>
+								<DropdownMenuItem
+									onSelect={() => console.log("Selected: Custom Message")}
+								>
+									<div className="flex items-center justify-between w-full">
+										<span>Custom Message (Upload Audio)</span>
+										<Button
+											type="button"
+											variant="ghost"
+											size="sm"
+											className="h-6 w-6 p-0"
+											onClick={(e) => {
+												e.stopPropagation();
+												console.log("Play Custom Message");
+											}}
+										>
+											<Play className="h-3 w-3" />
+										</Button>
+									</div>
+								</DropdownMenuItem>
+							</DropdownMenuContent>
+						</DropdownMenu>
+						<p className="text-muted-foreground text-xs">
+							Choose a pre-recorded voicemail message or upload your own audio file.
+						</p>
+					</div>
+				</div>
+
+				{/* TCPA Compliance Settings */}
+				<div className="flex items-center gap-2">
+					<Checkbox
+						id="tcpaCompliance"
+						checked={true}
+						disabled
+					/>
+					<Label htmlFor="tcpaCompliance">TCPA compliant & voicemail enabled</Label>
+				</div>
+
+				{/* Count voicemail as answered */}
 				<div className="flex items-center gap-2">
 					<Checkbox
 						id="countVm"
@@ -177,8 +290,9 @@ export const TimingPreferencesStep: FC<TimingPreferencesStepProps> = ({
 					/>
 					<Label htmlFor="countVm">Count voicemail as answered</Label>
 				</div>
+
 				<h4 className="font-medium text-muted-foreground text-xs">
-					Reach windows
+					When to Call
 				</h4>
 				<div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
 					<div className="flex items-center gap-2">
@@ -187,7 +301,7 @@ export const TimingPreferencesStep: FC<TimingPreferencesStepProps> = ({
 							checked={reachBeforeBusiness}
 							onCheckedChange={(v) => setReachBeforeBusiness(!!v)}
 						/>
-						<Label htmlFor="beforeBiz">Reach before business hours</Label>
+						<Label htmlFor="beforeBiz">Call before 9 AM</Label>
 					</div>
 					<div className="flex items-center gap-2">
 						<Checkbox
@@ -195,7 +309,7 @@ export const TimingPreferencesStep: FC<TimingPreferencesStepProps> = ({
 							checked={reachAfterBusiness}
 							onCheckedChange={(v) => setReachAfterBusiness(!!v)}
 						/>
-						<Label htmlFor="afterBiz">Reach after business hours</Label>
+						<Label htmlFor="afterBiz">Call after 5 PM</Label>
 					</div>
 					<div className="flex items-center gap-2">
 						<Checkbox
@@ -203,7 +317,7 @@ export const TimingPreferencesStep: FC<TimingPreferencesStepProps> = ({
 							checked={reachOnWeekend}
 							onCheckedChange={(v) => setReachOnWeekend(!!v)}
 						/>
-						<Label htmlFor="weekend">Reach on weekends</Label>
+						<Label htmlFor="weekend">Call on weekends</Label>
 					</div>
 					<div className="flex items-center gap-2">
 						<Checkbox
@@ -211,7 +325,7 @@ export const TimingPreferencesStep: FC<TimingPreferencesStepProps> = ({
 							checked={reachOnHolidays}
 							onCheckedChange={(v) => setReachOnHolidays(!!v)}
 						/>
-						<Label htmlFor="holidays">Reach on holidays</Label>
+						<Label htmlFor="holidays">Call on holidays</Label>
 					</div>
 					<div className="flex items-center gap-2">
 						<Checkbox
@@ -221,13 +335,12 @@ export const TimingPreferencesStep: FC<TimingPreferencesStepProps> = ({
 							onCheckedChange={(v) => setGetTimezoneFromLeadLocation(!!v)}
 						/>
 						<Label htmlFor="tzFromLeadLocation">
-							Get timezone from lead location
+							Auto-detect time zones
 						</Label>
 					</div>
 					{getTimezoneFromLeadLocation && (
 						<p className="pl-6 text-muted-foreground text-xs sm:col-span-2">
-							Timezone will be auto-detected per lead using geo-tz based on
-							their location.
+							We'll automatically use the right time zone for each contact based on their location.
 						</p>
 					)}
 				</div>

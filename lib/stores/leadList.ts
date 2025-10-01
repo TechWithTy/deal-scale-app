@@ -14,6 +14,7 @@ interface LeadListState {
 	) => void; // Filter by upload date
 	resetFilters: () => void; // Reset all filters
 	exportFilteredLeadListsToZip: () => Promise<void>; // New export function
+	addLeadList: (list: Omit<LeadList, "id" | "uploadDate">) => void; // Add new lead list
 }
 
 // Create Zustand store for lead list management
@@ -21,6 +22,23 @@ export const useLeadListStore = create<LeadListState>(
 	withAnalytics<LeadListState>("lead_lists", (set, get) => ({
 		leadLists: MockUserProfile?.companyInfo.leadLists ?? [], // Fallback to empty when profile is unavailable
 		filteredLeadLists: MockUserProfile?.companyInfo.leadLists ?? [], // Start with no filter applied, showing all lead lists
+
+		// Add new lead list to the store
+		addLeadList: (newList) => {
+			console.log("🗂️ Adding lead list to store:", newList.listName);
+			console.log("📋 Lead list data:", newList);
+			const { leadLists } = get();
+			const listWithMetadata: LeadList = {
+				...newList,
+				id: `list_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+				uploadDate: new Date().toISOString(),
+			};
+			console.log("✨ Created lead list with metadata:", listWithMetadata);
+			const updatedLists = [listWithMetadata, ...leadLists];
+			console.log("📦 Updated lead lists count:", updatedLists.length);
+			set({ leadLists: updatedLists, filteredLeadLists: updatedLists });
+			toast.success(`Added new lead list: ${newList.listName}`);
+		},
 
 		// Filter lead lists by records range
 		filterByRecordsRange: (range) => {

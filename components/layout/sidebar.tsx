@@ -160,6 +160,40 @@ export default function SidebarClient({ user }: { user: UserProfile | null }) {
 					</Link>
 				</div>
 				<div className="space-y-4 py-4">
+					{/* Quick Start Section - Prominent and Standout */}
+					<div className="px-3 py-2">
+						<Link
+							href="/dashboard/quickstart"
+							className={cn(
+								"group flex items-center gap-3 rounded-lg bg-primary px-3 py-3 font-medium text-primary-foreground transition-all hover:bg-primary/90 hover:shadow-md",
+								isSidebarMinimized ? "justify-center px-2" : "justify-start",
+							)}
+							onClick={(e) => e.stopPropagation()}
+						>
+							<div className="flex size-8 items-center justify-center rounded-md bg-primary-foreground/20 group-hover:bg-primary-foreground/30">
+								<svg
+									className="size-4"
+									fill="none"
+									stroke="currentColor"
+									viewBox="0 0 24 24"
+								>
+									<path
+										strokeLinecap="round"
+										strokeLinejoin="round"
+										strokeWidth={2}
+										d="M12 4v16m8-8H4"
+									/>
+								</svg>
+							</div>
+							{!isSidebarMinimized && (
+								<div className="flex flex-col">
+									<span className="text-sm font-semibold">Quick Start</span>
+									<span className="text-xs opacity-90">Get started fast</span>
+								</div>
+							)}
+						</Link>
+					</div>
+
 					<div className="px-3 py-2">
 						<div className="mt-3 space-y-1">
 							<DashboardNav items={navItems} isMinimized={isSidebarMinimized} />

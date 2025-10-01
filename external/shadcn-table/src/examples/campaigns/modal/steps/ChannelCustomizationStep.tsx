@@ -55,6 +55,7 @@ export const FormSchema = z
 		areaMode: z.enum(["zip", "leadList"], {
 			required_error: "You must select an area mode.",
 		}),
+		zipCode: z.string().optional(),
 		selectedLeadListId: z.string().optional(),
 		// Social-specific
 		socialPlatform: z.enum(["facebook", "linkedin"]).optional(),
@@ -93,7 +94,6 @@ export const FormSchema = z
 			.trim()
 			.optional()
 			.refine((val) => !val || /^MG[a-zA-Z0-9]{32}$/.test(val), {
-				message: "Must start with 'MG' and be a valid Twilio SID",
 			}),
 		senderPoolNumbersCsv: z.string().default(""), // CSV of E.164 numbers
 		smartEncodingEnabled: z.boolean().default(true),
@@ -108,6 +108,18 @@ export const FormSchema = z
 			return true;
 		},
 		{ message: "Please select a lead list.", path: ["selectedLeadListId"] },
+	)
+	.refine(
+		(data) => {
+			if (data.areaMode === "zip") {
+				return !!data.zipCode && /^\d{5}(-\d{4})?$/.test(data.zipCode);
+			}
+			return true;
+		},
+		{
+			message: "Please enter a valid US zip code (e.g., 12345 or 12345-6789).",
+			path: ["zipCode"],
+		},
 	)
 	.refine(
 		(data) => {
@@ -882,6 +894,26 @@ const ChannelCustomizationStep: FC<ChannelCustomizationStepProps> = ({
 							</FormItem>
 						)}
 					/>
+
+					{watchedAreaMode === "zip" && (
+						<FormField
+							control={form.control}
+							name="zipCode"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel>Zip Code</FormLabel>
+									<FormControl>
+										<input
+											className="w-full rounded-md border bg-background px-3 py-2"
+											placeholder="Enter US zip code (e.g., 12345 or 12345-6789)"
+											{...field}
+										/>
+									</FormControl>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
+					)}
 
 					{watchedAreaMode === "leadList" && (
 						<FormField

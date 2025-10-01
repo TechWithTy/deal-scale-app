@@ -93,6 +93,12 @@ export interface CampaignCreationState {
 	countVoicemailAsAnswered: boolean;
 	setCountVoicemailAsAnswered: (v: boolean) => void;
 
+	// TCPA and Voicemail preferences
+	tcpaNotOptedIn: boolean;
+	setTcpaNotOptedIn: (v: boolean) => void;
+	doVoicemailDrops: boolean;
+	setDoVoicemailDrops: (v: boolean) => void;
+
 	// Timezone handling
 	getTimezoneFromLeadLocation: boolean;
 	setGetTimezoneFromLeadLocation: (v: boolean) => void;
@@ -202,6 +208,12 @@ export const useCampaignCreationStore = create<CampaignCreationState>(
 		countVoicemailAsAnswered: false,
 		setCountVoicemailAsAnswered: (countVoicemailAsAnswered) =>
 			set({ countVoicemailAsAnswered }),
+
+		// TCPA and Voicemail preferences
+		tcpaNotOptedIn: false,
+		setTcpaNotOptedIn: (tcpaNotOptedIn) => set({ tcpaNotOptedIn }),
+		doVoicemailDrops: false,
+		setDoVoicemailDrops: (doVoicemailDrops) => set({ doVoicemailDrops }),
 
 		// Timezone handling
 		getTimezoneFromLeadLocation: true,
@@ -347,6 +359,8 @@ export const useCampaignCreationStore = create<CampaignCreationState>(
 				minDailyAttempts: 1,
 				maxDailyAttempts: 3,
 				countVoicemailAsAnswered: false,
+				tcpaNotOptedIn: false,
+				doVoicemailDrops: false,
 				getTimezoneFromLeadLocation: true,
 				// Number Pooling
 				numberPoolingEnabled: false,

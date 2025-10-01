@@ -89,6 +89,12 @@ export interface CampaignCreationState {
 	countVoicemailAsAnswered: boolean;
 	setCountVoicemailAsAnswered: (v: boolean) => void;
 
+	// TCPA and Voicemail preferences
+	tcpaNotOptedIn: boolean;
+	setTcpaNotOptedIn: (v: boolean) => void;
+	doVoicemailDrops: boolean;
+	setDoVoicemailDrops: (v: boolean) => void;
+
 	// Dial attempt preferences per day
 	minDailyAttempts: number;
 	setMinDailyAttempts: (v: number) => void;
@@ -186,22 +192,28 @@ export const useCampaignCreationStore = create<CampaignCreationState>(
 		reachAfterBusiness: false,
 		setReachAfterBusiness: (reachAfterBusiness) => set({ reachAfterBusiness }),
 		reachOnWeekend: false,
-		setReachOnWeekend: (reachOnWeekend) => set({ reachOnWeekend }),
+		setReachOnWeekend: (reachOnWeekend: boolean) => set({ reachOnWeekend }),
 		reachOnHolidays: false,
-		setReachOnHolidays: (reachOnHolidays) => set({ reachOnHolidays }),
+		setReachOnHolidays: (reachOnHolidays: boolean) => set({ reachOnHolidays }),
 		countVoicemailAsAnswered: false,
-		setCountVoicemailAsAnswered: (countVoicemailAsAnswered) =>
+		setCountVoicemailAsAnswered: (countVoicemailAsAnswered: boolean) =>
 			set({ countVoicemailAsAnswered }),
+
+		// TCPA and Voicemail preferences
+		tcpaNotOptedIn: false,
+		setTcpaNotOptedIn: (tcpaNotOptedIn: boolean) => set({ tcpaNotOptedIn }),
+		doVoicemailDrops: false,
+		setDoVoicemailDrops: (doVoicemailDrops: boolean) => set({ doVoicemailDrops }),
 
 		// Dial attempt preferences
 		minDailyAttempts: 1,
-		setMinDailyAttempts: (minDailyAttempts) => set({ minDailyAttempts }),
+		setMinDailyAttempts: (minDailyAttempts: number) => set({ minDailyAttempts }),
 		maxDailyAttempts: 3,
-		setMaxDailyAttempts: (maxDailyAttempts) => set({ maxDailyAttempts }),
+		setMaxDailyAttempts: (maxDailyAttempts: number) => set({ maxDailyAttempts }),
 
 		// Timezone handling
 		getTimezoneFromLeadLocation: true,
-		setGetTimezoneFromLeadLocation: (getTimezoneFromLeadLocation) =>
+		setGetTimezoneFromLeadLocation: (getTimezoneFromLeadLocation: boolean) =>
 			set({ getTimezoneFromLeadLocation }),
 
 		// Number Pooling (Calls/Text)
@@ -272,6 +284,12 @@ export const useCampaignCreationStore = create<CampaignCreationState>(
 				],
 				selectedSenderNumbers: [],
 				numberSelectionStrategy: "round_robin",
+				reachOnHolidays: false,
+				minDailyAttempts: 1,
+				maxDailyAttempts: 3,
+				countVoicemailAsAnswered: false,
+				tcpaNotOptedIn: false,
+				doVoicemailDrops: false,
 				getTimezoneFromLeadLocation: true,
 			}),
 	}),

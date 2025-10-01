@@ -53,14 +53,15 @@ export function useFeatureAccessGuard(
 		const requiredTier = rule
 			? ensureValidTier(rule.requiredTier)
 			: ensureValidTier(fallbackTier ?? userTier);
-		const allowed = hasRequiredTier(userTier, requiredTier);
+		const allowed =
+			effectiveMode === "none" ? true : hasRequiredTier(userTier, requiredTier);
 		return {
 			allowed,
 			mode: effectiveMode,
 			requiredTier,
 			userTier,
 			rule,
-			isUpgradeRequired: !allowed,
+			isUpgradeRequired: effectiveMode === "none" ? false : !allowed,
 			permissionRequirement: rule?.permission,
 			quotaKey: rule?.quota,
 		};

@@ -1,6 +1,6 @@
 # FeatureGuard
 
-A reusable wrapper that enforces subscription-based access rules driven entirely by `constants/features/featureAccess.json`.
+A reusable wrapper that enforces subscription-based access rules driven entirely by `constants/features/features.ts`.
 
 ## Usage
 
@@ -16,18 +16,7 @@ enum FeatureKeys {
 </FeatureGuard>
 ```
 
-The guard reads the latest config at runtime:
-
-```json
-{
-  "campaigns": {
-    "directMailModal": {
-      "requiredTier": "Enterprise",
-      "mode": "overlay"
-    }
-  }
-}
-```
+The guard reads the latest config at runtime from the exported object in `constants/features/features.ts`.
 
 - Update the JSON to change tier requirements, guard modes, required permissions, or quota requirements—no code changes needed.
 - Optional props let you override the mode (`modeOverride`), customise overlay content, or supply a fallback element when hidden/disabled.

@@ -1,7 +1,6 @@
 import { auth, signOut } from "@/auth";
 import PageContainer from "@/components/layout/page-container";
 import PropertySearch from "@/components/leadsSearch/PropertySearch";
-import { Button } from "@/components/ui/button";
 
 type EnhancedUser = {
 	name?: string | null;

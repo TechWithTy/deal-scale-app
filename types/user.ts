@@ -29,7 +29,7 @@ export interface UserQuotas {
 
 export type UserRole = "admin" | "manager" | "member";
 
-export type UserTier = "Basic" | "Starter" | "Enterprise";
+export type UserTier = "Free" | "Starter" | "Enterprise";
 
 export interface User {
 	id: string;

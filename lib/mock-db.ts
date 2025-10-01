@@ -42,6 +42,51 @@ export const users: User[] = [
 			skipTraces: { allotted: 200, used: 50, resetInDays: 30 },
 		},
 	},
+	{
+		id: "2",
+		name: "Starter User",
+		email: "starter@example.com",
+		password: "password123",
+		role: "member",
+		tier: "Starter",
+		permissions: {
+			leads: ["read", "create"],
+			campaigns: ["read"],
+		},
+		permissionList: ["leads:read", "leads:create", "campaigns:read"],
+		quotas: {
+			ai: { allotted: 100, used: 25, resetInDays: 30 },
+			leads: { allotted: 50, used: 12, resetInDays: 30 },
+			skipTraces: { allotted: 20, used: 5, resetInDays: 30 },
+		},
+		subscription: {
+			aiCredits: { allotted: 100, used: 25, resetInDays: 30 },
+			leads: { allotted: 50, used: 12, resetInDays: 30 },
+			skipTraces: { allotted: 20, used: 5, resetInDays: 30 },
+		},
+	},
+	{
+		id: "3",
+		name: "Free User",
+		email: "free@example.com",
+		password: "password123",
+		role: "member",
+		tier: "Free",
+		permissions: {
+			leads: ["read"],
+		},
+		permissionList: ["leads:read"],
+		quotas: {
+			ai: { allotted: 10, used: 2, resetInDays: 30 },
+			leads: { allotted: 5, used: 1, resetInDays: 30 },
+			skipTraces: { allotted: 2, used: 0, resetInDays: 30 },
+		},
+		subscription: {
+			aiCredits: { allotted: 10, used: 2, resetInDays: 30 },
+			leads: { allotted: 5, used: 1, resetInDays: 30 },
+			skipTraces: { allotted: 2, used: 0, resetInDays: 30 },
+		},
+	},
 ];
 
 export const getUserByEmail = (email: string): User | undefined => {

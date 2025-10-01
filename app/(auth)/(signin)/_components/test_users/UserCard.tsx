@@ -1,7 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
 import {
 	Card,
 	CardContent,
@@ -10,6 +16,7 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { v4 as uuid } from "uuid";
 import { useTheme } from "next-themes";
 import { COMMON_PERMISSIONS } from "./userHelpers";
@@ -42,6 +49,13 @@ export function UserCard({ user, onUpdateUser, onLogin }: UserCardProps) {
 				role === "admin"
 					? ["users:create", "users:read", "users:update", "users:delete"]
 					: ["users:read"],
+		}));
+	};
+
+	const handleTierChange = (tier: "Free" | "Starter" | "Enterprise") => {
+		onUpdateUser(user.id, (u: EditableUser) => ({
+			...u,
+			tier,
 		}));
 	};
 
@@ -103,6 +117,19 @@ export function UserCard({ user, onUpdateUser, onLogin }: UserCardProps) {
 							<option value="member">member</option>
 						</select>
 					</div>
+					<div className="flex items-center gap-2 text-sm">
+						<span className="font-medium">Tier:</span>
+						<Select value={user.tier} onValueChange={handleTierChange}>
+							<SelectTrigger className="w-32">
+								<SelectValue />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem value="Free">Free</SelectItem>
+								<SelectItem value="Starter">Starter</SelectItem>
+								<SelectItem value="Enterprise">Enterprise</SelectItem>
+							</SelectContent>
+						</Select>
+					</div>
 					<CreditsComponent
 						credits={user.aiCredits}
 						onChange={handleCreditsChange}
@@ -136,7 +163,9 @@ export function UserCard({ user, onUpdateUser, onLogin }: UserCardProps) {
 					className="w-full"
 					variant={theme === "dark" ? "outline" : "default"}
 				>
-					{user.role === "admin" ? "Login as Admin" : "Login as Regular"}
+					{user.role === "admin"
+						? `Login as Admin (${user.tier})`
+						: `Login as Regular (${user.tier})`}
 				</Button>
 			</CardFooter>
 		</Card>

@@ -24,12 +24,7 @@ type Props = {
 	onRunSelected: () => void;
 	onRunAll: () => void;
 	filename?: string;
-	statusFilter: "all" | "scheduled" | "active" | "completed" | "canceled";
-	setStatusFilter: (
-		v: "all" | "scheduled" | "active" | "completed" | "canceled",
-	) => void;
-	dncFilter: "all" | "only" | "hide";
-	setDncFilter: (v: "all" | "only" | "hide") => void;
+	// Filter props removed - now handled globally
 };
 
 export function TextTableToolbar({
@@ -39,10 +34,6 @@ export function TextTableToolbar({
 	onRunSelected,
 	onRunAll,
 	filename = "text-campaigns",
-	statusFilter,
-	setStatusFilter,
-	dncFilter,
-	setDncFilter,
 }: Props) {
 	const selectedCount = table.getFilteredSelectedRowModel().rows.length;
 	const allCount = table.getFilteredRowModel().rows.length;
@@ -58,76 +49,7 @@ export function TextTableToolbar({
 				}
 				className="h-8 w-64"
 			/>
-			{/* Status chips */}
-			<div className="hidden items-center gap-1 md:flex">
-				<Button
-					type="button"
-					size="sm"
-					variant={statusFilter === "all" ? "secondary" : "outline"}
-					onClick={() => setStatusFilter("all")}
-				>
-					All
-				</Button>
-				<Button
-					type="button"
-					size="sm"
-					variant={statusFilter === "scheduled" ? "secondary" : "outline"}
-					onClick={() => setStatusFilter("scheduled")}
-				>
-					Scheduled
-				</Button>
-				<Button
-					type="button"
-					size="sm"
-					variant={statusFilter === "active" ? "secondary" : "outline"}
-					onClick={() => setStatusFilter("active")}
-				>
-					Active
-				</Button>
-				<Button
-					type="button"
-					size="sm"
-					variant={statusFilter === "completed" ? "secondary" : "outline"}
-					onClick={() => setStatusFilter("completed")}
-				>
-					Completed
-				</Button>
-				<Button
-					type="button"
-					size="sm"
-					variant={statusFilter === "canceled" ? "secondary" : "outline"}
-					onClick={() => setStatusFilter("canceled")}
-				>
-					Canceled
-				</Button>
-			</div>
-			{/* DNC chips */}
-			<div className="hidden items-center gap-1 md:flex">
-				<Button
-					type="button"
-					size="sm"
-					variant={dncFilter === "all" ? "secondary" : "outline"}
-					onClick={() => setDncFilter("all")}
-				>
-					DNC: All
-				</Button>
-				<Button
-					type="button"
-					size="sm"
-					variant={dncFilter === "only" ? "secondary" : "outline"}
-					onClick={() => setDncFilter("only")}
-				>
-					DNC: Only
-				</Button>
-				<Button
-					type="button"
-					size="sm"
-					variant={dncFilter === "hide" ? "secondary" : "outline"}
-					onClick={() => setDncFilter("hide")}
-				>
-					DNC: Hide
-				</Button>
-			</div>
+			{/* Filter buttons removed - now handled globally */}
 			<DropdownMenu>
 				<DropdownMenuTrigger asChild>
 					<Button

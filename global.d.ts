@@ -77,6 +77,13 @@ declare global {
 			name: string,
 			properties?: Record<string, unknown>,
 		) => void;
+		// Supademo SDK - global function injected by script tag
+		Supademo?: (
+			apiKey: string,
+			options?: {
+				variables?: Record<string, string>;
+			},
+		) => void;
 	}
 }
 

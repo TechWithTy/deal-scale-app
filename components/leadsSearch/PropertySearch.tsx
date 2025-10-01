@@ -302,6 +302,8 @@ const PropertySearch: React.FC<PropertySearchProps> = () => {
 					isTourOpen={isTourOpen}
 					onStartTour={handleStartTour}
 					onCloseTour={handleCloseTour}
+					supademoDemoId="demo-123" // Example Supademo demo ID
+					supademoShowcaseId="showcase-456" // Example Supademo showcase ID
 				/>
 			</div>
 		</GoogleMapsBootstrap>

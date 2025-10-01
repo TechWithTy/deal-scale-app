@@ -4,7 +4,7 @@ import * as React from "react";
 import type { Table } from "@tanstack/react-table";
 import { Button } from "../../../../components/ui/button";
 import { Badge } from "../../../../components/ui/badge";
-import { DataTableDateFilter } from "../../../../components/data-table/data-table-date-filter";
+// DataTableDateFilter removed - not used in this component
 import type { CallCampaign } from "../../../../../../../types/_dashboard/campaign";
 
 export type CampaignType = "Calls" | "Text" | "Social" | "Direct Mail";

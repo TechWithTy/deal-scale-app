@@ -11,21 +11,113 @@ import { useLeadModalState } from "./hooks/useLeadModalState";
 import FieldMappingStep, {
 	REQUIRED_FIELD_MAPPING_KEYS,
 } from "../skipTrace/steps/FieldMappingStep";
-import { useState } from "react";
+import SkipTraceSummaryStep from "./steps/SkipTraceSummaryStep";
+import { Button } from "@/components/ui/button";
+import { Upload } from "lucide-react";
+import { toast } from "sonner";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useLeadListStore } from "@/lib/stores/leadList";
+import {
+	parseCsvToLeads,
+	calculateLeadStatistics,
+} from "@/lib/stores/_utils/csvParser";
+import Papa from "papaparse";
+
+const INITIAL_COST_DETAILS = {
+	availableCredits: 0,
+	estimatedCredits: 0,
+	premiumCostPerLead: 0,
+	hasEnoughCredits: true,
+};
 
 // * Main Lead Modal Component: Combines all modular steps
 interface LeadMainModalProps {
 	isOpen: boolean;
 	onClose: () => void;
 	initialListMode?: "select" | "create";
+	csvFile?: File | null;
+	csvHeaders?: string[];
 }
 
 function LeadMainModal({
 	isOpen,
 	onClose,
 	initialListMode = "create",
+	csvFile,
+	csvHeaders: externalCsvHeaders,
 }: LeadMainModalProps) {
-	// Centralized state via hook
+	// Field mapping state (only used when creating a list)
+	// Initialize with external CSV data if provided
+	const [modalCsvFile, setModalCsvFile] = useState<File | null>(
+		csvFile || null,
+	);
+	const fileInputRef = useRef<HTMLInputElement>(null);
+	const [csvHeaders, setCsvHeaders] = useState<string[]>(
+		externalCsvHeaders || [],
+	);
+	const [selectedHeadersState, setSelectedHeadersState] = useState<
+		Record<string, string | undefined>
+	>({});
+	const [canProceedFromMapping, setCanProceedFromMapping] = useState(false);
+	const [selectedEnrichmentOptions, setSelectedEnrichmentOptions] = useState<
+		string[]
+	>([]);
+	const [csvRowCount, setCsvRowCount] = useState(0);
+	const [isLaunchingSuite, setIsLaunchingSuite] = useState(false);
+	const [costDetails, setCostDetails] = useState(INITIAL_COST_DETAILS);
+	const [csvContent, setCsvContent] = useState<string>("");
+
+	// Get the lead list store
+	const addLeadList = useLeadListStore((state) => state.addLeadList);
+
+	const resetCostDetails = useCallback(() => {
+		setCostDetails({ ...INITIAL_COST_DETAILS });
+	}, []);
+
+	const handleCostDetailsChange = useCallback(
+		(details: {
+			availableCredits: number;
+			estimatedCredits: number;
+			premiumCostPerLead: number;
+			hasEnoughCredits: boolean;
+		}) => {
+			setCostDetails(details);
+		},
+		[],
+	);
+
+	const hasEnoughCredits = costDetails.hasEnoughCredits;
+
+	const deriveRowCount = useCallback((text: string | null | undefined) => {
+		if (!text) {
+			setCsvRowCount(0);
+			return;
+		}
+		try {
+			const parsed = Papa.parse<Record<string, string | number | null>>(text, {
+				header: true,
+				skipEmptyLines: "greedy",
+			});
+			if (Array.isArray(parsed.data)) {
+				const meaningfulRows = parsed.data.filter((row) =>
+					Object.values(row).some(
+						(value) => `${value ?? ""}`.trim().length > 0,
+					),
+				);
+				setCsvRowCount(meaningfulRows.length);
+				return;
+			}
+		} catch (error) {
+			console.warn("Failed to parse CSV for row count", error);
+		}
+		const fallbackLines = text
+			.split("\n")
+			.map((line) => line.trim())
+			.filter((line) => line.length);
+		setCsvRowCount(Math.max(fallbackLines.length - 1, 0));
+	}, []);
+
+	// Centralized state via hook - must come after CSV state initialization
 	const {
 		// list
 		listMode,
@@ -84,7 +176,11 @@ function LeadMainModal({
 		errors,
 		setErrors,
 		validateStepNow,
-	} = useLeadModalState(initialListMode, isOpen);
+	} = useLeadModalState(
+		initialListMode,
+		isOpen,
+		Boolean(csvFile && externalCsvHeaders && externalCsvHeaders.length > 0),
+	);
 
 	// Simple setters (live validation handled on step/submit)
 	const handleFirstNameChange = (v: string) => setFirstName(v);
@@ -103,27 +199,224 @@ function LeadMainModal({
 		v: "morning" | "afternoon" | "evening" | "any",
 	) => setBestContactTime(v);
 
-	// Field mapping state (only used when creating a list)
-	const [csvHeaders, setCsvHeaders] = useState<string[]>([
-		"First Name",
-		"Last Name",
-		"Email",
-		"Phone",
-		"Address",
-		"City",
-		"State",
-		"Zip Code",
-	]);
-	const [selectedHeadersState, setSelectedHeadersState] = useState<
-		Record<string, string | undefined>
-	>({});
-	const [canProceedFromMapping, setCanProceedFromMapping] = useState(false);
+	useEffect(() => {
+		let isActive = true;
+		setModalCsvFile(csvFile ?? null);
+		if (externalCsvHeaders && externalCsvHeaders.length) {
+			setCsvHeaders(externalCsvHeaders);
+			setSelectedHeadersState({});
+			setCanProceedFromMapping(false);
+			setSelectedEnrichmentOptions([]);
+		}
+		if (csvFile) {
+			csvFile
+				.text()
+				.then((text) => {
+					if (!isActive) return;
+					setCsvContent(text);
+					deriveRowCount(text);
+				})
+				.catch(() => {
+					if (!isActive) return;
+					setCsvRowCount(0);
+				});
+		} else {
+			setCsvRowCount(0);
+		}
+		return () => {
+			isActive = false;
+		};
+	}, [csvFile, externalCsvHeaders, deriveRowCount]);
+
+	useEffect(() => {
+		if (!isOpen) {
+			setSelectedEnrichmentOptions([]);
+			setCsvRowCount(0);
+			setIsLaunchingSuite(false);
+			setCsvContent("");
+			resetCostDetails();
+		}
+	}, [isOpen, resetCostDetails]);
+
+	useEffect(() => {
+		if (listMode !== "create") {
+			setSelectedEnrichmentOptions([]);
+			setCsvRowCount(0);
+			setIsLaunchingSuite(false);
+			setCsvContent("");
+			resetCostDetails();
+		}
+	}, [listMode, resetCostDetails]);
+
+	useEffect(() => {
+		if (!modalCsvFile) {
+			setCsvRowCount(0);
+			return;
+		}
+		let isActive = true;
+		modalCsvFile
+			.text()
+			.then((text) => {
+				if (!isActive) return;
+				deriveRowCount(text);
+			})
+			.catch(() => {
+				if (!isActive) return;
+				setCsvRowCount(0);
+			});
+		return () => {
+			isActive = false;
+		};
+	}, [modalCsvFile, deriveRowCount]);
 
 	const handleHeaderSelect = (fieldName: string, value: string) => {
 		setSelectedHeadersState((prev: Record<string, string | undefined>) => ({
 			...prev,
 			[fieldName]: value || undefined,
 		}));
+	};
+
+	// CSV file upload and header extraction (inside modal)
+	const handleModalCsvUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+		const file = event.target.files?.[0];
+		if (!file) return;
+
+		// Validate file type
+		if (!file.name.endsWith(".csv") && !file.type.includes("csv")) {
+			toast.error("Please select a CSV file");
+			return;
+		}
+
+		setModalCsvFile(file);
+
+		// Parse CSV headers
+		const reader = new FileReader();
+		reader.onload = (e) => {
+			const csvText = e.target?.result as string;
+			if (!csvText) return;
+
+			const lines = csvText
+				.split("\n")
+				.map((line) => line.trim())
+				.filter((line) => line.length);
+			if (lines.length === 0) {
+				toast.error("CSV file appears to be empty");
+				return;
+			}
+
+			const headers = lines[0]
+				.split(",")
+				.map((header) => header.trim().replace(/"/g, ""))
+				.filter((header) => header.length > 0)
+				.slice(0, 50);
+
+			if (headers.length === 0) {
+				toast.error("No valid headers found in CSV file");
+				return;
+			}
+
+			setCsvHeaders(headers);
+			setSelectedHeadersState({});
+			setCanProceedFromMapping(false);
+			setSelectedEnrichmentOptions([]);
+			deriveRowCount(csvText);
+			toast.success(
+				`Found ${headers.length} columns in CSV: ${headers
+					.slice(0, 3)
+					.join(", ")}${headers.length > 3 ? "..." : ""}`,
+			);
+		};
+
+		reader.onerror = () => {
+			toast.error("Error reading CSV file");
+		};
+
+		reader.readAsText(file);
+	};
+
+	const triggerModalFileInput = () => {
+		fileInputRef.current?.click();
+	};
+
+	const handleToggleEnrichmentOption = (optionId: string) => {
+		setSelectedEnrichmentOptions((prev) =>
+			prev.includes(optionId)
+				? prev.filter((id) => id !== optionId)
+				: [...prev, optionId],
+		);
+	};
+
+	const handleLaunchSuite = () => {
+		console.log("🚀 handleLaunchSuite called");
+		const problems = validateStep();
+		setErrors(problems);
+		console.log("Validation problems:", problems);
+
+		if (Object.keys(problems).length !== 0 || isLaunchingSuite) {
+			console.log("❌ Launch blocked due to validation or already launching");
+			return;
+		}
+
+		setIsLaunchingSuite(true);
+		console.log("⏳ Setting launching state");
+		const launchToastId = toast.loading("Launching enrichment suite...");
+
+		// Parse CSV and create lead list
+		if (csvContent && newListName.trim()) {
+			console.log("📄 Processing CSV content, length:", csvContent.length);
+			console.log("📋 Selected headers:", selectedHeadersState);
+			console.log("📝 List name:", newListName);
+
+			try {
+				console.log("🔄 Parsing CSV to leads...");
+				const leads = parseCsvToLeads(csvContent, selectedHeadersState);
+				console.log("✅ Parsed leads:", leads.length);
+
+				const stats = calculateLeadStatistics(leads);
+				console.log("📊 Lead statistics:", stats);
+
+				const newLeadList = {
+					listName: newListName.trim(),
+					leads,
+					records: stats.total,
+					phone: stats.phone,
+					dataLink: modalCsvFile?.name || "uploaded_file.csv",
+					socials: stats.socials,
+					emails: stats.email,
+				};
+
+				console.log("💾 Adding lead list to store...");
+				addLeadList(newLeadList);
+
+				setTimeout(() => {
+					setIsLaunchingSuite(false);
+					toast.dismiss(launchToastId);
+					toast.success(
+						`Skip trace suite launched for ${
+							leads.length > 0 ? leads.length.toLocaleString() : "your"
+						} leads and saved to lead lists`,
+					);
+					setStep(3);
+				}, 1600);
+			} catch (error) {
+				console.error("❌ Error launching suite:", error);
+				setIsLaunchingSuite(false);
+				toast.dismiss(launchToastId);
+				toast.error("Failed to launch enrichment suite. Please try again.");
+			}
+		} else {
+			console.log("❌ Missing CSV content or list name");
+			setTimeout(() => {
+				setIsLaunchingSuite(false);
+				toast.dismiss(launchToastId);
+				toast.success(
+					`Skip trace suite launched for ${
+						csvRowCount > 0 ? csvRowCount.toLocaleString() : "your"
+					} leads`,
+				);
+				setStep(3);
+			}, 1600);
+		}
 	};
 
 	// Validation
@@ -154,29 +447,128 @@ function LeadMainModal({
 				dncSource: dncSource || undefined,
 				tcpaOptedIn: tcpaOptedIn,
 			},
+			skipTrace: {
+				selectedTools: selectedEnrichmentOptions,
+			},
 		};
 		console.log("Add lead payload", payload);
 		onClose();
 	};
 
 	const handleNext = () => {
+		if (isLaunchingSuite) return;
 		const problems = validateStep();
 		setErrors(problems);
-		if (Object.keys(problems).length === 0) {
-			// Special logic for mapping step when creating a list
-			if (step === 1 && listMode === "create") {
-				// If we're on the mapping step and can proceed, move to basic info
-				if (canProceedFromMapping) {
-					setStep(2);
-				}
-			} else {
-				// Normal progression for other steps
-				setStep((s: number) => Math.min(5, s + 1));
+		if (Object.keys(problems).length !== 0) {
+			return;
+		}
+
+		if (step === 0 && listMode === "create") {
+			// If CSV data already exists (from Quick Start), skip straight to mapping
+			if (modalCsvFile && csvHeaders.length > 0) {
+				setStep(1);
+				return;
 			}
+			setStep(0.5);
+			return;
+		}
+
+		if (step === 0.5) {
+			// After upload step move into mapping
+			setStep(1);
+			return;
+		}
+
+		if (step === 1 && listMode === "create") {
+			if (canProceedFromMapping) {
+				setStep(2);
+			}
+			return;
+		}
+
+		if (step === 1 && listMode === "select") {
+			setStep(3);
+			return;
+		}
+
+		if (step === 2 && listMode === "create") {
+			if (selectedEnrichmentOptions.length === 0) {
+				setStep(3);
+			}
+			return;
+		}
+
+		setStep((s: number) => Math.min(5, s + 1));
+	};
+
+	const handleBack = () => {
+		if (isLaunchingSuite) return;
+		// Special handling for CSV upload step
+		if (step === 0.5) {
+			setStep(0);
+		} else {
+			setStep((s: number) => Math.max(0, s - 1));
 		}
 	};
 
-	const handleBack = () => setStep((s: number) => Math.max(0, s - 1));
+	const hasSelectedTools = selectedEnrichmentOptions.length > 0;
+	const showLaunchAction =
+		step === 2 && listMode === "create" && hasSelectedTools;
+	const validationPasses = Object.keys(validateStep()).length === 0;
+	const canGoNext = (() => {
+		if (isLaunchingSuite) {
+			return false;
+		}
+		if (step === 0.5) {
+			return csvHeaders.length > 0;
+		}
+		if (step === 1 && listMode === "create") {
+			return canProceedFromMapping;
+		}
+		if (step === 2 && listMode === "create") {
+			return showLaunchAction ? hasEnoughCredits : validationPasses;
+		}
+		return validationPasses;
+	})();
+
+	const primaryActionLabel = (() => {
+		if (showLaunchAction) {
+			if (!hasEnoughCredits && costDetails.estimatedCredits > 0) {
+				return "Add Credits";
+			}
+			return isLaunchingSuite ? "Launching..." : "Launch Suite";
+		}
+		if (step === 5) {
+			return "Add Lead";
+		}
+		return "Next";
+	})();
+
+	const handlePrimaryAction = () => {
+		console.log("🎯 handlePrimaryAction called");
+		console.log("Step:", step, "List mode:", listMode);
+		console.log("Has enough credits:", hasEnoughCredits);
+		console.log("Show launch action:", showLaunchAction);
+
+		if (showLaunchAction) {
+			console.log("🚀 Launch action triggered");
+			if (!hasEnoughCredits) {
+				console.log("❌ Not enough credits");
+				toast.error(
+					"Not enough skip trace credits to launch. Add credits to continue.",
+				);
+				return;
+			}
+			console.log("✅ Credits OK, calling handleLaunchSuite");
+			handleLaunchSuite();
+			return;
+		}
+		if (step === 5) {
+			handleAddLead();
+			return;
+		}
+		handleNext();
+	};
 
 	const buttonClass =
 		"px-4 py-2 rounded-md bg-primary text-primary-foreground disabled:opacity-50";
@@ -210,6 +602,61 @@ function LeadMainModal({
 						/>
 					)}
 
+					{/* CSV Upload Step - only for create mode */}
+					{step === 0.5 && listMode === "create" && (
+						<div className="space-y-4">
+							<div className="text-center">
+								<h3 className="text-lg font-semibold text-foreground mb-2">
+									Upload CSV File
+								</h3>
+								<p className="text-muted-foreground text-sm mb-4">
+									Upload a CSV file to map columns to lead fields
+								</p>
+							</div>
+
+							<div className="flex flex-col items-center space-y-4">
+								<Button
+									variant="outline"
+									size="lg"
+									onClick={triggerModalFileInput}
+									className="w-full max-w-sm"
+								>
+									<Upload className="w-4 h-4 mr-2" />
+									{modalCsvFile ? "Change CSV File" : "Upload CSV File"}
+								</Button>
+
+								{modalCsvFile && (
+									<div className="text-sm text-muted-foreground text-center">
+										<p className="font-medium">{modalCsvFile.name}</p>
+										<p className="text-xs">
+											{csvHeaders.length} columns detected
+										</p>
+									</div>
+								)}
+
+								<input
+									ref={fileInputRef}
+									type="file"
+									accept=".csv,text/csv"
+									onChange={handleModalCsvUpload}
+									className="hidden"
+								/>
+							</div>
+
+							{modalCsvFile && csvHeaders.length > 0 && (
+								<div className="text-center">
+									<Button
+										size="lg"
+										onClick={() => setStep(1)}
+										className="w-full max-w-sm"
+									>
+										Continue to Field Mapping
+									</Button>
+								</div>
+							)}
+						</div>
+					)}
+
 					{step === 1 && listMode === "create" && (
 						<FieldMappingStep
 							headers={csvHeaders}
@@ -217,6 +664,17 @@ function LeadMainModal({
 							onHeaderSelect={handleHeaderSelect}
 							errors={{}}
 							onCanProceedChange={setCanProceedFromMapping}
+						/>
+					)}
+
+					{step === 2 && listMode === "create" && (
+						<SkipTraceSummaryStep
+							selectedHeaders={selectedHeadersState}
+							selectedOptions={selectedEnrichmentOptions}
+							onToggleOption={handleToggleEnrichmentOption}
+							leadCount={csvRowCount}
+							onCostDetailsChange={handleCostDetailsChange}
+							isLaunching={isLaunchingSuite}
 						/>
 					)}
 
@@ -285,34 +743,24 @@ function LeadMainModal({
 					)}
 
 					<div className={navClass}>
-						{step !== 0 && (
+						{step !== 0 && step !== 0.5 && (
 							<button
 								type="button"
 								className={buttonClass}
 								onClick={handleBack}
+								disabled={isLaunchingSuite}
 							>
 								Back
 							</button>
 						)}
-						{step !== 5 ? (
-							<button
-								type="button"
-								className={buttonClass}
-								onClick={handleNext}
-								disabled={Object.keys(validateStep()).length > 0}
-							>
-								Next
-							</button>
-						) : (
-							<button
-								type="button"
-								className={buttonClass}
-								onClick={handleAddLead}
-								disabled={Object.keys(validateStep()).length > 0}
-							>
-								Add Lead
-							</button>
-						)}
+						<button
+							type="button"
+							className={buttonClass}
+							onClick={handlePrimaryAction}
+							disabled={!canGoNext}
+						>
+							{primaryActionLabel}
+						</button>
 					</div>
 				</div>
 			</DialogContent>

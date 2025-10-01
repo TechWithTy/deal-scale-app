@@ -8,6 +8,8 @@ import "./globals.css";
 import { auth } from "@/auth";
 import SessionSync from "@/components/auth/SessionSync";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
+import Script from "next/script";
+import SupademoClient from "@/components/integrations/SupademoClient";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -25,12 +27,20 @@ export default async function RootLayout({
 	const session = await auth();
 	return (
 		<html lang="en">
+			<head>
+				{/* Supademo SDK */}
+				<Script
+					src="https://script.supademo.com/script.js"
+					strategy="beforeInteractive"
+				/>
+			</head>
 			<body className={`${inter.className}  `} suppressHydrationWarning={true}>
 				{/* Move to Providers Next Command Nuqs */}
 				<NextTopLoader showSpinner={false} />
 				<CommandPaletteProvider>
 					<NuqsAdapter>
 						<Providers session={session}>
+							<SupademoClient />
 							{children}
 							<SessionSync />
 						</Providers>

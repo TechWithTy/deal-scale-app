@@ -8,6 +8,7 @@ import {
 export function useLeadModalState(
 	initialListMode: LeadListMode,
 	isOpen: boolean,
+	hasCsvData?: boolean, // 🆕 New parameter to check if CSV data exists
 ) {
 	// list step
 	const [listMode, setListMode] = useState<LeadListMode>(initialListMode);
@@ -47,14 +48,22 @@ export function useLeadModalState(
 	// reset on open + incoming mode change
 	useEffect(() => {
 		if (isOpen) {
-			setStep(0);
+			// Smart step initialization based on CSV availability
+			if (initialListMode === "create" && hasCsvData) {
+				setStep(1); // Skip to field mapping if CSV data exists
+			} else if (initialListMode === "create" && !hasCsvData) {
+				setStep(0); // Start at list selection, CSV upload will be step 0.5
+			} else {
+				setStep(0); // For select mode, start at list selection
+			}
+
 			setListMode(initialListMode);
 			// Reset DNC and TCPA fields
 			setDncStatus(false);
 			setDncSource("");
 			setTcpaOptedIn(false);
 		}
-	}, [isOpen, initialListMode]);
+	}, [isOpen, initialListMode, hasCsvData]);
 
 	const validationInput: LeadValidationInput = useMemo(
 		() => ({

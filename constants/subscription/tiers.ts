@@ -38,7 +38,7 @@ export function hasRequiredTier(
 	return compareTiers(userTier, requiredTier) >= 0;
 }
 
-export type FeatureGuardMode = "hide" | "disable" | "overlay";
+export type FeatureGuardMode = "hide" | "disable" | "overlay" | "none";
 
 export type GuardBehaviorKey =
 	| "allowed"
@@ -50,7 +50,7 @@ export function resolveGuardBehavior(
 	allowed: boolean,
 	mode: FeatureGuardMode,
 ): GuardBehaviorKey {
-	if (allowed) return "allowed";
+	if (allowed || mode === "none") return "allowed";
 	switch (mode) {
 		case "hide":
 			return "hidden";
