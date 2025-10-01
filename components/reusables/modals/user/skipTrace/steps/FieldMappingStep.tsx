@@ -32,7 +32,7 @@ const generateFieldConfigs = (): FieldConfig[] => {
 		{ name: "streetAddressField", label: "Street Address" },
 		{ name: "cityField", label: "City" },
 		{ name: "stateField", label: "State" },
-		{ name: "zipCodeField", label: "Zip Code", optional: true },
+		{ name: "zipCodeField", label: "Zip Code" },
 
 		// Phone fields
 		{ name: "phone1Field", label: "Phone 1", optional: true },
