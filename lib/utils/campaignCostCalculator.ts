@@ -137,21 +137,38 @@ export function calculateCampaignCost(
 		maxDailyLimitedAttempts,
 	);
 
+	console.log("Attempts Debug:", {
+		avgDailyAttempts,
+		maxPossibleAttempts,
+		maxDailyLimitedAttempts,
+		totalContactAttempts,
+		leadCount,
+		totalDays,
+		dailyLimit,
+	});
+
 	// Channel Costing Rules with Plan-Based Pricing
 	if (channel === "call" && leadCount > 0) {
 		// Base call cost (per 5 minutes)
 		callCost = totalContactAttempts * callPricing.customerPricePerFiveMinutes;
+		console.log("Call cost calculated:", {
+			totalContactAttempts,
+			callPricing: callPricing.customerPricePerFiveMinutes,
+			callCost,
+		});
 
 		// Voicemail drops cost (assume half the regular call cost)
 		if (doVoicemailDrops) {
 			callCost +=
 				totalContactAttempts * 0.5 * callPricing.customerPricePerFiveMinutes;
+			console.log("Added voicemail cost:", callCost);
 		}
 
 		// Transfer costs (assume partial AI handling before transfer)
 		if (transferEnabled) {
 			callCost +=
 				totalContactAttempts * 0.5 * callPricing.customerPricePerFiveMinutes;
+			console.log("Added transfer cost:", callCost);
 		}
 	}
 
@@ -208,14 +225,26 @@ export function calculateCampaignCost(
 	// Aggregate all costs
 	totalCost = callCost + smsCost + socialCost + directMailCost + featureCost;
 
+	console.log("Final Cost Debug:", {
+		callCost,
+		smsCost,
+		socialCost,
+		directMailCost,
+		featureCost,
+		totalCost,
+	});
+
 	// Fallback calculation if no costs were calculated (e.g., no leads or invalid channel)
 	if (totalCost === 0 && leadCount > 0) {
 		// Provide a minimum cost estimate based on lead count
 		totalCost = leadCount * 0.01; // $0.01 per lead minimum
+		console.log("Applied fallback cost:", totalCost);
 	}
 
 	// Calculate total billable credits (for customer billing)
 	const totalBillableCredits = Math.ceil(totalCost * 100); // 1 credit = $0.01
+
+	console.log("Billable Credits:", totalBillableCredits);
 
 	// Output
 	return {

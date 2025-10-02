@@ -8,7 +8,7 @@ import ChannelCustomizationStep, {
 	FormSchema,
 } from "../../../../../external/shadcn-table/src/examples/campaigns/modal/steps/ChannelCustomizationStep";
 import ChannelSelectionStep from "../../../../../external/shadcn-table/src/examples/campaigns/modal/steps/ChannelSelectionStep";
-import FinalizeCampaignStep from "../../../../../external/shadcn-table/src/examples/campaigns/modal/steps/FinalizeCampaignStep";
+import FinalizeCampaignStep from "./steps/FinalizeCampaignStep";
 import { TimingPreferencesStep } from "../../../../../external/shadcn-table/src/examples/campaigns/modal/steps/TimingPreferencesStep";
 import { useCampaignCreationStore } from "@/lib/stores/campaignCreation";
 import {
@@ -134,8 +134,21 @@ export default function CampaignModalMain({
 	const watchedChannelSelection = useCampaignCreationStore();
 
 	const campaignCost = useMemo(() => {
+		// Debug logging for troubleshooting
+		console.log("Campaign Cost Calculation Debug:", {
+			primaryChannel,
+			leadCount,
+			minDailyAttempts,
+			maxDailyAttempts,
+			perNumberDailyLimit,
+			includeWeekends,
+			doVoicemailDrops,
+			plan: "starter", // Default plan since it's not in form schema yet
+		});
+
 		// Only calculate if we have valid data
 		if (!primaryChannel || leadCount <= 0) {
+			console.log("Invalid campaign data for cost calculation");
 			return {
 				CampaignName: campaignName || "Unnamed Campaign",
 				Channel: primaryChannel || "unknown",
@@ -154,7 +167,7 @@ export default function CampaignModalMain({
 			};
 		}
 
-		return calculateCampaignCost({
+		const result = calculateCampaignCost({
 			primaryChannel,
 			leadCount,
 			minDailyAttempts,
@@ -169,7 +182,11 @@ export default function CampaignModalMain({
 			daysSelected: mutatedDays,
 			campaignName,
 			availableAgents: watchedChannelSelection.availableAgents,
+			plan: "starter", // Default plan for now
 		});
+
+		console.log("Campaign Cost Result:", result);
+		return result;
 	}, [
 		primaryChannel,
 		leadCount,
@@ -188,6 +205,16 @@ export default function CampaignModalMain({
 	]);
 
 	const estimatedCredits = getEstimatedCredits(campaignCost);
+
+	// Debug estimated credits calculation
+	console.log("Estimated Credits Debug:", {
+		campaignCost,
+		estimatedCredits,
+		totalCost: campaignCost.TotalCost,
+		totalBillableCredits: campaignCost.TotalBillableCredits,
+		// Force a minimum cost for testing
+		testCredits: Math.max(estimatedCredits, leadCount > 0 ? 100 : 0),
+	});
 
 	const hasInitializedRef = useRef(false);
 
@@ -383,7 +410,10 @@ export default function CampaignModalMain({
 						<FinalizeCampaignStep
 							onBack={prevStep}
 							onLaunch={launchCampaign}
-							estimatedCredits={estimatedCredits}
+							estimatedCredits={Math.max(
+								estimatedCredits,
+								leadCount > 0 ? 100 : 0,
+							)}
 						/>
 					)}
 

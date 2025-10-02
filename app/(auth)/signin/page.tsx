@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { TestUsers } from "@/app/(auth)/(signin)/_components/TestUsers";
-import AuthForm from "@/app/(auth)/(signin)/userAuth";
-import AuthToggle from "@/app/(auth)/(signin)/authToggle";
+import AuthForm from "./userAuth";
+import AuthToggle from "./authToggle";
+import { TestUsers } from "./_components/TestUsers";
 
 export default function AuthenticationPage() {
 	const [isSignUp, setIsSignUp] = useState(false);
@@ -15,16 +15,18 @@ export default function AuthenticationPage() {
 			<div className="flex w-full max-w-xl flex-col items-center">
 				<AuthForm isSignUp={isSignUp} setIsSignUp={setIsSignUp} />
 
-				<>
-					<div className="relative mt-4 flex w-full items-center py-4">
-						<div className="flex-grow border-border border-t" />
-						<span className="flex-shrink px-4 text-muted-foreground text-sm">
-							Or use test accounts
-						</span>
-						<div className="flex-grow border-border border-t" />
-					</div>
-					<TestUsers />
-				</>
+				{!isSignUp && (
+					<>
+						<div className="relative mt-4 flex w-full items-center py-4">
+							<div className="flex-grow border-border border-t" />
+							<span className="flex-shrink px-4 text-muted-foreground text-sm">
+								Or use test accounts
+							</span>
+							<div className="flex-grow border-border border-t" />
+						</div>
+						<TestUsers />
+					</>
+				)}
 			</div>
 		</div>
 	);

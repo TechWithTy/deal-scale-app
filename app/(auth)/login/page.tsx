@@ -1,13 +1,12 @@
 "use client";
 
-import { Button, buttonVariants } from "@/components/ui/button";
-import { Carousel } from "@/components/ui/carousel";
-import { cn } from "@/lib/_utils";
-import { FlameIcon } from "lucide-react";
-import Link from "next/link";
 import { useState } from "react";
-import AuthToggle from "../(signin)/authToggle";
-import AuthForm from "../(signin)/userAuth";
+import { FlameIcon } from "lucide-react";
+
+import { Carousel } from "@/components/ui/carousel";
+
+import AuthToggle from "../signin/authToggle";
+import AuthForm from "../signin/userAuth";
 
 export default function AuthenticationPage() {
 	const [isSignUp, setIsSignUp] = useState(false);

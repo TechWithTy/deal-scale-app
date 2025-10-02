@@ -42,6 +42,13 @@ const FinalizeCampaignStep: FC<FinalizeCampaignStepProps> = ({
 	onLaunch,
 	onBack,
 }) => {
+	// Debug logging for FinalizeCampaignStep
+	console.log("FinalizeCampaignStep Debug:", {
+		estimatedCredits,
+		onLaunch,
+		onBack,
+	});
+
 	const {
 		campaignName,
 		setCampaignName,
@@ -153,12 +160,18 @@ const FinalizeCampaignStep: FC<FinalizeCampaignStepProps> = ({
 									{...field}
 								/>
 							</FormControl>
-							<FormMessage />
 						</FormItem>
 					)}
 				/>
 
 				<div className="space-y-4 pt-4">
+					{(() => {
+						console.log(
+							"FinalizeCampaignStep render - estimatedCredits:",
+							estimatedCredits,
+						);
+						return null;
+					})()}
 					<p className="text-gray-500 text-sm dark:text-gray-400">
 						{estimatedCredits > 0
 							? `This campaign will cost ${estimatedCredits} credits.`
