@@ -160,7 +160,9 @@ const FinalizeCampaignStep: FC<FinalizeCampaignStepProps> = ({
 
 				<div className="space-y-4 pt-4">
 					<p className="text-gray-500 text-sm dark:text-gray-400">
-						This campaign will cost {estimatedCredits} credits.
+						{estimatedCredits > 0
+							? `This campaign will cost ${estimatedCredits} credits.`
+							: "Configure your campaign settings to see cost estimate."}
 					</p>
 
 					<Button

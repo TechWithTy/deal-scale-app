@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import ChannelCustomizationStep, {
@@ -11,9 +11,14 @@ import ChannelSelectionStep from "../../../../../external/shadcn-table/src/examp
 import FinalizeCampaignStep from "../../../../../external/shadcn-table/src/examples/campaigns/modal/steps/FinalizeCampaignStep";
 import { TimingPreferencesStep } from "../../../../../external/shadcn-table/src/examples/campaigns/modal/steps/TimingPreferencesStep";
 import { useCampaignCreationStore } from "@/lib/stores/campaignCreation";
+import {
+	calculateCampaignCost,
+	getEstimatedCredits,
+} from "@/lib/utils/campaignCostCalculator";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import type { z } from "zod";
 import CampaignSettingsDebug from "./CampaignSettingsDebug";
+import { useRouter } from "next/router";
 
 interface CampaignModalMainProps {
 	isOpen: boolean;
@@ -42,6 +47,7 @@ export default function CampaignModalMain({
 	initialStep = 0,
 	defaultChannel,
 }: CampaignModalMainProps) {
+	const router = useRouter();
 	const {
 		areaMode,
 		setAreaMode,
@@ -64,8 +70,14 @@ export default function CampaignModalMain({
 		setCampaignName,
 		abTestingEnabled,
 		setAbTestingEnabled,
+		minDailyAttempts,
+		maxDailyAttempts,
+		doVoicemailDrops,
+		includeWeekends,
 		isLeadListSelectionValid,
 		reset,
+		availableAgents,
+		perNumberDailyLimit,
 	} = useCampaignCreationStore();
 
 	const [step, setStep] = useState(initialStep);
@@ -77,7 +89,7 @@ export default function CampaignModalMain({
 			areaMode: areaMode || "leadList",
 			selectedLeadListId: selectedLeadListId || "",
 			templates: [],
-			transferEnabled: true,
+			transferEnabled: false,
 			transferType: "inbound_call",
 			transferAgentId: "",
 			transferGuidelines: "",
@@ -118,22 +130,112 @@ export default function CampaignModalMain({
 		setDaysSelected(mutatedDays);
 	}, [mutatedDays, setDaysSelected]);
 
-	const estimatedCredits =
-		leadCount > 0 && mutatedDays > 0 ? Math.round(leadCount * mutatedDays) : 0;
+	const watchedCustomizationValues = customizationForm.watch();
+	const watchedChannelSelection = useCampaignCreationStore();
+
+	const campaignCost = useMemo(() => {
+		// Only calculate if we have valid data
+		if (!primaryChannel || leadCount <= 0) {
+			return {
+				CampaignName: campaignName || "Unnamed Campaign",
+				Channel: primaryChannel || "unknown",
+				LeadsTargeted: leadCount,
+				TotalDays: mutatedDays,
+				TotalAttempts: 0,
+				CallCost: 0,
+				SmsCost: 0,
+				SocialCost: 0,
+				DirectMailCost: 0,
+				TotalCost: 0,
+				AgentsAvailable: watchedChannelSelection.availableAgents?.length || 0,
+				Plan: "starter",
+				TotalBillableCredits: 0,
+				Margin: 0.85,
+			};
+		}
+
+		return calculateCampaignCost({
+			primaryChannel,
+			leadCount,
+			minDailyAttempts,
+			maxDailyAttempts,
+			dailyLimit: perNumberDailyLimit,
+			includeWeekends,
+			doVoicemailDrops,
+			transferEnabled: !!watchedCustomizationValues?.transferEnabled,
+			transferType: watchedCustomizationValues?.transferType,
+			startDate,
+			endDate,
+			daysSelected: mutatedDays,
+			campaignName,
+			availableAgents: watchedChannelSelection.availableAgents,
+		});
+	}, [
+		primaryChannel,
+		leadCount,
+		minDailyAttempts,
+		maxDailyAttempts,
+		perNumberDailyLimit,
+		includeWeekends,
+		doVoicemailDrops,
+		watchedCustomizationValues?.transferEnabled,
+		watchedCustomizationValues?.transferType,
+		startDate,
+		endDate,
+		mutatedDays,
+		campaignName,
+		watchedChannelSelection.availableAgents,
+	]);
+
+	const estimatedCredits = getEstimatedCredits(campaignCost);
+
+	const hasInitializedRef = useRef(false);
 
 	useEffect(() => {
 		if (!isOpen) {
-			setStep(initialStep);
+			hasInitializedRef.current = false;
 			return;
 		}
 
-		if (!primaryChannel && defaultChannel) {
-			setPrimaryChannel(
-				defaultChannel === "directmail" ? "email" : defaultChannel,
-			);
+		const runInitialization = () => {
+			if (defaultChannel) {
+				setPrimaryChannel(
+					defaultChannel === "directmail" ? "email" : defaultChannel,
+				);
+			}
+			if (initialLeadListId) {
+				setAreaMode("leadList");
+				setSelectedLeadListId(initialLeadListId);
+				customizationForm.setValue("areaMode", "leadList");
+				customizationForm.setValue("selectedLeadListId", initialLeadListId);
+				if (abTestingEnabled && !selectedLeadListAId) {
+					setSelectedLeadListAId(initialLeadListId);
+				}
+			}
+			if (
+				typeof initialLeadCount === "number" &&
+				!Number.isNaN(initialLeadCount)
+			) {
+				setLeadCount(initialLeadCount);
+			}
+			if (initialLeadListName) {
+				setCampaignName(`${initialLeadListName} Campaign`);
+			}
+			setStep(initialStep);
+		};
+
+		if (!hasInitializedRef.current) {
+			hasInitializedRef.current = true;
+			runInitialization();
+			return;
 		}
 
-		if (initialLeadListId && initialLeadListId !== selectedLeadListId) {
+		// Handle updated initial lead list while staying on channel selection
+		if (
+			step === 0 &&
+			initialLeadListId &&
+			initialLeadListId !== selectedLeadListId
+		) {
 			setAreaMode("leadList");
 			setSelectedLeadListId(initialLeadListId);
 			customizationForm.setValue("areaMode", "leadList");
@@ -142,29 +244,16 @@ export default function CampaignModalMain({
 				setSelectedLeadListAId(initialLeadListId);
 			}
 		}
-
-		if (
-			typeof initialLeadCount === "number" &&
-			!Number.isNaN(initialLeadCount)
-		) {
-			setLeadCount(initialLeadCount);
-		}
-
-		if (initialLeadListName) {
-			setCampaignName(`${initialLeadListName} Campaign`);
-		}
-
-		setStep(initialStep);
 	}, [
 		isOpen,
+		step,
 		initialLeadListId,
 		initialLeadListName,
 		initialLeadCount,
 		initialStep,
 		defaultChannel,
-		primaryChannel,
-		selectedLeadListId,
 		abTestingEnabled,
+		selectedLeadListId,
 		selectedLeadListAId,
 		setAreaMode,
 		setSelectedLeadListId,
@@ -198,7 +287,24 @@ export default function CampaignModalMain({
 	const prevStep = () => setStep((s) => Math.max(0, s - 1));
 
 	const launchCampaign = () => {
-		// TODO: real launch logic
+		// Generate a campaign ID (using timestamp for now)
+		const campaignId = `campaign_${Date.now()}`;
+
+		// Map primary channel to campaign type
+		const channelTypeMap: Record<string, string> = {
+			call: "call",
+			text: "text",
+			social: "social",
+			directmail: "direct",
+			email: "direct", // Map email to direct for now
+		};
+
+		const campaignType = channelTypeMap[primaryChannel || ""] || "call";
+
+		// Navigate to the campaign page
+		router.push(`/dashboard/campaigns/${campaignType}/${campaignId}`);
+
+		// Close modal after navigation
 		closeModal();
 	};
 
@@ -226,7 +332,7 @@ export default function CampaignModalMain({
 				areaMode: areaMode || "leadList",
 				selectedLeadListId: selectedLeadListId || "",
 				templates: [],
-				transferEnabled: true,
+				transferEnabled: false,
 				transferType: "inbound_call",
 				transferAgentId: "",
 				transferGuidelines: "",
@@ -248,7 +354,7 @@ export default function CampaignModalMain({
 				possibleHandles: "",
 			} as z.input<typeof FormSchema>);
 		}
-	}, [isOpen, customizationForm, areaMode, selectedLeadListId]);
+	}, [isOpen, customizationForm, areaMode]);
 
 	return (
 		<Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -282,7 +388,11 @@ export default function CampaignModalMain({
 					)}
 
 					{/* Debug Log - Shows all selected campaign settings */}
-					<CampaignSettingsDebug formData={customizationForm.getValues()} />
+					<CampaignSettingsDebug
+						formData={watchedCustomizationValues}
+						storeSnapshot={watchedChannelSelection}
+						campaignCost={campaignCost}
+					/>
 				</div>
 			</DialogContent>
 		</Dialog>

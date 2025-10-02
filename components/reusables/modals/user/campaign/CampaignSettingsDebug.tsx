@@ -1,7 +1,26 @@
-"use client";
-
-import { useCampaignCreationStore } from "@/lib/stores/campaignCreation";
+import {
+	useCampaignCreationStore,
+	type CampaignCreationState,
+} from "@/lib/stores/campaignCreation";
+import { formatCurrency } from "@/lib/utils/campaignCostCalculator";
 import type { z } from "zod";
+
+interface CampaignCostResult {
+	CampaignName: string;
+	Channel: string;
+	LeadsTargeted: number;
+	TotalDays: number;
+	TotalAttempts: number;
+	CallCost: number;
+	SmsCost: number;
+	SocialCost: number;
+	DirectMailCost: number;
+	TotalCost: number;
+	AgentsAvailable: number;
+	Plan: string;
+	TotalBillableCredits: number;
+	Margin: number;
+}
 
 interface CampaignSettingsDebugProps {
 	formData?: {
@@ -44,12 +63,17 @@ interface CampaignSettingsDebugProps {
 		possibleEmails?: string;
 		possibleHandles?: string;
 	};
+	storeSnapshot?: CampaignCreationState;
+	campaignCost?: CampaignCostResult;
 }
 
 export default function CampaignSettingsDebug({
 	formData,
+	storeSnapshot,
+	campaignCost,
 }: CampaignSettingsDebugProps) {
-	const store = useCampaignCreationStore();
+	const liveStore = useCampaignCreationStore();
+	const store = storeSnapshot ?? liveStore;
 
 	// Helper function to format values for display
 	const formatValue = (value: any): string => {
@@ -230,6 +254,53 @@ export default function CampaignSettingsDebug({
 						Available Agents: {formatValue(store.availableAgents.length)} agents
 					</div>
 				</div>
+
+				{/* Campaign Cost Calculator */}
+				{campaignCost && (
+					<>
+						<div className="font-medium text-primary">
+							Campaign Cost Breakdown:
+						</div>
+						<div className="ml-2 space-y-1">
+							<div>Campaign: {campaignCost.CampaignName}</div>
+							<div>Channel: {campaignCost.Channel}</div>
+							<div>
+								Lead Count: {campaignCost.LeadsTargeted.toLocaleString()}
+							</div>
+							<div>Total Days: {campaignCost.TotalDays}</div>
+							<div>
+								Total Attempts: {campaignCost.TotalAttempts.toLocaleString()}
+							</div>
+							<div>Plan: {campaignCost.Plan}</div>
+							<div>Margin: {(campaignCost.Margin * 100).toFixed(1)}%</div>
+							{campaignCost.CallCost > 0 && (
+								<div>Call Cost: {formatCurrency(campaignCost.CallCost)}</div>
+							)}
+							{campaignCost.SmsCost > 0 && (
+								<div>SMS Cost: {formatCurrency(campaignCost.SmsCost)}</div>
+							)}
+							{campaignCost.SocialCost > 0 && (
+								<div>
+									Social Cost: {formatCurrency(campaignCost.SocialCost)}
+								</div>
+							)}
+							{campaignCost.DirectMailCost > 0 && (
+								<div>
+									Direct Mail Cost:{" "}
+									{formatCurrency(campaignCost.DirectMailCost)}
+								</div>
+							)}
+							<div className="font-semibold text-green-600">
+								Total Cost: {formatCurrency(campaignCost.TotalCost)}
+							</div>
+							<div className="font-semibold text-blue-600">
+								Billable Credits:{" "}
+								{campaignCost.TotalBillableCredits.toLocaleString()}
+							</div>
+							<div>Available Agents: {campaignCost.AgentsAvailable}</div>
+						</div>
+					</>
+				)}
 			</div>
 		</div>
 	);

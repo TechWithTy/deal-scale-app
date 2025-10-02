@@ -136,9 +136,26 @@ const ChannelCustomizationStep: FC<ChannelCustomizationStepProps> = ({
 									<LeadListSelector
 										value={field.value || ""}
 										onChange={(selectedValue, recordCount) => {
+											console.log(
+												"Lead list selected:",
+												selectedValue,
+												"count:",
+												recordCount,
+											);
+											// Update form field first
 											field.onChange(selectedValue);
+											// Then update store state
 											setSelectedLeadListId(selectedValue);
 											setLeadCount(recordCount);
+											// Trigger validation after a brief delay to ensure state is updated
+											setTimeout(() => {
+												try {
+													form.trigger("selectedLeadListId");
+												} catch (error) {
+													console.error("Form validation error:", error);
+													// Don't let validation errors break the selection
+												}
+											}, 10);
 										}}
 									/>
 								</FormControl>

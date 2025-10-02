@@ -98,11 +98,25 @@ export const FormSchema = z
 			}),
 		senderPoolNumbersCsv: z.string().default(""), // CSV of E.164 numbers
 		// TCPA and compliance fields
-		tcpaSourceLink: z.string().url({ message: "Please enter a valid URL for TCPA source" }),
+		tcpaSourceLink: z
+			.string()
+			.default("")
+			.refine(
+				(value) => {
+					if (!value || value.trim().length === 0) return true;
+					try {
+						new URL(value);
+						return true;
+					} catch (error) {
+						return false;
+					}
+				},
+				{ message: "Please enter a valid URL for TCPA source" },
+			),
 		skipName: z.boolean().default(false),
 		addressVerified: z.boolean().default(false),
 		phoneVerified: z.boolean().default(false),
-		emailAddress: z.string().email().optional(),
+	emailAddress: z.union([z.string().email(), z.literal("")]).optional(),
 		emailVerified: z.boolean().default(false),
 		possiblePhones: z.string().optional(),
 		possibleEmails: z.string().optional(),
