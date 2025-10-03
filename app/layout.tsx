@@ -1,6 +1,7 @@
 import Providers from "@/components/layout/providers";
 import { CommandPaletteProvider, ActionBarRoot } from "external/action-bar";
 import "@uploadthing/react/styles.css";
+import dynamic from "next/dynamic";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import NextTopLoader from "nextjs-toploader";
@@ -9,9 +10,17 @@ import { auth } from "@/auth";
 import SessionSync from "@/components/auth/SessionSync";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import Script from "next/script";
-import SupademoClient from "@/components/integrations/SupademoClient";
+import NonCriticalStyles from "@/components/layout/NonCriticalStyles";
 
 const inter = Inter({ subsets: ["latin"] });
+
+const SupademoClient = dynamic(
+	() => import("@/components/integrations/SupademoClient"),
+	{
+		ssr: false,
+		loading: () => null,
+	},
+);
 
 export const metadata: Metadata = {
 	title: "Deal Scale | Real Estate Lead Generation",
@@ -29,9 +38,10 @@ export default async function RootLayout({
 		<html lang="en" suppressHydrationWarning>
 			<head>
 				{/* Supademo SDK */}
-				<Script src="/api/supademo/script" strategy="beforeInteractive" />
+				<Script src="/api/supademo/script" strategy="lazyOnload" />
 			</head>
 			<body className={inter.className} suppressHydrationWarning={true}>
+				<NonCriticalStyles />
 				{/* Move to Providers Next Command Nuqs */}
 				<NextTopLoader showSpinner={false} />
 				<CommandPaletteProvider>

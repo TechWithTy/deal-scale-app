@@ -30,7 +30,7 @@ export default async function HomePage() {
 				<p
 					style={{
 						fontSize: "1.125rem",
-						color: "#6b7280",
+						color: "#374151",
 						marginBottom: "2rem",
 					}}
 				>
@@ -39,7 +39,7 @@ export default async function HomePage() {
 				<a
 					href="/dashboard"
 					style={{
-						backgroundColor: "#3b82f6",
+						backgroundColor: "#1d4ed8",
 						color: "white",
 						padding: "0.75rem 1.5rem",
 						borderRadius: "0.375rem",

@@ -1,12 +1,12 @@
-import type React from "react";
-import { MapWithDrawing } from "external/google-maps-two/components";
+import React from "react";
+import { useGoogleMapsReady } from "./GoogleMapsBootstrap";
+import { Coordinate } from "@/types/_dashboard/maps";
 import {
 	PlaceSearchPanel,
-	type UIPanelPlace,
+	UIPanelPlace,
 } from "external/google-maps-two/components/composit/components/PlaceSearchPanel";
-import type { Coordinate } from "@/types/_dashboard/maps";
+import { MapWithDrawing } from "external/google-maps-two/components";
 import { GOOGLE_LIBS } from "./helpers";
-import { useGoogleMapsReady } from "./GoogleMapsBootstrap";
 
 type SelectPlacePayload = {
 	placeId?: string;
@@ -42,8 +42,13 @@ const MapArea: React.FC<MapAreaProps> = ({
 	onViewPlace,
 }) => {
 	const mapsReady = useGoogleMapsReady();
+	const [isClient, setIsClient] = React.useState(false);
 
-	if (!mapsReady) {
+	React.useEffect(() => {
+		setIsClient(true);
+	}, []);
+
+	if (!isClient || !mapsReady) {
 		return (
 			<div className="flex flex-col gap-4">
 				<div className="h-12 w-full animate-pulse rounded-md bg-muted" />
@@ -92,8 +97,11 @@ const MapArea: React.FC<MapAreaProps> = ({
 				center={center}
 				onCenterChange={onCenterChange}
 				results={markers as unknown as google.maps.LatLngLiteral[]}
-				onResultsChange={(pins) => {
-					const coords = pins.map((p) => ({ lat: p.lat, lng: p.lng }));
+				onResultsChange={(pins: google.maps.LatLngLiteral[]) => {
+					const coords = pins.map((p: google.maps.LatLngLiteral) => ({
+						lat: p.lat,
+						lng: p.lng,
+					}));
 					onResultsChange(coords as Coordinate[]);
 				}}
 				defaultZoom={11}
@@ -105,7 +113,12 @@ const MapArea: React.FC<MapAreaProps> = ({
 				onViewPlace={onViewPlace}
 				onAddToList={onAddToList}
 				pinSnapToGrid={false}
-				assumeLoaded
+				assumeLoaded={
+					mapsReady &&
+					typeof window !== "undefined" &&
+					!!window.google?.maps?.Map &&
+					!!window.google?.maps?.importLibrary
+				}
 			/>
 		</>
 	);
