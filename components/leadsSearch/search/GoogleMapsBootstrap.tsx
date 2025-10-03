@@ -20,9 +20,9 @@ function buildSrc(key: string, mapId?: string) {
 	if (key) params.set("key", key);
 	// Load core libs used across the app; Places is required for Autocomplete
 	params.set("libraries", "places,geometry,marker,drawing");
-	// Use modern loader
+	// Pin to the weekly channel without opting into the async loader, which
+	// breaks libraries that still rely on the classic constructors.
 	params.set("v", "weekly");
-	params.set("loading", "async");
 	if (mapId) params.set("map_ids", mapId);
 	return `https://maps.googleapis.com/maps/api/js?${params.toString()}`;
 }
