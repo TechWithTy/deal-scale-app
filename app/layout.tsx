@@ -26,15 +26,12 @@ export default async function RootLayout({
 }) {
 	const session = await auth();
 	return (
-		<html lang="en">
+		<html lang="en" suppressHydrationWarning>
 			<head>
 				{/* Supademo SDK */}
-				<Script
-					src="https://script.supademo.com/script.js"
-					strategy="beforeInteractive"
-				/>
+				<Script src="/api/supademo/script" strategy="beforeInteractive" />
 			</head>
-			<body className={`${inter.className}  `} suppressHydrationWarning={true}>
+			<body className={inter.className} suppressHydrationWarning={true}>
 				{/* Move to Providers Next Command Nuqs */}
 				<NextTopLoader showSpinner={false} />
 				<CommandPaletteProvider>

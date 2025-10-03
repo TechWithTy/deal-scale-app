@@ -6,6 +6,7 @@ import {
 } from "external/google-maps-two/components/composit/components/PlaceSearchPanel";
 import type { Coordinate } from "@/types/_dashboard/maps";
 import { GOOGLE_LIBS } from "./helpers";
+import { useGoogleMapsReady } from "./GoogleMapsBootstrap";
 
 type SelectPlacePayload = {
 	placeId?: string;
@@ -40,6 +41,19 @@ const MapArea: React.FC<MapAreaProps> = ({
 	onAddToList,
 	onViewPlace,
 }) => {
+	const mapsReady = useGoogleMapsReady();
+
+	if (!mapsReady) {
+		return (
+			<div className="flex flex-col gap-4">
+				<div className="h-12 w-full animate-pulse rounded-md bg-muted" />
+				<div className="flex h-[420px] items-center justify-center rounded-md border border-dashed border-border text-sm text-muted-foreground">
+					Loading Google Maps…
+				</div>
+			</div>
+		);
+	}
+
 	return (
 		<>
 			<PlaceSearchPanel
@@ -91,6 +105,7 @@ const MapArea: React.FC<MapAreaProps> = ({
 				onViewPlace={onViewPlace}
 				onAddToList={onAddToList}
 				pinSnapToGrid={false}
+				assumeLoaded
 			/>
 		</>
 	);

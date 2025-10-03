@@ -111,17 +111,19 @@ export function DashboardNav({
 					return (
 						<Tooltip key={item.title}>
 							<TooltipTrigger asChild>
-								{featureKey ? (
-									<FeatureGuard
-										featureKey={featureKey}
-										wrapperClassName={guardWrapperClass}
-										orientation={isMinimized ? "vertical" : "auto"}
-									>
-										{navContent}
-									</FeatureGuard>
-								) : (
-									navContent
-								)}
+								<span className="contents">
+									{featureKey ? (
+										<FeatureGuard
+											featureKey={featureKey}
+											wrapperClassName={guardWrapperClass}
+											orientation={isMinimized ? "vertical" : "auto"}
+										>
+											{navContent}
+										</FeatureGuard>
+									) : (
+										navContent
+									)}
+								</span>
 							</TooltipTrigger>
 							{isMinimized && (
 								<TooltipContent align="center" side="right" sideOffset={8}>
