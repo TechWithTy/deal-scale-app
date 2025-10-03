@@ -44,6 +44,25 @@ const MapArea: React.FC<MapAreaProps> = ({
 	const mapsReady = useGoogleMapsReady();
 	const [isClient, setIsClient] = React.useState(false);
 
+	console.log("MapArea: mapsReady =", mapsReady);
+	console.log("MapArea: isClient =", isClient);
+	console.log(
+		"MapArea: window.google exists =",
+		typeof window !== "undefined" && !!window.google,
+	);
+	console.log(
+		"MapArea: window.google.maps exists =",
+		typeof window !== "undefined" && !!window.google?.maps,
+	);
+	console.log(
+		"MapArea: window.google.maps.Map exists =",
+		typeof window !== "undefined" && !!window.google?.maps?.Map,
+	);
+	console.log(
+		"MapArea: window.google.maps.importLibrary exists =",
+		typeof window !== "undefined" && !!window.google?.maps?.importLibrary,
+	);
+
 	React.useEffect(() => {
 		setIsClient(true);
 	}, []);
@@ -107,7 +126,6 @@ const MapArea: React.FC<MapAreaProps> = ({
 				defaultZoom={11}
 				containerStyle={{ width: "100%", height: "420px" }}
 				showAddressHoverInfo
-				centerChangeZoom={16}
 				mapColorScheme="system"
 				selectedPlace={selectedPlace}
 				onViewPlace={onViewPlace}
@@ -117,7 +135,8 @@ const MapArea: React.FC<MapAreaProps> = ({
 					mapsReady &&
 					typeof window !== "undefined" &&
 					!!window.google?.maps?.Map &&
-					!!window.google?.maps?.importLibrary
+					!!window.google?.maps?.importLibrary &&
+					typeof window.google.maps.importLibrary === "function"
 				}
 			/>
 		</>

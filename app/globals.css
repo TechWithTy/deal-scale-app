@@ -36,6 +36,10 @@ video {
 		--chart-3: 197 37% 24%;
 		--chart-4: 43 74% 66%;
 		--chart-5: 27 87% 67%;
+		--hero-background: 222 47% 15%;
+		--hero-foreground: 210 40% 98%;
+		--hero-accent: 197 88% 48%;
+		--hero-accent-foreground: 222 40% 12%;
 	}
 
 	.dark {
@@ -63,6 +67,10 @@ video {
 		--chart-3: 197 37% 24%;
 		--chart-4: 43 74% 66%;
 		--chart-5: 27 87% 67%;
+		--hero-background: 222 47% 15%;
+		--hero-foreground: 210 40% 98%;
+		--hero-accent: 197 88% 48%;
+		--hero-accent-foreground: 222 40% 12%;
 	}
 }
 

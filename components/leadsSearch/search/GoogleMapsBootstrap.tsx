@@ -22,7 +22,10 @@ function buildSrc(key: string, mapId?: string, options?: { async?: boolean }) {
 	const params = new URLSearchParams();
 	if (key) params.set("key", key);
 	// Load core libs used across the app; Places is required for Autocomplete
-	params.set("libraries", "places,geometry,marker,drawing");
+	// Note: When using loading=async, don't specify libraries in URL - import them dynamically
+	if (!async) {
+		params.set("libraries", "places,geometry,marker,drawing");
+	}
 	if (async) {
 		// Pin to the weekly channel while opting into the async loader so Google
 		// serves the modern, performance-optimised bootstrap script.
@@ -58,49 +61,87 @@ export default function GoogleMapsBootstrap({ children }: Props) {
 		let activeScript: HTMLScriptElement | null = null;
 
 		const ensureLibraries = async () => {
+			console.log("GoogleMapsBootstrap: ensureLibraries called");
+			console.log("GoogleMapsBootstrap: window.google exists:", !!w.google);
+			console.log(
+				"GoogleMapsBootstrap: window.google.maps exists:",
+				!!w.google?.maps,
+			);
+			console.log(
+				"GoogleMapsBootstrap: window.google.maps.importLibrary exists:",
+				!!w.google?.maps?.importLibrary,
+			);
+
 			if (
 				!w.google?.maps ||
 				typeof w.google.maps.importLibrary !== "function"
 			) {
+				console.error(
+					"GoogleMapsBootstrap: Google Maps API not properly loaded",
+				);
 				return;
 			}
 
 			if (!w.__googleMapsImportPromise) {
+				console.log("GoogleMapsBootstrap: Starting library imports");
 				const importLibrary = w.google.maps.importLibrary as (
 					name: string,
 				) => Promise<unknown>;
 
-				// Import core maps library first to ensure legacy API compatibility
-				const mapsLib = await importLibrary("maps");
+				try {
+					// Import core maps library first to ensure legacy API compatibility
+					console.log("GoogleMapsBootstrap: Importing maps library");
+					const mapsLib = await importLibrary("maps");
+					console.log("GoogleMapsBootstrap: Maps library imported:", !!mapsLib);
 
-				// Ensure legacy API structure is available for @react-google-maps/api compatibility
-				if (mapsLib && typeof mapsLib === "object" && "Map" in mapsLib) {
-					w.google.maps.Map = (mapsLib as any).Map;
-					w.google.maps.Marker = (mapsLib as any).Marker;
-					w.google.maps.LatLngBounds = (mapsLib as any).LatLngBounds;
-					w.google.maps.LatLng = (mapsLib as any).LatLng;
-					w.google.maps.InfoWindow = (mapsLib as any).InfoWindow;
-					w.google.maps.Polyline = (mapsLib as any).Polyline;
-					w.google.maps.Polygon = (mapsLib as any).Polygon;
-					w.google.maps.Rectangle = (mapsLib as any).Rectangle;
-					w.google.maps.Circle = (mapsLib as any).Circle;
+					// Ensure legacy API structure is available for @react-google-maps/api compatibility
+					if (mapsLib && typeof mapsLib === "object" && "Map" in mapsLib) {
+						console.log("GoogleMapsBootstrap: Setting up legacy API objects");
+						w.google.maps.Map = (mapsLib as any).Map;
+						w.google.maps.Marker = (mapsLib as any).Marker;
+						w.google.maps.LatLngBounds = (mapsLib as any).LatLngBounds;
+						w.google.maps.LatLng = (mapsLib as any).LatLng;
+						w.google.maps.InfoWindow = (mapsLib as any).InfoWindow;
+						w.google.maps.Polyline = (mapsLib as any).Polyline;
+						w.google.maps.Polygon = (mapsLib as any).Polygon;
+						w.google.maps.Rectangle = (mapsLib as any).Rectangle;
+						w.google.maps.Circle = (mapsLib as any).Circle;
+						console.log("GoogleMapsBootstrap: Legacy API objects set up");
+					}
+
+					console.log("GoogleMapsBootstrap: Importing secondary libraries");
+					const [primary, ...secondary] = IMPORT_LIBRARIES.slice(1); // Skip 'maps' as we already imported it
+					w.__googleMapsImportPromise = Promise.all(
+						secondary.map((library) =>
+							// ! Optional libs may fail if disabled for the key;
+							// swallow those errors to avoid breaking map rendering.
+							importLibrary(library).catch(() => undefined),
+						),
+					)
+						.then(() => {
+							console.log(
+								"GoogleMapsBootstrap: All secondary libraries imported successfully",
+							);
+							return undefined;
+						})
+						.catch((error) => {
+							console.error(
+								"GoogleMapsBootstrap: Error importing secondary libraries:",
+								error,
+							);
+							w.__googleMapsImportPromise = undefined;
+							throw error;
+						});
+				} catch (error) {
+					console.error(
+						"GoogleMapsBootstrap: Error in ensureLibraries:",
+						error,
+					);
+					throw error;
 				}
-
-				const [primary, ...secondary] = IMPORT_LIBRARIES.slice(1); // Skip 'maps' as we already imported it
-				w.__googleMapsImportPromise = Promise.all(
-					secondary.map((library) =>
-						// ! Optional libs may fail if disabled for the key;
-						// swallow those errors to avoid breaking map rendering.
-						importLibrary(library).catch(() => undefined),
-					),
-				)
-					.then(() => undefined)
-					.catch((error) => {
-						w.__googleMapsImportPromise = undefined;
-						throw error;
-					});
 			}
 
+			console.log("GoogleMapsBootstrap: Waiting for import promise");
 			return w.__googleMapsImportPromise;
 		};
 
@@ -108,17 +149,32 @@ export default function GoogleMapsBootstrap({ children }: Props) {
 			process.env.NEXT_PUBLIC_GMAPS_KEY ||
 			process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ||
 			"";
+
+		console.log("GoogleMapsBootstrap: API key configured:", !!apiKey);
+		console.log(
+			"GoogleMapsBootstrap: API key value:",
+			apiKey ? "[HIDDEN]" : "EMPTY",
+		);
+
 		const mapId =
 			process.env.NEXT_PUBLIC_GMAPS_MAP_ID ||
 			process.env.NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID ||
 			undefined;
 
-		if (!apiKey) return;
+		console.log("GoogleMapsBootstrap: Map ID configured:", !!mapId);
+
+		if (!apiKey) {
+			console.error(
+				"GoogleMapsBootstrap: No API key configured. Please set NEXT_PUBLIC_GMAPS_KEY or NEXT_PUBLIC_GOOGLE_MAPS_API_KEY",
+			);
+			return;
+		}
 
 		const finalizeReady = () => {
 			if (cancelled) return;
 			w.__googleMapsReady = true;
 			setReady(true);
+			console.log("GoogleMapsBootstrap: Google Maps API ready");
 			if (activeScript) {
 				activeScript.dataset.loaded = "true";
 			}
@@ -127,9 +183,18 @@ export default function GoogleMapsBootstrap({ children }: Props) {
 		let fallbackToLegacy: () => void = () => {};
 
 		const handleLoad = () => {
+			console.log(
+				"GoogleMapsBootstrap: Script loaded, calling ensureLibraries",
+			);
 			ensureLibraries()
-				.then(finalizeReady)
-				.catch(() => {
+				.then(() => {
+					console.log(
+						"GoogleMapsBootstrap: ensureLibraries completed successfully",
+					);
+					finalizeReady();
+				})
+				.catch((error) => {
+					console.error("GoogleMapsBootstrap: ensureLibraries failed:", error);
 					fallbackToLegacy();
 				});
 		};

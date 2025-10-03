@@ -1,54 +1,104 @@
-import { redirect } from "next/navigation";
-import { auth } from "@/auth";
+import { HERO_COLORS } from "@/constants/theme/marketing";
+import Link from "next/link";
+import React from "react";
+import type { CSSProperties } from "react";
 
-export default async function HomePage() {
-	const session = await auth();
+const heroStyle: CSSProperties = {
+	minHeight: "100vh",
+	display: "flex",
+	alignItems: "center",
+	justifyContent: "center",
+	padding: "4rem 1.5rem",
+	background: `radial-gradient(circle at top left, ${HERO_COLORS.muted}, ${HERO_COLORS.background})`,
+	color: HERO_COLORS.text,
+};
 
-	if (session) {
-		redirect("/dashboard");
-	}
+const ctaStyle: CSSProperties = {
+	display: "inline-flex",
+	alignItems: "center",
+	justifyContent: "center",
+	padding: "0.875rem 2.75rem",
+	fontWeight: 600,
+	fontSize: "1rem",
+	borderRadius: "9999px",
+	backgroundColor: HERO_COLORS.accent,
+	color: HERO_COLORS.accentText,
+	textDecoration: "none",
+	boxShadow: "0 12px 30px rgba(14, 165, 233, 0.35)",
+	border: `2px solid ${HERO_COLORS.outline}`,
+};
 
+const secondaryStyle: CSSProperties = {
+	display: "inline-flex",
+	alignItems: "center",
+	justifyContent: "center",
+	padding: "0.875rem 1.5rem",
+	fontWeight: 600,
+	fontSize: "1rem",
+	borderRadius: "9999px",
+	backgroundColor: "transparent",
+	color: HERO_COLORS.text,
+	textDecoration: "none",
+	border: `2px solid ${HERO_COLORS.outline}`,
+	marginLeft: "1rem",
+};
+
+export default function HomePage() {
 	return (
-		<div
-			style={{
-				minHeight: "100vh",
-				display: "flex",
-				alignItems: "center",
-				justifyContent: "center",
-			}}
-		>
-			<div style={{ textAlign: "center" }}>
-				<h1
-					style={{
-						fontSize: "2.5rem",
-						fontWeight: "bold",
-						marginBottom: "1rem",
-					}}
-				>
-					Deal Scale
-				</h1>
-				<p
-					style={{
-						fontSize: "1.125rem",
-						color: "#374151",
-						marginBottom: "2rem",
-					}}
-				>
-					Real Estate Lead Generation Platform
-				</p>
-				<a
-					href="/dashboard"
-					style={{
-						backgroundColor: "#1d4ed8",
-						color: "white",
-						padding: "0.75rem 1.5rem",
-						borderRadius: "0.375rem",
-						textDecoration: "none",
-					}}
-				>
-					Enter Dashboard
-				</a>
-			</div>
-		</div>
+		<main>
+			<section data-testid="hero" style={heroStyle}>
+				<div style={{ maxWidth: "60rem", textAlign: "center" }}>
+					<span
+						style={{
+							fontSize: "0.875rem",
+							letterSpacing: "0.08em",
+							textTransform: "uppercase",
+							display: "inline-block",
+							marginBottom: "1rem",
+							fontWeight: 700,
+							color: HERO_COLORS.accent,
+						}}
+					>
+						Real Estate Growth Platform
+					</span>
+					<h1
+						style={{
+							fontSize: "clamp(2.75rem, 5vw, 4.5rem)",
+							lineHeight: 1.1,
+							marginBottom: "1.5rem",
+						}}
+					>
+						Close More Deals with Predictable, High-Intent Leads
+					</h1>
+					<p
+						style={{
+							fontSize: "1.125rem",
+							lineHeight: 1.8,
+							color: "rgba(241, 245, 249, 0.86)",
+							margin: "0 auto 2.5rem",
+							maxWidth: "42rem",
+						}}
+					>
+						Deal Scale unifies data-driven targeting, automated follow-ups, and
+						transparent analytics so your brokerage can convert prospects into
+						clients faster than ever.
+					</p>
+					<div
+						style={{
+							display: "flex",
+							justifyContent: "center",
+							flexWrap: "wrap",
+						}}
+					>
+						<Link href="/signup" style={ctaStyle}>
+							Get Started
+						</Link>
+						<Link href="/demo" style={secondaryStyle}>
+							View Live Demo
+						</Link>
+					</div>
+				</div>
+			</section>
+		</main>
 	);
 }

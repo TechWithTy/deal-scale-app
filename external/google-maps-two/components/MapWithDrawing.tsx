@@ -380,11 +380,18 @@ export function MapWithDrawing(props: MapWithDrawingProps) {
 	}, [mapInit, assumeLoaded, googleReady]);
 	// If a parent already loaded the script, mark googleReady when available
 	useEffect(() => {
+		console.log("MapWithDrawing: assumeLoaded =", assumeLoaded);
+		console.log("MapWithDrawing: window.google exists =", typeof window !== "undefined" && !!window.google);
+		console.log("MapWithDrawing: window.google.maps exists =", typeof window !== "undefined" && !!window.google?.maps);
+		console.log("MapWithDrawing: window.google.maps.Map exists =", typeof window !== "undefined" && !!window.google?.maps?.Map);
+		console.log("MapWithDrawing: window.google.maps.importLibrary exists =", typeof window !== "undefined" && !!window.google?.maps?.importLibrary);
+
 		if (!assumeLoaded) return;
 		if (typeof window === "undefined") return;
 		const w = window as unknown as { google?: typeof google };
 		// Check for both modern importLibrary and legacy Map constructor
-		if (w.google?.maps?.Map && w.google?.maps?.importLibrary) {
+		if (w.google?.maps?.Map && w.google?.maps?.importLibrary && typeof w.google.maps.importLibrary === "function") {
+			console.log("MapWithDrawing: Setting googleReady to true");
 			setGoogleReady(true);
 		}
 	}, [assumeLoaded]);

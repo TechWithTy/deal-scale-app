@@ -1,21 +1,30 @@
 import Providers from "@/components/layout/providers";
-import { CommandPaletteProvider, ActionBarRoot } from "external/action-bar";
+import { CommandPaletteProvider } from "external/action-bar";
 import "@uploadthing/react/styles.css";
 import dynamic from "next/dynamic";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import NextTopLoader from "nextjs-toploader";
+import type { ReactNode } from "react";
 import "./globals.css";
 import { auth } from "@/auth";
 import SessionSync from "@/components/auth/SessionSync";
-import { NuqsAdapter } from "nuqs/adapters/next/app";
-import Script from "next/script";
 import NonCriticalStyles from "@/components/layout/NonCriticalStyles";
+import Script from "next/script";
+import { NuqsAdapter } from "nuqs/adapters/next/app";
 
 const inter = Inter({ subsets: ["latin"] });
 
 const SupademoClient = dynamic(
 	() => import("@/components/integrations/SupademoClient"),
+	{
+		ssr: false,
+		loading: () => null,
+	},
+);
+
+const ActionBarRoot = dynamic(
+	() => import("external/action-bar").then((mod) => mod.ActionBarRoot),
 	{
 		ssr: false,
 		loading: () => null,
@@ -31,7 +40,7 @@ export const metadata: Metadata = {
 export default async function RootLayout({
 	children,
 }: {
-	children: React.ReactNode;
+	children: ReactNode;
 }) {
 	const session = await auth();
 	return (
