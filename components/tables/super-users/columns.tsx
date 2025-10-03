@@ -4,6 +4,7 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { DataTableColumnHeader } from "external/shadcn-table/src/components/data-table/data-table-column-header";
 import type { AdminUser } from "./types";
 import { CellAction } from "./cell-action";
+import { formatAdminRole } from "@/lib/admin/roles";
 
 interface AdminUserTableMeta {
 	onView?: (user: AdminUser) => void;
@@ -47,6 +48,11 @@ export const adminUserColumns: ColumnDef<AdminUser>[] = [
 			<DataTableColumnHeader column={column} title="Role" />
 		),
 		enableSorting: true,
+		cell: ({ row }) => (
+			<span className="font-medium">
+				{formatAdminRole(row.getValue("role") as string | undefined)}
+			</span>
+		),
 	},
 	{
 		accessorKey: "status",

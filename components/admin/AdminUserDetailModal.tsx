@@ -9,6 +9,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
+import { formatAdminRole } from "@/lib/admin/roles";
 import AdjustCreditsModal from "./AdjustCreditsModal";
 
 export interface AdminUserDetailModalProps {
@@ -209,7 +210,7 @@ export default function AdminUserDetailModal({
 								<div className="rounded-md border p-4 text-sm">
 									<div>
 										<span className="text-muted-foreground">Role:</span>{" "}
-										{user.role}
+										{formatAdminRole(user.role)}
 									</div>
 									<div>
 										<span className="text-muted-foreground">Status:</span>{" "}

@@ -5,8 +5,8 @@ import { useParams } from "next/navigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import AdjustCreditsModal from "@/components/admin/AdjustCreditsModal";
-import ImpersonationBanner from "@/components/admin/ImpersonationBanner";
 import { useImpersonationStore } from "@/lib/stores/impersonationStore";
+import { formatAdminRole } from "@/lib/admin/roles";
 
 interface AdminDetailUser {
 	id: string;
@@ -48,7 +48,7 @@ export default function AdminUserDetailPage() {
 					email: `user_${userId}@example.com`,
 					firstName: "Jane",
 					lastName: "Doe",
-					role: "user",
+					role: "platform_support",
 					status: "active",
 					credits: {
 						ai: { allotted: 1000, used: 250 },
@@ -87,7 +87,6 @@ export default function AdminUserDetailPage() {
 
 	return (
 		<div className="space-y-4 p-6">
-			<ImpersonationBanner />
 			<div>
 				<h1 className="font-semibold text-2xl">User Detail</h1>
 				<p className="text-muted-foreground text-sm">
@@ -106,6 +105,9 @@ export default function AdminUserDetailPage() {
 								</div>
 								<div className="text-muted-foreground text-sm">
 									{user.email}
+								</div>
+								<div className="text-muted-foreground text-xs">
+									Role: {formatAdminRole(user.role)}
 								</div>
 							</div>
 							<div className="flex items-center gap-2">
@@ -201,7 +203,7 @@ export default function AdminUserDetailPage() {
 							<div className="rounded-md border p-4 text-sm">
 								<div>
 									<span className="text-muted-foreground">Role:</span>{" "}
-									{user.role}
+									{formatAdminRole(user.role)}
 								</div>
 								<div>
 									<span className="text-muted-foreground">Status:</span>{" "}

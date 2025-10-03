@@ -17,7 +17,14 @@ import type {
 	UserRole,
 } from "@/types/user";
 
-const VALID_ROLES: UserRole[] = ["admin", "manager", "member"];
+const VALID_ROLES: UserRole[] = [
+        "admin",
+        "manager",
+        "member",
+        "support",
+        "platform_admin",
+        "platform_support",
+];
 
 const PERMISSION_RESOURCES: PermissionResource[] = [
 	"users",
@@ -332,17 +339,17 @@ const authConfig = {
                                         isBetaTester?: boolean;
                                         isPilotTester?: boolean;
                                 };
-				(
-					token as JWT & {
-						role?: "admin" | "manager" | "member";
-						tier?: SubscriptionTier;
-						permissions?: string[];
-						permissionMatrix?: PermissionMatrix;
-						permissionList?: string[];
-						quotas?: UserQuotas;
-						subscription?: UserProfileSubscription;
-					}
-				).role = u.role as "admin" | "manager" | "member" | undefined;
+                                (
+                                        token as JWT & {
+                                                role?: UserRole;
+                                                tier?: SubscriptionTier;
+                                                permissions?: string[];
+                                                permissionMatrix?: PermissionMatrix;
+                                                permissionList?: string[];
+                                                quotas?: UserQuotas;
+                                                subscription?: UserProfileSubscription;
+                                        }
+                                ).role = u.role as UserRole | undefined;
 				(
 					token as JWT & {
 						role?: string;

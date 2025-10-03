@@ -3,6 +3,7 @@
 import { toast } from "sonner";
 import { signIn } from "next-auth/react";
 import type { User as UserType } from "@/types/user";
+import { isClassicAdminRole, isPlatformAdminRole } from "@/lib/admin/roles";
 
 // Extend the User type to ensure password is required for test users
 export type TestUser = Omit<UserType, "password"> & {
@@ -17,6 +18,9 @@ export type EditableUser = TestUser & {
 	skipTracesCredits: Credits;
 	newPermission?: string;
 };
+
+const isAdminLikeRole = (role: UserType["role"]): boolean =>
+	isClassicAdminRole(role) || isPlatformAdminRole(role);
 
 export const handleLogin = async (user: EditableUser) => {
 	try {
@@ -60,17 +64,17 @@ export const initializeEditableUsers = (testUsers: TestUser[]) =>
 		aiCredits:
 			// Prefer subscription credits if available (UserType includes subscription)
 			u.subscription?.aiCredits ??
-			(u.role === "admin"
+			(isAdminLikeRole(u.role)
 				? { allotted: 1000, used: 250, resetInDays: 7 }
 				: { allotted: 500, used: 100, resetInDays: 7 }),
 		leadsCredits:
 			u.subscription?.leads ??
-			(u.role === "admin"
+			(isAdminLikeRole(u.role)
 				? { allotted: 500, used: 120, resetInDays: 30 }
 				: { allotted: 100, used: 20, resetInDays: 30 }),
 		skipTracesCredits:
 			u.subscription?.skipTraces ??
-			(u.role === "admin"
+			(isAdminLikeRole(u.role)
 				? { allotted: 200, used: 50, resetInDays: 30 }
 				: { allotted: 50, used: 10, resetInDays: 30 }),
 	}));

@@ -51,6 +51,24 @@ const MOCK_USERS: AdminUser[] = [
 		role: "admin",
 		status: "active",
 	},
+	{
+		id: "4",
+		email: "platform.admin@example.com",
+		firstName: "Priya",
+		lastName: "Rao",
+		phone: "+1 (555) 741-9630",
+		role: "platform_admin",
+		status: "active",
+	},
+	{
+		id: "5",
+		email: "support.platform@example.com",
+		firstName: "Marcus",
+		lastName: "Lee",
+		phone: "+1 (555) 369-1470",
+		role: "platform_support",
+		status: "pending",
+	},
 ];
 
 export default function SuperUsersTable() {
