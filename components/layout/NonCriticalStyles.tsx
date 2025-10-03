@@ -2,6 +2,15 @@
 
 import { useEffect } from "react";
 
+type IdleCallbackHandle = number;
+
+type WindowWithIdle = Window & {
+	requestIdleCallback?: (callback: () => void) => IdleCallbackHandle;
+	cancelIdleCallback?: (handle: IdleCallbackHandle) => void;
+};
+
+const IDLE_FALLBACK_DELAY_MS = 150;
+
 const NON_CRITICAL_STYLESHEET_ID = "deal-scale-non-critical-css";
 const NON_CRITICAL_STYLESHEET_PATH = "/css/non-critical.css";
 
@@ -40,7 +49,39 @@ function appendNonCriticalStyles() {
 		stylesheet.media = "all";
 	};
 
+	preload.addEventListener("load", () => {
+		preload.remove();
+	});
+
 	head.append(preload, stylesheet);
+}
+
+function scheduleDeferredInjection(task: () => void) {
+	if (typeof window === "undefined") {
+		return undefined;
+	}
+
+	const { requestIdleCallback, cancelIdleCallback } = window as WindowWithIdle;
+
+	if (typeof requestIdleCallback === "function") {
+		const handle = requestIdleCallback(() => {
+			task();
+		});
+
+		return () => {
+			if (typeof cancelIdleCallback === "function") {
+				cancelIdleCallback(handle);
+			}
+		};
+	}
+
+	const timeout = window.setTimeout(() => {
+		task();
+	}, IDLE_FALLBACK_DELAY_MS);
+
+	return () => {
+		window.clearTimeout(timeout);
+	};
 }
 
 /**
@@ -49,7 +90,9 @@ function appendNonCriticalStyles() {
  */
 export function NonCriticalStyles() {
 	useEffect(() => {
-		appendNonCriticalStyles();
+		return scheduleDeferredInjection(() => {
+			appendNonCriticalStyles();
+		});
 	}, []);
 
 	return null;
