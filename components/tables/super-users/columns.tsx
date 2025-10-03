@@ -14,6 +14,7 @@ interface AdminUserTableMeta {
 	onSuspendUser?: (user: AdminUser) => void;
 	onUnsuspendUser?: (user: AdminUser) => void;
 	onBanUser?: (user: AdminUser) => void;
+	onImpersonate?: (user: AdminUser) => void;
 }
 
 declare module "@tanstack/react-table" {
@@ -78,6 +79,7 @@ export const adminUserColumns: ColumnDef<AdminUser>[] = [
 			const onSuspendUser = table.options.meta?.onSuspendUser;
 			const onUnsuspendUser = table.options.meta?.onUnsuspendUser;
 			const onBanUser = table.options.meta?.onBanUser;
+			const onImpersonate = table.options.meta?.onImpersonate;
 			return (
 				<CellAction
 					user={row.original}
@@ -88,6 +90,7 @@ export const adminUserColumns: ColumnDef<AdminUser>[] = [
 					onSuspendUser={onSuspendUser}
 					onUnsuspendUser={onUnsuspendUser}
 					onBanUser={onBanUser}
+					onImpersonate={onImpersonate}
 				/>
 			);
 		},

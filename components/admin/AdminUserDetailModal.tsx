@@ -11,6 +11,8 @@ import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import { formatAdminRole } from "@/lib/admin/roles";
 import AdjustCreditsModal from "./AdjustCreditsModal";
+import { useImpersonationStore } from "@/lib/stores/impersonationStore";
+import { toast } from "sonner";
 
 export interface AdminUserDetailModalProps {
 	open: boolean;
@@ -51,6 +53,7 @@ export default function AdminUserDetailModal({
 	const [logs, setLogs] = useState<ActivityEvent[]>([]);
 	const [loading, setLoading] = useState(false);
 	const [creditsOpen, setCreditsOpen] = useState(false);
+	const { startImpersonation } = useImpersonationStore();
 
 	useEffect(() => {
 		if (!open || !userId) return;
@@ -109,6 +112,19 @@ export default function AdminUserDetailModal({
 
 	const remaining = (a: number, u: number) => Math.max(0, a - u);
 
+	const handleImpersonate = (target: AdminDetailUser) => {
+		const fullName =
+			`${target.firstName ?? ""} ${target.lastName ?? ""}`.trim();
+		startImpersonation({
+			adminToken: "mock-admin-jwt",
+			userName: fullName || target.email,
+			userId: target.id,
+		});
+		toast.success(
+			`Impersonation session started for ${fullName || target.email}`,
+		);
+	};
+
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
 			<DialogContent
@@ -139,6 +155,9 @@ export default function AdminUserDetailModal({
 										onClick={() => setCreditsOpen(true)}
 									>
 										Adjust Credits
+									</Button>
+									<Button onClick={() => handleImpersonate(user)}>
+										Impersonate
 									</Button>
 								</div>
 							</div>

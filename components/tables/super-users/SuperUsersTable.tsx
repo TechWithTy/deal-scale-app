@@ -22,6 +22,8 @@ import {
 	AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { z } from "zod";
+import { toast } from "sonner";
+import { useImpersonationStore } from "@/lib/stores/impersonationStore";
 
 const MOCK_USERS: AdminUser[] = [
 	{
@@ -90,6 +92,7 @@ export default function SuperUsersTable() {
 	const [banUser, setBanUser] = useState<AdminUser | null>(null);
 	const [isBanConfirmOpen, setIsBanConfirmOpen] = useState(false);
 	const [banEmail, setBanEmail] = useState("");
+	const { startImpersonation } = useImpersonationStore();
 
 	const table = useDataTable<AdminUser>({
 		data: MOCK_USERS,
@@ -131,6 +134,21 @@ export default function SuperUsersTable() {
 				setBanUser(user);
 				setIsBanConfirmOpen(true);
 				setBanEmail("");
+			},
+			onImpersonate: (user: AdminUser) => {
+				startImpersonation({
+					adminToken: "mock-admin-jwt",
+					userName:
+						`${user.firstName ?? ""} ${user.lastName ?? ""}`.trim() ||
+						user.email,
+					userId: user.id,
+				});
+				toast.success(
+					`Impersonation session started for ${
+						`${user.firstName ?? ""} ${user.lastName ?? ""}`.trim() ||
+						user.email
+					}`,
+				);
 			},
 		},
 	});
