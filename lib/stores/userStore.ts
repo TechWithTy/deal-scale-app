@@ -51,6 +51,8 @@ interface UserState {
 		leads: UserCredits;
 		skipTraces: UserCredits;
 	};
+	isBetaTester: boolean;
+	isPilotTester: boolean;
 	setUser: (
 		session: {
 			user?: {
@@ -65,6 +67,8 @@ interface UserState {
 					leads?: UserCredits;
 					skipTraces?: UserCredits;
 				};
+				isBetaTester?: boolean;
+				isPilotTester?: boolean;
 			};
 		} | null,
 	) => void;
@@ -88,6 +92,8 @@ const createBaseState = () => ({
 		leads: { used: 0, allotted: 0 },
 		skipTraces: { used: 0, allotted: 0 },
 	},
+	isBetaTester: false,
+	isPilotTester: false,
 });
 
 export const useUserStore = create<UserState>((set, get) => ({
@@ -141,6 +147,8 @@ export const useUserStore = create<UserState>((set, get) => ({
 					allotted: quotas.skipTraces.allotted ?? 0,
 				},
 			},
+			isBetaTester: Boolean(u.isBetaTester),
+			isPilotTester: Boolean(u.isPilotTester),
 		});
 	},
 	consumeLeads: (amount) => {

@@ -29,6 +29,8 @@ export const users: User[] = [
 		password: "password123",
 		role: "admin",
 		tier: "Enterprise",
+		isBetaTester: true,
+		isPilotTester: true,
 		permissions: adminPermissions,
 		permissionList: flattenPermissionMatrix(adminPermissions),
 		quotas: {
@@ -49,6 +51,8 @@ export const users: User[] = [
 		password: "password123",
 		role: "member",
 		tier: "Starter",
+		isBetaTester: true,
+		isPilotTester: false,
 		permissions: {
 			leads: ["read", "create"],
 			campaigns: ["read"],
@@ -67,11 +71,13 @@ export const users: User[] = [
 	},
 	{
 		id: "3",
-		name: "Free User",
+		name: "Basic User",
 		email: "free@example.com",
 		password: "password123",
 		role: "member",
-		tier: "Free",
+		tier: "Basic",
+		isBetaTester: false,
+		isPilotTester: false,
 		permissions: {
 			leads: ["read"],
 		},

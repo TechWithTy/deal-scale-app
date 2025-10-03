@@ -19,6 +19,8 @@ declare module "next-auth" {
 			permissionMatrix?: PermissionMatrix;
 			permissionList?: string[];
 			quotas?: UserQuotas;
+			isBetaTester?: boolean;
+			isPilotTester?: boolean;
 		} & DefaultSession["user"];
 	}
 
@@ -29,6 +31,8 @@ declare module "next-auth" {
 		permissionMatrix?: PermissionMatrix;
 		permissionList?: string[];
 		quotas?: UserQuotas;
+		isBetaTester?: boolean;
+		isPilotTester?: boolean;
 	}
 }
 
@@ -41,5 +45,7 @@ declare module "next-auth/jwt" {
 		permissionMatrix?: PermissionMatrix;
 		permissionList?: string[];
 		quotas?: UserQuotas;
+		isBetaTester?: boolean;
+		isPilotTester?: boolean;
 	}
 }

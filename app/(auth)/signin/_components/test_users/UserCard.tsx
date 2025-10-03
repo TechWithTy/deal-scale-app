@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import {
 	Select,
 	SelectContent,
@@ -17,16 +16,15 @@ import {
 	CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { v4 as uuid } from "uuid";
-import { useTheme } from "next-themes";
-import { COMMON_PERMISSIONS } from "./userHelpers";
-import { updateCredits, formatCreditsDisplay } from "./creditUtils";
+import { updateCredits } from "./creditUtils";
 import type { EditableUser } from "./userHelpers";
-import type { Credits } from "./creditUtils";
 import type { CreditsProps } from "./CreditsComponent";
 import type { PermissionsEditorProps } from "./PermissionsEditor";
 import { CreditsComponent } from "./CreditsComponent";
 import { PermissionsEditor } from "./PermissionsEditor";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import type { SubscriptionTier } from "@/constants/subscription/tiers";
 
 interface UserCardProps {
 	user: EditableUser;
@@ -38,8 +36,6 @@ interface UserCardProps {
 }
 
 export function UserCard({ user, onUpdateUser, onLogin }: UserCardProps) {
-	const { theme } = useTheme();
-
 	const handleRoleChange = (role: "admin" | "member") => {
 		onUpdateUser(user.id, (u: EditableUser) => ({
 			...u,
@@ -52,7 +48,7 @@ export function UserCard({ user, onUpdateUser, onLogin }: UserCardProps) {
 		}));
 	};
 
-	const handleTierChange = (tier: "Free" | "Starter" | "Enterprise") => {
+	const handleTierChange = (tier: SubscriptionTier) => {
 		onUpdateUser(user.id, (u: EditableUser) => ({
 			...u,
 			tier,
@@ -90,12 +86,16 @@ export function UserCard({ user, onUpdateUser, onLogin }: UserCardProps) {
 	};
 
 	return (
-		<Card key={user.id} className="w-full border-border shadow-sm">
+		<Card
+			key={user.id}
+			className="w-full border-border bg-card text-card-foreground shadow-sm"
+		>
 			<CardHeader>
 				<CardTitle className="flex items-center gap-2">
 					<div
+						aria-hidden
 						className={`h-3 w-3 rounded-full ${
-							user.role === "admin" ? "bg-green-500" : "bg-blue-500"
+							user.role === "admin" ? "bg-primary" : "bg-accent"
 						}`}
 					/>
 					{user.name}
@@ -104,27 +104,34 @@ export function UserCard({ user, onUpdateUser, onLogin }: UserCardProps) {
 			</CardHeader>
 			<CardContent>
 				<div className="space-y-2">
-					<div className="flex items-center gap-2 text-sm">
+					<div className="flex items-center justify-between gap-2 text-sm">
 						<span className="font-medium">Role:</span>
-						<select
+						<Select
+							aria-label="Select role"
 							value={user.role}
-							onChange={(e) =>
-								handleRoleChange(e.target.value as "admin" | "member")
-							}
-							className="rounded-md border bg-background"
+							onValueChange={handleRoleChange}
 						>
-							<option value="admin">admin</option>
-							<option value="member">member</option>
-						</select>
-					</div>
-					<div className="flex items-center gap-2 text-sm">
-						<span className="font-medium">Tier:</span>
-						<Select value={user.tier} onValueChange={handleTierChange}>
-							<SelectTrigger className="w-32">
+							<SelectTrigger className="w-32 bg-background">
 								<SelectValue />
 							</SelectTrigger>
 							<SelectContent>
-								<SelectItem value="Free">Free</SelectItem>
+								<SelectItem value="admin">Admin</SelectItem>
+								<SelectItem value="member">Member</SelectItem>
+							</SelectContent>
+						</Select>
+					</div>
+					<div className="flex items-center justify-between gap-2 text-sm">
+						<span className="font-medium">Tier:</span>
+						<Select
+							aria-label="Select subscription tier"
+							value={user.tier}
+							onValueChange={handleTierChange}
+						>
+							<SelectTrigger className="w-32 bg-background">
+								<SelectValue />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem value="Basic">Basic</SelectItem>
 								<SelectItem value="Starter">Starter</SelectItem>
 								<SelectItem value="Enterprise">Enterprise</SelectItem>
 							</SelectContent>
@@ -154,15 +161,48 @@ export function UserCard({ user, onUpdateUser, onLogin }: UserCardProps) {
 							)
 						}
 					/>
+					<div className="grid gap-3">
+						<div className="flex items-center justify-between">
+							<Label
+								htmlFor={`beta-${user.id}`}
+								className="text-sm font-medium"
+							>
+								Beta tester
+							</Label>
+							<Switch
+								id={`beta-${user.id}`}
+								checked={Boolean(user.isBetaTester)}
+								onCheckedChange={(checked) =>
+									onUpdateUser(user.id, (u: EditableUser) => ({
+										...u,
+										isBetaTester: checked,
+									}))
+								}
+							/>
+						</div>
+						<div className="flex items-center justify-between">
+							<Label
+								htmlFor={`pilot-${user.id}`}
+								className="text-sm font-medium"
+							>
+								Pilot tester
+							</Label>
+							<Switch
+								id={`pilot-${user.id}`}
+								checked={Boolean(user.isPilotTester)}
+								onCheckedChange={(checked) =>
+									onUpdateUser(user.id, (u: EditableUser) => ({
+										...u,
+										isPilotTester: checked,
+									}))
+								}
+							/>
+						</div>
+					</div>
 				</div>
 			</CardContent>
 			<CardFooter>
-				<Button
-					type="button"
-					onClick={() => onLogin(user)}
-					className="w-full"
-					variant={theme === "dark" ? "outline" : "default"}
-				>
+				<Button type="button" onClick={() => onLogin(user)} className="w-full">
 					{user.role === "admin"
 						? `Login as Admin (${user.tier})`
 						: `Login as Regular (${user.tier})`}

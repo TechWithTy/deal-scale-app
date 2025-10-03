@@ -25,6 +25,7 @@ export const handleLogin = async (user: EditableUser) => {
 			password: user.password,
 			// propagate current UI selections into credentials for authorize()
 			role: user.role,
+			tier: user.tier,
 			permissions: JSON.stringify(user.permissions),
 			aiAllotted: String(user.aiCredits.allotted),
 			aiUsed: String(user.aiCredits.used),
@@ -32,6 +33,8 @@ export const handleLogin = async (user: EditableUser) => {
 			leadsUsed: String(user.leadsCredits.used),
 			skipAllotted: String(user.skipTracesCredits.allotted),
 			skipUsed: String(user.skipTracesCredits.used),
+			isBetaTester: String(Boolean(user.isBetaTester)),
+			isPilotTester: String(Boolean(user.isPilotTester)),
 			callbackUrl: "/dashboard",
 			redirect: true,
 		});
@@ -52,6 +55,8 @@ export const COMMON_PERMISSIONS = [
 export const initializeEditableUsers = (testUsers: TestUser[]) =>
 	testUsers.map((u) => ({
 		...u,
+		isBetaTester: Boolean(u.isBetaTester),
+		isPilotTester: Boolean(u.isPilotTester),
 		aiCredits:
 			// Prefer subscription credits if available (UserType includes subscription)
 			u.subscription?.aiCredits ??

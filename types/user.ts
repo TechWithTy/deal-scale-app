@@ -29,7 +29,7 @@ export interface UserQuotas {
 
 export type UserRole = "admin" | "manager" | "member";
 
-export type UserTier = "Free" | "Starter" | "Enterprise";
+export type UserTier = SubscriptionTier;
 
 export interface User {
 	id: string;
@@ -38,6 +38,8 @@ export interface User {
 	password?: string;
 	role: UserRole;
 	tier: UserTier;
+	isBetaTester?: boolean;
+	isPilotTester?: boolean;
 	permissions: PermissionMatrix;
 	permissionList: string[]; // Derived list (e.g., ["leads:read"]) for legacy checks
 	quotas: UserQuotas;
@@ -47,3 +49,4 @@ export interface User {
 		skipTraces: { allotted: number; used: number; resetInDays: number };
 	};
 }
+import type { SubscriptionTier } from "@/constants/subscription/tiers";

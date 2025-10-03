@@ -1,12 +1,14 @@
 import { faker } from "@faker-js/faker";
 import { v4 as uuid } from "uuid";
+import { NEXT_PUBLIC_APP_TESTING_MODE } from "./testingMode";
+export { APP_TESTING_MODE, NEXT_PUBLIC_APP_TESTING_MODE } from "./testingMode";
 import type { NavItem } from "@/types";
 import type {
-	Address,
-	ContactInfo,
-	LeadStatus,
-	LeadTypeGlobal,
-	SocialLinks,
+        Address,
+        ContactInfo,
+        LeadStatus,
+        LeadTypeGlobal,
+        SocialLinks,
 } from "@/types/_dashboard/leads";
 
 //
@@ -15,10 +17,8 @@ import type {
 //
 
 // Resolve testing mode from env (Next.js runtime)
-export const NEXT_PUBLIC_APP_TESTING_MODE =
-	String(process.env.NEXT_PUBLIC_APP_TESTING_MODE ?? "")
-		.toLowerCase()
-		.trim() === "true";
+// Consumers should import NEXT_PUBLIC_APP_TESTING_MODE or APP_TESTING_MODE from
+// "./testingMode" (re-exported above).
 
 //
 // Mock Data Generation

@@ -11,8 +11,13 @@ export default defineConfig({
     include: [
       'lib/stores/user/_tests/**/*.spec.ts',
       'lib/stores/user/_tests/**/*.test.ts',
+<<<<<<< ours
       'tests/**/*.test.ts',
       'tests/**/*.spec.ts',
+=======
+      '_tests/**/*.spec.ts',
+      '_tests/**/*.test.ts',
+>>>>>>> theirs
     ],
     setupFiles: ['lib/stores/user/_tests/_steps/setup.ts'],
   },
