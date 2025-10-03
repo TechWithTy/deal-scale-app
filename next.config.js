@@ -1,4 +1,5 @@
 const path = require("node:path");
+const { buildCacheControl } = require("./utils/http/cacheControl.js");
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -11,7 +12,7 @@ const nextConfig = {
 			{
 				key: "Content-Security-Policy",
 				value:
-					"default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https: blob:; connect-src 'self' https:; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https:; font-src 'self' data: https:; frame-ancestors 'self'; form-action 'self'; base-uri 'self';",
+					"default-src 'self'; script-src 'self' 'unsafe-inline' https: blob:; connect-src 'self' https:; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https:; font-src 'self' data: https:; frame-ancestors 'self'; form-action 'self'; base-uri 'self';",
 			},
 			{
 				key: "Strict-Transport-Security",
@@ -26,10 +27,26 @@ const nextConfig = {
 			{ key: "X-Frame-Options", value: "SAMEORIGIN" },
 		];
 
+		const marketingCacheControl = buildCacheControl({
+			cacheability: "public",
+			maxAge: 900,
+			sMaxAge: 86400,
+			staleWhileRevalidate: 86400,
+		});
+
 		return [
 			{
 				source: "/(.*)",
 				headers: securityHeaders,
+			},
+			{
+				source: "/",
+				headers: [
+					{
+						key: "Cache-Control",
+						value: marketingCacheControl,
+					},
+				],
 			},
 		];
 	},
@@ -48,6 +65,24 @@ const nextConfig = {
 			"placehold.co",
 			"i.pravatar.cc",
 		],
+	},
+
+	experimental: {
+		optimizePackageImports: [
+			"lucide-react",
+			"date-fns",
+			"@radix-ui/react-icons",
+		],
+	},
+
+	compiler: {
+		removeConsole: true,
+		reactRemoveProperties: true,
+	},
+
+	modularizeImports: {
+		"lucide-react": { transform: "lucide-react/dist/esm/icons/{{member}}" },
+		"date-fns": { transform: "date-fns/{{member}}" },
 	},
 
 	// Simplified webpack configuration

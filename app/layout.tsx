@@ -1,17 +1,12 @@
+import NonCriticalStyles from "@/components/layout/NonCriticalStyles";
 import Providers from "@/components/layout/providers";
-import { CommandPaletteProvider } from "external/action-bar";
-import "@uploadthing/react/styles.css";
-import dynamic from "next/dynamic";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import NextTopLoader from "nextjs-toploader";
-import type { ReactNode } from "react";
+import React, { type ReactNode } from "react";
 import "./globals.css";
 import { auth } from "@/auth";
-import SessionSync from "@/components/auth/SessionSync";
-import NonCriticalStyles from "@/components/layout/NonCriticalStyles";
 import Script from "next/script";
-import { NuqsAdapter } from "nuqs/adapters/next/app";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -41,29 +36,35 @@ export default async function RootLayout({
 	children,
 }: {
 	children: ReactNode;
-}) {
+}): Promise<React.ReactElement> {
 	const session = await auth();
+	const isAuthenticated = Boolean(session);
+	const AuthenticatedAppShell = isAuthenticated
+		? (await import("@/components/layout/AuthenticatedAppShell")).default
+		: null;
+	void React;
+
 	return (
 		<html lang="en" suppressHydrationWarning>
 			<head>
-				{/* Supademo SDK */}
-				<Script src="/api/supademo/script" strategy="lazyOnload" />
+				{isAuthenticated ? (
+					<Script
+						id="supademo-script"
+						src="/api/supademo/script"
+						strategy="lazyOnload"
+					/>
+				) : null}
 			</head>
 			<body className={inter.className} suppressHydrationWarning={true}>
 				<NonCriticalStyles />
-				{/* Move to Providers Next Command Nuqs */}
 				<NextTopLoader showSpinner={false} />
-				<CommandPaletteProvider>
-					<NuqsAdapter>
-						<Providers session={session}>
-							<SupademoClient />
-							{children}
-							<SessionSync />
-						</Providers>
-						{/* Global command palette dialog (Cmd/Ctrl+K) */}
-						<ActionBarRoot />
-					</NuqsAdapter>
-				</CommandPaletteProvider>
+				{isAuthenticated && AuthenticatedAppShell ? (
+					<AuthenticatedAppShell session={session}>
+						{children}
+					</AuthenticatedAppShell>
+				) : (
+					<Providers session={session}>{children}</Providers>
+				)}
 				<div id="sidebar-portal" />
 			</body>
 		</html>

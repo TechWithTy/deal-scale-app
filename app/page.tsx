@@ -3,6 +3,11 @@ import Link from "next/link";
 import React from "react";
 import type { CSSProperties } from "react";
 
+export const runtime = "edge";
+export const dynamic = "force-static";
+export const revalidate = 3600;
+export const fetchCache = "force-cache";
+
 const heroStyle: CSSProperties = {
 	minHeight: "100vh",
 	display: "flex",
