@@ -7,6 +7,7 @@ import React, { type ReactNode } from "react";
 import "./globals.css";
 import { auth } from "@/auth";
 import Script from "next/script";
+import dynamic from "next/dynamic";
 
 const inter = Inter({ subsets: ["latin"] });
 

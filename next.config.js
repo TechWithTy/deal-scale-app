@@ -12,7 +12,7 @@ const nextConfig = {
 			{
 				key: "Content-Security-Policy",
 				value:
-					"default-src 'self'; script-src 'self' 'unsafe-inline' https: blob:; connect-src 'self' https:; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https:; font-src 'self' data: https:; frame-ancestors 'self'; form-action 'self'; base-uri 'self';",
+					"default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https: blob:; connect-src 'self' https:; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https:; font-src 'self' data: https:; frame-ancestors 'self'; form-action 'self'; base-uri 'self';",
 			},
 			{
 				key: "Strict-Transport-Security",

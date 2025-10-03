@@ -18,18 +18,15 @@ const createPurgeCssPlugin = () =>
 		defaultExtractor: (content) => content.match(/[\w-/:]+(?<!:)/g) ?? [],
 	});
 
-const createPostCssConfig = () => {
-	const plugins = [tailwindcss];
+const plugins = [tailwindcss];
 
-	if (process.env.NODE_ENV === "production") {
-		plugins.push(createPurgeCssPlugin());
-	}
+// Only add purgecss plugin in production
+if (process.env.NODE_ENV === "production") {
+	plugins.push(createPurgeCssPlugin());
+}
 
-	plugins.push(autoprefixer);
+plugins.push(autoprefixer);
 
-	return { plugins };
-};
-
-module.exports = createPostCssConfig;
+module.exports = { plugins };
 module.exports.createPurgeCssPlugin = createPurgeCssPlugin;
 module.exports.purgeCssContentGlobs = purgeCssContentGlobs;

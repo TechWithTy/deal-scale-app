@@ -33,7 +33,6 @@ import type { Property as DashboardProperty } from "@/types/_dashboard/property"
 import MapArea from "./search/MapArea";
 import { buildPropertyFromPlace, openStreetView } from "./search/helpers";
 import type { ACSeed } from "external/google-maps-two/components/composit/utils/autocomplete";
-import GoogleMapsBootstrap from "./search/GoogleMapsBootstrap";
 import LeadAnalysisModal from "./search/LeadAnalysisModal";
 import { buildLeadSummaries } from "@/lib/analysis/buildLeadSummaries";
 import type { LeadSummariesResult } from "@/lib/analysis/types";
@@ -154,182 +153,177 @@ const PropertySearch: React.FC<PropertySearchProps> = () => {
 	};
 
 	return (
-		<GoogleMapsBootstrap>
-			<div className="container mx-auto py-6">
-				<LeadSearchHeader
-					onHelpClick={() => setIsModalOpen(true)}
-					title="Off-Market Property Leads Search | Deal Scale"
-					description="Find motivated sellers and hidden real estate opportunities fast. Use AI-powered search filters by location, property type, and seller profile to uncover exclusive off-market leads."
-					creditsRemaining={remainingLeads}
-				/>
-				<form onSubmit={handleFormSubmit(onSubmit)}>
-					<LeadSearchForm
-						control={control}
-						errors={errors}
-						setValue={setValue}
-						onAdvancedOpen={() => setShowAdvanced(true)}
-						isValid={isValid}
-						onPlaceSelected={(seed: ACSeed) => {
-							if (seed.location) {
-								const loc = seed.location; // Capture in local variable
-								setCenter(loc);
-								setMarkers((prev) => [
-									...prev,
-									{ lat: loc.lat, lng: loc.lng }, // Use captured variable
-								]);
-								setProperties([
-									...(properties || []),
-									...generateFakeProperties(1),
-								]);
-								setHasResults(true);
-								setSelectedPlace({
-									placeId: seed.placeId,
-									location: loc, // Use captured variable
-								});
-							}
-						}}
-					/>
-
-					{/* Validation panel omitted to reduce visual noise */}
-					<div className="my-4 flex flex-wrap items-center justify-center gap-3">
-						<div className="group relative">
-							<Button
-								type="submit"
-								className="gap-2"
-								disabled={!isValid || remainingLeads <= 0}
-							>
-								<Search className="h-4 w-4" /> Search
-							</Button>
-							{(!isValid || remainingLeads <= 0) && (
-								<span className="-translate-x-1/2 -translate-y-full pointer-events-none absolute top-0 left-1/2 z-10 w-max rounded bg-gray-800 px-3 py-1 text-white text-xs opacity-0 transition-opacity duration-200 group-hover:opacity-100">
-									{!isValid
-										? "Enter valid search criteria to search"
-										: "No lead credits remaining"}
-								</span>
-							)}
-						</div>
-						<div className="group relative">
-							<Button
-								type="button"
-								className="gap-2 bg-gradient-to-r from-purple-500 via-fuchsia-500 to-purple-600 text-white shadow-lg transition hover:from-purple-600 hover:via-fuchsia-600 hover:to-purple-700 disabled:from-muted disabled:via-muted disabled:to-muted"
-								disabled={!canAnalyze}
-								onClick={() => {
-									if (!canAnalyze) return;
-									try {
-										setIsAnalyzing(true);
-										toast.info("Running market analysis...");
-										const analysis = buildLeadSummaries(
-											properties ?? [],
-											normalizedLocation,
-										);
-										consumeAi(1);
-										setAnalysisResult(analysis);
-										setAnalysisOpen(true);
-										toast.success("Analysis complete! Insights ready.");
-									} catch (error) {
-										console.error(error);
-										toast.error("Unable to generate analysis");
-									} finally {
-										setIsAnalyzing(false);
-									}
-								}}
-							>
-								<Sparkles className="h-4 w-4" /> Analyze
-							</Button>
-							{!canAnalyze && analyzeTooltip && (
-								<span className="-translate-x-1/2 -translate-y-full pointer-events-none absolute top-0 left-1/2 z-10 w-max rounded bg-gray-800 px-3 py-1 text-white text-xs opacity-0 transition-opacity duration-200 group-hover:opacity-100">
-									{analyzeTooltip}
-								</span>
-							)}
-						</div>
-					</div>
-					{hasResults && properties && properties.length > 0 && (
-						<Button
-							type="button"
-							className="gap-2"
-							onClick={() => {
-								setIsDrawerOpen(true);
-							}}
-						>
-							Show Results
-						</Button>
-					)}
-				</form>
-				<AdvancedFiltersDialog
-					open={showAdvanced}
-					onClose={() => setShowAdvanced(false)}
+		<div className="container mx-auto py-6">
+			<LeadSearchHeader
+				onHelpClick={() => setIsModalOpen(true)}
+				title="Off-Market Property Leads Search | Deal Scale"
+				description="Find motivated sellers and hidden real estate opportunities fast. Use AI-powered search filters by location, property type, and seller profile to uncover exclusive off-market leads."
+				creditsRemaining={remainingLeads}
+			/>
+			<form onSubmit={handleFormSubmit(onSubmit)}>
+				<LeadSearchForm
 					control={control}
 					errors={errors}
-				/>
-				<MapArea
-					center={center}
-					markers={markers}
-					selectedPlace={selectedPlace}
-					onCenterChange={(c) => setCenter(c)}
-					onSelectPlace={({ placeId, location }) => {
-						if (!location) return;
-						setCenter(location);
-						setMarkers((prev) => [
-							...prev,
-							{ lat: location.lat, lng: location.lng },
-						]);
-						setProperties([
-							...(properties || []),
-							...generateFakeProperties(1),
-						]);
-						setHasResults(true);
-						setSelectedPlace({ placeId, location });
-					}}
-					onResultsChange={(coords) => {
-						setMarkers(coords);
-						setProperties([
-							...(properties || []),
-							...generateFakeProperties(coords.length),
-						]);
-						setHasResults(coords.length > 0);
-					}}
-					onViewPlace={({ position }) => openStreetView(position)}
-					onAddToList={({ position, name, address }) => {
-						const prop = buildPropertyFromPlace({ position, name, address });
-						setSaveProperty(prop);
-						setSaveOpen(true);
-					}}
-				/>
-				{saveProperty && (
-					<SaveToListModal
-						isOpen={saveOpen}
-						onClose={() => setSaveOpen(false)}
-						property={saveProperty}
-						onSave={() => {
-							toast.success("Saved to list", {
-								description: saveProperty.address.fullStreetLine,
+					setValue={setValue}
+					onAdvancedOpen={() => setShowAdvanced(true)}
+					isValid={isValid}
+					onPlaceSelected={(seed: ACSeed) => {
+						if (seed.location) {
+							const loc = seed.location; // Capture in local variable
+							setCenter(loc);
+							setMarkers((prev) => [
+								...prev,
+								{ lat: loc.lat, lng: loc.lng }, // Use captured variable
+							]);
+							setProperties([
+								...(properties || []),
+								...generateFakeProperties(1),
+							]);
+							setHasResults(true);
+							setSelectedPlace({
+								placeId: seed.placeId,
+								location: loc, // Use captured variable
 							});
-						}}
-					/>
-				)}
-				<PropertiesList properties={properties} />
-				<WalkThroughModal
-					isOpen={isModalOpen}
-					onClose={() => setIsModalOpen(false)}
-					videoUrl="https://www.youtube.com/watch?v=hyosynoNbSU"
-					title="Welcome To Your Lead Search"
-					subtitle="Get help searching and sorting through your properties."
-					steps={campaignSteps}
-					isTourOpen={isTourOpen}
-					onStartTour={handleStartTour}
-					onCloseTour={handleCloseTour}
-					supademoDemoId="demo-123" // Example Supademo demo ID
-					supademoShowcaseId="showcase-456" // Example Supademo showcase ID
+						}
+					}}
 				/>
-				{analysisResult && (
-					<LeadAnalysisModal
-						isOpen={analysisOpen}
-						onClose={() => setAnalysisOpen(false)}
-						result={analysisResult}
-					/>
+
+				{/* Validation panel omitted to reduce visual noise */}
+				<div className="my-4 flex flex-wrap items-center justify-center gap-3">
+					<div className="group relative">
+						<Button
+							type="submit"
+							className="gap-2"
+							disabled={!isValid || remainingLeads <= 0}
+						>
+							<Search className="h-4 w-4" /> Search
+						</Button>
+						{(!isValid || remainingLeads <= 0) && (
+							<span className="-translate-x-1/2 -translate-y-full pointer-events-none absolute top-0 left-1/2 z-10 w-max rounded bg-gray-800 px-3 py-1 text-white text-xs opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+								{!isValid
+									? "Enter valid search criteria to search"
+									: "No lead credits remaining"}
+							</span>
+						)}
+					</div>
+					<div className="group relative">
+						<Button
+							type="button"
+							className="gap-2 bg-gradient-to-r from-purple-500 via-fuchsia-500 to-purple-600 text-white shadow-lg transition hover:from-purple-600 hover:via-fuchsia-600 hover:to-purple-700 disabled:from-muted disabled:via-muted disabled:to-muted"
+							disabled={!canAnalyze}
+							onClick={() => {
+								if (!canAnalyze) return;
+								try {
+									setIsAnalyzing(true);
+									toast.info("Running market analysis...");
+									const analysis = buildLeadSummaries(
+										properties ?? [],
+										normalizedLocation,
+									);
+									consumeAi(1);
+									setAnalysisResult(analysis);
+									setAnalysisOpen(true);
+									toast.success("Analysis complete! Insights ready.");
+								} catch (error) {
+									console.error(error);
+									toast.error("Unable to generate analysis");
+								} finally {
+									setIsAnalyzing(false);
+								}
+							}}
+						>
+							<Sparkles className="h-4 w-4" /> Analyze
+						</Button>
+						{!canAnalyze && analyzeTooltip && (
+							<span className="-translate-x-1/2 -translate-y-full pointer-events-none absolute top-0 left-1/2 z-10 w-max rounded bg-gray-800 px-3 py-1 text-white text-xs opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+								{analyzeTooltip}
+							</span>
+						)}
+					</div>
+				</div>
+				{hasResults && properties && properties.length > 0 && (
+					<Button
+						type="button"
+						className="gap-2"
+						onClick={() => {
+							setIsDrawerOpen(true);
+						}}
+					>
+						Show Results
+					</Button>
 				)}
-			</div>
-		</GoogleMapsBootstrap>
+			</form>
+			<AdvancedFiltersDialog
+				open={showAdvanced}
+				onClose={() => setShowAdvanced(false)}
+				control={control}
+				errors={errors}
+			/>
+			<MapArea
+				center={center}
+				markers={markers}
+				selectedPlace={selectedPlace}
+				onCenterChange={(c) => setCenter(c)}
+				onSelectPlace={({ placeId, location }) => {
+					if (!location) return;
+					setCenter(location);
+					setMarkers((prev) => [
+						...prev,
+						{ lat: location.lat, lng: location.lng },
+					]);
+					setProperties([...(properties || []), ...generateFakeProperties(1)]);
+					setHasResults(true);
+					setSelectedPlace({ placeId, location });
+				}}
+				onResultsChange={(coords) => {
+					setMarkers(coords);
+					setProperties([
+						...(properties || []),
+						...generateFakeProperties(coords.length),
+					]);
+					setHasResults(coords.length > 0);
+				}}
+				onViewPlace={({ position }) => openStreetView(position)}
+				onAddToList={({ position, name, address }) => {
+					const prop = buildPropertyFromPlace({ position, name, address });
+					setSaveProperty(prop);
+					setSaveOpen(true);
+				}}
+			/>
+			{saveProperty && (
+				<SaveToListModal
+					isOpen={saveOpen}
+					onClose={() => setSaveOpen(false)}
+					property={saveProperty}
+					onSave={() => {
+						toast.success("Saved to list", {
+							description: saveProperty.address.fullStreetLine,
+						});
+					}}
+				/>
+			)}
+			<PropertiesList properties={properties} />
+			<WalkThroughModal
+				isOpen={isModalOpen}
+				onClose={() => setIsModalOpen(false)}
+				videoUrl="https://www.youtube.com/watch?v=hyosynoNbSU"
+				title="Welcome To Your Lead Search"
+				subtitle="Get help searching and sorting through your properties."
+				steps={campaignSteps}
+				isTourOpen={isTourOpen}
+				onStartTour={handleStartTour}
+				onCloseTour={handleCloseTour}
+				supademoDemoId="demo-123" // Example Supademo demo ID
+				supademoShowcaseId="showcase-456" // Example Supademo showcase ID
+			/>
+			{analysisResult && (
+				<LeadAnalysisModal
+					isOpen={analysisOpen}
+					onClose={() => setAnalysisOpen(false)}
+					result={analysisResult}
+				/>
+			)}
+		</div>
 	);
 };
 

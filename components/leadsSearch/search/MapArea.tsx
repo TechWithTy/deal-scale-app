@@ -1,5 +1,5 @@
 import React from "react";
-import { useGoogleMapsReady } from "./GoogleMapsBootstrap";
+import { LoadScript } from "@react-google-maps/api";
 import { Coordinate } from "@/types/_dashboard/maps";
 import {
 	PlaceSearchPanel,
@@ -41,45 +41,32 @@ const MapArea: React.FC<MapAreaProps> = ({
 	onAddToList,
 	onViewPlace,
 }) => {
-	const mapsReady = useGoogleMapsReady();
 	const [isClient, setIsClient] = React.useState(false);
-
-	console.log("MapArea: mapsReady =", mapsReady);
-	console.log("MapArea: isClient =", isClient);
-	console.log(
-		"MapArea: window.google exists =",
-		typeof window !== "undefined" && !!window.google,
-	);
-	console.log(
-		"MapArea: window.google.maps exists =",
-		typeof window !== "undefined" && !!window.google?.maps,
-	);
-	console.log(
-		"MapArea: window.google.maps.Map exists =",
-		typeof window !== "undefined" && !!window.google?.maps?.Map,
-	);
-	console.log(
-		"MapArea: window.google.maps.importLibrary exists =",
-		typeof window !== "undefined" && !!window.google?.maps?.importLibrary,
-	);
+	const [mapsLoaded, setMapsLoaded] = React.useState(false);
 
 	React.useEffect(() => {
 		setIsClient(true);
 	}, []);
 
-	if (!isClient || !mapsReady) {
-		return (
-			<div className="flex flex-col gap-4">
-				<div className="h-12 w-full animate-pulse rounded-md bg-muted" />
-				<div className="flex h-[420px] items-center justify-center rounded-md border border-dashed border-border text-sm text-muted-foreground">
-					Loading Google Maps…
-				</div>
-			</div>
-		);
-	}
+	const apiKey =
+		process.env.NEXT_PUBLIC_GMAPS_KEY ||
+		process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ||
+		"";
 
 	return (
-		<>
+		<LoadScript
+			googleMapsApiKey={apiKey}
+			libraries={
+				GOOGLE_LIBS as unknown as (
+					| "drawing"
+					| "marker"
+					| "places"
+					| "geometry"
+				)[]
+			}
+			onLoad={() => setMapsLoaded(true)}
+			onError={(error) => console.error("Google Maps load error:", error)}
+		>
 			<PlaceSearchPanel
 				center={
 					{
@@ -96,22 +83,10 @@ const MapArea: React.FC<MapAreaProps> = ({
 				}
 			/>
 			<MapWithDrawing
-				apiKey={
-					process.env.NEXT_PUBLIC_GMAPS_KEY ||
-					process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ||
-					""
-				}
+				apiKey={apiKey}
 				mapId={
 					process.env.NEXT_PUBLIC_GMAPS_MAP_ID ||
 					process.env.NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID
-				}
-				libraries={
-					GOOGLE_LIBS as unknown as (
-						| "drawing"
-						| "marker"
-						| "places"
-						| "geometry"
-					)[]
 				}
 				center={center}
 				onCenterChange={onCenterChange}
@@ -131,15 +106,9 @@ const MapArea: React.FC<MapAreaProps> = ({
 				onViewPlace={onViewPlace}
 				onAddToList={onAddToList}
 				pinSnapToGrid={false}
-				assumeLoaded={
-					mapsReady &&
-					typeof window !== "undefined" &&
-					!!window.google?.maps?.Map &&
-					!!window.google?.maps?.importLibrary &&
-					typeof window.google.maps.importLibrary === "function"
-				}
+				assumeLoaded={mapsLoaded}
 			/>
-		</>
+		</LoadScript>
 	);
 };
 
