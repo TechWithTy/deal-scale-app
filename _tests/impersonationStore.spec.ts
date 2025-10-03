@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi, beforeEach } from "vitest";
 import type { Session } from "next-auth";
 import { useImpersonationStore } from "../lib/stores/impersonationStore";
 
-function createSession(partial?: Partial<Session>): Session {
+function createSession(partial?: Partial<Session & { impersonator?: { id: string; name?: string | null; email?: string | null } | null }>): Session {
 	return {
 		expires: new Date(Date.now() + 60_000).toISOString(),
 		user: {
