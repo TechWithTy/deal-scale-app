@@ -21,7 +21,7 @@ export const mapFormSchema = z.object({
 				);
 			},
 			{
-				message: "Please enter a valid State, Zip, City, or Address",
+				message: "Please enter a valid city or zip code",
 			},
 		),
 

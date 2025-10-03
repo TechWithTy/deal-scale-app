@@ -34,6 +34,9 @@ import MapArea from "./search/MapArea";
 import { buildPropertyFromPlace, openStreetView } from "./search/helpers";
 import type { ACSeed } from "external/google-maps-two/components/composit/utils/autocomplete";
 import GoogleMapsBootstrap from "./search/GoogleMapsBootstrap";
+import LeadAnalysisModal from "./search/LeadAnalysisModal";
+import { buildLeadSummaries } from "@/lib/analysis/buildLeadSummaries";
+import type { LeadSummariesResult } from "@/lib/analysis/types";
 
 interface PropertySearchProps {
 	initialProperties?: number;
@@ -66,6 +69,9 @@ const PropertySearch: React.FC<PropertySearchProps> = () => {
 	const consumeAi = useUserStore((s) => s.consumeAI);
 
 	const [isAnalyzing, setIsAnalyzing] = useState(false);
+	const [analysisOpen, setAnalysisOpen] = useState(false);
+	const [analysisResult, setAnalysisResult] =
+		useState<LeadSummariesResult | null>(null);
 
 	const {
 		control,
@@ -209,13 +215,23 @@ const PropertySearch: React.FC<PropertySearchProps> = () => {
 								disabled={!canAnalyze}
 								onClick={() => {
 									if (!canAnalyze) return;
-									setIsAnalyzing(true);
-									toast.info("Running market analysis...");
-									setTimeout(() => {
+									try {
+										setIsAnalyzing(true);
+										toast.info("Running market analysis...");
+										const analysis = buildLeadSummaries(
+											properties ?? [],
+											normalizedLocation,
+										);
 										consumeAi(1);
+										setAnalysisResult(analysis);
+										setAnalysisOpen(true);
 										toast.success("Analysis complete! Insights ready.");
+									} catch (error) {
+										console.error(error);
+										toast.error("Unable to generate analysis");
+									} finally {
 										setIsAnalyzing(false);
-									}, 1400);
+									}
 								}}
 							>
 								<Sparkles className="h-4 w-4" /> Analyze
@@ -226,18 +242,18 @@ const PropertySearch: React.FC<PropertySearchProps> = () => {
 								</span>
 							)}
 						</div>
-						{hasResults && properties && properties.length > 0 && (
-							<Button
-								type="button"
-								className="gap-2"
-								onClick={() => {
-									setIsDrawerOpen(true);
-								}}
-							>
-								Show Results
-							</Button>
-						)}
 					</div>
+					{hasResults && properties && properties.length > 0 && (
+						<Button
+							type="button"
+							className="gap-2"
+							onClick={() => {
+								setIsDrawerOpen(true);
+							}}
+						>
+							Show Results
+						</Button>
+					)}
 				</form>
 				<AdvancedFiltersDialog
 					open={showAdvanced}
@@ -305,6 +321,13 @@ const PropertySearch: React.FC<PropertySearchProps> = () => {
 					supademoDemoId="demo-123" // Example Supademo demo ID
 					supademoShowcaseId="showcase-456" // Example Supademo showcase ID
 				/>
+				{analysisResult && (
+					<LeadAnalysisModal
+						isOpen={analysisOpen}
+						onClose={() => setAnalysisOpen(false)}
+						result={analysisResult}
+					/>
+				)}
 			</div>
 		</GoogleMapsBootstrap>
 	);

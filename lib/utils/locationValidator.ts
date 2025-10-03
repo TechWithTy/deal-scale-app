@@ -21,7 +21,8 @@ export const isValidUSCity = (input: string, stateCode?: string): boolean => {
 };
 
 export const isValidZipCode = (zip: string): boolean => {
-	return /^\d{5}$/.test(zip.trim());
+	const normalized = zip.trim();
+	return /^\d{5}$/.test(normalized) && normalized !== "00000";
 };
 
 export const isLikelyAddress = (input: string): boolean => {
