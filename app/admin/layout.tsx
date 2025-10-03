@@ -60,6 +60,7 @@ export default async function AdminLayout({
 					<AdminNavigation items={NAV_ITEMS} />
 				</aside>
 				<div className="flex flex-1 flex-col">
+					<ImpersonationBanner />
 					<header className="border-b border-border/50 px-6 py-4">
 						<div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
 							<div>
@@ -74,7 +75,6 @@ export default async function AdminLayout({
 							<Badge variant="outline">{roleLabel}</Badge>
 						</div>
 					</header>
-					<ImpersonationBanner />
 					<main className="flex-1 overflow-y-auto px-6 py-6">
 						<div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
 							{children}

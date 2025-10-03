@@ -1,5 +1,6 @@
 // import { fetchUserProfileData, getUserProfile } from "@/actions/auth";
 import Header from "@/components/layout/header";
+import ImpersonationBanner from "@/components/admin/ImpersonationBanner";
 import Sidebar from "@/components/layout/sidebar";
 import SkipTraceDialog from "@/components/maps/properties/utils/createListModal";
 import BillingModalMain from "@/components/reusables/modals/user/billing/BillingModalMain";
@@ -53,6 +54,7 @@ export default async function DashboardLayout({
 			{/* Pass only a valid UserProfile or null to Sidebar */}
 			<Sidebar user={user} />
 			<main className="w-full flex-1 overflow-hidden">
+				<ImpersonationBanner />
 				<Header />
 				{children}
 			</main>

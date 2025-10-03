@@ -9,10 +9,17 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { formatAdminRole } from "@/lib/admin/roles";
 import AdjustCreditsModal from "./AdjustCreditsModal";
 import { useImpersonationStore } from "@/lib/stores/impersonationStore";
 import { toast } from "sonner";
+import {
+	getAdminActivityLog,
+	getAdminDirectoryUser,
+	type AdminActivityEvent,
+	type AdminDirectoryUser,
+} from "@/lib/admin/user-directory";
 
 export interface AdminUserDetailModalProps {
 	open: boolean;
@@ -22,26 +29,6 @@ export interface AdminUserDetailModalProps {
 	openCreditsModal?: boolean;
 }
 
-interface AdminDetailUser {
-	id: string;
-	email: string;
-	firstName?: string;
-	lastName?: string;
-	role: string;
-	status?: string;
-	credits?: {
-		ai: { allotted: number; used: number };
-		leads: { allotted: number; used: number };
-		skipTraces: { allotted: number; used: number };
-	};
-}
-
-interface ActivityEvent {
-	id: string;
-	at: string;
-	message: string;
-}
-
 export default function AdminUserDetailModal({
 	open,
 	onOpenChange,
@@ -49,11 +36,12 @@ export default function AdminUserDetailModal({
 	initialCreditsOpen,
 	openCreditsModal = false,
 }: AdminUserDetailModalProps) {
-	const [user, setUser] = useState<AdminDetailUser | null>(null);
-	const [logs, setLogs] = useState<ActivityEvent[]>([]);
+	const [user, setUser] = useState<AdminDirectoryUser | null>(null);
+	const [logs, setLogs] = useState<AdminActivityEvent[]>([]);
 	const [loading, setLoading] = useState(false);
 	const [creditsOpen, setCreditsOpen] = useState(false);
 	const { startImpersonation } = useImpersonationStore();
+	const router = useRouter();
 
 	useEffect(() => {
 		if (!open || !userId) return;
@@ -61,35 +49,11 @@ export default function AdminUserDetailModal({
 		const run = async () => {
 			setLoading(true);
 			try {
-				await new Promise((r) => setTimeout(r, 250));
-				const mock: AdminDetailUser = {
-					id: userId,
-					email: `user_${userId}@example.com`,
-					firstName: "Jane",
-					lastName: "Doe",
-					role: "user",
-					status: "active",
-					credits: {
-						ai: { allotted: 1000, used: 250 },
-						leads: { allotted: 500, used: 120 },
-						skipTraces: { allotted: 300, used: 80 },
-					},
-				};
-				const mockLogs: ActivityEvent[] = [
-					{
-						id: "1",
-						at: new Date().toISOString(),
-						message: "Admin John granted 100 AI Credits",
-					},
-					{
-						id: "2",
-						at: new Date(Date.now() - 3600_000).toISOString(),
-						message: "User signed in",
-					},
-				];
+				const detail = getAdminDirectoryUser(userId);
+				const activity = getAdminActivityLog(userId);
 				if (alive) {
-					setUser(mock);
-					setLogs(mockLogs);
+					setUser(detail);
+					setLogs(activity);
 				}
 			} finally {
 				if (alive) setLoading(false);
@@ -112,17 +76,26 @@ export default function AdminUserDetailModal({
 
 	const remaining = (a: number, u: number) => Math.max(0, a - u);
 
-	const handleImpersonate = (target: AdminDetailUser) => {
-		const fullName =
-			`${target.firstName ?? ""} ${target.lastName ?? ""}`.trim();
-		startImpersonation({
-			adminToken: "mock-admin-jwt",
-			userName: fullName || target.email,
-			userId: target.id,
-		});
-		toast.success(
-			`Impersonation session started for ${fullName || target.email}`,
-		);
+	const handleImpersonate = async (target: AdminDirectoryUser) => {
+		const fallbackName =
+			`${target.firstName ?? ""} ${target.lastName ?? ""}`.trim() ||
+			target.name?.trim() ||
+			target.email;
+		try {
+			const result = await startImpersonation({ userId: target.id });
+			const displayName =
+				result.impersonatedUser.name?.trim() ||
+				result.impersonatedUser.email ||
+				fallbackName;
+			toast.success(`Impersonation session started for ${displayName}`);
+			router.push("/dashboard");
+		} catch (error) {
+			const message =
+				error instanceof Error
+					? error.message
+					: "Unable to start impersonation";
+			toast.error(message);
+		}
 	};
 
 	return (
@@ -156,7 +129,11 @@ export default function AdminUserDetailModal({
 									>
 										Adjust Credits
 									</Button>
-									<Button onClick={() => handleImpersonate(user)}>
+									<Button
+										onClick={() => {
+											void handleImpersonate(user);
+										}}
+									>
 										Impersonate
 									</Button>
 								</div>
@@ -238,6 +215,11 @@ export default function AdminUserDetailModal({
 								</div>
 							</TabsContent>
 						</Tabs>
+					</div>
+				)}
+				{!loading && !user && (
+					<div className="text-muted-foreground text-sm">
+						Unable to locate user details.
 					</div>
 				)}
 				{user && (

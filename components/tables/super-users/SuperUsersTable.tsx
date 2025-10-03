@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { DataTable } from "external/shadcn-table/src/components/data-table/data-table";
@@ -21,57 +22,11 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { z } from "zod";
 import { toast } from "sonner";
 import { useImpersonationStore } from "@/lib/stores/impersonationStore";
+import { listAdminUsers } from "@/lib/admin/user-directory";
 
-const MOCK_USERS: AdminUser[] = [
-	{
-		id: "1",
-		email: "jane.doe@example.com",
-		firstName: "Jane",
-		lastName: "Doe",
-		phone: "+1 (555) 123-4567",
-		role: "user",
-		status: "active",
-	},
-	{
-		id: "2",
-		email: "john.smith@example.com",
-		firstName: "John",
-		lastName: "Smith",
-		phone: "+1 (555) 987-6543",
-		role: "support",
-		status: "pending",
-	},
-	{
-		id: "3",
-		email: "admin@example.com",
-		firstName: "Ada",
-		lastName: "Min",
-		phone: "+1 (555) 456-7890",
-		role: "admin",
-		status: "active",
-	},
-	{
-		id: "4",
-		email: "platform.admin@example.com",
-		firstName: "Priya",
-		lastName: "Rao",
-		phone: "+1 (555) 741-9630",
-		role: "platform_admin",
-		status: "active",
-	},
-	{
-		id: "5",
-		email: "support.platform@example.com",
-		firstName: "Marcus",
-		lastName: "Lee",
-		phone: "+1 (555) 369-1470",
-		role: "platform_support",
-		status: "pending",
-	},
-];
+const DIRECTORY_USERS: AdminUser[] = listAdminUsers();
 
 export default function SuperUsersTable() {
 	const [query, setQuery] = useState("");
@@ -92,10 +47,15 @@ export default function SuperUsersTable() {
 	const [banUser, setBanUser] = useState<AdminUser | null>(null);
 	const [isBanConfirmOpen, setIsBanConfirmOpen] = useState(false);
 	const [banEmail, setBanEmail] = useState("");
-	const { startImpersonation } = useImpersonationStore();
+	const startImpersonation = useImpersonationStore(
+		(state) => state.startImpersonation,
+	);
+	const router = useRouter();
+
+	const tableData = useMemo(() => DIRECTORY_USERS, []);
 
 	const table = useDataTable<AdminUser>({
-		data: MOCK_USERS,
+		data: tableData,
 		columns: adminUserColumns,
 		pageCount: 0,
 		initialState: {
@@ -135,58 +95,48 @@ export default function SuperUsersTable() {
 				setIsBanConfirmOpen(true);
 				setBanEmail("");
 			},
-			onImpersonate: (user: AdminUser) => {
-				startImpersonation({
-					adminToken: "mock-admin-jwt",
-					userName:
+			onImpersonate: async (user: AdminUser) => {
+				try {
+					const result = await startImpersonation({ userId: user.id });
+					const displayName =
+						result.impersonatedUser.name?.trim() ||
+						result.impersonatedUser.email ||
 						`${user.firstName ?? ""} ${user.lastName ?? ""}`.trim() ||
-						user.email,
-					userId: user.id,
-				});
-				toast.success(
-					`Impersonation session started for ${
-						`${user.firstName ?? ""} ${user.lastName ?? ""}`.trim() ||
-						user.email
-					}`,
-				);
+						user.email;
+					toast.success(`Impersonation session started for ${displayName}`);
+					router.push("/dashboard");
+				} catch (error) {
+					const message =
+						error instanceof Error
+							? error.message
+							: "Unable to start impersonation";
+					toast.error(message);
+				}
 			},
 		},
 	});
 
-	const onSearch = async () => {
-		if (!query.trim()) return;
-		try {
-			// Placeholder search; implement your backend integration here
-			const res = await fetch(
-				`/api/v1/admin/users/search?email=${encodeURIComponent(query.trim())}`,
-			);
-			if (!res.ok) throw new Error("Search failed");
-			// Safely parse response JSON (typed as unknown) into AdminUser[]
-			const AdminUserSchema = z
-				.object({
-					id: z.string(),
-					email: z.string(),
-					firstName: z.string().optional(),
-					lastName: z.string().optional(),
-					phone: z.string().optional(),
-					role: z.string().optional(),
-					status: z.string().optional(),
-				})
-				.passthrough();
-			const raw = (await res.json().catch(() => ({}))) as unknown;
-			const parsed = z.array(AdminUserSchema).safeParse(raw);
-			const results: AdminUser[] = parsed.success
-				? (parsed.data as unknown as AdminUser[])
-				: [];
-			if (Array.isArray(results) && results.length > 0) {
-				// Open modal instead of navigating
-				setSelectedUserId(results[0].id);
-				setIsModalOpen(true);
-			}
-		} catch (err) {
-			// eslint-disable-next-line no-console
-			console.error(err);
+	const onSearch = () => {
+		const normalized = query.trim().toLowerCase();
+		if (!normalized) return;
+
+		const match = DIRECTORY_USERS.find((user) => {
+			const email = user.email.toLowerCase();
+			if (email === normalized) return true;
+			const name = `${user.firstName ?? ""} ${user.lastName ?? ""}`
+				.trim()
+				.toLowerCase();
+			return name.includes(normalized);
+		});
+
+		if (match) {
+			setSelectedUserId(match.id);
+			setOpenCreditsModal(false);
+			setIsModalOpen(true);
+			return;
 		}
+
+		toast.info("No matching user found in mock directory");
 	};
 
 	return (

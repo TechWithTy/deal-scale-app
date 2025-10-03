@@ -6,13 +6,16 @@ import type {
 	UserRole,
 	UserTier,
 } from "@/types/user";
+import type { ImpersonationIdentity } from "@/types/impersonation";
 
 declare module "next-auth" {
 	/**
 	 * Returned by `useSession`, `getSession` and received as a prop on the `SessionProvider` React Context
 	 */
 	interface Session {
+		impersonator?: ImpersonationIdentity | null;
 		user: {
+			id?: string;
 			role?: UserRole;
 			tier?: UserTier;
 			permissions?: string[];
@@ -25,6 +28,7 @@ declare module "next-auth" {
 	}
 
 	interface User {
+		id?: string;
 		role?: UserRole;
 		tier?: UserTier;
 		permissions?: string[];
@@ -39,6 +43,7 @@ declare module "next-auth" {
 declare module "next-auth/jwt" {
 	/** Returned by the `jwt` callback and `getToken`, when using JWT sessions */
 	interface JWT extends NextAuthJWT {
+		impersonator?: ImpersonationIdentity | null;
 		role?: UserRole;
 		tier?: UserTier;
 		permissions?: string[];

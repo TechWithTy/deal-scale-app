@@ -143,6 +143,81 @@ function normalizeQuotas(
 	};
 }
 
+type ExtendedJWT = JWT & {
+        role?: UserRole;
+        tier?: SubscriptionTier;
+        permissions?: string[];
+        permissionMatrix?: PermissionMatrix;
+        permissionList?: string[];
+        quotas?: UserQuotas;
+        subscription?: UserProfileSubscription;
+        isBetaTester?: boolean;
+        isPilotTester?: boolean;
+        impersonator?: ImpersonationIdentity | null;
+};
+
+type ExtendedUserLike = {
+        id?: string;
+        role?: string;
+        tier?: SubscriptionTier;
+        permissions?: string[];
+        permissionMatrix?: PermissionMatrix;
+        permissionList?: string[];
+        quotas?: UserQuotas;
+        subscription?: UserProfileSubscription;
+        isBetaTester?: boolean;
+        isPilotTester?: boolean;
+};
+
+type SessionUserLike = {
+        id?: string;
+        role?: UserRole;
+        tier?: SubscriptionTier;
+        permissions?: string[];
+        permissionMatrix?: PermissionMatrix;
+        permissionList?: string[];
+        quotas?: UserQuotas;
+        subscription?: UserProfileSubscription;
+        isBetaTester?: boolean;
+        isPilotTester?: boolean;
+};
+
+function applyExtendedUserToToken(
+        token: ExtendedJWT,
+        userData: ExtendedUserLike,
+): void {
+        token.role = userData.role as UserRole | undefined;
+        token.tier = userData.tier;
+        token.permissions = userData.permissions;
+        token.permissionMatrix = userData.permissionMatrix;
+        token.permissionList = userData.permissionList ?? userData.permissions;
+        token.quotas = userData.quotas;
+        token.subscription = userData.subscription;
+        token.isBetaTester = userData.isBetaTester;
+        token.isPilotTester = userData.isPilotTester;
+        if (userData.id) {
+                token.sub = userData.id;
+        }
+}
+
+function applyTokenToSessionUser(
+        sessionUser: SessionUserLike & Record<string, unknown>,
+        token: ExtendedJWT,
+): void {
+        sessionUser.role = token.role as UserRole | undefined;
+        sessionUser.tier = token.tier as SubscriptionTier | undefined;
+        sessionUser.permissions = token.permissions as string[] | undefined;
+        sessionUser.permissionMatrix = token.permissionMatrix;
+        sessionUser.permissionList = token.permissionList ?? token.permissions;
+        sessionUser.quotas = token.quotas;
+        sessionUser.subscription = token.subscription;
+        sessionUser.isBetaTester = token.isBetaTester;
+        sessionUser.isPilotTester = token.isPilotTester;
+        if (!sessionUser.id && token.sub) {
+                sessionUser.id = token.sub;
+        }
+}
+
 const authConfig = {
 	pages: {
 		signIn: "/signin",
@@ -325,159 +400,37 @@ const authConfig = {
 			}
 			return true;
 		},
-		async jwt({ token, user }) {
+		async jwt({ token, user, trigger, session }) {
+			const extendedToken = token as ExtendedJWT;
 			if (user) {
-				// Persist role/permissions/subscription on initial sign-in
-                                const u = user as {
-                                        role?: string;
-                                        tier?: SubscriptionTier;
-                                        permissions?: string[];
-                                        permissionMatrix?: PermissionMatrix;
-                                        permissionList?: string[];
-                                        quotas?: UserQuotas;
-                                        subscription?: UserProfileSubscription;
-                                        isBetaTester?: boolean;
-                                        isPilotTester?: boolean;
-                                };
-                                (
-                                        token as JWT & {
-                                                role?: UserRole;
-                                                tier?: SubscriptionTier;
-                                                permissions?: string[];
-                                                permissionMatrix?: PermissionMatrix;
-                                                permissionList?: string[];
-                                                quotas?: UserQuotas;
-                                                subscription?: UserProfileSubscription;
-                                        }
-                                ).role = u.role as UserRole | undefined;
-				(
-					token as JWT & {
-						role?: string;
-						tier?: SubscriptionTier;
-						permissions?: string[];
-						permissionMatrix?: PermissionMatrix;
-						permissionList?: string[];
-						quotas?: UserQuotas;
-						subscription?: UserProfileSubscription;
-					}
-				).tier = u.tier;
-				(
-					token as JWT & {
-						role?: string;
-						tier?: SubscriptionTier;
-						permissions?: string[];
-						permissionMatrix?: PermissionMatrix;
-						permissionList?: string[];
-						quotas?: UserQuotas;
-						subscription?: UserProfileSubscription;
-					}
-				).permissions = u.permissions;
-				(
-					token as JWT & {
-						role?: string;
-						tier?: SubscriptionTier;
-						permissions?: string[];
-						permissionMatrix?: PermissionMatrix;
-						permissionList?: string[];
-						quotas?: UserQuotas;
-						subscription?: UserProfileSubscription;
-					}
-				).permissionMatrix = u.permissionMatrix;
-				(
-					token as JWT & {
-						role?: string;
-						tier?: SubscriptionTier;
-						permissions?: string[];
-						permissionMatrix?: PermissionMatrix;
-						permissionList?: string[];
-						quotas?: UserQuotas;
-						subscription?: UserProfileSubscription;
-					}
-				).permissionList = u.permissionList ?? u.permissions;
-				(
-					token as JWT & {
-						role?: string;
-						tier?: SubscriptionTier;
-						permissions?: string[];
-						permissionMatrix?: PermissionMatrix;
-						permissionList?: string[];
-						quotas?: UserQuotas;
-						subscription?: UserProfileSubscription;
-					}
-				).quotas = u.quotas;
-                                (
-                                        token as JWT & {
-                                                role?: string;
-                                                tier?: SubscriptionTier;
-                                                permissions?: string[];
-                                                permissionMatrix?: PermissionMatrix;
-                                                permissionList?: string[];
-                                                quotas?: UserQuotas;
-                                                subscription?: UserProfileSubscription;
-                                        }
-                                ).subscription = u.subscription;
-                                (
-                                        token as JWT & {
-                                                isBetaTester?: boolean;
-                                                isPilotTester?: boolean;
-                                        }
-                                ).isBetaTester = u.isBetaTester;
-                                (
-                                        token as JWT & {
-                                                isBetaTester?: boolean;
-                                                isPilotTester?: boolean;
-                                        }
-                                ).isPilotTester = u.isPilotTester;
+				const userData = user as ExtendedUserLike & { subscription?: UserProfileSubscription };
+				applyExtendedUserToToken(extendedToken, userData);
+				extendedToken.impersonator = null;
 			}
+
+			if (trigger === "update" && session) {
+				const update = session as {
+					user?: ExtendedUserLike;
+					impersonation?: { impersonator?: ImpersonationIdentity | null };
+				};
+				if (update.user) {
+					applyExtendedUserToToken(extendedToken, update.user);
+				}
+				if (Object.prototype.hasOwnProperty.call(update, "impersonation")) {
+					extendedToken.impersonator = update.impersonation?.impersonator ?? null;
+				}
+			}
+
 			return token;
 		},
 		async session({ session, token }) {
 			if (session.user) {
-                                const t = token as JWT & {
-                                        role?: string;
-                                        tier?: SubscriptionTier;
-                                        permissions?: string[];
-                                        permissionMatrix?: PermissionMatrix;
-                                        permissionList?: string[];
-                                        quotas?: UserQuotas;
-                                        subscription?: UserProfileSubscription;
-                                        isBetaTester?: boolean;
-                                        isPilotTester?: boolean;
-                                };
-				session.user.role = t.role as UserRole | undefined;
-				session.user.tier = t.tier as SubscriptionTier | undefined;
-				session.user.permissions = t.permissions as string[] | undefined;
-				(
-					session.user as {
-						permissionMatrix?: PermissionMatrix;
-						permissionList?: string[];
-						quotas?: UserQuotas;
-					}
-				).permissionMatrix = t.permissionMatrix;
-				(
-					session.user as {
-						permissionMatrix?: PermissionMatrix;
-						permissionList?: string[];
-						quotas?: UserQuotas;
-					}
-				).permissionList = t.permissionList ?? t.permissions;
-				(
-					session.user as {
-						permissionMatrix?: PermissionMatrix;
-						permissionList?: string[];
-						quotas?: UserQuotas;
-					}
-				).quotas = t.quotas;
-                                // Expose subscription to the client session for dashboard credits
-                                (
-                                        session.user as { subscription?: UserProfileSubscription }
-                                ).subscription = t.subscription;
-                                (
-                                        session.user as { isBetaTester?: boolean }
-                                ).isBetaTester = t.isBetaTester;
-                                (
-                                        session.user as { isPilotTester?: boolean }
-                                ).isPilotTester = t.isPilotTester;
+				const extendedToken = token as ExtendedJWT;
+				applyTokenToSessionUser(
+					(session.user as SessionUserLike & Record<string, unknown>),
+					extendedToken,
+				);
+				session.impersonator = extendedToken.impersonator ?? null;
 			}
 			return session;
 		},
