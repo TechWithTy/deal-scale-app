@@ -26,17 +26,44 @@ export function inferCampaignChannel(data: unknown): CampaignChannel | null {
                 return null;
         }
 
-        if ("callerNumber" in data || "callInformation" in data) {
-                return "voice";
+        const record = data as Record<string, unknown>;
+
+        const channelHint = (() => {
+                const candidate = (record.channel ?? record.primaryChannel) as unknown;
+                if (typeof candidate !== "string") {
+                        return null;
+                }
+                return candidate.trim().toLowerCase().replace(/[_\s-]/g, "");
+        })();
+
+        switch (channelHint) {
+                case "text":
+                case "sms":
+                        return "text";
+                case "directmail":
+                case "mail":
+                        return "directMail";
+                case "social":
+                case "socialmedia":
+                        return "social";
+                case "voice":
+                case "call":
+                        return "voice";
+                default:
+                        break;
         }
-        if ("textStats" in data) {
-                return "text";
+
+        if ("platform" in record || "interactionsDetails" in record) {
+                return "social";
         }
-        if ("mailType" in data || "deliveredCount" in data) {
+        if ("mailType" in record || "deliveredCount" in record || "returnedCount" in record) {
                 return "directMail";
         }
-        if ("platform" in data || "interactionsDetails" in data) {
-                return "social";
+        if ("textStats" in record || "messages" in record || "threads" in record) {
+                return "text";
+        }
+        if ("callerNumber" in record || "callInformation" in record) {
+                return "voice";
         }
         return null;
 }

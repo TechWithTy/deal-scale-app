@@ -16,6 +16,29 @@ describe("campaign activity utilities", () => {
                 expect(inferCampaignChannel({})).toBeNull();
         });
 
+        it("prioritizes specific channel hints over voice defaults", () => {
+                expect(
+                        inferCampaignChannel({
+                                callerNumber: "+15551234567",
+                                textStats: {},
+                        }),
+                ).toBe("text");
+
+                expect(
+                        inferCampaignChannel({
+                                callInformation: [{}],
+                                mailType: "postcard",
+                        }),
+                ).toBe("directMail");
+
+                expect(
+                        inferCampaignChannel({
+                                callerNumber: "+15551234567",
+                                platform: "linkedin",
+                        }),
+                ).toBe("social");
+        });
+
         it("builds voice activity data with expected metrics", () => {
                 const activity = buildChannelActivityData({
                         name: "Voice",
