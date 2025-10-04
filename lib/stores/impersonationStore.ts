@@ -5,12 +5,33 @@ import type {
 	ImpersonationIdentity,
 	ImpersonationSessionPayload,
 } from "@/types/impersonation";
+import type { User } from "@/types/user";
 import {
 	startImpersonationSession,
 	stopImpersonationSession,
 } from "@/lib/admin/impersonation-service";
 import { withAnalytics } from "./_middleware/analytics";
 import { useUserStore } from "./userStore";
+
+// Helper function to trigger NextAuth session update
+async function triggerSessionUpdate(update: {
+	impersonation?: {
+		impersonator?: ImpersonationIdentity | null;
+		impersonatedUser?: ImpersonationIdentity | null;
+	};
+	user?: Record<string, unknown>;
+}) {
+	if (typeof window !== "undefined") {
+		// Trigger NextAuth session update
+		await fetch("/api/auth/session", {
+			method: "PATCH",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify(update),
+		});
+	}
+}
 
 interface ImpersonationState {
 	isImpersonating: boolean;
@@ -38,6 +59,7 @@ const identitySchema = z.object({
 const impersonationResponseSchema = z.object({
 	impersonatedUser: identitySchema,
 	impersonator: identitySchema,
+	impersonatedUserData: z.custom<User>().optional(), // Full user data
 });
 
 const createInitialState = (): Pick<
@@ -63,8 +85,8 @@ function normalizeIdentity(
 	} satisfies ImpersonationIdentity;
 }
 
-export const useImpersonationStore = create<ImpersonationState>()(
-	withAnalytics<ImpersonationState>("impersonation", (set) => ({
+export const useImpersonationStore = create<ImpersonationState>(
+	withAnalytics<ImpersonationState>("impersonation", (set, get, api) => ({
 		...createInitialState(),
 		hydrateFromSession: (session) => {
 			const impersonator = normalizeIdentity(
@@ -107,6 +129,18 @@ export const useImpersonationStore = create<ImpersonationState>()(
 			);
 			console.log("Impersonator:", parsed.data.impersonator);
 
+			// Update NextAuth session with impersonation data
+			await triggerSessionUpdate({
+				impersonation: {
+					impersonator: parsed.data.impersonator,
+					impersonatedUser: parsed.data.impersonatedUser,
+				},
+				user: parsed.data.impersonatedUserData as unknown as Record<
+					string,
+					unknown
+				>, // Pass full user data
+			});
+
 			set({
 				isImpersonating: true,
 				impersonator: parsed.data.impersonator,
@@ -121,8 +155,6 @@ export const useImpersonationStore = create<ImpersonationState>()(
 			// Refund credits used during impersonation
 			const currentCredits = useUserStore.getState().credits;
 			console.log("=== IMPERSONATION STOP STORE DEBUG ===");
-			console.log("Current credits before refund:", currentCredits);
-
 			set((state) => {
 				console.log("Impersonation state in store:", {
 					isImpersonating: state.isImpersonating,
@@ -132,9 +164,10 @@ export const useImpersonationStore = create<ImpersonationState>()(
 				});
 
 				if (state.originalCredits) {
+					const originalCredits = state.originalCredits; // Extract to variable for type safety
 					console.log(
 						"Refunding credits from:",
-						state.originalCredits,
+						originalCredits,
 						"to current:",
 						currentCredits,
 					);
@@ -145,30 +178,30 @@ export const useImpersonationStore = create<ImpersonationState>()(
 							...userState.credits,
 							ai: {
 								...userState.credits.ai,
-								used: state.originalCredits!.ai.used,
+								used: originalCredits.ai.used,
 							},
 							leads: {
 								...userState.credits.leads,
-								used: state.originalCredits!.leads.used,
+								used: originalCredits.leads.used,
 							},
 							skipTraces: {
 								...userState.credits.skipTraces,
-								used: state.originalCredits!.skipTraces.used,
+								used: originalCredits.skipTraces.used,
 							},
 						},
 						quotas: {
 							...userState.quotas,
 							ai: {
 								...userState.quotas.ai,
-								used: state.originalCredits!.ai.used,
+								used: originalCredits.ai.used,
 							},
 							leads: {
 								...userState.quotas.leads,
-								used: state.originalCredits!.leads.used,
+								used: originalCredits.leads.used,
 							},
 							skipTraces: {
 								...userState.quotas.skipTraces,
-								used: state.originalCredits!.skipTraces.used,
+								used: originalCredits.skipTraces.used,
 							},
 						},
 					}));
@@ -178,6 +211,14 @@ export const useImpersonationStore = create<ImpersonationState>()(
 					console.warn("No original credits found for refund!");
 				}
 				return createInitialState();
+			});
+
+			// Update NextAuth session to clear impersonation data (outside set callback)
+			await triggerSessionUpdate({
+				impersonation: {
+					impersonator: null,
+					impersonatedUser: null,
+				},
 			});
 
 			await stopImpersonationSession();

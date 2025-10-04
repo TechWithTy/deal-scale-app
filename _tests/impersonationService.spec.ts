@@ -1,49 +1,72 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import {
-        startImpersonationSession,
-        stopImpersonationSession,
+	startImpersonationSession,
+	stopImpersonationSession,
 } from "../lib/admin/impersonation-service";
 
 describe("impersonation service", () => {
-        it("returns impersonated and impersonator identities from mock data", async () => {
-                const payload = await startImpersonationSession({ userId: "2" });
+	afterEach(() => {
+		vi.restoreAllMocks();
+	});
 
-                expect(payload).toEqual({
-                        impersonatedUser: {
-                                id: "2",
-                                name: "Starter User",
-                                email: "starter@example.com",
-                        },
-                        impersonator: {
-                                id: "4",
-                                name: "Platform Admin",
-                                email: "platform.admin@example.com",
-                        },
-                });
-        });
+	it("posts to the API and returns the impersonation payload", async () => {
+		const responseBody = {
+			impersonatedUser: {
+				id: "2",
+				name: "Starter User",
+				email: "starter@example.com",
+			},
+			impersonator: {
+				id: "4",
+				name: "Platform Admin",
+				email: "platform.admin@example.com",
+			},
+		};
 
-        it("falls back to another privileged user when the target is platform admin", async () => {
-                const payload = await startImpersonationSession({ userId: "4" });
+		const fetchMock = vi.fn().mockResolvedValue(
+			new Response(JSON.stringify(responseBody), {
+				status: 200,
+				headers: { "Content-Type": "application/json" },
+			}),
+		);
+		vi.stubGlobal("fetch", fetchMock);
 
-                expect(payload.impersonatedUser).toEqual({
-                        id: "4",
-                        name: "Platform Admin",
-                        email: "platform.admin@example.com",
-                });
-                expect(payload.impersonator).toEqual({
-                        id: "1",
-                        name: "Admin User",
-                        email: "admin@example.com",
-                });
-        });
+		const payload = await startImpersonationSession({ userId: "2" });
 
-        it("throws when the target user is missing", async () => {
-                await expect(
-                        startImpersonationSession({ userId: "missing" }),
-                ).rejects.toThrow("User not found");
-        });
+		expect(fetchMock).toHaveBeenCalledWith(
+			"/api/admin/impersonation",
+			expect.objectContaining({
+				method: "POST",
+				body: JSON.stringify({ userId: "2" }),
+			}),
+		);
+		expect(payload).toEqual(responseBody);
+	});
 
-        it("resolves when stopping impersonation", async () => {
-                await expect(stopImpersonationSession()).resolves.toBeUndefined();
-        });
+	it("throws when the API reports an error", async () => {
+		const fetchMock = vi.fn().mockResolvedValue(
+			new Response(JSON.stringify({ error: "User not found" }), {
+				status: 404,
+				headers: { "Content-Type": "application/json" },
+			}),
+		);
+		vi.stubGlobal("fetch", fetchMock);
+
+		await expect(
+			startImpersonationSession({ userId: "missing" }),
+		).rejects.toThrow(/Failed to start impersonation session: User not found/i);
+	});
+
+	it("calls the DELETE endpoint when stopping impersonation", async () => {
+		const fetchMock = vi
+			.fn()
+			.mockResolvedValue(new Response(null, { status: 204 }));
+		vi.stubGlobal("fetch", fetchMock);
+
+		await expect(stopImpersonationSession()).resolves.toBeUndefined();
+		expect(fetchMock).toHaveBeenCalledWith(
+			"/api/admin/impersonation",
+			expect.objectContaining({ method: "DELETE" }),
+		);
+	});
 });
