@@ -90,13 +90,22 @@ export const useImpersonationStore = create<ImpersonationState>()(
 		startImpersonation: async ({ userId }) => {
 			// Track original credits before impersonation starts
 			const currentCredits = useUserStore.getState().credits;
+			console.log("=== IMPERSONATION START DEBUG ===");
+			console.log("Recording original credits:", currentCredits);
 
 			const parsed = impersonationResponseSchema.safeParse(
 				await startImpersonationSession({ userId }),
 			);
 			if (!parsed.success) {
+				console.error("Failed to parse impersonation response:", parsed.error);
 				throw new Error("Invalid impersonation response payload");
 			}
+
+			console.log(
+				"Impersonation started successfully for user:",
+				parsed.data.impersonatedUser,
+			);
+			console.log("Impersonator:", parsed.data.impersonator);
 
 			set({
 				isImpersonating: true,
@@ -104,14 +113,32 @@ export const useImpersonationStore = create<ImpersonationState>()(
 				impersonatedUser: parsed.data.impersonatedUser,
 				originalCredits: currentCredits,
 			});
+			console.log("Original credits stored in state:", currentCredits);
+			console.log("=== IMPERSONATION START DEBUG END ===");
 			return parsed.data;
 		},
 		stopImpersonation: async () => {
 			// Refund credits used during impersonation
 			const currentCredits = useUserStore.getState().credits;
+			console.log("=== IMPERSONATION STOP STORE DEBUG ===");
+			console.log("Current credits before refund:", currentCredits);
 
 			set((state) => {
+				console.log("Impersonation state in store:", {
+					isImpersonating: state.isImpersonating,
+					originalCredits: state.originalCredits,
+					impersonatedUser:
+						state.impersonatedUser?.name || state.impersonatedUser?.email,
+				});
+
 				if (state.originalCredits) {
+					console.log(
+						"Refunding credits from:",
+						state.originalCredits,
+						"to current:",
+						currentCredits,
+					);
+
 					// Refund the credits by setting used back to original values
 					useUserStore.setState((userState) => ({
 						credits: {
@@ -145,11 +172,17 @@ export const useImpersonationStore = create<ImpersonationState>()(
 							},
 						},
 					}));
+
+					console.log("Credits refunded successfully");
+				} else {
+					console.warn("No original credits found for refund!");
 				}
 				return createInitialState();
 			});
 
 			await stopImpersonationSession();
+			console.log("Impersonation session stopped in backend");
+			console.log("=== IMPERSONATION STOP STORE DEBUG END ===");
 		},
 		reset: () => set(createInitialState()),
 	})),
