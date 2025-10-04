@@ -10,11 +10,17 @@ import {
 	stopImpersonationSession,
 } from "@/lib/admin/impersonation-service";
 import { withAnalytics } from "./_middleware/analytics";
+import { useUserStore } from "./userStore";
 
 interface ImpersonationState {
 	isImpersonating: boolean;
 	impersonatedUser: ImpersonationIdentity | null;
 	impersonator: ImpersonationIdentity | null;
+	originalCredits: {
+		ai: { used: number; allotted: number };
+		leads: { used: number; allotted: number };
+		skipTraces: { used: number; allotted: number };
+	} | null;
 	hydrateFromSession: (session: Session | null) => void;
 	startImpersonation: (params: {
 		userId: string;
@@ -36,11 +42,12 @@ const impersonationResponseSchema = z.object({
 
 const createInitialState = (): Pick<
 	ImpersonationState,
-	"isImpersonating" | "impersonatedUser" | "impersonator"
+	"isImpersonating" | "impersonatedUser" | "impersonator" | "originalCredits"
 > => ({
 	isImpersonating: false,
 	impersonatedUser: null,
 	impersonator: null,
+	originalCredits: null,
 });
 
 function normalizeIdentity(
@@ -81,6 +88,9 @@ export const useImpersonationStore = create<ImpersonationState>()(
 			});
 		},
 		startImpersonation: async ({ userId }) => {
+			// Track original credits before impersonation starts
+			const currentCredits = useUserStore.getState().credits;
+
 			const parsed = impersonationResponseSchema.safeParse(
 				await startImpersonationSession({ userId }),
 			);
@@ -92,12 +102,54 @@ export const useImpersonationStore = create<ImpersonationState>()(
 				isImpersonating: true,
 				impersonator: parsed.data.impersonator,
 				impersonatedUser: parsed.data.impersonatedUser,
+				originalCredits: currentCredits,
 			});
 			return parsed.data;
 		},
 		stopImpersonation: async () => {
+			// Refund credits used during impersonation
+			const currentCredits = useUserStore.getState().credits;
+
+			set((state) => {
+				if (state.originalCredits) {
+					// Refund the credits by setting used back to original values
+					useUserStore.setState((userState) => ({
+						credits: {
+							...userState.credits,
+							ai: {
+								...userState.credits.ai,
+								used: state.originalCredits!.ai.used,
+							},
+							leads: {
+								...userState.credits.leads,
+								used: state.originalCredits!.leads.used,
+							},
+							skipTraces: {
+								...userState.credits.skipTraces,
+								used: state.originalCredits!.skipTraces.used,
+							},
+						},
+						quotas: {
+							...userState.quotas,
+							ai: {
+								...userState.quotas.ai,
+								used: state.originalCredits!.ai.used,
+							},
+							leads: {
+								...userState.quotas.leads,
+								used: state.originalCredits!.leads.used,
+							},
+							skipTraces: {
+								...userState.quotas.skipTraces,
+								used: state.originalCredits!.skipTraces.used,
+							},
+						},
+					}));
+				}
+				return createInitialState();
+			});
+
 			await stopImpersonationSession();
-			set(createInitialState());
 		},
 		reset: () => set(createInitialState()),
 	})),

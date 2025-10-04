@@ -116,3 +116,5 @@ describe("impersonation store", () => {
 		const state = useImpersonationStore.getState();
 		expect(state.isImpersonating).toBe(false);
 		expect(state.impersonatedUser).toBeNull();
+	});
+});
