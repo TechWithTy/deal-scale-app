@@ -1,47 +1,49 @@
 import { create } from "zustand";
-import { z } from "zod";
 import type { Session } from "next-auth";
 import type {
 	ImpersonationIdentity,
 	ImpersonationSessionPayload,
+	ImpersonationSessionUserSnapshot,
 } from "@/types/impersonation";
-import type { User } from "@/types/user";
 import {
 	startImpersonationSession,
 	stopImpersonationSession,
 } from "@/lib/admin/impersonation-service";
+import {
+	identitySchema,
+	impersonationResponseSchema,
+} from "@/lib/impersonation/session-schemas";
 import { withAnalytics } from "./_middleware/analytics";
 import { useUserStore } from "./userStore";
 
-// Helper function to trigger NextAuth session update
 async function triggerSessionUpdate(update: {
 	impersonation?: {
 		impersonator?: ImpersonationIdentity | null;
 		impersonatedUser?: ImpersonationIdentity | null;
 	};
-	user?: Record<string, unknown>;
+	user?: ImpersonationSessionUserSnapshot | null;
 }) {
-	if (typeof window !== "undefined") {
-		// Trigger NextAuth session update
-		await fetch("/api/auth/session", {
-			method: "PATCH",
-			headers: {
-				"Content-Type": "application/json",
-			},
-			body: JSON.stringify(update),
-		});
-	}
+	if (typeof window === "undefined") return;
+
+	await fetch("/api/auth/session", {
+		method: "PATCH",
+		headers: { "Content-Type": "application/json" },
+		body: JSON.stringify(update),
+	});
+}
+
+interface CreditSnapshot {
+	ai: { used: number; allotted: number };
+	leads: { used: number; allotted: number };
+	skipTraces: { used: number; allotted: number };
 }
 
 interface ImpersonationState {
 	isImpersonating: boolean;
 	impersonatedUser: ImpersonationIdentity | null;
 	impersonator: ImpersonationIdentity | null;
-	originalCredits: {
-		ai: { used: number; allotted: number };
-		leads: { used: number; allotted: number };
-		skipTraces: { used: number; allotted: number };
-	} | null;
+	originalCredits: CreditSnapshot | null;
+	originalUserData: ImpersonationSessionUserSnapshot | null;
 	hydrateFromSession: (session: Session | null) => void;
 	startImpersonation: (params: {
 		userId: string;
@@ -50,26 +52,19 @@ interface ImpersonationState {
 	reset: () => void;
 }
 
-const identitySchema = z.object({
-	id: z.string().min(1, "Missing user identifier"),
-	name: z.string().nullish(),
-	email: z.string().email().nullish(),
-});
-
-const impersonationResponseSchema = z.object({
-	impersonatedUser: identitySchema,
-	impersonator: identitySchema,
-	impersonatedUserData: z.custom<User>().optional(), // Full user data
-});
-
 const createInitialState = (): Pick<
 	ImpersonationState,
-	"isImpersonating" | "impersonatedUser" | "impersonator" | "originalCredits"
+	| "isImpersonating"
+	| "impersonatedUser"
+	| "impersonator"
+	| "originalCredits"
+	| "originalUserData"
 > => ({
 	isImpersonating: false,
 	impersonatedUser: null,
 	impersonator: null,
 	originalCredits: null,
+	originalUserData: null,
 });
 
 function normalizeIdentity(
@@ -86,7 +81,7 @@ function normalizeIdentity(
 }
 
 export const useImpersonationStore = create<ImpersonationState>(
-	withAnalytics<ImpersonationState>("impersonation", (set, get, api) => ({
+	withAnalytics<ImpersonationState>("impersonation", (set, get) => ({
 		...createInitialState(),
 		hydrateFromSession: (session) => {
 			const impersonator = normalizeIdentity(
@@ -110,7 +105,6 @@ export const useImpersonationStore = create<ImpersonationState>(
 			});
 		},
 		startImpersonation: async ({ userId }) => {
-			// Track original credits before impersonation starts
 			const currentCredits = useUserStore.getState().credits;
 			console.log("=== IMPERSONATION START DEBUG ===");
 			console.log("Recording original credits:", currentCredits);
@@ -129,16 +123,12 @@ export const useImpersonationStore = create<ImpersonationState>(
 			);
 			console.log("Impersonator:", parsed.data.impersonator);
 
-			// Update NextAuth session with impersonation data
 			await triggerSessionUpdate({
 				impersonation: {
 					impersonator: parsed.data.impersonator,
 					impersonatedUser: parsed.data.impersonatedUser,
 				},
-				user: parsed.data.impersonatedUserData as unknown as Record<
-					string,
-					unknown
-				>, // Pass full user data
+				user: parsed.data.impersonatedUserData,
 			});
 
 			set({
@@ -146,15 +136,19 @@ export const useImpersonationStore = create<ImpersonationState>(
 				impersonator: parsed.data.impersonator,
 				impersonatedUser: parsed.data.impersonatedUser,
 				originalCredits: currentCredits,
+				originalUserData: parsed.data.impersonatorUserData,
 			});
 			console.log("Original credits stored in state:", currentCredits);
 			console.log("=== IMPERSONATION START DEBUG END ===");
 			return parsed.data;
 		},
 		stopImpersonation: async () => {
-			// Refund credits used during impersonation
 			const currentCredits = useUserStore.getState().credits;
+			const { originalUserData } = get();
 			console.log("=== IMPERSONATION STOP STORE DEBUG ===");
+
+			await stopImpersonationSession();
+
 			set((state) => {
 				console.log("Impersonation state in store:", {
 					isImpersonating: state.isImpersonating,
@@ -164,7 +158,7 @@ export const useImpersonationStore = create<ImpersonationState>(
 				});
 
 				if (state.originalCredits) {
-					const originalCredits = state.originalCredits; // Extract to variable for type safety
+					const originalCredits = state.originalCredits;
 					console.log(
 						"Refunding credits from:",
 						originalCredits,
@@ -172,7 +166,6 @@ export const useImpersonationStore = create<ImpersonationState>(
 						currentCredits,
 					);
 
-					// Refund the credits by setting used back to original values
 					useUserStore.setState((userState) => ({
 						credits: {
 							...userState.credits,
@@ -213,15 +206,23 @@ export const useImpersonationStore = create<ImpersonationState>(
 				return createInitialState();
 			});
 
-			// Update NextAuth session to clear impersonation data (outside set callback)
-			await triggerSessionUpdate({
+			const sessionUpdate: {
+				impersonation: {
+					impersonator: null;
+					impersonatedUser: null;
+				};
+				user?: ImpersonationSessionUserSnapshot;
+			} = {
 				impersonation: {
 					impersonator: null,
 					impersonatedUser: null,
 				},
-			});
+			};
+			if (originalUserData) {
+				sessionUpdate.user = originalUserData;
+			}
 
-			await stopImpersonationSession();
+			await triggerSessionUpdate(sessionUpdate);
 			console.log("Impersonation session stopped in backend");
 			console.log("=== IMPERSONATION STOP STORE DEBUG END ===");
 		},
