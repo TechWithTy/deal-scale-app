@@ -1,54 +1,35 @@
 import { z } from "zod";
-import { getUserById, users } from "@/lib/mock-db";
-import type { User } from "@/types/user";
-import type {
-	ImpersonationIdentity,
-	ImpersonationSessionPayload,
-} from "@/types/impersonation";
+import type { ImpersonationSessionPayload } from "@/types/impersonation";
 
 const START_SCHEMA = z.object({
 	userId: z.string().min(1, "Target user id is required"),
 });
 
-const ALLOWED_IMPERSONATOR_ROLES = new Set<User["role"]>([
-	"platform_admin",
-	"platform_support",
-]);
+const identitySchema = z.object({
+	id: z.string().min(1),
+	name: z.string().nullish(),
+	email: z.string().email().nullish(),
+});
 
-function toIdentity(user: User): ImpersonationIdentity {
-	return {
-		id: user.id,
-		name: user.name,
-		email: user.email,
-	};
+const responseSchema = z.object({
+	impersonatedUser: identitySchema,
+	impersonator: identitySchema,
+});
+
+async function parseJson(response: Response) {
+	try {
+		return await response.json();
+	} catch (error) {
+		console.error("Failed to parse impersonation response", error);
+		return null;
+	}
 }
 
-function findMockImpersonator(targetId: string): User | null {
-	const isDifferentUser = (user: User) => user.id !== targetId;
-
-	const prioritizedRoles: User["role"][] = [
-		"platform_admin",
-		"platform_support",
-	];
-
-	for (const role of prioritizedRoles) {
-		const match = users.find(
-			(user) => user.role === role && isDifferentUser(user),
-		);
-		if (match) {
-			return match;
-		}
+function buildError(message: string, fallback: string) {
+	if (message) {
+		return new Error(`${fallback}: ${message}`);
 	}
-
-	const fallback = users.find(
-		(user) =>
-			ALLOWED_IMPERSONATOR_ROLES.has(user.role) && isDifferentUser(user),
-	);
-	if (fallback) {
-		return fallback;
-	}
-
-	return users.find(isDifferentUser) ?? null;
+	return new Error(fallback);
 }
 
 export async function startImpersonationSession(
@@ -61,24 +42,39 @@ export async function startImpersonationSession(
 		);
 	}
 
-	const target = getUserById(parsed.data.userId);
-	if (!target) {
-		throw new Error("User not found");
+	const response = await fetch("/api/admin/impersonation", {
+		method: "POST",
+		credentials: "include",
+		headers: { "Content-Type": "application/json" },
+		cache: "no-store",
+		body: JSON.stringify(parsed.data),
+	});
+
+	if (!response.ok) {
+		const body = await parseJson(response);
+		const message = body?.error as string | undefined;
+		throw buildError(message ?? "", "Failed to start impersonation session");
 	}
 
-	const impersonator = findMockImpersonator(target.id);
-	if (!impersonator) {
-		throw new Error("No impersonator available in mock data");
+	const body = await parseJson(response);
+	const validated = responseSchema.safeParse(body);
+	if (!validated.success) {
+		throw new Error("Invalid impersonation response payload");
 	}
 
-	return {
-		impersonatedUser: toIdentity(target),
-		impersonator: toIdentity(impersonator),
-		impersonatedUserData: target, // Include full user data
-	};
+	return validated.data satisfies ImpersonationSessionPayload;
 }
 
 export async function stopImpersonationSession(): Promise<void> {
-	// Mock implementation: nothing to do besides resolving the promise.
-	return Promise.resolve();
+	const response = await fetch("/api/admin/impersonation", {
+		method: "DELETE",
+		credentials: "include",
+		cache: "no-store",
+	});
+
+	if (!response.ok && response.status !== 204) {
+		const body = await parseJson(response);
+		const message = body?.error as string | undefined;
+		throw buildError(message ?? "", "Failed to stop impersonation session");
+	}
 }
