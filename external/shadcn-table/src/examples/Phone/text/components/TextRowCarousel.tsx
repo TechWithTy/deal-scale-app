@@ -5,6 +5,8 @@ import JSZip from "jszip";
 import { saveAs } from "file-saver";
 import type { Row, Table } from "@tanstack/react-table";
 import { DataTableRowModalCarousel } from "../../../../components/data-table/data-table-row-modal-carousel";
+import { CampaignActivitySummary } from "../../../../components/data-table/campaign-activity-summary";
+import { buildChannelActivityData } from "../../../../components/data-table/activity";
 import { Badge } from "../../../../components/ui/badge";
 import { Button } from "../../../../components/ui/button";
 import type { CallCampaign } from "../../../../../../../types/_dashboard/campaign";
@@ -117,12 +119,12 @@ export function TextRowCarousel({
 					</Button>
 				);
 			}}
-			render={(row: Row<CallCampaign>) => {
-				const r = row.original;
-				const msgs = r?.messages || [];
-				const cur = msgs[detailIndex];
-				const provider =
-					cur?.provider ||
+                        render={(row: Row<CallCampaign>) => {
+                                const r = row.original;
+                                const msgs = r?.messages || [];
+                                const cur = msgs[detailIndex];
+                                const provider =
+                                        cur?.provider ||
 					(cur?.twilioPayload
 						? "twilio"
 						: cur?.sendbluePayload
@@ -293,9 +295,16 @@ export function TextRowCarousel({
 								)}
 							</div>
 						</div>
-					</div>
-				);
-			}}
-		/>
-	);
+                                        </div>
+                                );
+                        }}
+                        activityRender={(row) => {
+                                const activity = buildChannelActivityData(row.original);
+                                if (!activity) {
+                                        return null;
+                                }
+                                return <CampaignActivitySummary activity={activity} />;
+                        }}
+                />
+        );
 }

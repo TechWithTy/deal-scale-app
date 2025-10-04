@@ -6,6 +6,8 @@ import { saveAs } from "file-saver";
 import { Badge } from "../../../components/ui/badge";
 import { Button } from "../../../components/ui/button";
 import { DataTableRowModalCarousel } from "../../../components/data-table/data-table-row-modal-carousel";
+import { CampaignActivitySummary } from "../../../components/data-table/campaign-activity-summary";
+import { buildChannelActivityData } from "../../../components/data-table/activity";
 import type { CallCampaign } from "../../../../../../types/_dashboard/campaign";
 import type { Row, Table } from "@tanstack/react-table";
 
@@ -151,11 +153,11 @@ export function SocialRowCarousel({
 					</Button>
 				);
 			}}
-			render={(row) => {
-				const r = row.original as SocialRow;
-				const items = r?.interactionsDetails ?? [];
-				const cur = items[detailIndex];
-				return (
+                        render={(row) => {
+                                const r = row.original as SocialRow;
+                                const items = r?.interactionsDetails ?? [];
+                                const cur = items[detailIndex];
+                                return (
 					<div className="grid gap-3 md:grid-cols-2">
 						{cur ? (
 							<div className="rounded-md border p-3">
@@ -489,9 +491,16 @@ export function SocialRowCarousel({
 									: 0}
 							</Badge>
 						</div>
-					</div>
-				);
-			}}
-		/>
-	);
+                                        </div>
+                                );
+                        }}
+                        activityRender={(row) => {
+                                const activity = buildChannelActivityData(row.original);
+                                if (!activity) {
+                                        return null;
+                                }
+                                return <CampaignActivitySummary activity={activity} />;
+                        }}
+                />
+        );
 }
