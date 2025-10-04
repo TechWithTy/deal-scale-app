@@ -55,6 +55,7 @@ export async function startImpersonationSession(
 	return {
 		impersonatedUser: toIdentity(target),
 		impersonator: toIdentity(impersonator),
+		impersonatedUserData: target, // Include full user data
 	};
 }
 
