@@ -1,3 +1,5 @@
+import type { User } from "@/types/user";
+
 export interface ImpersonationIdentity {
 	id: string;
 	name?: string | null;
@@ -7,4 +9,5 @@ export interface ImpersonationIdentity {
 export interface ImpersonationSessionPayload {
 	impersonator: ImpersonationIdentity;
 	impersonatedUser: ImpersonationIdentity;
+	impersonatedUserData?: User; // Full user data for the impersonated user
 }

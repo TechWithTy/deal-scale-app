@@ -18,6 +18,10 @@ import type {
 	UserQuotas,
 	UserRole,
 } from "@/types/user";
+import type {
+	ImpersonationIdentity,
+	ImpersonationSessionPayload,
+} from "@/types/impersonation";
 
 const VALID_ROLES: UserRole[] = [
         "admin",
@@ -452,12 +456,30 @@ const authConfig = {
 			if (trigger === "update" && session) {
 				const update = session as {
 					user?: ExtendedUserLike;
-					impersonation?: { impersonator?: ImpersonationIdentity | null };
+					impersonation?: { 
+						impersonator?: ImpersonationIdentity | null;
+						impersonatedUser?: ImpersonationIdentity | null;
+					};
 				};
 				if (update.user) {
 					applyExtendedUserToToken(extendedToken, update.user);
 				}
 				if (Object.prototype.hasOwnProperty.call(update, "impersonation")) {
+					// Update user data when impersonating
+					if (update.impersonation?.impersonatedUser) {
+						const impersonatedUser = update.impersonation.impersonatedUser;
+						// Update token with impersonated user data
+						extendedToken.role = impersonatedUser.role || extendedToken.role;
+						extendedToken.tier = impersonatedUser.tier || extendedToken.tier;
+						extendedToken.permissions = impersonatedUser.permissions || extendedToken.permissions;
+						extendedToken.quotas = impersonatedUser.quotas || extendedToken.quotas;
+						extendedToken.subscription = impersonatedUser.subscription || extendedToken.subscription;
+						extendedToken.isBetaTester = impersonatedUser.isBetaTester ?? extendedToken.isBetaTester;
+						extendedToken.isPilotTester = impersonatedUser.isPilotTester ?? extendedToken.isPilotTester;
+						if (impersonatedUser.id) {
+							extendedToken.sub = impersonatedUser.id;
+						}
+					}
 					extendedToken.impersonator = update.impersonation?.impersonator ?? null;
 				}
 			}
@@ -468,7 +490,7 @@ const authConfig = {
 			if (session.user) {
 				const extendedToken = token as ExtendedJWT;
 				applyTokenToSessionUser(
-					(session.user as SessionUserLike & Record<string, unknown>),
+					session.user as SessionUserLike & Record<string, unknown>,
 					extendedToken,
 				);
 				session.impersonator = extendedToken.impersonator ?? null;
