@@ -5,44 +5,27 @@ import { navItems } from "@/constants/data";
 import { cn } from "@/lib/_utils";
 import { useNavbarStore } from "@/lib/stores/dashboard/navbarStore";
 import { useSessionStore } from "@/lib/stores/user/useSessionStore";
-import { useUserProfileStore } from "@/lib/stores/user/userProfile";
 import type { UserProfile } from "@/types/userProfile";
 
 import Link from "next/link";
 import Image from "next/image";
-import {
-	useEffect,
+import React, {
 	useState,
 	type MouseEventHandler,
 	type KeyboardEvent,
 } from "react";
-import { useSession } from "next-auth/react";
 import { CrudToggle } from "external/crud-toggle/components/CrudToggle";
 import { CreditsSummary } from "external/credit-view-purchase/components/CreditsSummary";
 import type { CrudFlags } from "external/crud-toggle/utils/types";
 
+void React;
+
 export default function SidebarClient({ user }: { user: UserProfile | null }) {
 	const { isSidebarMinimized, toggleSidebar } = useNavbarStore();
-	const { setSessionUser } = useSessionStore(); // ✅ Zustand state
-	const { setUserProfile, userProfile } = useUserProfileStore(); // ✅ Zustand store update function
-
-	// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
-	useEffect(() => {
-		// if (user?.id) {
-		// 	getUserProfile(user.id).then((profileResponse) => {
-		// 		if (profileResponse.status === "success") {
-		// 			setUserProfile(profileResponse.userProfile); // ✅ Update Zustand store
-		// 			console.log("User profile Set", userProfile);
-		// 		} else {
-		// 			console.log("Error fetching user profile");
-		// 		}
-		// 	});
-		// }
-	}, [user, setUserProfile]);
+	const sessionUser = useSessionStore((state) => state.user);
 
 	const [showPerms, setShowPerms] = useState(false);
 	const [showCredits, setShowCredits] = useState(false);
-	const { data: session } = useSession();
 	// Narrow session user to access subscription safely without 'any'
 	type CreditsBucket = { allotted?: number; used?: number };
 	type SubscriptionShape = {
@@ -50,11 +33,11 @@ export default function SidebarClient({ user }: { user: UserProfile | null }) {
 		leads?: CreditsBucket;
 		skipTraces?: CreditsBucket;
 	};
-	const subs: SubscriptionShape | undefined = (
-		session?.user as { subscription?: SubscriptionShape } | undefined
-	)?.subscription;
+	const subs: SubscriptionShape | undefined =
+		(sessionUser?.subscription as SubscriptionShape | undefined) ??
+		(user?.subscription as SubscriptionShape | undefined);
 
-	// Build CRUD flags from session.user.permissions (array of strings like "leads:read")
+	// Build CRUD flags from the session store user permissions (array of strings like "leads:read")
 	const ENTITIES = [
 		"leads",
 		"campaigns",
@@ -201,13 +184,16 @@ export default function SidebarClient({ user }: { user: UserProfile | null }) {
 					</div>
 
 					{/* Current user summary (role) */}
-					{!isSidebarMinimized && session?.user?.role && (
+					{!isSidebarMinimized && sessionUser?.role && (
 						<div className="px-3 py-1">
-							<div className="rounded-md border border-border bg-card p-2 text-muted-foreground text-xs">
+							<div
+								className="rounded-md border border-border bg-card p-2 text-muted-foreground text-xs"
+								data-testid="sidebar-role"
+							>
 								<span className="mr-1 font-semibold text-foreground">
 									Role:
 								</span>
-								<span className="text-primary">{session.user.role}</span>
+								<span className="text-primary">{sessionUser?.role ?? ""}</span>
 							</div>
 						</div>
 					)}
@@ -255,7 +241,7 @@ export default function SidebarClient({ user }: { user: UserProfile | null }) {
 								<div className="mt-2 space-y-3">
 									{ENTITIES.map((entity) => {
 										const flags = toFlags(
-											session?.user?.permissions as string[] | undefined,
+											sessionUser?.permissions as string[] | undefined,
 											entity,
 										) as CrudFlags;
 										const label =
@@ -293,9 +279,12 @@ export default function SidebarClient({ user }: { user: UserProfile | null }) {
 
 				{/* ✅ Display user info, either from the server or client */}
 				{!isSidebarMinimized && (
-					<div className="p-4 text-foreground text-sm">
+					<div
+						className="p-4 text-foreground text-sm"
+						data-testid="sidebar-email"
+					>
 						Logged in as:{" "}
-						<strong>{session?.user?.email ?? user?.email ?? ""}</strong>
+						<strong>{sessionUser?.email ?? user?.email ?? ""}</strong>
 					</div>
 				)}
 			</div>

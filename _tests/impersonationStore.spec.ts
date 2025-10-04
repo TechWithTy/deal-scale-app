@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi, beforeEach } from "vitest";
 import type { Session } from "next-auth";
 import { useImpersonationStore } from "../lib/stores/impersonationStore";
+import * as impersonationService from "../lib/admin/impersonation-service";
 
 function createSession(partial?: Partial<Session & { impersonator?: { id: string; name?: string | null; email?: string | null } | null }>): Session {
 	return {
@@ -55,66 +56,57 @@ describe("impersonation store", () => {
 		expect(state.impersonator).toBeNull();
 	});
 
-	it("starts impersonation through the API and updates state", async () => {
-		const responseBody = {
-			impersonatedUser: {
-				id: "target-id",
-				name: "Target",
-				email: "target@example.com",
-			},
-			impersonator: {
-				id: "admin-id",
-				name: "Admin",
-				email: "admin@example.com",
-			},
-		};
+        it("starts impersonation through the API and updates state", async () => {
+                const responseBody = {
+                        impersonatedUser: {
+                                id: "target-id",
+                                name: "Target",
+                                email: "target@example.com",
+                        },
+                        impersonator: {
+                                id: "admin-id",
+                                name: "Admin",
+                                email: "admin@example.com",
+                        },
+                };
 
-		const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue(
-			new Response(JSON.stringify(responseBody), {
-				status: 200,
-				headers: { "Content-Type": "application/json" },
-			}) as Response,
-		);
+                const serviceMock = vi
+                        .spyOn(impersonationService, "startImpersonationSession")
+                        .mockResolvedValue(responseBody);
 
-		await expect(
-			useImpersonationStore.getState().startImpersonation({
-				userId: "target-id",
-			}),
-		).resolves.toEqual(responseBody);
+                await expect(
+                        useImpersonationStore.getState().startImpersonation({
+                                userId: "target-id",
+                        }),
+                ).resolves.toEqual(responseBody);
 
-		expect(fetchMock).toHaveBeenCalledWith("/api/admin/impersonation", {
-			method: "POST",
-			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify({ userId: "target-id" }),
-		});
+                expect(serviceMock).toHaveBeenCalledWith({ userId: "target-id" });
 
-		const state = useImpersonationStore.getState();
-		expect(state.isImpersonating).toBe(true);
-		expect(state.impersonatedUser?.id).toBe("target-id");
-		expect(state.impersonator?.id).toBe("admin-id");
-	});
+                const state = useImpersonationStore.getState();
+                expect(state.isImpersonating).toBe(true);
+                expect(state.impersonatedUser?.id).toBe("target-id");
+                expect(state.impersonator?.id).toBe("admin-id");
+        });
 
-	it("stops impersonation through the API and clears state", async () => {
-		useImpersonationStore.setState({
-			isImpersonating: true,
-			impersonatedUser: { id: "target-id" },
-			impersonator: { id: "admin-id" },
-		});
+        it("stops impersonation through the API and clears state", async () => {
+                useImpersonationStore.setState({
+                        isImpersonating: true,
+                        impersonatedUser: { id: "target-id" },
+                        impersonator: { id: "admin-id" },
+                });
 
-		const fetchMock = vi
-			.spyOn(globalThis, "fetch")
-			.mockResolvedValue(new Response(null, { status: 204 }) as Response);
+                const serviceMock = vi
+                        .spyOn(impersonationService, "stopImpersonationSession")
+                        .mockResolvedValue();
 
-		await expect(
-			useImpersonationStore.getState().stopImpersonation(),
-		).resolves.toBeUndefined();
+                await expect(
+                        useImpersonationStore.getState().stopImpersonation(),
+                ).resolves.toBeUndefined();
 
-		expect(fetchMock).toHaveBeenCalledWith("/api/admin/impersonation", {
-			method: "DELETE",
-		});
+                expect(serviceMock).toHaveBeenCalled();
 
-		const state = useImpersonationStore.getState();
-		expect(state.isImpersonating).toBe(false);
-		expect(state.impersonatedUser).toBeNull();
-	});
+                const state = useImpersonationStore.getState();
+                expect(state.isImpersonating).toBe(false);
+                expect(state.impersonatedUser).toBeNull();
+        });
 });

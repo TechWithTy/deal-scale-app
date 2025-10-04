@@ -24,12 +24,31 @@ function toIdentity(user: User): ImpersonationIdentity {
 }
 
 function findMockImpersonator(targetId: string): User | null {
-	const candidate = users.find(
-		(user) => ALLOWED_IMPERSONATOR_ROLES.has(user.role) && user.id !== targetId,
-	);
+	const isDifferentUser = (user: User) => user.id !== targetId;
 
-	if (candidate) return candidate;
-	return users.find((user) => user.id !== targetId) ?? null;
+	const prioritizedRoles: User["role"][] = [
+		"platform_admin",
+		"platform_support",
+	];
+
+	for (const role of prioritizedRoles) {
+		const match = users.find(
+			(user) => user.role === role && isDifferentUser(user),
+		);
+		if (match) {
+			return match;
+		}
+	}
+
+	const fallback = users.find(
+		(user) =>
+			ALLOWED_IMPERSONATOR_ROLES.has(user.role) && isDifferentUser(user),
+	);
+	if (fallback) {
+		return fallback;
+	}
+
+	return users.find(isDifferentUser) ?? null;
 }
 
 export async function startImpersonationSession(

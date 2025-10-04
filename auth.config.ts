@@ -2,8 +2,10 @@ import type { NextAuthConfig } from "next-auth";
 import type { User as NextAuthUser } from "next-auth";
 import type { JWT } from "next-auth/jwt";
 import type { UserProfileSubscription } from "@/constants/_faker/profile/userSubscription";
+import type { ImpersonationIdentity } from "@/types/impersonation";
 import Credentials from "next-auth/providers/credentials";
 import { getUserByEmail } from "@/lib/mock-db";
+import { isAdminAreaAuthorized } from "@/lib/admin/roles";
 import {
 	ensureValidTier,
 	type SubscriptionTier,
@@ -171,6 +173,8 @@ type ExtendedUserLike = {
         subscription?: UserProfileSubscription;
         isBetaTester?: boolean;
         isPilotTester?: boolean;
+        name?: string | null;
+        email?: string | null;
 };
 
 type SessionUserLike = {
@@ -184,12 +188,20 @@ type SessionUserLike = {
         subscription?: UserProfileSubscription;
         isBetaTester?: boolean;
         isPilotTester?: boolean;
+        name?: string | null;
+        email?: string | null;
 };
 
 function applyExtendedUserToToken(
         token: ExtendedJWT,
         userData: ExtendedUserLike,
 ): void {
+        if (userData.name) {
+                token.name = userData.name;
+        }
+        if (userData.email) {
+                token.email = userData.email;
+        }
         token.role = userData.role as UserRole | undefined;
         token.tier = userData.tier;
         token.permissions = userData.permissions;
@@ -208,6 +220,12 @@ function applyTokenToSessionUser(
         sessionUser: SessionUserLike & Record<string, unknown>,
         token: ExtendedJWT,
 ): void {
+        if (typeof token.name === "string") {
+                sessionUser.name = token.name;
+        }
+        if (typeof token.email === "string") {
+                sessionUser.email = token.email;
+        }
         sessionUser.role = token.role as UserRole | undefined;
         sessionUser.tier = token.tier as SubscriptionTier | undefined;
         sessionUser.permissions = token.permissions as string[] | undefined;
@@ -217,7 +235,7 @@ function applyTokenToSessionUser(
         sessionUser.subscription = token.subscription;
         sessionUser.isBetaTester = token.isBetaTester;
         sessionUser.isPilotTester = token.isPilotTester;
-        if (!sessionUser.id && token.sub) {
+        if (typeof token.sub === "string" && token.sub) {
                 sessionUser.id = token.sub;
         }
 }
@@ -393,15 +411,38 @@ const authConfig = {
 	],
 	callbacks: {
 		/** Protect routes in middleware via NextAuth helper */
-		authorized({ auth, request }) {
-			const isLoggedIn = Boolean(auth?.user);
-			// Only allow authenticated users into /dashboard
-			if (request.nextUrl.pathname.startsWith("/dashboard")) {
-				if (isLoggedIn) return true;
-				const signInUrl = new URL("/signin", request.nextUrl);
-				signInUrl.searchParams.set("callbackUrl", request.nextUrl.href);
-				return Response.redirect(signInUrl);
-			}
+                authorized({ auth, request }) {
+                        const isLoggedIn = Boolean(auth?.user);
+                        const pathname = request.nextUrl.pathname;
+
+                        if (pathname.startsWith("/admin")) {
+                                if (!isLoggedIn) {
+                                        const signInUrl = new URL("/signin", request.nextUrl);
+                                        signInUrl.searchParams.set(
+                                                "callbackUrl",
+                                                request.nextUrl.href,
+                                        );
+                                        return Response.redirect(signInUrl);
+                                }
+
+                                if (!isAdminAreaAuthorized(auth?.user?.role)) {
+                                        const dashboardUrl = new URL(
+                                                "/dashboard",
+                                                request.nextUrl,
+                                        );
+                                        return Response.redirect(dashboardUrl);
+                                }
+
+                                return true;
+                        }
+
+                        // Only allow authenticated users into /dashboard
+                        if (pathname.startsWith("/dashboard")) {
+                                if (isLoggedIn) return true;
+                                const signInUrl = new URL("/signin", request.nextUrl);
+                                signInUrl.searchParams.set("callbackUrl", request.nextUrl.href);
+                                return Response.redirect(signInUrl);
+                        }
 			return true;
 		},
 		async jwt({ token, user, trigger, session }) {

@@ -9,8 +9,10 @@ describe("mock impersonation service", () => {
                         id: "2",
                         email: "starter@example.com",
                 });
-                expect(["4", "5"]).toContain(payload.impersonator.id);
-                expect(payload.impersonator.email).toMatch(/platform\./);
+                expect(payload.impersonator).toMatchObject({
+                        id: "4",
+                        email: "platform.admin@example.com",
+                });
         });
 
         it("throws when the target user is missing", async () => {
