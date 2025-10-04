@@ -1,10 +1,12 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { auth } from "@/auth";
+import { auth, update } from "@/auth";
 import { getUserByEmail, getUserById } from "@/lib/mock-db";
 import type { User } from "@/types/user";
-import type { ImpersonationSessionPayload } from "@/types/impersonation";
-import type { NextAuthUser } from "next-auth";
+import type {
+	ImpersonationSessionPayload,
+	ImpersonationSessionUserSnapshot,
+} from "@/types/impersonation";
 
 const START_SCHEMA = z.object({
 	userId: z.string().min(1, "Target user id is required"),
@@ -20,18 +22,7 @@ function toImpersonationIdentity(user: User) {
 	};
 }
 
-function toSessionUser(user: User): NextAuthUser & {
-	id: string;
-	role: User["role"];
-	tier: User["tier"];
-	permissions: string[];
-	permissionMatrix: User["permissions"];
-	permissionList: string[];
-	quotas: User["quotas"];
-	subscription: User["subscription"];
-	isBetaTester?: boolean;
-	isPilotTester?: boolean;
-} {
+function toSessionUser(user: User): ImpersonationSessionUserSnapshot {
 	return {
 		id: user.id,
 		name: user.name,
@@ -100,14 +91,19 @@ export async function POST(request: Request) {
 	const impersonatorIdentity = toImpersonationIdentity(impersonatorSource);
 	const impersonatedIdentity = toImpersonationIdentity(targetUser);
 
-	await auth().update({
+	await update({
 		user: toSessionUser(targetUser),
-		impersonation: { impersonator: impersonatorIdentity },
+		impersonation: {
+			impersonator: impersonatorIdentity,
+			impersonatedUser: impersonatedIdentity,
+		},
 	});
 
 	const payload: ImpersonationSessionPayload = {
 		impersonator: impersonatorIdentity,
 		impersonatedUser: impersonatedIdentity,
+		impersonatedUserData: toSessionUser(targetUser),
+		impersonatorUserData: toSessionUser(impersonatorSource),
 	};
 
 	return NextResponse.json(payload, { status: 200 });
@@ -132,9 +128,9 @@ export async function DELETE() {
 		);
 	}
 
-	await auth().update({
+	await update({
 		user: toSessionUser(originalUser),
-		impersonation: { impersonator: null },
+		impersonation: { impersonator: null, impersonatedUser: null },
 	});
 
 	return new NextResponse(null, { status: 204 });
