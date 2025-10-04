@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { getUserById, users } from "@/lib/mock-db";
-import type { User } from "@/types/user";
+import type { User, UserRole } from "@/types/user";
 import type {
 	ImpersonationIdentity,
 	ImpersonationSessionPayload,
@@ -10,25 +10,33 @@ const START_SCHEMA = z.object({
 	userId: z.string().min(1, "Target user id is required"),
 });
 
-const ALLOWED_IMPERSONATOR_ROLES = new Set<User["role"]>([
+const PREFERRED_IMPERSONATOR_ROLES: UserRole[] = [
 	"platform_admin",
+	"admin",
 	"platform_support",
-]);
+	"support",
+	"manager",
+	"member",
+];
 
 function toIdentity(user: User): ImpersonationIdentity {
 	return {
 		id: user.id,
 		name: user.name,
 		email: user.email,
-	};
+	} satisfies ImpersonationIdentity;
 }
 
 function findMockImpersonator(targetId: string): User | null {
-	const candidate = users.find(
-		(user) => ALLOWED_IMPERSONATOR_ROLES.has(user.role) && user.id !== targetId,
-	);
+	for (const role of PREFERRED_IMPERSONATOR_ROLES) {
+		const candidate = users.find(
+			(user) => user.role === role && user.id !== targetId,
+		);
+		if (candidate) {
+			return candidate;
+		}
+	}
 
-	if (candidate) return candidate;
 	return users.find((user) => user.id !== targetId) ?? null;
 }
 
@@ -55,10 +63,9 @@ export async function startImpersonationSession(
 	return {
 		impersonatedUser: toIdentity(target),
 		impersonator: toIdentity(impersonator),
-	};
+	} satisfies ImpersonationSessionPayload;
 }
 
 export async function stopImpersonationSession(): Promise<void> {
-	// Mock implementation: nothing to do besides resolving the promise.
 	return Promise.resolve();
 }

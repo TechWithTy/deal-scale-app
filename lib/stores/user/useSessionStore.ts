@@ -1,21 +1,33 @@
 "use client";
 
-import type { UserProfile } from "@/types/userProfile";
+import type { Session } from "next-auth";
 import { create } from "zustand";
+
+import type { ImpersonationIdentity } from "@/types/impersonation";
 import { withAnalytics } from "../_middleware/analytics";
 
+type SessionUser = Session["user"];
+
 interface SessionState {
-	user: UserProfile | null; // ✅ Holds user context
-	setSessionUser: (user: UserProfile) => void; // ✅ Allows setting user data
-	clearUser: () => void; // ✅ Allows clearing session
+	user: SessionUser | null;
+	impersonator: ImpersonationIdentity | null;
+	setFromSession: (session: Session | null) => void;
+	setSessionUser: (user: SessionUser | null) => void;
+	setImpersonator: (impersonator: ImpersonationIdentity | null) => void;
+	clear: () => void;
 }
 
-export const useSessionStore = create<SessionState>(
+export const useSessionStore = create<SessionState>()(
 	withAnalytics<SessionState>("session", (set) => ({
-		user: null, // ✅ Initially no user
-
+		user: null,
+		impersonator: null,
+		setFromSession: (session) =>
+			set({
+				user: session?.user ?? null,
+				impersonator: session?.impersonator ?? null,
+			}),
 		setSessionUser: (user) => set({ user }),
-
-		clearUser: () => set({ user: null }),
+		setImpersonator: (impersonator) => set({ impersonator }),
+		clear: () => set({ user: null, impersonator: null }),
 	})),
 );

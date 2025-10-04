@@ -7,5 +7,5 @@ const { auth } = NextAuth(authConfig);
 export default auth((request) => marketingRedirect(request));
 
 export const config = {
-	matcher: ["/", "/dashboard/:path*"],
+        matcher: ["/", "/dashboard/:path*", "/admin/:path*"],
 };

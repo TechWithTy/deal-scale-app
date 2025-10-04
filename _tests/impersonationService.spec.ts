@@ -1,25 +1,49 @@
 import { describe, expect, it } from "vitest";
-import { startImpersonationSession, stopImpersonationSession } from "../lib/admin/impersonation-service";
+import {
+        startImpersonationSession,
+        stopImpersonationSession,
+} from "../lib/admin/impersonation-service";
 
-describe("mock impersonation service", () => {
-        it("returns identities sourced from the mock database", async () => {
+describe("impersonation service", () => {
+        it("returns impersonated and impersonator identities from mock data", async () => {
                 const payload = await startImpersonationSession({ userId: "2" });
 
-                expect(payload.impersonatedUser).toMatchObject({
-                        id: "2",
-                        email: "starter@example.com",
+                expect(payload).toEqual({
+                        impersonatedUser: {
+                                id: "2",
+                                name: "Starter User",
+                                email: "starter@example.com",
+                        },
+                        impersonator: {
+                                id: "4",
+                                name: "Platform Admin",
+                                email: "platform.admin@example.com",
+                        },
                 });
-                expect(["4", "5"]).toContain(payload.impersonator.id);
-                expect(payload.impersonator.email).toMatch(/platform\./);
+        });
+
+        it("falls back to another privileged user when the target is platform admin", async () => {
+                const payload = await startImpersonationSession({ userId: "4" });
+
+                expect(payload.impersonatedUser).toEqual({
+                        id: "4",
+                        name: "Platform Admin",
+                        email: "platform.admin@example.com",
+                });
+                expect(payload.impersonator).toEqual({
+                        id: "1",
+                        name: "Admin User",
+                        email: "admin@example.com",
+                });
         });
 
         it("throws when the target user is missing", async () => {
                 await expect(
                         startImpersonationSession({ userId: "missing" }),
-                ).rejects.toThrow(/User not found/i);
+                ).rejects.toThrow("User not found");
         });
 
-        it("resolves when stopping an impersonation session", async () => {
+        it("resolves when stopping impersonation", async () => {
                 await expect(stopImpersonationSession()).resolves.toBeUndefined();
         });
 });
