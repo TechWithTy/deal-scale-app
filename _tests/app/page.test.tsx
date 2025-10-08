@@ -1,12 +1,10 @@
-import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
-import { renderToStaticMarkup } from "react-dom/server";
-import type React from "react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("next/navigation", () => ({
         redirect: vi.fn(),
 }));
 
-describe("HomePage", () => {
+describe("HomePage redirects", () => {
         beforeEach(() => {
                 vi.resetModules();
         });
@@ -15,26 +13,53 @@ describe("HomePage", () => {
                 vi.restoreAllMocks();
         });
 
-        it("renders the marketing hero without triggering auth redirects", async () => {
+        it("redirects authenticated users to the dashboard", async () => {
+                vi.doMock("@/auth", () => ({
+                        auth: vi.fn().mockResolvedValue({
+                                user: { id: "user-123" },
+                        }),
+                }));
+
+                vi.doMock("@/constants/testingMode", () => ({
+                        NEXT_PUBLIC_APP_TESTING_MODE: true,
+                }));
+
                 const HomePage = (await import("@/app/page")).default;
-                const element = (await HomePage()) as React.ReactElement;
-                const html = renderToStaticMarkup(element);
-                const template = document.createElement("div");
-                template.innerHTML = html;
+                await HomePage();
 
-                const hero = template.querySelector("section[data-testid='hero']");
-                expect(hero).not.toBeNull();
-                expect(hero?.querySelector("h1")?.textContent).toMatch(/close more deals/i);
-                const links = Array.from(hero?.querySelectorAll<HTMLAnchorElement>("a") ?? []);
+                const { redirect } = await import("next/navigation");
+                expect(redirect).toHaveBeenCalledWith("/dashboard");
+        });
 
-                const getStartedCta = links.find((link) =>
-                        /get started/i.test(link.textContent ?? ""),
-                );
-                expect(getStartedCta?.getAttribute("href")).toBe("https://www.dealscale.io/sign-up");
+        it("redirects guests to the sign-in page when testing mode is enabled", async () => {
+                vi.doMock("@/auth", () => ({
+                        auth: vi.fn().mockResolvedValue(null),
+                }));
 
-                const demoCta = links.find((link) =>
-                        /view live demo/i.test(link.textContent ?? ""),
-                );
-                expect(demoCta?.getAttribute("href")).toBe("/signin");
+                vi.doMock("@/constants/testingMode", () => ({
+                        NEXT_PUBLIC_APP_TESTING_MODE: true,
+                }));
+
+                const HomePage = (await import("@/app/page")).default;
+                await HomePage();
+
+                const { redirect } = await import("next/navigation");
+                expect(redirect).toHaveBeenCalledWith("/signin");
+        });
+
+        it("redirects guests to the sign-in page when testing mode is disabled", async () => {
+                vi.doMock("@/auth", () => ({
+                        auth: vi.fn().mockResolvedValue(null),
+                }));
+
+                vi.doMock("@/constants/testingMode", () => ({
+                        NEXT_PUBLIC_APP_TESTING_MODE: false,
+                }));
+
+                const HomePage = (await import("@/app/page")).default;
+                await HomePage();
+
+                const { redirect } = await import("next/navigation");
+                expect(redirect).toHaveBeenLastCalledWith("/signin");
         });
 });
