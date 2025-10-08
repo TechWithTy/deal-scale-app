@@ -95,10 +95,10 @@ export default function HomePage() {
 							flexWrap: "wrap",
 						}}
 					>
-						<Link href="/signup" style={ctaStyle}>
+						<Link href="https://www.dealscale.io/sign-up" style={ctaStyle}>
 							Get Started
 						</Link>
-						<Link href="/demo" style={secondaryStyle}>
+						<Link href="/signin" style={secondaryStyle}>
 							View Live Demo
 						</Link>
 					</div>
