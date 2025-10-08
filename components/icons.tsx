@@ -17,6 +17,7 @@ import {
 	Loader2,
 	LogIn,
 	LogOutIcon,
+	Rss,
 	MessageCircle,
 	type LucideIcon,
 	type LucideProps,
@@ -30,6 +31,7 @@ import {
 	SunMedium,
 	Trash,
 	Twitter,
+	Webhook,
 	Unplug,
 	User2Icon,
 	UserCircle,
@@ -72,6 +74,8 @@ export const Icons = {
 	moon: Moon,
 	laptop: Laptop,
 	messageCircle: MessageCircle,
+	webhook: Webhook,
+	rss: Rss,
 	gitHub: ({ ...props }: LucideProps) => (
 		<svg
 			aria-hidden="true"
