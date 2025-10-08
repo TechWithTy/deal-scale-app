@@ -25,7 +25,16 @@ describe("HomePage", () => {
                 const hero = template.querySelector("section[data-testid='hero']");
                 expect(hero).not.toBeNull();
                 expect(hero?.querySelector("h1")?.textContent).toMatch(/close more deals/i);
-                const cta = hero?.querySelector<HTMLAnchorElement>("a[href='/signup']");
-                expect(cta?.textContent).toMatch(/get started/i);
+                const links = Array.from(hero?.querySelectorAll<HTMLAnchorElement>("a") ?? []);
+
+                const getStartedCta = links.find((link) =>
+                        /get started/i.test(link.textContent ?? ""),
+                );
+                expect(getStartedCta?.getAttribute("href")).toBe("https://www.dealscale.io/sign-up");
+
+                const demoCta = links.find((link) =>
+                        /view live demo/i.test(link.textContent ?? ""),
+                );
+                expect(demoCta?.getAttribute("href")).toBe("/signin");
         });
 });
