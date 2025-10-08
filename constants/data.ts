@@ -194,18 +194,25 @@ export const navItems: NavItem[] = [
 		label: "AI Kanban Board",
 		featureKey: "navigation.kanban",
 	},
-	{
-		title: "Chat",
-		href: "/dashboard/chat",
-		icon: "messageCircle",
-		label: "AI Chat",
-		featureKey: "navigation.chat",
-	},
-	{
-		title: "Employee",
-		href: "/dashboard/employee",
-		icon: "employee",
-		label: "Employees",
+        {
+                title: "Chat",
+                href: "/dashboard/chat",
+                icon: "messageCircle",
+                label: "AI Chat",
+                featureKey: "navigation.chat",
+        },
+        {
+                title: "Connections",
+                href: "/dashboard/connections",
+                icon: "webhook",
+                label: "Webhooks & Feeds",
+                featureKey: "navigation.connections",
+        },
+        {
+                title: "Employee",
+                href: "/dashboard/employee",
+                icon: "employee",
+                label: "Employees",
 		featureKey: "navigation.employee",
 	},
 	{
