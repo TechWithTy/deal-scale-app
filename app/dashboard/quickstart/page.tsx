@@ -1,9 +1,9 @@
 "use client";
 
-import { useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
-import { HelpCircle, List, Upload } from "lucide-react";
+import { HelpCircle, List, Rss, Upload, Webhook } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -19,6 +19,7 @@ import CampaignModalMain from "@/components/reusables/modals/user/campaign/Campa
 import WalkThroughModal from "@/components/leadsSearch/search/WalkthroughModal";
 import { campaignSteps } from "@/_tests/tours/campaignTour";
 import { useCampaignCreationStore } from "@/lib/stores/campaignCreation";
+import { useModalStore, type WebhookStage } from "@/lib/stores/dashboard";
 
 export default function QuickStartPage() {
 	const [showLeadModal, setShowLeadModal] = useState(false);
@@ -37,6 +38,7 @@ export default function QuickStartPage() {
 		leadCount: number;
 	} | null>(null);
 	const fileInputRef = useRef<HTMLInputElement>(null);
+	const openWebhookModal = useModalStore((state) => state.openWebhookModal);
 
 	const resetCampaignStore = useCampaignCreationStore((state) => state.reset);
 	const setAreaMode = useCampaignCreationStore((state) => state.setAreaMode);
@@ -91,6 +93,10 @@ export default function QuickStartPage() {
 
 	const handleImportData = () => {
 		setShowBulkSuiteModal(true);
+	};
+
+	const handleOpenWebhookModal = (stage: WebhookStage) => {
+		openWebhookModal(stage);
 	};
 
 	const handleStartTour = () => setIsTourOpen(true);
@@ -180,7 +186,7 @@ export default function QuickStartPage() {
 				</button>
 			</div>
 
-			<div className="mx-auto grid max-w-4xl gap-6 items-stretch md:grid-cols-3">
+			<div className="mx-auto grid max-w-5xl gap-6 items-stretch md:grid-cols-2 lg:grid-cols-4">
 				<Card className="group flex h-full flex-col border-2 transition hover:border-primary/20 hover:shadow-lg">
 					<CardHeader className="pb-4 text-center">
 						<div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 transition-colors group-hover:bg-primary/20">
@@ -240,6 +246,47 @@ export default function QuickStartPage() {
 						>
 							Browse Lists
 						</Button>
+					</CardContent>
+				</Card>
+
+				<Card className="group flex h-full flex-col border-2 transition hover:border-primary/20 hover:shadow-lg">
+					<CardHeader className="pb-4 text-center">
+						<div className="relative mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 transition-colors group-hover:bg-primary/20">
+							<Webhook className="h-6 w-6 text-primary" />
+							<Rss className="absolute -bottom-1 -right-1 h-4 w-4 text-primary/70" />
+						</div>
+						<CardTitle className="text-xl">Webhooks &amp; Feeds</CardTitle>
+						<CardDescription>
+							Connect DealScale with your CRM and publish updates instantly.
+						</CardDescription>
+					</CardHeader>
+					<CardContent className="flex flex-1 flex-col pt-0">
+						<div className="flex flex-1 flex-col gap-3">
+							<Button
+								className="w-full"
+								size="lg"
+								onClick={() => handleOpenWebhookModal("incoming")}
+								type="button"
+							>
+								Configure Incoming
+							</Button>
+							<Button
+								variant="outline"
+								className="w-full"
+								size="lg"
+								onClick={() => handleOpenWebhookModal("outgoing")}
+								type="button"
+							>
+								Configure Outgoing
+							</Button>
+							<Button variant="ghost" className="w-full" size="lg" asChild>
+								<Link href="/dashboard/connections">Go to Connections Hub</Link>
+							</Button>
+							<p className="text-center text-xs text-muted-foreground">
+								Both actions open the unified webhook modal so you can toggle
+								between incoming events and outbound RSS-style feeds.
+							</p>
+						</div>
 					</CardContent>
 				</Card>
 
