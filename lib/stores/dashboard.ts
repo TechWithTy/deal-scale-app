@@ -3,6 +3,8 @@
 import { create } from "zustand";
 import { withAnalytics } from "./_middleware/analytics";
 
+export type WebhookStage = "incoming" | "outgoing" | "feeds";
+
 interface ModalState {
 	isUsageModalOpen: boolean;
 	openUsageModal: () => void;
@@ -21,7 +23,9 @@ interface ModalState {
 	closeSecurityModal: () => void;
 
 	isWebhookModalOpen: boolean;
-	openWebhookModal: () => void;
+	webhookStage: WebhookStage;
+	openWebhookModal: (stage?: WebhookStage) => void;
+	setWebhookStage: (stage: WebhookStage) => void;
 	closeWebhookModal: () => void;
 
 	isUpgradeModalOpen: boolean;
@@ -54,7 +58,13 @@ export const useModalStore = create<ModalState>(
 
 		// Webhook Modal - Correctly tied to isWebhookModalOpen state
 		isWebhookModalOpen: false,
-		openWebhookModal: () => set({ isWebhookModalOpen: true }),
+		webhookStage: "incoming",
+		openWebhookModal: (stage = "incoming") =>
+			set({
+				isWebhookModalOpen: true,
+				webhookStage: stage,
+			}),
+		setWebhookStage: (stage) => set({ webhookStage: stage }),
 		closeWebhookModal: () => set({ isWebhookModalOpen: false }),
 
 		isUpgradeModalOpen: false,
