@@ -1,10 +1,15 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { HelpCircle, List, Rss, Upload } from "lucide-react";
 import Link from "next/link";
+import { useRef, useState } from "react";
 import { toast } from "sonner";
-import { HelpCircle, List, Upload } from "lucide-react";
 
+import { campaignSteps } from "@/_tests/tours/campaignTour";
+import WalkThroughModal from "@/components/leadsSearch/search/WalkthroughModal";
+import CampaignModalMain from "@/components/reusables/modals/user/campaign/CampaignModalMain";
+import LeadBulkSuiteModal from "@/components/reusables/modals/user/lead/LeadBulkSuiteModal";
+import LeadModalMain from "@/components/reusables/modals/user/lead/LeadModalMain";
 import { Button } from "@/components/ui/button";
 import {
 	Card,
@@ -13,12 +18,8 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-import LeadModalMain from "@/components/reusables/modals/user/lead/LeadModalMain";
-import LeadBulkSuiteModal from "@/components/reusables/modals/user/lead/LeadBulkSuiteModal";
-import CampaignModalMain from "@/components/reusables/modals/user/campaign/CampaignModalMain";
-import WalkThroughModal from "@/components/leadsSearch/search/WalkthroughModal";
-import { campaignSteps } from "@/_tests/tours/campaignTour";
 import { useCampaignCreationStore } from "@/lib/stores/campaignCreation";
+import { useModalStore } from "@/lib/stores/dashboard";
 
 export default function QuickStartPage() {
 	const [showLeadModal, setShowLeadModal] = useState(false);
@@ -47,6 +48,7 @@ export default function QuickStartPage() {
 	const setCampaignName = useCampaignCreationStore(
 		(state) => state.setCampaignName,
 	);
+	const openWebhookModal = useModalStore((state) => state.openWebhookModal);
 
 	const handleSelectList = () => {
 		setLeadModalMode("select");
@@ -167,20 +169,20 @@ export default function QuickStartPage() {
 	return (
 		<div className="container mx-auto px-4 py-8">
 			<div className="relative mb-8 text-center">
-				<h1 className="mb-2 text-3xl font-bold text-foreground">Quick Start</h1>
+				<h1 className="mb-2 font-bold text-3xl text-foreground">Quick Start</h1>
 				<p className="text-lg text-muted-foreground">
 					Get up and running in minutes. Choose how you’d like to begin.
 				</p>
 				<button
 					onClick={() => setShowWalkthrough(true)}
-					className="absolute right-0 top-0 flex h-10 w-10 items-center justify-center rounded-full border border-transparent text-muted-foreground transition hover:bg-muted"
+					className="absolute top-0 right-0 flex h-10 w-10 items-center justify-center rounded-full border border-transparent text-muted-foreground transition hover:bg-muted"
 					type="button"
 				>
 					<HelpCircle className="h-5 w-5" />
 				</button>
 			</div>
 
-			<div className="mx-auto grid max-w-4xl gap-6 items-stretch md:grid-cols-3">
+			<div className="mx-auto grid max-w-6xl items-stretch gap-6 md:grid-cols-2 xl:grid-cols-4">
 				<Card className="group flex h-full flex-col border-2 transition hover:border-primary/20 hover:shadow-lg">
 					<CardHeader className="pb-4 text-center">
 						<div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 transition-colors group-hover:bg-primary/20">
@@ -206,7 +208,7 @@ export default function QuickStartPage() {
 							</Button>
 
 							{bulkCsvFile && (
-								<div className="text-center text-sm text-muted-foreground">
+								<div className="text-center text-muted-foreground text-sm">
 									<p className="font-medium">{bulkCsvFile.name}</p>
 									<p className="text-xs">
 										{bulkCsvHeaders.length} columns detected
@@ -265,6 +267,39 @@ export default function QuickStartPage() {
 						</Button>
 					</CardContent>
 				</Card>
+
+				<Card className="group flex h-full flex-col border-2 transition hover:border-primary/20 hover:shadow-lg">
+					<CardHeader className="pb-4 text-center">
+						<div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 transition-colors group-hover:bg-primary/20">
+							<Rss className="h-6 w-6 text-primary" />
+						</div>
+						<CardTitle className="text-xl">Webhooks &amp; Feeds</CardTitle>
+						<CardDescription>
+							Connect DealScale with your CRM and publish lead updates
+							instantly.
+						</CardDescription>
+					</CardHeader>
+					<CardContent className="flex flex-1 flex-col gap-3 pt-0">
+						<Button
+							variant="outline"
+							className="w-full"
+							size="lg"
+							onClick={openWebhookModal}
+							type="button"
+						>
+							Configure Incoming
+						</Button>
+						<Button
+							variant="ghost"
+							className="w-full border border-input"
+							size="lg"
+							onClick={openWebhookModal}
+							type="button"
+						>
+							Configure Outgoing
+						</Button>
+					</CardContent>
+				</Card>
 			</div>
 
 			<input
@@ -317,10 +352,10 @@ export default function QuickStartPage() {
 
 			<div className="mx-auto mt-12 max-w-2xl text-center">
 				<div className="rounded-lg bg-muted/50 p-6">
-					<h3 className="mb-2 text-lg font-semibold">
+					<h3 className="mb-2 font-semibold text-lg">
 						Need Help Getting Started?
 					</h3>
-					<p className="mb-4 text-sm text-muted-foreground">
+					<p className="mb-4 text-muted-foreground text-sm">
 						Our step-by-step guide will walk you through creating your first
 						campaign, managing leads, and optimizing your outreach strategy.
 					</p>
