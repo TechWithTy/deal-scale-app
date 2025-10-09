@@ -60,30 +60,34 @@ const Modal = ({
 	}, [isOpen]);
 	if (!isOpen) return null;
 	return (
-		<div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
-			<div className="relative w-full max-w-3xl rounded-lg bg-card p-6 text-card-foreground shadow-lg">
-				<button
-					onClick={onClose}
-					type="button"
-					className="absolute top-3 right-3 text-muted-foreground hover:text-foreground"
-				>
-					<svg
-						xmlns="http://www.w3.org/2000/svg"
-						fill="none"
-						viewBox="0 0 24 24"
-						strokeWidth="2"
-						stroke="currentColor"
-						className="h-6 w-6"
-						aria-hidden="true"
-					>
-						<path
-							strokeLinecap="round"
-							strokeLinejoin="round"
-							d="M6 18L18 6M6 6l12 12"
-						/>
-					</svg>
-				</button>
-				{children}
+		<div className="fixed inset-0 z-50 overflow-y-auto bg-background/80 backdrop-blur-sm">
+			<div className="flex min-h-full w-full items-center justify-center p-4">
+				<div className="relative w-full max-w-3xl">
+					<div className="relative flex max-h-[calc(100vh-4rem)] flex-col overflow-hidden rounded-lg bg-card text-card-foreground shadow-lg">
+						<button
+							onClick={onClose}
+							type="button"
+							className="absolute top-3 right-3 text-muted-foreground hover:text-foreground"
+						>
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								fill="none"
+								viewBox="0 0 24 24"
+								strokeWidth="2"
+								stroke="currentColor"
+								className="h-6 w-6"
+								aria-hidden="true"
+							>
+								<path
+									strokeLinecap="round"
+									strokeLinejoin="round"
+									d="M6 18L18 6M6 6l12 12"
+								/>
+							</svg>
+						</button>
+						<div className="flex-1 overflow-y-auto p-6">{children}</div>
+					</div>
+				</div>
 			</div>
 		</div>
 	);
