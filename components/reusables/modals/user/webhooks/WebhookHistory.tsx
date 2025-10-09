@@ -5,16 +5,24 @@ import {
 	AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Separator } from "@/components/ui/separator";
-import { FileSearch } from "lucide-react";
+import type { WebhookStage } from "@/lib/stores/dashboard";
+import { FileSearch, SplitSquareHorizontal } from "lucide-react";
 import type React from "react";
 
 export interface WebhookEntryType {
+	id: string;
 	date: string;
+	event: string;
 	payload: Record<string, unknown>;
+	status?: "delivered" | "failed" | "pending";
+	responseCode?: number;
 }
 
+type WebhookDirections = Extract<WebhookStage, "incoming" | "outgoing">;
+
 interface WebhookHistoryProps {
-	webhookHistory: WebhookEntryType[];
+	activeStage: WebhookStage;
+	historyByStage: Record<WebhookDirections, WebhookEntryType[]>;
 }
 
 const WebhookHistory: React.FC<WebhookHistoryProps> = ({ webhookHistory }) => (
