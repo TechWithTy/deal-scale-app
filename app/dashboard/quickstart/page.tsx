@@ -3,7 +3,7 @@
 import React, { useRef, useState } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
-import { HelpCircle, List, Rss, Upload, Webhook } from "lucide-react";
+import { HelpCircle, List, Rss, Upload, Webhook, Download } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -280,6 +280,41 @@ export default function QuickStartPage() {
 							>
 								Setup Outgoing
 							</Button>
+						</div>
+					</CardContent>
+				</Card>
+
+				<Card className="group flex h-full flex-col border-2 border-orange-500/30 bg-gradient-to-br from-orange-500/5 to-orange-400/10 transition hover:border-orange-500/50 hover:shadow-xl hover:shadow-orange-500/20">
+					<CardHeader className="pb-4 text-center">
+						<div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-orange-500/20 transition-colors group-hover:bg-orange-500/30">
+							<Download className="h-6 w-6 text-orange-600" />
+						</div>
+						<CardTitle className="text-xl text-orange-600">
+							Browser Extension
+						</CardTitle>
+						<CardDescription>
+							Enhance your workflow with our browser extension for seamless lead
+							capture
+						</CardDescription>
+					</CardHeader>
+					<CardContent className="flex flex-1 flex-col pt-0">
+						<div className="flex flex-1 flex-col gap-3">
+							<Button
+								variant="outline"
+								className="w-full border-orange-500/30 text-orange-600 hover:bg-orange-500/10"
+								size="lg"
+								onClick={() => {
+									window.open("https://chrome.google.com/webstore", "_blank");
+									toast("Browser extension download coming soon!");
+								}}
+								type="button"
+							>
+								<Download className="mr-2 h-4 w-4" />
+								Download Extension
+							</Button>
+							<p className="text-center text-xs text-muted-foreground">
+								Capture leads directly from any website
+							</p>
 						</div>
 					</CardContent>
 				</Card>
