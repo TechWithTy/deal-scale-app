@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { mockUserProfile } from "@/constants/_faker/profile/userProfile";
 import { useModalStore, type WebhookStage } from "@/lib/stores/dashboard";
-import React, { useEffect, useState } from "react";
+import type React from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import WebhookFeedPreview, { type FeedItemType } from "./WebhookFeedPreview";
 import WebhookHistory from "./WebhookHistory";
@@ -269,8 +270,8 @@ export const WebhookModal: React.FC = () => {
 
 	return (
 		<Modal isOpen={isWebhookModalOpen} onClose={closeWebhookModal}>
-			<div className="mt-4 space-y-4">
-				<div>
+			<>
+				<div className="mt-4 space-y-4">
 					<h3 className="text-lg font-medium text-foreground">
 						Webhook &amp; Feed Integrations
 					</h3>
@@ -290,6 +291,7 @@ export const WebhookModal: React.FC = () => {
 						<TabsTrigger value="feeds">Feeds</TabsTrigger>
 					</TabsList>
 
+					{/* Incoming */}
 					<TabsContent value="incoming">
 						<WebhookUrlInput
 							label="Incoming endpoint"
@@ -310,7 +312,7 @@ export const WebhookModal: React.FC = () => {
 								<div>
 									<p className="font-medium text-foreground">Signing secret</p>
 									<p className="text-xs text-muted-foreground">
-										DealScale validates the <code>X-DealScale-Signature</code>
+										DealScale validates the <code>X-DealScale-Signature</code>{" "}
 										header using this key.
 									</p>
 								</div>
@@ -329,6 +331,7 @@ export const WebhookModal: React.FC = () => {
 						</div>
 					</TabsContent>
 
+					{/* Outgoing */}
 					<TabsContent value="outgoing">
 						<WebhookUrlInput
 							label="Destination URL"
@@ -372,6 +375,7 @@ export const WebhookModal: React.FC = () => {
 						</p>
 					</TabsContent>
 
+					{/* Feeds */}
 					<TabsContent value="feeds">
 						<WebhookUrlInput
 							label="Activity feed URL"
@@ -392,9 +396,8 @@ export const WebhookModal: React.FC = () => {
 								<div>
 									<p className="font-medium text-foreground">Feed token</p>
 									<p className="text-xs text-muted-foreground">
-										Use this token to authenticate RSS requests or append it as
-										<code className="mx-1">?token=</code>
-										in the feed URL.
+										Use this token to authenticate RSS requests or append it as{" "}
+										<code className="mx-1">?token=</code> in the feed URL.
 									</p>
 								</div>
 								<Button
@@ -416,16 +419,18 @@ export const WebhookModal: React.FC = () => {
 						</p>
 					</TabsContent>
 				</Tabs>
-			</div>
-			<WebhookHistory
-				activeStage={webhookStage}
-				historyByStage={webhookHistoryByStage}
-			/>
-			<WebhookModalActions
-				onCancel={closeWebhookModal}
-				onTest={handleTestWebhook}
-				onSave={handleSaveWebhook}
-			/>
+
+				<WebhookHistory
+					activeStage={webhookStage}
+					historyByStage={webhookHistoryByStage}
+				/>
+
+				<WebhookModalActions
+					onCancel={closeWebhookModal}
+					onTest={handleTestWebhook}
+					onSave={handleSaveWebhook}
+				/>
+			</>
 		</Modal>
 	);
 };
