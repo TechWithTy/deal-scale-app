@@ -42,7 +42,7 @@ const QuickStartBadgeList = () => (
 			<Badge
 				key={label}
 				variant="secondary"
-				className="cursor-pointer px-4 py-2 text-sm font-medium transition-colors hover:bg-primary/10"
+				className="cursor-pointer px-4 py-2 font-medium text-sm transition-colors hover:bg-primary/10"
 				onClick={() => toast.info(message)}
 			>
 				{label}

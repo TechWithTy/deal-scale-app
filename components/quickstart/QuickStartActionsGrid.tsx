@@ -1,8 +1,9 @@
 "use client";
 
-import { type LucideIcon } from "lucide-react";
-import { type FC, type ReactNode } from "react";
+import type { LucideIcon } from "lucide-react";
+import type { FC, ReactNode } from "react";
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
 	Card,
@@ -12,6 +13,19 @@ import {
 	CardTitle,
 } from "@/components/ui/card";
 import { cn } from "@/lib/_utils";
+
+export type QuickStartCardChipTone =
+	| "primary"
+	| "success"
+	| "warning"
+	| "info"
+	| "accent"
+	| "neutral";
+
+export interface QuickStartCardChipConfig {
+	readonly label: string;
+	readonly tone?: QuickStartCardChipTone;
+}
 
 export interface QuickStartActionConfig {
 	readonly label: string;
@@ -32,12 +46,26 @@ export interface QuickStartCardConfig {
 	readonly iconWrapperClassName?: string;
 	readonly iconClassName?: string;
 	readonly footer?: ReactNode;
+	readonly featureChips?: QuickStartCardChipConfig[];
 	readonly actions: QuickStartActionConfig[];
 }
 
 interface QuickStartActionsGridProps {
 	readonly cards: QuickStartCardConfig[];
 }
+
+const featureToneStyles: Record<QuickStartCardChipTone, string> = {
+	primary: "border-primary/30 bg-primary/10 text-primary dark:text-primary-300",
+	success:
+		"border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-300",
+	warning:
+		"border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-300",
+	info: "border-sky-500/30 bg-sky-500/10 text-sky-600 dark:text-sky-300",
+	accent:
+		"border-purple-500/30 bg-purple-500/10 text-purple-600 dark:text-purple-300",
+	neutral:
+		"border-muted bg-muted text-muted-foreground dark:text-muted-foreground",
+};
 
 const QuickStartActionsGrid: FC<QuickStartActionsGridProps> = ({ cards }) => (
 	<div
@@ -62,6 +90,7 @@ const QuickStartActionsGrid: FC<QuickStartActionsGridProps> = ({ cards }) => (
 				iconWrapperClassName,
 				iconClassName,
 				footer,
+				featureChips,
 			}) => (
 				<Card
 					key={key}
@@ -86,6 +115,22 @@ const QuickStartActionsGrid: FC<QuickStartActionsGridProps> = ({ cards }) => (
 							{title}
 						</CardTitle>
 						<CardDescription>{description}</CardDescription>
+						{featureChips?.length ? (
+							<div className="mt-4 flex flex-wrap justify-center gap-2">
+								{featureChips.map(({ label, tone = "primary" }) => (
+									<Badge
+										key={label}
+										variant="outline"
+										className={cn(
+											"border px-3 py-1 font-medium text-[11px]",
+											featureToneStyles[tone],
+										)}
+									>
+										{label}
+									</Badge>
+								))}
+							</div>
+						) : null}
 					</CardHeader>
 					<CardContent className="flex flex-col pt-0">
 						<div className="flex flex-col gap-3">

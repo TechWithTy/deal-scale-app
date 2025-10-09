@@ -16,8 +16,8 @@ import {
 } from "lucide-react";
 import { useMemo } from "react";
 
-import { type QuickStartCardConfig } from "@/components/quickstart/QuickStartActionsGrid";
-import { type WebhookStage } from "@/lib/stores/dashboard";
+import type { QuickStartCardConfig } from "@/components/quickstart/QuickStartActionsGrid";
+import type { WebhookStage } from "@/lib/stores/dashboard";
 
 interface UseQuickStartCardsParams {
 	readonly onImport: () => void;
@@ -52,6 +52,11 @@ export const useQuickStartCards = ({
 					"border-primary/30 bg-gradient-to-br from-primary/5 to-primary/10 hover:border-primary/50 hover:shadow-xl hover:shadow-primary/20",
 				titleClassName: "text-primary",
 				iconWrapperClassName: "bg-primary/20 group-hover:bg-primary/30",
+				featureChips: [
+					{ label: "Investor CRM Sync", tone: "info" },
+					{ label: "Bulk Upload Lists", tone: "accent" },
+					{ label: "Instant Deduping", tone: "success" },
+				],
 				actions: [
 					{
 						label: "Import from Any Source",
@@ -76,7 +81,7 @@ export const useQuickStartCards = ({
 					},
 				],
 				footer: (
-					<p className="text-center text-xs text-muted-foreground">
+					<p className="text-center text-muted-foreground text-xs">
 						Connect APIs, CRM systems, databases, and more
 					</p>
 				),
@@ -87,6 +92,11 @@ export const useQuickStartCards = ({
 				description:
 					"Launch automated outreach campaigns with AI-powered messaging and lead management",
 				icon: Plus,
+				featureChips: [
+					{ label: "AI Messaging", tone: "primary" },
+					{ label: "Multi-Channel Touches", tone: "accent" },
+					{ label: "Auto Follow-Ups", tone: "success" },
+				],
 				actions: [
 					{
 						label: "Start Campaign",
@@ -117,9 +127,14 @@ export const useQuickStartCards = ({
 				iconNode: (
 					<>
 						<Webhook className="h-6 w-6 text-primary" />
-						<Rss className="absolute -bottom-1 -right-1 h-4 w-4 text-primary/70" />
+						<Rss className="-bottom-1 -right-1 absolute h-4 w-4 text-primary/70" />
 					</>
 				),
+				featureChips: [
+					{ label: "Real-time Alerts", tone: "warning" },
+					{ label: "CRM Automation", tone: "primary" },
+					{ label: "Custom Event Routing", tone: "accent" },
+				],
 				actions: [
 					{
 						label: "Setup Incoming",
@@ -144,6 +159,11 @@ export const useQuickStartCards = ({
 					"border-primary/30 bg-gradient-to-br from-primary/5 to-primary/10 hover:border-primary/50 hover:shadow-xl hover:shadow-primary/20",
 				titleClassName: "text-primary",
 				iconWrapperClassName: "bg-primary/20 group-hover:bg-primary/30",
+				featureChips: [
+					{ label: "Performance Dashboards", tone: "info" },
+					{ label: "A/B Testing", tone: "warning" },
+					{ label: "Data Governance", tone: "neutral" },
+				],
 				actions: [
 					{
 						label: "Download Leads",
@@ -178,6 +198,11 @@ export const useQuickStartCards = ({
 				titleClassName: "text-orange-600",
 				iconWrapperClassName: "bg-orange-500/20 group-hover:bg-orange-500/30",
 				iconClassName: "text-orange-600",
+				featureChips: [
+					{ label: "One-Click Capture", tone: "primary" },
+					{ label: "Auto Enrich Profiles", tone: "success" },
+					{ label: "Works on Any Site", tone: "info" },
+				],
 				actions: [
 					{
 						label: "Download Extension",
@@ -189,7 +214,7 @@ export const useQuickStartCards = ({
 					},
 				],
 				footer: (
-					<p className="text-center text-xs text-muted-foreground">
+					<p className="text-center text-muted-foreground text-xs">
 						Capture leads directly from any website
 					</p>
 				),
@@ -205,6 +230,11 @@ export const useQuickStartCards = ({
 				titleClassName: "text-green-600",
 				iconWrapperClassName: "bg-green-500/20 group-hover:bg-green-500/30",
 				iconClassName: "text-green-600",
+				featureChips: [
+					{ label: "Distress Signals", tone: "warning" },
+					{ label: "Geo Targeting", tone: "accent" },
+					{ label: "Off-Market Alerts", tone: "success" },
+				],
 				actions: [
 					{
 						label: "Target by ZIP Code",
