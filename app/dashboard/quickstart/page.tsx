@@ -12,8 +12,10 @@ import {
 	Download,
 	Plus,
 	Database,
+	Settings,
 } from "lucide-react";
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
 	Card,
@@ -29,7 +31,7 @@ import WalkThroughModal from "@/components/leadsSearch/search/WalkthroughModal";
 import { campaignSteps } from "@/_tests/tours/campaignTour";
 import { useCampaignCreationStore } from "@/lib/stores/campaignCreation";
 import { useModalStore, type WebhookStage } from "@/lib/stores/dashboard";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 
 export default function QuickStartPage() {
 	const [showLeadModal, setShowLeadModal] = useState(false);
@@ -102,6 +104,16 @@ export default function QuickStartPage() {
 		setShowLeadModal(false);
 	};
 
+	const handleConnectionSettings = () => {
+		toast.info("Data source connections and API configuration coming soon!");
+	};
+
+	const handleImportFromSource = () => {
+		toast.info(
+			"Universal data import feature coming soon! Connect to APIs, CRM systems, and more.",
+		);
+	};
+
 	const handleImportData = () => {
 		setShowBulkSuiteModal(true);
 	};
@@ -109,7 +121,8 @@ export default function QuickStartPage() {
 	const handleCampaignCreation = () => {
 		resetCampaignStore();
 		setAreaMode("leadList");
-		router.push("/dashboard/campaigns");
+		setCampaignModalContext(null); // Start fresh without pre-selected lead list
+		setShowCampaignModal(true);
 	};
 
 	const handleViewTemplates = () => {
@@ -221,9 +234,12 @@ export default function QuickStartPage() {
 						<div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/20 transition-colors group-hover:bg-primary/30">
 							<Upload className="h-6 w-6 text-primary" />
 						</div>
-						<CardTitle className="text-xl text-primary">Import Data</CardTitle>
+						<CardTitle className="text-xl text-primary">
+							Import & Manage Data
+						</CardTitle>
 						<CardDescription>
-							Upload your existing lead data or connect external sources
+							Import leads from any source and manage your data connections
+							seamlessly
 						</CardDescription>
 					</CardHeader>
 					<CardContent className="flex flex-1 flex-col pt-0">
@@ -232,49 +248,35 @@ export default function QuickStartPage() {
 								variant="outline"
 								className="w-full border-primary/30 text-primary hover:bg-primary/10"
 								size="lg"
-								onClick={handleImportData}
-								type="button"
-							>
-								Import Leads
-							</Button>
-							<p className="text-center text-xs text-muted-foreground">
-								Connect external data sources and APIs
-							</p>
-						</div>
-					</CardContent>
-				</Card>
-
-				<Card className="group flex h-full flex-col border-2 transition hover:border-primary/20 hover:shadow-lg">
-					<CardHeader className="pb-4 text-center">
-						<div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 transition-colors group-hover:bg-primary/20">
-							<List className="h-6 w-6 text-primary" />
-						</div>
-						<CardTitle className="text-xl">Manage Lists</CardTitle>
-						<CardDescription>
-							Create new lead lists from CSV files or work with existing lists
-							to start campaigns
-						</CardDescription>
-					</CardHeader>
-					<CardContent className="flex flex-1 flex-col pt-0">
-						<div className="flex flex-1 flex-col gap-3">
-							<Button
-								className="w-full"
-								size="lg"
-								onClick={triggerFileInput}
+								onClick={handleImportFromSource}
 								type="button"
 							>
 								<Upload className="mr-2 h-4 w-4" />
-								{bulkCsvFile ? "Change CSV File" : "Upload CSV File"}
+								Import from Any Source
 							</Button>
 							<Button
 								variant="outline"
-								className="w-full"
+								className="w-full border-primary/30 text-primary hover:bg-primary/10"
 								size="lg"
 								onClick={handleSelectList}
 								type="button"
 							>
-								Browse Lists
+								<List className="mr-2 h-4 w-4" />
+								Browse Existing Lists
 							</Button>
+							<Button
+								variant="outline"
+								className="w-full border-primary/30 text-primary hover:bg-primary/10"
+								size="lg"
+								onClick={handleConnectionSettings}
+								type="button"
+							>
+								<Settings className="mr-2 h-4 w-4" />
+								Configure Connections
+							</Button>
+							<p className="text-center text-xs text-muted-foreground">
+								Connect APIs, CRM systems, databases, and more
+							</p>
 						</div>
 					</CardContent>
 				</Card>
@@ -347,15 +349,17 @@ export default function QuickStartPage() {
 					</CardContent>
 				</Card>
 
-				<Card className="group flex h-full flex-col border-2 transition hover:border-primary/20 hover:shadow-lg">
+				<Card className="group flex h-full flex-col border-2 border-primary/30 bg-gradient-to-br from-primary/5 to-primary/10 transition hover:border-primary/50 hover:shadow-xl hover:shadow-primary/20">
 					<CardHeader className="pb-4 text-center">
-						<div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 transition-colors group-hover:bg-primary/20">
+						<div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/20 transition-colors group-hover:bg-primary/30">
 							<Database className="h-6 w-6 text-primary" />
 						</div>
-						<CardTitle className="text-xl">Manage Data</CardTitle>
+						<CardTitle className="text-xl text-primary">
+							Control Your Data
+						</CardTitle>
 						<CardDescription>
-							Access and manage your campaigns and leads in one centralized
-							location
+							View & manage campaigns, export lead lists, conduct A/B tests, and
+							analyze your data
 						</CardDescription>
 					</CardHeader>
 					<CardContent className="flex flex-1 flex-col pt-0">
@@ -366,7 +370,7 @@ export default function QuickStartPage() {
 								onClick={navigateToCampaigns}
 								type="button"
 							>
-								View Campaigns
+								View & Manage Campaigns
 							</Button>
 							<Button
 								variant="outline"
@@ -417,6 +421,86 @@ export default function QuickStartPage() {
 				</Card>
 			</div>
 
+			{/* Advanced Features Section */}
+			<div className="mx-auto mt-8 max-w-5xl">
+				<div className="text-center mb-6">
+					<h3 className="text-lg font-semibold text-foreground mb-2">
+						Advanced Features
+					</h3>
+					<p className="text-sm text-muted-foreground">
+						Powerful tools for comprehensive lead management and analysis
+					</p>
+				</div>
+				<div className="flex flex-wrap justify-center gap-3">
+					<Badge
+						variant="secondary"
+						className="px-4 py-2 text-sm font-medium cursor-pointer hover:bg-primary/10 transition-colors"
+						onClick={() =>
+							toast.info(
+								"Export lead lists to CSV, Excel, and other formats coming soon!",
+							)
+						}
+					>
+						📤 Export Lead Lists
+					</Badge>
+					<Badge
+						variant="secondary"
+						className="px-4 py-2 text-sm font-medium cursor-pointer hover:bg-primary/10 transition-colors"
+						onClick={() =>
+							toast.info(
+								"A/B testing framework for campaign optimization coming soon!",
+							)
+						}
+					>
+						🧪 Run A/B Tests
+					</Badge>
+					<Badge
+						variant="secondary"
+						className="px-4 py-2 text-sm font-medium cursor-pointer hover:bg-primary/10 transition-colors"
+						onClick={() =>
+							toast.info(
+								"Advanced analytics dashboard with insights and reporting coming soon!",
+							)
+						}
+					>
+						📊 Data Analysis
+					</Badge>
+					<Badge
+						variant="secondary"
+						className="px-4 py-2 text-sm font-medium cursor-pointer hover:bg-primary/10 transition-colors"
+						onClick={() =>
+							toast.info(
+								"Smart webpage scanning for contact information coming soon!",
+							)
+						}
+					>
+						📄 Scan Webpages
+					</Badge>
+					<Badge
+						variant="secondary"
+						className="px-4 py-2 text-sm font-medium cursor-pointer hover:bg-primary/10 transition-colors"
+						onClick={() =>
+							toast.info(
+								"One-click dialing from any webpage contact information coming soon!",
+							)
+						}
+					>
+						📞 Auto-Dial Contacts
+					</Badge>
+					<Badge
+						variant="secondary"
+						className="px-4 py-2 text-sm font-medium cursor-pointer hover:bg-primary/10 transition-colors"
+						onClick={() =>
+							toast.info(
+								"Unified inbox for texts, emails, and lead communications coming soon!",
+							)
+						}
+					>
+						💬 Message Management
+					</Badge>
+				</div>
+			</div>
+
 			<input
 				ref={fileInputRef}
 				type="file"
@@ -445,7 +529,7 @@ export default function QuickStartPage() {
 			/>
 
 			<CampaignModalMain
-				isOpen={showCampaignModal && Boolean(campaignModalContext)}
+				isOpen={showCampaignModal}
 				onOpenChange={handleCampaignModalToggle}
 				initialLeadListId={campaignModalContext?.leadListId}
 				initialLeadListName={campaignModalContext?.leadListName}
