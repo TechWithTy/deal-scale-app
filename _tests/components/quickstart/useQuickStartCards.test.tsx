@@ -14,11 +14,13 @@ describe("useQuickStartCards", () => {
 		onSelectList: vi.fn(),
 		onConfigureConnections: vi.fn(),
 		onCampaignCreate: vi.fn(),
-		onViewTemplates: vi.fn(),
-		onOpenWebhookModal: vi.fn(),
-		onBrowserExtension: vi.fn(),
-		createRouterPush: vi.fn(() => vi.fn()),
-	} as const;
+                onViewTemplates: vi.fn(),
+                onOpenWebhookModal: vi.fn(),
+                onBrowserExtension: vi.fn(),
+                createRouterPush: vi.fn(() => vi.fn()),
+                onStartNewSearch: vi.fn(),
+                onOpenSavedSearches: vi.fn(),
+        } as const;
 
 	const getCards = () => {
 		let captured: QuickStartCardConfig[] | null = null;
@@ -68,14 +70,20 @@ describe("useQuickStartCards", () => {
 			]),
 		);
 
-		const marketCard = cards.find((card) => card.key === "market-deals");
-		expect(marketCard?.featureChips).toEqual(
-			expect.arrayContaining([
-				expect.objectContaining({
-					label: "Off-Market Alerts",
-					tone: "success",
-				}),
-			]),
-		);
-	});
+                const marketCard = cards.find((card) => card.key === "market-deals");
+                expect(marketCard?.featureChips).toEqual(
+                        expect.arrayContaining([
+                                expect.objectContaining({
+                                        label: "Off-Market Alerts",
+                                        tone: "success",
+                                }),
+                        ]),
+                );
+                expect(marketCard?.actions).toEqual(
+                        expect.arrayContaining([
+                                expect.objectContaining({ label: "Start New Search" }),
+                                expect.objectContaining({ label: "Saved Searches" }),
+                        ]),
+                );
+        });
 });
