@@ -2,11 +2,9 @@
 
 import {
 	Database,
-	DollarSign,
 	Download,
 	Home,
 	List,
-	MapPin,
 	Plus,
 	Rss,
 	Settings,
@@ -28,6 +26,8 @@ interface UseQuickStartCardsParams {
 	readonly onOpenWebhookModal: (stage: WebhookStage) => void;
 	readonly onBrowserExtension: () => void;
 	readonly createRouterPush: (path: string) => () => void;
+	readonly onStartNewSearch: () => void;
+	readonly onOpenSavedSearches: () => void;
 }
 
 export const useQuickStartCards = ({
@@ -39,6 +39,8 @@ export const useQuickStartCards = ({
 	onOpenWebhookModal,
 	onBrowserExtension,
 	createRouterPush,
+	onStartNewSearch,
+	onOpenSavedSearches,
 }: UseQuickStartCardsParams) =>
 	useMemo<QuickStartCardConfig[]>(
 		() => [
@@ -237,17 +239,17 @@ export const useQuickStartCards = ({
 				],
 				actions: [
 					{
-						label: "Target by ZIP Code",
-						icon: MapPin,
-						onClick: createRouterPush("/dashboard?zipcode=true"),
+						label: "Start New Search",
+						icon: Target,
+						onClick: onStartNewSearch,
 					},
 					{
-						label: "Filter by Price Range",
-						icon: DollarSign,
+						label: "Saved Searches",
+						icon: List,
 						variant: "outline",
 						className:
 							"border-green-500/30 text-green-600 hover:bg-green-500/10",
-						onClick: createRouterPush("/dashboard?pricerange=true"),
+						onClick: onOpenSavedSearches,
 					},
 					{
 						label: "Find Distressed Properties",
@@ -271,5 +273,7 @@ export const useQuickStartCards = ({
 			onViewTemplates,
 			createRouterPush,
 			onBrowserExtension,
+			onStartNewSearch,
+			onOpenSavedSearches,
 		],
 	);

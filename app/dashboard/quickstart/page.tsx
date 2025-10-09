@@ -10,6 +10,8 @@ import QuickStartHeader from "@/components/quickstart/QuickStartHeader";
 import QuickStartHelp from "@/components/quickstart/QuickStartHelp";
 import { useBulkCsvUpload } from "@/components/quickstart/useBulkCsvUpload";
 import { useQuickStartCards } from "@/components/quickstart/useQuickStartCards";
+import { useQuickStartSavedSearches } from "@/components/quickstart/useQuickStartSavedSearches";
+import SavedSearchModal from "@/components/reusables/modals/SavedSearchModal";
 import CampaignModalMain from "@/components/reusables/modals/user/campaign/CampaignModalMain";
 import LeadBulkSuiteModal from "@/components/reusables/modals/user/lead/LeadBulkSuiteModal";
 import LeadModalMain from "@/components/reusables/modals/user/lead/LeadModalMain";
@@ -42,15 +44,17 @@ export default function QuickStartPage() {
 	const router = useRouter();
 	const openWebhookModal = useModalStore((state) => state.openWebhookModal);
 
-	const resetCampaignStore = useCampaignCreationStore((state) => state.reset);
-	const setAreaMode = useCampaignCreationStore((state) => state.setAreaMode);
-	const setSelectedLeadListId = useCampaignCreationStore(
-		(state) => state.setSelectedLeadListId,
-	);
-	const setLeadCount = useCampaignCreationStore((state) => state.setLeadCount);
-	const setCampaignName = useCampaignCreationStore(
-		(state) => state.setCampaignName,
-	);
+	const campaignStore = useCampaignCreationStore();
+	const {
+		savedSearches,
+		deleteSavedSearch,
+		setSearchPriority,
+		handleStartNewSearch,
+		handleOpenSavedSearches,
+		handleCloseSavedSearches,
+		handleSelectSavedSearch,
+		savedSearchModalOpen,
+	} = useQuickStartSavedSearches();
 
 	const handleSelectList = useCallback(() => {
 		setLeadModalMode("select");
@@ -59,22 +63,16 @@ export default function QuickStartPage() {
 
 	const handleLaunchCampaign = useCallback(
 		({ leadListId, leadListName, leadCount }: CampaignContext) => {
-			resetCampaignStore();
-			setAreaMode("leadList");
-			setSelectedLeadListId(leadListId);
-			setLeadCount(leadCount);
-			setCampaignName(`${leadListName} Campaign`);
+			campaignStore.reset();
+			campaignStore.setAreaMode("leadList");
+			campaignStore.setSelectedLeadListId(leadListId);
+			campaignStore.setLeadCount(leadCount);
+			campaignStore.setCampaignName(`${leadListName} Campaign`);
 			setCampaignModalContext({ leadListId, leadListName, leadCount });
 			setShowCampaignModal(true);
 			setShowLeadModal(false);
 		},
-		[
-			resetCampaignStore,
-			setAreaMode,
-			setSelectedLeadListId,
-			setLeadCount,
-			setCampaignName,
-		],
+		[campaignStore],
 	);
 
 	const handleSuiteLaunchComplete = useCallback(
@@ -85,47 +83,41 @@ export default function QuickStartPage() {
 		[handleLaunchCampaign],
 	);
 
-	const handleCloseLeadModal = useCallback(() => {
-		setShowLeadModal(false);
-	}, []);
+	const handleCloseLeadModal = useCallback(() => setShowLeadModal(false), []);
 
-	const handleConnectionSettings = useCallback(() => {
-		toast.info("Data source connections and API configuration coming soon!");
-	}, []);
+	const handleConnectionSettings = useCallback(
+		() =>
+			toast.info("Data source connections and API configuration coming soon!"),
+		[],
+	);
 
-	const handleImportFromSource = useCallback(() => {
-		setShowBulkSuiteModal(true);
-	}, []);
+	const handleImportFromSource = useCallback(
+		() => setShowBulkSuiteModal(true),
+		[],
+	);
 
 	const handleCampaignCreation = useCallback(() => {
-		resetCampaignStore();
-		setAreaMode("leadList");
+		campaignStore.reset();
+		campaignStore.setAreaMode("leadList");
 		setCampaignModalContext(null);
 		setShowCampaignModal(true);
-	}, [resetCampaignStore, setAreaMode]);
+	}, [campaignStore]);
 
-	const handleViewTemplates = useCallback(() => {
-		toast.info("Campaign templates feature coming soon!");
-	}, []);
+	const handleViewTemplates = useCallback(
+		() => toast.info("Campaign templates feature coming soon!"),
+		[],
+	);
 
 	const handleOpenWebhookModal = useCallback(
-		(stage: WebhookStage) => {
-			openWebhookModal(stage);
-		},
+		(stage: WebhookStage) => openWebhookModal(stage),
 		[openWebhookModal],
 	);
 
-	const handleWalkthroughOpen = useCallback(() => {
-		setShowWalkthrough(true);
-	}, []);
+	const handleWalkthroughOpen = useCallback(() => setShowWalkthrough(true), []);
 
-	const handleStartTour = useCallback(() => {
-		setIsTourOpen(true);
-	}, []);
+	const handleStartTour = useCallback(() => setIsTourOpen(true), []);
 
-	const handleCloseTour = useCallback(() => {
-		setIsTourOpen(false);
-	}, []);
+	const handleCloseTour = useCallback(() => setIsTourOpen(false), []);
 
 	const handleBrowserExtension = useCallback(() => {
 		window.open("https://chrome.google.com/webstore", "_blank");
@@ -144,10 +136,10 @@ export default function QuickStartPage() {
 			setShowCampaignModal(open);
 			if (!open) {
 				setCampaignModalContext(null);
-				resetCampaignStore();
+				campaignStore.reset();
 			}
 		},
-		[resetCampaignStore],
+		[campaignStore],
 	);
 
 	const handleCloseBulkModal = useCallback(() => {
@@ -171,6 +163,8 @@ export default function QuickStartPage() {
 		onOpenWebhookModal: handleOpenWebhookModal,
 		onBrowserExtension: handleBrowserExtension,
 		createRouterPush,
+		onStartNewSearch: handleStartNewSearch,
+		onOpenSavedSearches: handleOpenSavedSearches,
 	});
 
 	return (
@@ -225,6 +219,15 @@ export default function QuickStartPage() {
 				initialLeadListName={campaignModalContext?.leadListName}
 				initialLeadCount={campaignModalContext?.leadCount ?? 0}
 				initialStep={0}
+			/>
+
+			<SavedSearchModal
+				open={savedSearchModalOpen}
+				onClose={handleCloseSavedSearches}
+				savedSearches={savedSearches}
+				onDelete={deleteSavedSearch}
+				onSelect={handleSelectSavedSearch}
+				onSetPriority={setSearchPriority}
 			/>
 
 			<WalkThroughModal
