@@ -6,36 +6,97 @@ import { mockUserProfile } from "@/constants/_faker/profile/userProfile";
 import { useModalStore, type WebhookStage } from "@/lib/stores/dashboard";
 import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
+import WebhookFeedPreview, { type FeedItemType } from "./WebhookFeedPreview";
 import WebhookHistory from "./WebhookHistory";
 import type { WebhookEntryType } from "./WebhookHistory";
 import WebhookModalActions from "./WebhookModalActions";
 import WebhookPayloadSection from "./WebhookPayloadSection";
 import WebhookUrlInput from "./WebhookUrlInput";
-const webhookHistory: WebhookEntryType[] = [
-	{
-		date: "2023-09-12",
-		payload: {
-			phone: "0000000000",
-			email: "test@example.com",
-			social_media: {
-				facebook: "https://facebook.com/example",
-				linkedin: "https://linkedin.com/in/example",
-				instagram: "https://instagram.com/example",
-				twitter: "https://twitter.com/example",
+type WebhookHistoryByStage = Record<
+	"incoming" | "outgoing",
+	WebhookEntryType[]
+>;
+
+const webhookHistoryByStage: WebhookHistoryByStage = {
+	incoming: [
+		{
+			id: "incoming-001",
+			event: "lead.created",
+			date: "Jan 05, 2025 3:18 PM",
+			status: "delivered",
+			responseCode: 202,
+			payload: {
+				lead_id: "inc-76352",
+				email: "lead.one@example.com",
+				first_name: "Alex",
+				last_name: "Rivera",
+				phone: "+15551230001",
+				status: "new",
 			},
-			address: {
-				zip: "00000",
-				city: "Test City",
-				state: "Test State",
-				street: "Test Street",
-			},
-			summary: "Summary from AI Bot",
-			list_name: "List Name",
-			name_full: "Full Name",
-			name_last: "Last Name",
-			name_first: "First Name",
-			webhook_type: "lead_created",
 		},
+		{
+			id: "incoming-002",
+			event: "lead.status.updated",
+			date: "Jan 04, 2025 10:11 AM",
+			status: "failed",
+			responseCode: 500,
+			payload: {
+				lead_id: "inc-76352",
+				status: "contacted",
+				previous_status: "new",
+				triggered_by: "Zapier",
+				attempt: 3,
+			},
+		},
+	],
+	outgoing: [
+		{
+			id: "outgoing-001",
+			event: "message.sent",
+			date: "Jan 06, 2025 9:42 AM",
+			status: "delivered",
+			responseCode: 200,
+			payload: {
+				lead_id: "out-22991",
+				recipient: "jordan@examplecrm.com",
+				channel: "email",
+				subject: "Follow-up: Demo availability",
+				preview: "Just confirming our time later today.",
+			},
+		},
+		{
+			id: "outgoing-002",
+			event: "task.created",
+			date: "Jan 03, 2025 7:06 PM",
+			status: "pending",
+			responseCode: 102,
+			payload: {
+				lead_id: "out-99310",
+				title: "Schedule walkthrough call",
+				due_date: "2025-01-07T15:00:00Z",
+				assigned_to: "deal-team@crm.io",
+			},
+		},
+	],
+};
+
+const webhookFeedItems: FeedItemType[] = [
+	{
+		id: "feed-001",
+		title: "message.sent — Jane Doe",
+		publishedAt: "Wed, 08 Oct 2025 14:35:00 GMT",
+		link: "https://app.dealscale.io/dashboard/chat/12345",
+		summary:
+			'AI replied: "Hey Jane, confirming our walkthrough tomorrow at 3 PM."',
+		author: "DealScale Automations",
+	},
+	{
+		id: "feed-002",
+		title: "lead.status.updated — Liam Patel",
+		publishedAt: "Wed, 08 Oct 2025 14:20:00 GMT",
+		link: "https://app.dealscale.io/dashboard/leads/56789",
+		summary: "Lead moved to Qualified after responding to SMS outreach.",
+		author: "DealScale Automations",
 	},
 ];
 
@@ -60,30 +121,34 @@ const Modal = ({
 	}, [isOpen]);
 	if (!isOpen) return null;
 	return (
-		<div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
-			<div className="relative w-full max-w-3xl rounded-lg bg-card p-6 text-card-foreground shadow-lg">
-				<button
-					onClick={onClose}
-					type="button"
-					className="absolute top-3 right-3 text-muted-foreground hover:text-foreground"
-				>
-					<svg
-						xmlns="http://www.w3.org/2000/svg"
-						fill="none"
-						viewBox="0 0 24 24"
-						strokeWidth="2"
-						stroke="currentColor"
-						className="h-6 w-6"
-						aria-hidden="true"
-					>
-						<path
-							strokeLinecap="round"
-							strokeLinejoin="round"
-							d="M6 18L18 6M6 6l12 12"
-						/>
-					</svg>
-				</button>
-				{children}
+		<div className="fixed inset-0 z-50 overflow-y-auto bg-background/80 backdrop-blur-sm">
+			<div className="flex min-h-full w-full items-center justify-center p-4">
+				<div className="relative w-full max-w-3xl">
+					<div className="relative flex max-h-[calc(100vh-4rem)] flex-col overflow-hidden rounded-lg bg-card text-card-foreground shadow-lg">
+						<button
+							onClick={onClose}
+							type="button"
+							className="absolute top-3 right-3 text-muted-foreground hover:text-foreground"
+						>
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								fill="none"
+								viewBox="0 0 24 24"
+								strokeWidth="2"
+								stroke="currentColor"
+								className="h-6 w-6"
+								aria-hidden="true"
+							>
+								<path
+									strokeLinecap="round"
+									strokeLinejoin="round"
+									d="M6 18L18 6M6 6l12 12"
+								/>
+							</svg>
+						</button>
+						<div className="flex-1 overflow-y-auto p-6">{children}</div>
+					</div>
+				</div>
 			</div>
 		</div>
 	);
@@ -321,6 +386,7 @@ export const WebhookModal: React.FC = () => {
 							webhookPayload={payloadTemplates.feeds}
 							onCopy={() => void copyPayloadFor("feeds")}
 						/>
+						<WebhookFeedPreview feedItems={webhookFeedItems} />
 						<div className="mt-4 rounded-md border border-dashed bg-muted/40 p-4 text-sm">
 							<div className="flex items-start justify-between gap-2">
 								<div>
@@ -351,7 +417,10 @@ export const WebhookModal: React.FC = () => {
 					</TabsContent>
 				</Tabs>
 			</div>
-			<WebhookHistory webhookHistory={webhookHistory} />
+			<WebhookHistory
+				activeStage={webhookStage}
+				historyByStage={webhookHistoryByStage}
+			/>
 			<WebhookModalActions
 				onCancel={closeWebhookModal}
 				onTest={handleTestWebhook}
