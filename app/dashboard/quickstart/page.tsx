@@ -3,7 +3,16 @@
 import React, { useRef, useState } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
-import { HelpCircle, List, Rss, Upload, Webhook, Download } from "lucide-react";
+import {
+	HelpCircle,
+	List,
+	Rss,
+	Upload,
+	Webhook,
+	Download,
+	Plus,
+	Database,
+} from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -20,6 +29,7 @@ import WalkThroughModal from "@/components/leadsSearch/search/WalkthroughModal";
 import { campaignSteps } from "@/_tests/tours/campaignTour";
 import { useCampaignCreationStore } from "@/lib/stores/campaignCreation";
 import { useModalStore, type WebhookStage } from "@/lib/stores/dashboard";
+import { useRouter } from "next/router";
 
 export default function QuickStartPage() {
 	const [showLeadModal, setShowLeadModal] = useState(false);
@@ -37,6 +47,7 @@ export default function QuickStartPage() {
 		leadListName: string;
 		leadCount: number;
 	} | null>(null);
+	const router = useRouter();
 	const fileInputRef = useRef<HTMLInputElement>(null);
 	const openWebhookModal = useModalStore((state) => state.openWebhookModal);
 
@@ -93,6 +104,24 @@ export default function QuickStartPage() {
 
 	const handleImportData = () => {
 		setShowBulkSuiteModal(true);
+	};
+
+	const handleCampaignCreation = () => {
+		resetCampaignStore();
+		setAreaMode("leadList");
+		router.push("/dashboard/campaigns");
+	};
+
+	const handleViewTemplates = () => {
+		toast.info("Campaign templates feature coming soon!");
+	};
+
+	const navigateToCampaigns = () => {
+		router.push("/dashboard/campaigns");
+	};
+
+	const navigateToLeads = () => {
+		router.push("/dashboard/lead-lists");
 	};
 
 	const handleOpenWebhookModal = (stage: WebhookStage) => {
@@ -252,6 +281,40 @@ export default function QuickStartPage() {
 
 				<Card className="group flex h-full flex-col border-2 transition hover:border-primary/20 hover:shadow-lg">
 					<CardHeader className="pb-4 text-center">
+						<div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 transition-colors group-hover:bg-primary/20">
+							<Plus className="h-6 w-6 text-primary" />
+						</div>
+						<CardTitle className="text-xl">Create Campaign</CardTitle>
+						<CardDescription>
+							Launch automated outreach campaigns with AI-powered messaging and
+							lead management
+						</CardDescription>
+					</CardHeader>
+					<CardContent className="flex flex-1 flex-col pt-0">
+						<div className="flex flex-1 flex-col gap-3">
+							<Button
+								className="w-full"
+								size="lg"
+								onClick={handleCampaignCreation}
+								type="button"
+							>
+								Start Campaign
+							</Button>
+							<Button
+								variant="outline"
+								className="w-full"
+								size="lg"
+								onClick={handleViewTemplates}
+								type="button"
+							>
+								View Templates
+							</Button>
+						</div>
+					</CardContent>
+				</Card>
+
+				<Card className="group flex h-full flex-col border-2 transition hover:border-primary/20 hover:shadow-lg">
+					<CardHeader className="pb-4 text-center">
 						<div className="relative mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 transition-colors group-hover:bg-primary/20">
 							<Webhook className="h-6 w-6 text-primary" />
 							<Rss className="absolute -bottom-1 -right-1 h-4 w-4 text-primary/70" />
@@ -279,6 +342,40 @@ export default function QuickStartPage() {
 								type="button"
 							>
 								Setup Outgoing
+							</Button>
+						</div>
+					</CardContent>
+				</Card>
+
+				<Card className="group flex h-full flex-col border-2 transition hover:border-primary/20 hover:shadow-lg">
+					<CardHeader className="pb-4 text-center">
+						<div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 transition-colors group-hover:bg-primary/20">
+							<Database className="h-6 w-6 text-primary" />
+						</div>
+						<CardTitle className="text-xl">Manage Data</CardTitle>
+						<CardDescription>
+							Access and manage your campaigns and leads in one centralized
+							location
+						</CardDescription>
+					</CardHeader>
+					<CardContent className="flex flex-1 flex-col pt-0">
+						<div className="flex flex-1 flex-col gap-3">
+							<Button
+								className="w-full"
+								size="lg"
+								onClick={navigateToCampaigns}
+								type="button"
+							>
+								View Campaigns
+							</Button>
+							<Button
+								variant="outline"
+								className="w-full"
+								size="lg"
+								onClick={navigateToLeads}
+								type="button"
+							>
+								Manage Leads
 							</Button>
 						</div>
 					</CardContent>
