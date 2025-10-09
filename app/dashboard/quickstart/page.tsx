@@ -187,31 +187,29 @@ export default function QuickStartPage() {
 			</div>
 
 			<div className="mx-auto grid max-w-5xl gap-6 items-stretch md:grid-cols-2 xl:grid-cols-3">
-				<Card className="group flex h-full flex-col border-2 transition hover:border-primary/20 hover:shadow-lg">
+				<Card className="group flex h-full flex-col border-2 border-primary/30 bg-gradient-to-br from-primary/5 to-primary/10 transition hover:border-primary/50 hover:shadow-xl hover:shadow-primary/20">
 					<CardHeader className="pb-4 text-center">
-						<div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 transition-colors group-hover:bg-primary/20">
+						<div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/20 transition-colors group-hover:bg-primary/30">
 							<Upload className="h-6 w-6 text-primary" />
 						</div>
-						<CardTitle className="text-xl">Create List</CardTitle>
+						<CardTitle className="text-xl text-primary">Import Data</CardTitle>
 						<CardDescription>
-							Upload a CSV to build a new lead list and map your columns
-							instantly.
+							Upload your existing lead data or connect external sources
 						</CardDescription>
 					</CardHeader>
 					<CardContent className="flex flex-1 flex-col pt-0">
 						<div className="flex flex-1 flex-col gap-3">
 							<Button
 								variant="outline"
-								className="w-full"
+								className="w-full border-primary/30 text-primary hover:bg-primary/10"
 								size="lg"
-								onClick={triggerFileInput}
+								onClick={handleImportData}
 								type="button"
 							>
-								<Upload className="mr-2 h-4 w-4" />
-								{bulkCsvFile ? "Change CSV File" : "Upload CSV File"}
+								Import Leads
 							</Button>
 							<p className="text-center text-xs text-muted-foreground">
-								Build new lead lists from CSV files instantly
+								Connect external data sources and APIs
 							</p>
 						</div>
 					</CardContent>
@@ -222,13 +220,23 @@ export default function QuickStartPage() {
 						<div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 transition-colors group-hover:bg-primary/20">
 							<List className="h-6 w-6 text-primary" />
 						</div>
-						<CardTitle className="text-xl">Select List</CardTitle>
+						<CardTitle className="text-xl">Manage Lists</CardTitle>
 						<CardDescription>
-							Choose from your existing lead lists to work with
+							Create new lead lists from CSV files or work with existing lists
+							to start campaigns
 						</CardDescription>
 					</CardHeader>
 					<CardContent className="flex flex-1 flex-col pt-0">
 						<div className="flex flex-1 flex-col gap-3">
+							<Button
+								className="w-full"
+								size="lg"
+								onClick={triggerFileInput}
+								type="button"
+							>
+								<Upload className="mr-2 h-4 w-4" />
+								{bulkCsvFile ? "Change CSV File" : "Upload CSV File"}
+							</Button>
 							<Button
 								variant="outline"
 								className="w-full"
@@ -238,9 +246,6 @@ export default function QuickStartPage() {
 							>
 								Browse Lists
 							</Button>
-							<p className="text-center text-xs text-muted-foreground">
-								Choose from existing lead lists to start campaigns
-							</p>
 						</div>
 					</CardContent>
 				</Card>
@@ -275,34 +280,6 @@ export default function QuickStartPage() {
 							>
 								Setup Outgoing
 							</Button>
-						</div>
-					</CardContent>
-				</Card>
-
-				<Card className="group flex h-full flex-col border-2 transition hover:border-primary/20 hover:shadow-lg">
-					<CardHeader className="pb-4 text-center">
-						<div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 transition-colors group-hover:bg-primary/20">
-							<Upload className="h-6 w-6 text-primary" />
-						</div>
-						<CardTitle className="text-xl">Import Data</CardTitle>
-						<CardDescription>
-							Upload your existing lead data or connect external sources
-						</CardDescription>
-					</CardHeader>
-					<CardContent className="flex flex-1 flex-col pt-0">
-						<div className="flex flex-1 flex-col gap-3">
-							<Button
-								variant="outline"
-								className="w-full"
-								size="lg"
-								onClick={handleImportData}
-								type="button"
-							>
-								Import Leads
-							</Button>
-							<p className="text-center text-xs text-muted-foreground">
-								Connect external data sources and APIs
-							</p>
 						</div>
 					</CardContent>
 				</Card>
