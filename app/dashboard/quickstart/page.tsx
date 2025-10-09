@@ -186,7 +186,7 @@ export default function QuickStartPage() {
 				</button>
 			</div>
 
-			<div className="mx-auto grid max-w-5xl gap-6 items-stretch md:grid-cols-2 lg:grid-cols-4">
+			<div className="mx-auto grid max-w-5xl gap-6 items-stretch md:grid-cols-2 xl:grid-cols-3">
 				<Card className="group flex h-full flex-col border-2 transition hover:border-primary/20 hover:shadow-lg">
 					<CardHeader className="pb-4 text-center">
 						<div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 transition-colors group-hover:bg-primary/20">
@@ -210,18 +210,9 @@ export default function QuickStartPage() {
 								<Upload className="mr-2 h-4 w-4" />
 								{bulkCsvFile ? "Change CSV File" : "Upload CSV File"}
 							</Button>
-
-							{bulkCsvFile && (
-								<div className="text-center text-sm text-muted-foreground">
-									<p className="font-medium">{bulkCsvFile.name}</p>
-									<p className="text-xs">
-										{bulkCsvHeaders.length} columns detected
-									</p>
-									<p className="text-xs">
-										We’ll open the list wizard to finish setup.
-									</p>
-								</div>
-							)}
+							<p className="text-center text-xs text-muted-foreground">
+								Build new lead lists from CSV files instantly
+							</p>
 						</div>
 					</CardContent>
 				</Card>
@@ -237,15 +228,20 @@ export default function QuickStartPage() {
 						</CardDescription>
 					</CardHeader>
 					<CardContent className="flex flex-1 flex-col pt-0">
-						<Button
-							variant="outline"
-							className="w-full"
-							size="lg"
-							onClick={handleSelectList}
-							type="button"
-						>
-							Browse Lists
-						</Button>
+						<div className="flex flex-1 flex-col gap-3">
+							<Button
+								variant="outline"
+								className="w-full"
+								size="lg"
+								onClick={handleSelectList}
+								type="button"
+							>
+								Browse Lists
+							</Button>
+							<p className="text-center text-xs text-muted-foreground">
+								Choose from existing lead lists to start campaigns
+							</p>
+						</div>
 					</CardContent>
 				</Card>
 
@@ -268,7 +264,7 @@ export default function QuickStartPage() {
 								onClick={() => handleOpenWebhookModal("incoming")}
 								type="button"
 							>
-								Configure Incoming
+								Setup Incoming
 							</Button>
 							<Button
 								variant="outline"
@@ -277,15 +273,8 @@ export default function QuickStartPage() {
 								onClick={() => handleOpenWebhookModal("outgoing")}
 								type="button"
 							>
-								Configure Outgoing
+								Setup Outgoing
 							</Button>
-							<Button variant="ghost" className="w-full" size="lg" asChild>
-								<Link href="/dashboard/connections">Go to Connections Hub</Link>
-							</Button>
-							<p className="text-center text-xs text-muted-foreground">
-								Both actions open the unified webhook modal so you can toggle
-								between incoming events and outbound RSS-style feeds.
-							</p>
 						</div>
 					</CardContent>
 				</Card>
@@ -301,15 +290,20 @@ export default function QuickStartPage() {
 						</CardDescription>
 					</CardHeader>
 					<CardContent className="flex flex-1 flex-col pt-0">
-						<Button
-							variant="outline"
-							className="w-full"
-							size="lg"
-							onClick={handleImportData}
-							type="button"
-						>
-							Import Leads
-						</Button>
+						<div className="flex flex-1 flex-col gap-3">
+							<Button
+								variant="outline"
+								className="w-full"
+								size="lg"
+								onClick={handleImportData}
+								type="button"
+							>
+								Import Leads
+							</Button>
+							<p className="text-center text-xs text-muted-foreground">
+								Connect external data sources and APIs
+							</p>
+						</div>
 					</CardContent>
 				</Card>
 			</div>

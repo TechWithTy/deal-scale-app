@@ -66,14 +66,14 @@ describe("QuickStartPage webhook setup card", () => {
                 render(<QuickStartPage />);
 
                 const [incomingQuickAction] = screen.getAllByRole("button", {
-                        name: /configure incoming/i,
+                        name: /setup incoming/i,
                 });
 
                 fireEvent.click(incomingQuickAction);
                 expect(openWebhookModalMock).toHaveBeenCalledWith("incoming");
 
                 const [outgoingQuickAction] = screen.getAllByRole("button", {
-                        name: /configure outgoing/i,
+                        name: /setup outgoing/i,
                 });
 
                 fireEvent.click(outgoingQuickAction);
