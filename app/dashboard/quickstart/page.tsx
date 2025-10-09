@@ -13,13 +13,10 @@ import { useQuickStartCards } from "@/components/quickstart/useQuickStartCards";
 import CampaignModalMain from "@/components/reusables/modals/user/campaign/CampaignModalMain";
 import LeadBulkSuiteModal from "@/components/reusables/modals/user/lead/LeadBulkSuiteModal";
 import LeadModalMain from "@/components/reusables/modals/user/lead/LeadModalMain";
-import SavedSearchModal from "@/components/reusables/modals/SavedSearchModal";
 import WalkThroughModal from "@/components/leadsSearch/search/WalkthroughModal";
 import { campaignSteps } from "@/_tests/tours/campaignTour";
 import { useCampaignCreationStore } from "@/lib/stores/campaignCreation";
 import { useModalStore, type WebhookStage } from "@/lib/stores/dashboard";
-import { useLeadSearchStore } from "@/lib/stores/leadSearch/leadSearch";
-import type { SavedSearch } from "@/types/userProfile";
 
 interface CampaignContext {
 	leadListId: string;
@@ -40,7 +37,6 @@ export default function QuickStartPage() {
 	const [showCampaignModal, setShowCampaignModal] = useState(false);
 	const [campaignModalContext, setCampaignModalContext] =
 		useState<CampaignContext | null>(null);
-	const [showSavedSearchModal, setShowSavedSearchModal] = useState(false);
 
 	const fileInputRef = useRef<HTMLInputElement>(null);
 	const router = useRouter();
@@ -55,17 +51,6 @@ export default function QuickStartPage() {
 	const setCampaignName = useCampaignCreationStore(
 		(state) => state.setCampaignName,
 	);
-	const {
-		savedSearches,
-		selectSavedSearch,
-		deleteSavedSearch,
-		setSearchPriority,
-	} = useLeadSearchStore((state) => ({
-		savedSearches: state.savedSearches,
-		selectSavedSearch: state.selectSavedSearch,
-		deleteSavedSearch: state.deleteSavedSearch,
-		setSearchPriority: state.setSearchPriority,
-	}));
 
 	const handleSelectList = useCallback(() => {
 		setLeadModalMode("select");
@@ -147,41 +132,6 @@ export default function QuickStartPage() {
 		toast("Browser extension download coming soon!");
 	}, []);
 
-	const handleStartSearch = useCallback(() => {
-		router.push("/dashboard");
-	}, [router]);
-
-	const handleOpenSavedSearchModal = useCallback(() => {
-		setShowSavedSearchModal(true);
-	}, []);
-
-	const handleCloseSavedSearchModal = useCallback(() => {
-		setShowSavedSearchModal(false);
-	}, []);
-
-	const handleSavedSearchSelect = useCallback(
-		(search: SavedSearch) => {
-			selectSavedSearch(search);
-			setShowSavedSearchModal(false);
-			router.push("/dashboard");
-		},
-		[router, selectSavedSearch],
-	);
-
-	const handleSavedSearchDelete = useCallback(
-		(id: string) => {
-			deleteSavedSearch(id);
-		},
-		[deleteSavedSearch],
-	);
-
-	const handleSavedSearchPriority = useCallback(
-		(id: string) => {
-			setSearchPriority(id);
-		},
-		[setSearchPriority],
-	);
-
 	const createRouterPush = useCallback(
 		(path: string) => () => {
 			router.push(path);
@@ -221,8 +171,6 @@ export default function QuickStartPage() {
 		onOpenWebhookModal: handleOpenWebhookModal,
 		onBrowserExtension: handleBrowserExtension,
 		createRouterPush,
-		onStartSearch: handleStartSearch,
-		onOpenSavedSearches: handleOpenSavedSearchModal,
 	});
 
 	return (
@@ -289,15 +237,6 @@ export default function QuickStartPage() {
 				isTourOpen={isTourOpen}
 				onStartTour={handleStartTour}
 				onCloseTour={handleCloseTour}
-			/>
-
-			<SavedSearchModal
-				open={showSavedSearchModal}
-				onClose={handleCloseSavedSearchModal}
-				savedSearches={savedSearches}
-				onDelete={handleSavedSearchDelete}
-				onSelect={handleSavedSearchSelect}
-				onSetPriority={handleSavedSearchPriority}
 			/>
 
 			<QuickStartHelp />
