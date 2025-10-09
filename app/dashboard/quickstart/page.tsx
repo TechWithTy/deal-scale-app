@@ -4,7 +4,6 @@ import React, { useRef, useState } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
 import {
-	HelpCircle,
 	List,
 	Rss,
 	Upload,
@@ -13,6 +12,12 @@ import {
 	Plus,
 	Database,
 	Settings,
+	Target,
+	MapPin,
+	DollarSign,
+	Home,
+	Building,
+	HelpCircle,
 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
@@ -103,15 +108,12 @@ export default function QuickStartPage() {
 	const handleCloseLeadModal = () => {
 		setShowLeadModal(false);
 	};
-
 	const handleConnectionSettings = () => {
 		toast.info("Data source connections and API configuration coming soon!");
 	};
 
 	const handleImportFromSource = () => {
-		toast.info(
-			"Universal data import feature coming soon! Connect to APIs, CRM systems, and more.",
-		);
+		setShowBulkSuiteModal(true);
 	};
 
 	const handleImportData = () => {
@@ -228,8 +230,16 @@ export default function QuickStartPage() {
 				</button>
 			</div>
 
-			<div className="mx-auto grid max-w-5xl gap-6 items-stretch md:grid-cols-2 xl:grid-cols-3">
-				<Card className="group flex h-full flex-col border-2 border-primary/30 bg-gradient-to-br from-primary/5 to-primary/10 transition hover:border-primary/50 hover:shadow-xl hover:shadow-primary/20">
+			<div
+				className="mx-auto grid max-w-5xl gap-6 md:grid-cols-2 xl:grid-cols-3"
+				style={{
+					display: "grid",
+					gridAutoRows: "auto",
+					alignItems: "start",
+					justifyItems: "center",
+				}}
+			>
+				<Card className="group flex h-auto w-full max-w-sm flex-col border-2 border-primary/30 bg-gradient-to-br from-primary/5 to-primary/10 transition hover:border-primary/50 hover:shadow-xl hover:shadow-primary/20">
 					<CardHeader className="pb-4 text-center">
 						<div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/20 transition-colors group-hover:bg-primary/30">
 							<Upload className="h-6 w-6 text-primary" />
@@ -242,8 +252,8 @@ export default function QuickStartPage() {
 							seamlessly
 						</CardDescription>
 					</CardHeader>
-					<CardContent className="flex flex-1 flex-col pt-0">
-						<div className="flex flex-1 flex-col gap-3">
+					<CardContent className="flex flex-col pt-0">
+						<div className="flex flex-col gap-3">
 							<Button
 								variant="outline"
 								className="w-full border-primary/30 text-primary hover:bg-primary/10"
@@ -281,7 +291,7 @@ export default function QuickStartPage() {
 					</CardContent>
 				</Card>
 
-				<Card className="group flex h-full flex-col border-2 transition hover:border-primary/20 hover:shadow-lg">
+				<Card className="group flex h-auto w-full max-w-sm flex-col border-2 transition hover:border-primary/20 hover:shadow-lg">
 					<CardHeader className="pb-4 text-center">
 						<div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 transition-colors group-hover:bg-primary/20">
 							<Plus className="h-6 w-6 text-primary" />
@@ -292,14 +302,15 @@ export default function QuickStartPage() {
 							lead management
 						</CardDescription>
 					</CardHeader>
-					<CardContent className="flex flex-1 flex-col pt-0">
-						<div className="flex flex-1 flex-col gap-3">
+					<CardContent className="flex flex-col pt-0">
+						<div className="flex flex-col gap-3">
 							<Button
 								className="w-full"
 								size="lg"
 								onClick={handleCampaignCreation}
 								type="button"
 							>
+								<Plus className="mr-2 h-4 w-4" />
 								Start Campaign
 							</Button>
 							<Button
@@ -309,13 +320,24 @@ export default function QuickStartPage() {
 								onClick={handleViewTemplates}
 								type="button"
 							>
+								<List className="mr-2 h-4 w-4" />
 								View Templates
+							</Button>
+							<Button
+								variant="outline"
+								className="w-full border-primary/30 text-primary hover:bg-primary/10"
+								size="lg"
+								onClick={navigateToCampaigns}
+								type="button"
+							>
+								<Settings className="mr-2 h-4 w-4" />
+								View Campaigns
 							</Button>
 						</div>
 					</CardContent>
 				</Card>
 
-				<Card className="group flex h-full flex-col border-2 transition hover:border-primary/20 hover:shadow-lg">
+				<Card className="group flex h-auto w-full max-w-sm flex-col border-2 transition hover:border-primary/20 hover:shadow-lg">
 					<CardHeader className="pb-4 text-center">
 						<div className="relative mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 transition-colors group-hover:bg-primary/20">
 							<Webhook className="h-6 w-6 text-primary" />
@@ -326,14 +348,15 @@ export default function QuickStartPage() {
 							Connect DealScale with your CRM and publish updates instantly.
 						</CardDescription>
 					</CardHeader>
-					<CardContent className="flex flex-1 flex-col pt-0">
-						<div className="flex flex-1 flex-col gap-3">
+					<CardContent className="flex flex-col pt-0">
+						<div className="flex flex-col gap-3">
 							<Button
 								className="w-full"
 								size="lg"
 								onClick={() => handleOpenWebhookModal("incoming")}
 								type="button"
 							>
+								<Settings className="mr-2 h-4 w-4" />
 								Setup Incoming
 							</Button>
 							<Button
@@ -343,13 +366,14 @@ export default function QuickStartPage() {
 								onClick={() => handleOpenWebhookModal("outgoing")}
 								type="button"
 							>
+								<List className="mr-2 h-4 w-4" />
 								Setup Outgoing
 							</Button>
 						</div>
 					</CardContent>
 				</Card>
 
-				<Card className="group flex h-full flex-col border-2 border-primary/30 bg-gradient-to-br from-primary/5 to-primary/10 transition hover:border-primary/50 hover:shadow-xl hover:shadow-primary/20">
+				<Card className="group flex h-auto w-full max-w-sm flex-col border-2 border-primary/30 bg-gradient-to-br from-primary/5 to-primary/10 transition hover:border-primary/50 hover:shadow-xl hover:shadow-primary/20">
 					<CardHeader className="pb-4 text-center">
 						<div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/20 transition-colors group-hover:bg-primary/30">
 							<Database className="h-6 w-6 text-primary" />
@@ -362,30 +386,48 @@ export default function QuickStartPage() {
 							analyze your data
 						</CardDescription>
 					</CardHeader>
-					<CardContent className="flex flex-1 flex-col pt-0">
-						<div className="flex flex-1 flex-col gap-3">
+					<CardContent className="flex flex-col pt-0">
+						<div className="flex flex-col gap-3">
 							<Button
 								className="w-full"
 								size="lg"
-								onClick={navigateToCampaigns}
+								onClick={() =>
+									router.push("/dashboard/lead-lists?download=true")
+								}
 								type="button"
 							>
-								View & Manage Campaigns
+								<Upload className="mr-2 h-4 w-4" />
+								Download Leads
+							</Button>
+							<Button
+								variant="outline"
+								className="w-full border-primary/30 text-primary hover:bg-primary/10"
+								size="lg"
+								onClick={() =>
+									router.push(
+										"/dashboard/lead-lists?abtest=true&listname=ai-optimized-leads",
+									)
+								}
+								type="button"
+							>
+								<List className="mr-2 h-4 w-4" />
+								Create A/B Test
 							</Button>
 							<Button
 								variant="outline"
 								className="w-full"
 								size="lg"
-								onClick={navigateToLeads}
+								onClick={() => router.push("/dashboard/lead-lists")}
 								type="button"
 							>
+								<Settings className="mr-2 h-4 w-4" />
 								Manage Leads
 							</Button>
 						</div>
 					</CardContent>
 				</Card>
 
-				<Card className="group flex h-full flex-col border-2 border-orange-500/30 bg-gradient-to-br from-orange-500/5 to-orange-400/10 transition hover:border-orange-500/50 hover:shadow-xl hover:shadow-orange-500/20">
+				<Card className="group flex h-auto w-full max-w-sm flex-col border-2 border-orange-500/30 bg-gradient-to-br from-orange-500/5 to-orange-400/10 transition hover:border-orange-500/50 hover:shadow-xl hover:shadow-orange-500/20">
 					<CardHeader className="pb-4 text-center">
 						<div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-orange-500/20 transition-colors group-hover:bg-orange-500/30">
 							<Download className="h-6 w-6 text-orange-600" />
@@ -398,8 +440,8 @@ export default function QuickStartPage() {
 							capture
 						</CardDescription>
 					</CardHeader>
-					<CardContent className="flex flex-1 flex-col pt-0">
-						<div className="flex flex-1 flex-col gap-3">
+					<CardContent className="flex flex-col pt-0">
+						<div className="flex flex-col gap-3">
 							<Button
 								variant="outline"
 								className="w-full border-orange-500/30 text-orange-600 hover:bg-orange-500/10"
@@ -415,6 +457,59 @@ export default function QuickStartPage() {
 							</Button>
 							<p className="text-center text-xs text-muted-foreground">
 								Capture leads directly from any website
+							</p>
+						</div>
+					</CardContent>
+				</Card>
+
+				<Card className="group flex h-auto w-full max-w-sm flex-col border-2 border-green-500/30 bg-gradient-to-br from-green-500/5 to-green-400/10 transition hover:border-green-500/50 hover:shadow-xl hover:shadow-green-500/20">
+					<CardHeader className="pb-4 text-center">
+						<div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-green-500/20 transition-colors group-hover:bg-green-500/30">
+							<Target className="h-6 w-6 text-green-600" />
+						</div>
+						<CardTitle className="text-xl text-green-600">
+							Source of Market Deals
+						</CardTitle>
+						<CardDescription>
+							Find distressed properties and motivated sellers - why some deals
+							spread like wildfire in real estate
+						</CardDescription>
+					</CardHeader>
+					<CardContent className="flex flex-col pt-0">
+						<div className="flex flex-col gap-3">
+							<Button
+								className="w-full"
+								size="lg"
+								onClick={() => router.push("/dashboard?zipcode=true")}
+								type="button"
+							>
+								<MapPin className="mr-2 h-4 w-4" />
+								Target by ZIP Code
+							</Button>
+							<Button
+								variant="outline"
+								className="w-full border-green-500/30 text-green-600 hover:bg-green-500/10"
+								size="lg"
+								onClick={() => router.push("/dashboard?pricerange=true")}
+								type="button"
+							>
+								<DollarSign className="mr-2 h-4 w-4" />
+								Filter by Price Range
+							</Button>
+							<Button
+								variant="outline"
+								className="w-full border-green-500/30 text-green-600 hover:bg-green-500/10"
+								size="lg"
+								onClick={() =>
+									router.push("/dashboard?distressed=true&foreclosure=true")
+								}
+								type="button"
+							>
+								<Home className="mr-2 h-4 w-4" />
+								Find Distressed Properties
+							</Button>
+							<p className="text-center text-xs text-muted-foreground">
+								Market intelligence that spreads like contagious opportunities
 							</p>
 						</div>
 					</CardContent>
