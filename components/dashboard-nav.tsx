@@ -3,17 +3,17 @@
 import { Icons } from "@/components/icons";
 import { cn } from "@/lib/_utils";
 import type { NavItem } from "@/types";
+import { signOut } from "next-auth/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { type Dispatch, type SetStateAction, useState } from "react";
-import { signOut } from "next-auth/react";
+import { FeatureGuard } from "./access/FeatureGuard";
 import {
 	Tooltip,
 	TooltipContent,
 	TooltipProvider,
 	TooltipTrigger,
 } from "./ui/tooltip";
-import { FeatureGuard } from "./access/FeatureGuard";
 
 interface DashboardNavProps {
 	items: NavItem[];
@@ -50,13 +50,21 @@ export function DashboardNav({
 		<nav className="grid items-start gap-2">
 			<TooltipProvider>
 				{items.map((item, index) => {
+					if (item.onlyMobile && !isMobileNav) {
+						return null;
+					}
+
 					const Icon = Icons[item.icon || "arrowRight"];
 
 					const featureKey = item.featureKey;
 					const isPrimary = item.variant === "primary";
 					const guardWrapperClass = cn(
 						"nav-item",
-						isMinimized ? "nav-item--minimized" : "nav-item--expanded",
+						isMobileNav
+							? "nav-item--mobile"
+							: isMinimized
+								? "nav-item--minimized"
+								: "nav-item--expanded",
 						item.disabled && "is-disabled",
 						isPrimary && "nav-item--primary",
 					);
@@ -77,7 +85,7 @@ export function DashboardNav({
 									type="button"
 									onClick={handleLogout}
 									className={cn(
-										"flex w-full items-center gap-2 overflow-hidden rounded-md py-2 font-medium text-sm hover:bg-accent hover:text-accent-foreground transition-colors",
+										"flex w-full items-center gap-2 overflow-hidden rounded-md py-2 font-medium text-sm transition-colors hover:bg-accent hover:text-accent-foreground",
 										item.disabled && "cursor-not-allowed opacity-80",
 									)}
 									disabled={loading}
@@ -101,7 +109,7 @@ export function DashboardNav({
 									) : null}
 									{/* Visual indicator for blocked features */}
 									{featureKey && (
-										<div className="absolute -right-1 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-orange-400 opacity-60" />
+										<div className="-right-1 -translate-y-1/2 absolute top-1/2 h-2 w-2 rounded-full bg-orange-400 opacity-60" />
 									)}
 								</Link>
 							)}
@@ -117,6 +125,7 @@ export function DashboardNav({
 											featureKey={featureKey}
 											wrapperClassName={guardWrapperClass}
 											orientation={isMinimized ? "vertical" : "auto"}
+											showPopover={!isMobileNav}
 										>
 											{navContent}
 										</FeatureGuard>
