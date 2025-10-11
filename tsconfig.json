@@ -12,7 +12,7 @@
 		"resolveJsonModule": true,
 		"isolatedModules": true,
 		"jsx": "preserve",
-		"types": ["vitest/globals", "node"],
+                "types": ["vitest/globals", "node", "jest"],
 		"incremental": true,
 		"plugins": [
 			{
