@@ -142,6 +142,7 @@
                 "@cucumber/cucumber": "^10.0.0",
                 "@playwright/test": "^1.52.0",
                 "@types/google.maps": "^3.58.1",
+                "@types/jest": "^29.5.12",
                 "@types/uuid": "^9.0.7",
                 "husky": "^9.0.11",
                 "jsdom": "^24.1.0",
