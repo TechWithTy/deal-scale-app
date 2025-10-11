@@ -2,12 +2,14 @@
 import { DashboardNav } from "@/components/dashboard-nav";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { navItems } from "@/constants/data";
-import { MenuIcon } from "lucide-react";
-import { useState } from "react";
-import { useSession } from "next-auth/react";
+import { cn } from "@/lib/_utils";
+import { CreditsSummary } from "external/credit-view-purchase/components/CreditsSummary";
 import { CrudToggle } from "external/crud-toggle/components/CrudToggle";
 import type { CrudFlags } from "external/crud-toggle/utils/types";
-import { CreditsSummary } from "external/credit-view-purchase/components/CreditsSummary";
+import { MenuIcon } from "lucide-react";
+import { useSession } from "next-auth/react";
+import Link from "next/link";
+import { useState } from "react";
 
 // import { Playlist } from "../data/playlists";
 
@@ -57,6 +59,41 @@ export function MobileSidebar({ className }: SidebarProps) {
 				</SheetTrigger>
 				<SheetContent side="left" className="!px-0">
 					<div className="space-y-4 py-4">
+						<div className="px-3">
+							<Link
+								href="/dashboard/quickstart"
+								className={cn(
+									"group flex items-center gap-3 rounded-lg bg-primary px-4 py-3 font-semibold text-primary-foreground transition-all hover:bg-primary/90 hover:shadow-md",
+								)}
+								onClick={() => setOpen(false)}
+							>
+								<div className="flex size-9 items-center justify-center rounded-md bg-primary-foreground/20 group-hover:bg-primary-foreground/30">
+									<svg
+										className="size-4"
+										fill="none"
+										stroke="currentColor"
+										viewBox="0 0 24 24"
+										aria-hidden="true"
+									>
+										<title>Open Quick Start</title>
+										<path
+											strokeLinecap="round"
+											strokeLinejoin="round"
+											strokeWidth={2}
+											d="M12 4v16m8-8H4"
+										/>
+									</svg>
+								</div>
+								<div className="flex flex-col text-left">
+									<span className="text-sm uppercase tracking-wide">
+										Quick Start
+									</span>
+									<span className="font-normal text-xs opacity-90">
+										Create an automation
+									</span>
+								</div>
+							</Link>
+						</div>
 						<div className="px-3 py-2">
 							<h2 className="mb-2 px-4 font-semibold text-lg tracking-tight">
 								Overview
