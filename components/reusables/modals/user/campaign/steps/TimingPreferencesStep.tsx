@@ -1,6 +1,6 @@
+import React, { useState } from "react";
 import { Calendar } from "@/components/ui/calendar";
 import { useCampaignCreationStore } from "@/lib/stores/campaignCreation";
-import { useState } from "react";
 import Holidays from "date-holidays";
 
 interface TimingPreferencesStepProps {
@@ -91,6 +91,24 @@ export function TimingPreferencesStep({
 	const isNextEnabled = Boolean(
 		startDate && endDate && !dateError && startDate < endDate,
 	);
+
+	const handleNextClick = () => {
+		if (!startDate || !endDate) {
+			setDateError("Please select both a start and end date.");
+			return;
+		}
+
+		if (startDate >= endDate) {
+			setDateError("End date must be after start date.");
+			return;
+		}
+
+		if (dateError) {
+			return;
+		}
+
+		onNext();
+	};
 
 	return (
 		<div className="text-center">
@@ -211,9 +229,13 @@ export function TimingPreferencesStep({
 				</button>
 				<button
 					type="button"
-					className="rounded bg-primary px-4 py-2 text-white disabled:bg-gray-300"
-					disabled={!isNextEnabled}
-					onClick={onNext}
+					aria-disabled={!isNextEnabled}
+					className={`rounded px-4 py-2 text-white ${
+						isNextEnabled
+							? "bg-primary hover:bg-primary/90"
+							: "cursor-not-allowed bg-gray-300 text-gray-600"
+					}`}
+					onClick={handleNextClick}
 				>
 					Next
 				</button>
