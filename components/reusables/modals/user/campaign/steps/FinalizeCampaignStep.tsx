@@ -67,10 +67,10 @@ const FinalizeCampaignStep: FC<FinalizeCampaignStepProps> = ({
 		useForm<FinalizeCampaignForm>({
 			resolver: zodResolver(finalizeCampaignSchema),
 			defaultValues: {
-				campaignName: campaignName,
+				campaignName,
 				selectedAgentId: selectedAgentId || undefined,
-				selectedWorkflowId: undefined,
-				selectedSalesScriptId: undefined,
+				selectedWorkflowId: selectedWorkflowId || undefined,
+				selectedSalesScriptId: selectedSalesScriptId || undefined,
 				campaignGoal: "",
 			},
 			mode: "onChange",
@@ -80,6 +80,72 @@ const FinalizeCampaignStep: FC<FinalizeCampaignStepProps> = ({
 		form.register("selectedWorkflowId");
 		form.register("selectedSalesScriptId");
 	}, [form]);
+
+	useEffect(() => {
+		const normalizedCampaignName = campaignName ?? "";
+		if (form.getValues("campaignName") !== normalizedCampaignName) {
+			form.setValue("campaignName", normalizedCampaignName, {
+				shouldDirty: false,
+				shouldValidate: false,
+			});
+		}
+
+		const normalizedWorkflowId = selectedWorkflowId ?? undefined;
+		if (form.getValues("selectedWorkflowId") !== normalizedWorkflowId) {
+			form.setValue("selectedWorkflowId", normalizedWorkflowId, {
+				shouldDirty: false,
+				shouldValidate: false,
+			});
+		}
+
+		const normalizedSalesScriptId = selectedSalesScriptId ?? undefined;
+		if (form.getValues("selectedSalesScriptId") !== normalizedSalesScriptId) {
+			form.setValue("selectedSalesScriptId", normalizedSalesScriptId, {
+				shouldDirty: false,
+				shouldValidate: false,
+			});
+		}
+	}, [campaignName, selectedWorkflowId, selectedSalesScriptId, form]);
+
+	const watchedCampaignName = form.watch("campaignName");
+	const watchedAgentId = form.watch("selectedAgentId");
+	const watchedWorkflowId = form.watch("selectedWorkflowId");
+	const watchedSalesScriptId = form.watch("selectedSalesScriptId");
+
+	useEffect(() => {
+		const normalizedCampaignName = watchedCampaignName ?? "";
+		if (campaignName !== normalizedCampaignName) {
+			setCampaignName(normalizedCampaignName);
+		}
+
+		const normalizedAgentId = watchedAgentId ?? null;
+		if (selectedAgentId !== normalizedAgentId) {
+			setSelectedAgentId(normalizedAgentId);
+		}
+
+		const normalizedWorkflowId = watchedWorkflowId ?? null;
+		if (selectedWorkflowId !== normalizedWorkflowId) {
+			setSelectedWorkflowId(normalizedWorkflowId);
+		}
+
+		const normalizedSalesScriptId = watchedSalesScriptId ?? null;
+		if (selectedSalesScriptId !== normalizedSalesScriptId) {
+			setSelectedSalesScriptId(normalizedSalesScriptId);
+		}
+	}, [
+		watchedCampaignName,
+		watchedAgentId,
+		watchedWorkflowId,
+		watchedSalesScriptId,
+		campaignName,
+		selectedAgentId,
+		selectedWorkflowId,
+		selectedSalesScriptId,
+		setCampaignName,
+		setSelectedAgentId,
+		setSelectedWorkflowId,
+		setSelectedSalesScriptId,
+	]);
 
 	const watchedValues = form.watch();
 
@@ -119,10 +185,18 @@ const FinalizeCampaignStep: FC<FinalizeCampaignStepProps> = ({
 	}, [watchedValues]);
 
 	const handleLaunch = (data: FinalizeCampaignForm) => {
-		setCampaignName(data.campaignName);
-		setSelectedAgentId(data.selectedAgentId);
-		setSelectedWorkflowId(data.selectedWorkflowId);
-		setSelectedSalesScriptId(data.selectedSalesScriptId);
+		if (campaignName !== data.campaignName) {
+			setCampaignName(data.campaignName);
+		}
+		if (selectedAgentId !== data.selectedAgentId) {
+			setSelectedAgentId(data.selectedAgentId ?? null);
+		}
+		if (selectedWorkflowId !== data.selectedWorkflowId) {
+			setSelectedWorkflowId(data.selectedWorkflowId ?? null);
+		}
+		if (selectedSalesScriptId !== data.selectedSalesScriptId) {
+			setSelectedSalesScriptId(data.selectedSalesScriptId ?? null);
+		}
 		// campaignGoal is local to this component, but you could add it to the store if needed
 		onLaunch();
 	};
