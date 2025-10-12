@@ -1,4 +1,4 @@
-import React, { useMemo, type FC } from "react";
+import React, { useEffect, useMemo, type FC } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -69,12 +69,17 @@ const FinalizeCampaignStep: FC<FinalizeCampaignStepProps> = ({
 			defaultValues: {
 				campaignName: campaignName,
 				selectedAgentId: selectedAgentId || undefined,
-				selectedWorkflowId: selectedWorkflowId || undefined,
-				selectedSalesScriptId: selectedSalesScriptId || undefined,
+				selectedWorkflowId: undefined,
+				selectedSalesScriptId: undefined,
 				campaignGoal: "",
 			},
 			mode: "onChange",
 		});
+
+	useEffect(() => {
+		form.register("selectedWorkflowId");
+		form.register("selectedSalesScriptId");
+	}, [form]);
 
 	const watchedValues = form.watch();
 
