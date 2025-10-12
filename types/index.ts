@@ -10,6 +10,7 @@ export interface NavItem {
 	description?: string;
 	featureKey?: string;
 	variant?: "default" | "primary";
+	onlyMobile?: boolean;
 }
 
 export interface NavItemWithChildren extends NavItem {
