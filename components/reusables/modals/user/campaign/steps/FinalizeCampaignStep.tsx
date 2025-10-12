@@ -1,3 +1,4 @@
+import React, { useEffect, useMemo, type FC } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -22,7 +23,6 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
-import type { FC } from "react";
 import { FormProvider, useForm, type UseFormReturn } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useCampaignCreationStore } from "@/lib/stores/campaignCreation";
@@ -63,10 +63,54 @@ const FinalizeCampaignStep: FC<FinalizeCampaignStepProps> = ({
 			defaultValues: {
 				campaignName: campaignName,
 				selectedAgentId: selectedAgentId || undefined,
+				selectedWorkflowId: undefined,
+				selectedSalesScriptId: undefined,
 				campaignGoal: "",
 			},
 			mode: "onChange",
 		});
+
+	useEffect(() => {
+		form.register("selectedWorkflowId");
+		form.register("selectedSalesScriptId");
+	}, [form]);
+
+	const watchedValues = form.watch();
+
+	const blockingIssues = useMemo(() => {
+		const normalizedValues = {
+			...watchedValues,
+			selectedAgentId:
+				typeof watchedValues.selectedAgentId === "string" &&
+				watchedValues.selectedAgentId.trim().length > 0
+					? watchedValues.selectedAgentId
+					: undefined,
+			selectedWorkflowId:
+				typeof watchedValues.selectedWorkflowId === "string" &&
+				watchedValues.selectedWorkflowId.trim().length > 0
+					? watchedValues.selectedWorkflowId
+					: undefined,
+			selectedSalesScriptId:
+				typeof watchedValues.selectedSalesScriptId === "string" &&
+				watchedValues.selectedSalesScriptId.trim().length > 0
+					? watchedValues.selectedSalesScriptId
+					: undefined,
+		};
+
+		const validation = finalizeCampaignSchema.safeParse(normalizedValues);
+
+		if (validation.success) {
+			return [];
+		}
+
+		const { fieldErrors, formErrors } = validation.error.flatten();
+		const issues = [
+			...formErrors,
+			...Object.values(fieldErrors).flatMap((messages) => messages ?? []),
+		].filter((message): message is string => Boolean(message));
+
+		return Array.from(new Set(issues));
+	}, [watchedValues]);
 
 	const handleLaunch = (data: FinalizeCampaignForm) => {
 		setCampaignName(data.campaignName);
@@ -160,6 +204,7 @@ const FinalizeCampaignStep: FC<FinalizeCampaignStepProps> = ({
 									{...field}
 								/>
 							</FormControl>
+							<FormMessage />
 						</FormItem>
 					)}
 				/>
@@ -177,6 +222,22 @@ const FinalizeCampaignStep: FC<FinalizeCampaignStepProps> = ({
 							? `This campaign will cost ${estimatedCredits} credits.`
 							: "Configure your campaign settings to see cost estimate."}
 					</p>
+
+					{blockingIssues.length > 0 && (
+						<div
+							aria-live="polite"
+							className="rounded-md border border-destructive/40 bg-destructive/10 p-4 text-destructive"
+						>
+							<p className="font-medium text-sm">
+								Complete the following before launching:
+							</p>
+							<ul className="mt-2 list-disc space-y-1 pl-5 text-xs">
+								{blockingIssues.map((issue) => (
+									<li key={issue}>{issue}</li>
+								))}
+							</ul>
+						</div>
+					)}
 
 					<Button
 						type="submit"
