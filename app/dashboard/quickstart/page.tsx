@@ -32,139 +32,135 @@ export default function QuickStartPage() {
 	const [bulkCsvHeaders, setBulkCsvHeaders] = useState<string[]>([]);
 	const [showBulkSuiteModal, setShowBulkSuiteModal] = useState(false);
 	const [showCampaignModal, setShowCampaignModal] = useState(false);
-	const [campaignModalContext, setCampaignModalContext] = useState<{
-		leadListId: string;
-		leadListName: string;
-		leadCount: number;
-	} | null>(null);
-	const fileInputRef = useRef<HTMLInputElement>(null);
+	const [campaignModalContext, setCampaignModalContext] =
+		useState<CampaignContext | null>(null);
 
-	const resetCampaignStore = useCampaignCreationStore((state) => state.reset);
-	const setAreaMode = useCampaignCreationStore((state) => state.setAreaMode);
-	const setSelectedLeadListId = useCampaignCreationStore(
-		(state) => state.setSelectedLeadListId,
-	);
-	const setLeadCount = useCampaignCreationStore((state) => state.setLeadCount);
-	const setCampaignName = useCampaignCreationStore(
-		(state) => state.setCampaignName,
-	);
+	const fileInputRef = useRef<HTMLInputElement>(null);
+	const router = useRouter();
 	const openWebhookModal = useModalStore((state) => state.openWebhookModal);
 
-	const handleSelectList = () => {
+	const campaignStore = useCampaignCreationStore();
+	const {
+		savedSearches,
+		deleteSavedSearch,
+		setSearchPriority,
+		handleStartNewSearch,
+		handleOpenSavedSearches,
+		handleCloseSavedSearches,
+		handleSelectSavedSearch,
+		savedSearchModalOpen,
+	} = useQuickStartSavedSearches();
+
+	const handleSelectList = useCallback(() => {
 		setLeadModalMode("select");
 		setShowLeadModal(true);
-	};
+	}, []);
 
-	const handleLaunchCampaign = ({
-		leadListId,
-		leadListName,
-		leadCount,
-	}: {
-		leadListId: string;
-		leadListName: string;
-		leadCount: number;
-	}) => {
-		resetCampaignStore();
-		setAreaMode("leadList");
-		setSelectedLeadListId(leadListId);
-		setLeadCount(leadCount);
-		setCampaignName(`${leadListName} Campaign`);
-		setCampaignModalContext({ leadListId, leadListName, leadCount });
+	const handleLaunchCampaign = useCallback(
+		({ leadListId, leadListName, leadCount }: CampaignContext) => {
+			campaignStore.reset();
+			campaignStore.setAreaMode("leadList");
+			campaignStore.setSelectedLeadListId(leadListId);
+			campaignStore.setLeadCount(leadCount);
+			campaignStore.setCampaignName(`${leadListName} Campaign`);
+			setCampaignModalContext({ leadListId, leadListName, leadCount });
+			setShowCampaignModal(true);
+			setShowLeadModal(false);
+		},
+		[campaignStore],
+	);
+
+	const handleSuiteLaunchComplete = useCallback(
+		(payload: CampaignContext) => {
+			handleLaunchCampaign(payload);
+			return true;
+		},
+		[handleLaunchCampaign],
+	);
+
+	const handleCloseLeadModal = useCallback(() => setShowLeadModal(false), []);
+
+	const handleConnectionSettings = useCallback(
+		() =>
+			toast.info("Data source connections and API configuration coming soon!"),
+		[],
+	);
+
+	const handleImportFromSource = useCallback(
+		() => setShowBulkSuiteModal(true),
+		[],
+	);
+
+	const handleCampaignCreation = useCallback(() => {
+		campaignStore.reset();
+		campaignStore.setAreaMode("leadList");
+		setCampaignModalContext(null);
 		setShowCampaignModal(true);
-		setShowLeadModal(false);
-	};
+	}, [campaignStore]);
 
-	const handleSuiteLaunchComplete = ({
-		leadListId,
-		leadListName,
-		leadCount,
-	}: {
-		leadListId: string;
-		leadListName: string;
-		leadCount: number;
-	}) => {
-		handleLaunchCampaign({ leadListId, leadListName, leadCount });
-		return true;
-	};
+	const handleViewTemplates = useCallback(
+		() => toast.info("Campaign templates feature coming soon!"),
+		[],
+	);
 
-	const handleCloseLeadModal = () => {
-		setShowLeadModal(false);
-	};
+	const handleOpenWebhookModal = useCallback(
+		(stage: WebhookStage) => openWebhookModal(stage),
+		[openWebhookModal],
+	);
 
-	const handleImportData = () => {
-		setShowBulkSuiteModal(true);
-	};
+	const handleWalkthroughOpen = useCallback(() => setShowWalkthrough(true), []);
 
-	const handleStartTour = () => setIsTourOpen(true);
-	const handleCloseTour = () => setIsTourOpen(false);
+	const handleStartTour = useCallback(() => setIsTourOpen(true), []);
 
-	const triggerFileInput = () => {
-		fileInputRef.current?.click();
-	};
+	const handleCloseTour = useCallback(() => setIsTourOpen(false), []);
 
-	const handleCsvUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-		const file = event.target.files?.[0];
-		if (!file) return;
+	const handleBrowserExtension = useCallback(() => {
+		window.open("https://chrome.google.com/webstore", "_blank");
+		toast("Browser extension download coming soon!");
+	}, []);
 
-		if (!file.name.endsWith(".csv") && !file.type.includes("csv")) {
-			toast.error("Please select a CSV file");
-			return;
-		}
+	const createRouterPush = useCallback(
+		(path: string) => () => {
+			router.push(path);
+		},
+		[router],
+	);
 
-		setBulkCsvFile(file);
-
-		const reader = new FileReader();
-		reader.onload = (e) => {
-			const csvText = e.target?.result as string;
-			if (!csvText) return;
-
-			const lines = csvText.split("\n").filter((line) => line.trim().length);
-			if (lines.length === 0) {
-				toast.error("CSV file appears to be empty");
-				return;
+	const handleCampaignModalToggle = useCallback(
+		(open: boolean) => {
+			setShowCampaignModal(open);
+			if (!open) {
+				setCampaignModalContext(null);
+				campaignStore.reset();
 			}
+		},
+		[campaignStore],
+	);
 
-			const headers = lines[0]
-				.split(",")
-				.map((header) => header.trim().replace(/"/g, ""))
-				.filter((header) => header.length > 0)
-				.slice(0, 50);
-
-			if (headers.length === 0) {
-				toast.error("No valid headers found in CSV file");
-				return;
-			}
-
-			setBulkCsvHeaders(headers);
-			toast.success(
-				`Found ${headers.length} columns in CSV: ${headers
-					.slice(0, 3)
-					.join(", ")}${headers.length > 3 ? "..." : ""}`,
-			);
-
-			setShowBulkSuiteModal(true);
-		};
-
-		reader.onerror = () => {
-			toast.error("Error reading CSV file");
-		};
-
-		reader.readAsText(file);
-	};
-
-	const handleCampaignModalToggle = (open: boolean) => {
-		setShowCampaignModal(open);
-		if (!open) {
-			setCampaignModalContext(null);
-			resetCampaignStore();
-		}
-	};
-
-	const handleCloseBulkModal = () => {
+	const handleCloseBulkModal = useCallback(() => {
 		setShowBulkSuiteModal(false);
 		setBulkCsvFile(null);
 		setBulkCsvHeaders([]);
-	};
+	}, []);
+
+	const handleCsvUpload = useBulkCsvUpload({
+		onFileChange: setBulkCsvFile,
+		onHeadersParsed: setBulkCsvHeaders,
+		onShowModal: () => setShowBulkSuiteModal(true),
+	});
+
+	const cards = useQuickStartCards({
+		onImport: handleImportFromSource,
+		onSelectList: handleSelectList,
+		onConfigureConnections: handleConnectionSettings,
+		onCampaignCreate: handleCampaignCreation,
+		onViewTemplates: handleViewTemplates,
+		onOpenWebhookModal: handleOpenWebhookModal,
+		onBrowserExtension: handleBrowserExtension,
+		createRouterPush,
+		onStartNewSearch: handleStartNewSearch,
+		onOpenSavedSearches: handleOpenSavedSearches,
+	});
 
 	return (
 		<div className="container mx-auto px-4 py-8">
@@ -330,12 +326,21 @@ export default function QuickStartPage() {
 			/>
 
 			<CampaignModalMain
-				isOpen={showCampaignModal && Boolean(campaignModalContext)}
+				isOpen={showCampaignModal}
 				onOpenChange={handleCampaignModalToggle}
 				initialLeadListId={campaignModalContext?.leadListId}
 				initialLeadListName={campaignModalContext?.leadListName}
 				initialLeadCount={campaignModalContext?.leadCount ?? 0}
 				initialStep={0}
+			/>
+
+			<SavedSearchModal
+				open={savedSearchModalOpen}
+				onClose={handleCloseSavedSearches}
+				savedSearches={savedSearches}
+				onDelete={deleteSavedSearch}
+				onSelect={handleSelectSavedSearch}
+				onSetPriority={setSearchPriority}
 			/>
 
 			<WalkThroughModal

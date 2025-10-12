@@ -27,7 +27,13 @@ export interface UserQuotas {
 	skipTraces: UserQuotaBucket;
 }
 
-export type UserRole = "admin" | "manager" | "member";
+export type UserRole =
+	| "admin"
+	| "manager"
+	| "member"
+	| "support"
+	| "platform_admin"
+	| "platform_support";
 
 export type UserTier = SubscriptionTier;
 

@@ -13,6 +13,18 @@ const adminPermissions: Record<PermissionResource, PermissionAction[]> = {
 	companyProfile: ["read", "update"],
 };
 
+const supportPermissions: Record<PermissionResource, PermissionAction[]> = {
+	users: ["read", "update"],
+	leads: ["read"],
+	campaigns: ["read"],
+	reports: ["read"],
+	team: ["read"],
+	subscription: ["read"],
+	ai: ["read"],
+	tasks: ["read"],
+	companyProfile: ["read"],
+};
+
 function flattenPermissionMatrix(
 	matrix: Record<PermissionResource, PermissionAction[]>,
 ): string[] {
@@ -93,8 +105,56 @@ export const users: User[] = [
 			skipTraces: { allotted: 2, used: 0, resetInDays: 30 },
 		},
 	},
+	{
+		id: "4",
+		name: "Platform Admin",
+		email: "platform.admin@example.com",
+		password: "password123",
+		role: "platform_admin",
+		tier: "Enterprise",
+		isBetaTester: true,
+		isPilotTester: false,
+		permissions: adminPermissions,
+		permissionList: flattenPermissionMatrix(adminPermissions),
+		quotas: {
+			ai: { allotted: 1200, used: 150, resetInDays: 7 },
+			leads: { allotted: 600, used: 80, resetInDays: 30 },
+			skipTraces: { allotted: 240, used: 30, resetInDays: 30 },
+		},
+		subscription: {
+			aiCredits: { allotted: 1200, used: 150, resetInDays: 7 },
+			leads: { allotted: 600, used: 80, resetInDays: 30 },
+			skipTraces: { allotted: 240, used: 30, resetInDays: 30 },
+		},
+	},
+	{
+		id: "5",
+		name: "Platform Support",
+		email: "platform.support@example.com",
+		password: "password123",
+		role: "platform_support",
+		tier: "Enterprise",
+		isBetaTester: false,
+		isPilotTester: false,
+		permissions: supportPermissions,
+		permissionList: flattenPermissionMatrix(supportPermissions),
+		quotas: {
+			ai: { allotted: 400, used: 90, resetInDays: 30 },
+			leads: { allotted: 200, used: 40, resetInDays: 30 },
+			skipTraces: { allotted: 100, used: 25, resetInDays: 30 },
+		},
+		subscription: {
+			aiCredits: { allotted: 400, used: 90, resetInDays: 30 },
+			leads: { allotted: 200, used: 40, resetInDays: 30 },
+			skipTraces: { allotted: 100, used: 25, resetInDays: 30 },
+		},
+	},
 ];
 
 export const getUserByEmail = (email: string): User | undefined => {
 	return users.find((user) => user.email === email);
+};
+
+export const getUserById = (id: string): User | undefined => {
+	return users.find((user) => user.id === id);
 };

@@ -6,6 +6,8 @@ import { saveAs } from "file-saver";
 import { Badge } from "../../../components/ui/badge";
 import { Button } from "../../../components/ui/button";
 import { DataTableRowModalCarousel } from "../../../components/data-table/data-table-row-modal-carousel";
+import { CampaignActivitySummary } from "../../../components/data-table/campaign-activity-summary";
+import { buildChannelActivityData } from "../../../components/data-table/activity";
 import type { Table, Row } from "@tanstack/react-table";
 import type { DirectMailCampaign, DirectMailLead } from "../utils/mock";
 
@@ -102,20 +104,20 @@ export function DirectMailRowCarousel({
 					</Button>
 				);
 			}}
-			render={(row) => {
-				const r = row.original;
-				const leads = r?.leadsDetails || [];
-				const lead: DirectMailLead | undefined = leads[detailIndex];
-				const mailings = lead?.mailings || [];
-				const curMail = mailings[mailingIndex];
-				const fmt = (d?: string) => {
-					if (!d) return "-";
-					const dt = new Date(String(d));
-					return Number.isNaN(dt.getTime()) ? String(d) : dt.toLocaleString();
-				};
-				return (
-					<div className="grid gap-3 md:grid-cols-2">
-						{lead ? (
+                        render={(row) => {
+                                const r = row.original;
+                                const leads = r?.leadsDetails || [];
+                                const lead: DirectMailLead | undefined = leads[detailIndex];
+                                const mailings = lead?.mailings || [];
+                                const curMail = mailings[mailingIndex];
+                                const fmt = (d?: string) => {
+                                        if (!d) return "-";
+                                        const dt = new Date(String(d));
+                                        return Number.isNaN(dt.getTime()) ? String(d) : dt.toLocaleString();
+                                };
+                                return (
+                                        <div className="grid gap-3 md:grid-cols-2">
+                                                {lead ? (
 							<div className="rounded-md border p-3">
 								<div className="font-medium">Lead Details</div>
 								<div className="text-muted-foreground text-xs">{lead.id}</div>
@@ -327,9 +329,16 @@ export function DirectMailRowCarousel({
 								)}
 							</Badge>
 						</div>
-					</div>
-				);
-			}}
-		/>
-	);
+                                        </div>
+                                );
+                        }}
+                        activityRender={(row) => {
+                                const activity = buildChannelActivityData(row.original);
+                                if (!activity) {
+                                        return null;
+                                }
+                                return <CampaignActivitySummary activity={activity} />;
+                        }}
+                />
+        );
 }

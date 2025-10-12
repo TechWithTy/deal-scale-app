@@ -1,24 +1,24 @@
 "use client";
 
-import type { MouseEvent, ReactNode } from "react";
-import { cn } from "@/lib/_utils";
-import {
-	useFeatureAccessGuard,
-	type FeatureGuardMode,
-} from "@/hooks/useFeatureAccessGuard";
-import type {
-	SubscriptionTier,
-	TierInput,
-} from "@/constants/subscription/tiers";
-import type { PermissionAction, PermissionResource } from "@/types/user";
-import type { FeatureQuotaKey } from "@/constants/features";
-import { useUserStore } from "@/lib/stores/userStore";
 import {
 	Tooltip,
 	TooltipContent,
 	TooltipProvider,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
+import type { FeatureQuotaKey } from "@/constants/features";
+import type {
+	SubscriptionTier,
+	TierInput,
+} from "@/constants/subscription/tiers";
+import {
+	type FeatureGuardMode,
+	useFeatureAccessGuard,
+} from "@/hooks/useFeatureAccessGuard";
+import { cn } from "@/lib/_utils";
+import { useUserStore } from "@/lib/stores/userStore";
+import type { PermissionAction, PermissionResource } from "@/types/user";
+import type { MouseEvent, ReactNode } from "react";
 
 export interface FeatureGuardProps {
 	featureKey: string;
@@ -167,6 +167,10 @@ export function FeatureGuard({
 		isNavigationItem &&
 		Boolean(wrapperClassName?.includes("nav-item--minimized"));
 	const isNavExpanded = isNavigationItem && !isNavMinimized;
+	const isNavMobile =
+		isNavigationItem && Boolean(wrapperClassName?.includes("nav-item--mobile"));
+	const allowPopover = showPopover && !isNavMobile;
+	const shouldShowBadge = isNavExpanded && !isNavMobile;
 	const computeIsSmallScreen = () =>
 		typeof window !== "undefined" && window.innerWidth < 640;
 
@@ -189,17 +193,18 @@ export function FeatureGuard({
 								{children}
 							</div>
 							<div
-								className="absolute inset-0 flex items-center justify-center pointer-events-auto"
+								className="pointer-events-auto absolute inset-0 flex items-center justify-center"
 								onPointerDown={(event) => event.stopPropagation()}
 								onClick={(event) => event.stopPropagation()}
+								onKeyDown={(event) => event.stopPropagation()}
 							>
-								{showPopover ? (
+								{allowPopover ? (
 									<TooltipProvider>
 										<Tooltip delayDuration={popoverDelay}>
 											<TooltipTrigger asChild>
 												<button
 													type="button"
-													className="pointer-events-auto flex size-8 items-center justify-center rounded-full border border-orange-300/60 bg-orange-100/80 text-xs text-orange-900 shadow-sm hover:bg-orange-200/80 focus:outline-none focus:ring-2 focus:ring-orange-300"
+													className="pointer-events-auto flex size-8 items-center justify-center rounded-full border border-orange-300/60 bg-orange-100/80 text-orange-900 text-xs shadow-sm hover:bg-orange-200/80 focus:outline-none focus:ring-2 focus:ring-orange-300"
 													onClick={handleBlockedClick}
 													aria-label={blockedPrimaryMessage}
 												>
@@ -211,7 +216,7 @@ export function FeatureGuard({
 												className="max-w-[220px] p-2 text-sm"
 											>
 												<p className="font-semibold">{blockedPrimaryMessage}</p>
-												<p className="text-xs text-muted-foreground">
+												<p className="text-muted-foreground text-xs">
 													{blockedSecondaryMessage}
 												</p>
 											</TooltipContent>
@@ -237,17 +242,18 @@ export function FeatureGuard({
 							{children}
 						</div>
 						<div
-							className="absolute inset-y-0 right-3 flex items-center gap-2 pointer-events-auto"
+							className="pointer-events-auto absolute inset-y-0 right-3 flex items-center gap-2"
 							onPointerDown={(event) => event.stopPropagation()}
 							onClick={(event) => event.stopPropagation()}
+							onKeyDown={(event) => event.stopPropagation()}
 						>
-							{showPopover ? (
+							{allowPopover ? (
 								<TooltipProvider>
 									<Tooltip delayDuration={popoverDelay}>
 										<TooltipTrigger asChild>
 											<button
 												type="button"
-												className="pointer-events-auto flex size-8 items-center justify-center rounded-full border border-orange-300/60 bg-orange-100/80 text-xs text-orange-900 shadow-sm hover:bg-orange-200/80 focus:outline-none focus:ring-2 focus:ring-orange-300"
+												className="pointer-events-auto flex size-8 items-center justify-center rounded-full border border-orange-300/60 bg-orange-100/80 text-orange-900 text-xs shadow-sm hover:bg-orange-200/80 focus:outline-none focus:ring-2 focus:ring-orange-300"
 												onClick={handleBlockedClick}
 												aria-label={blockedPrimaryMessage}
 											>
@@ -260,19 +266,24 @@ export function FeatureGuard({
 											className="max-w-[240px] p-2 text-sm"
 										>
 											<p className="font-semibold">{blockedPrimaryMessage}</p>
-											<p className="text-xs text-muted-foreground">
+											<p className="text-muted-foreground text-xs">
 												{blockedSecondaryMessage}
 											</p>
 										</TooltipContent>
 									</Tooltip>
 								</TooltipProvider>
 							) : (
-								<div className="pointer-events-none rounded-full bg-background/95 p-1 shadow-sm border border-orange-200">
-									<span className="text-xs">🔒</span>
-								</div>
+								<button
+									type="button"
+									className="flex size-8 items-center justify-center rounded-full border border-orange-200 bg-orange-100/70 text-orange-900 text-xs shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-200"
+									onClick={handleBlockedClick}
+									aria-label={blockedPrimaryMessage}
+								>
+									🔒
+								</button>
 							)}
-							{isNavExpanded && (
-								<span className="pointer-events-none rounded-full border border-orange-200/70 bg-orange-100/70 px-3 py-1 text-[11px] font-semibold text-orange-900">
+							{shouldShowBadge && (
+								<span className="pointer-events-none rounded-full border border-orange-200/70 bg-orange-100/70 px-3 py-1 font-semibold text-[11px] text-orange-900">
 									{blockedPrimaryMessage}
 								</span>
 							)}
@@ -321,17 +332,18 @@ export function FeatureGuard({
 								{children}
 							</div>
 							<div
-								className="absolute inset-0 flex items-center justify-center pointer-events-auto"
+								className="pointer-events-auto absolute inset-0 flex items-center justify-center"
 								onPointerDown={(event) => event.stopPropagation()}
 								onClick={(event) => event.stopPropagation()}
+								onKeyDown={(event) => event.stopPropagation()}
 							>
-								{showPopover ? (
+								{allowPopover ? (
 									<TooltipProvider>
 										<Tooltip delayDuration={popoverDelay}>
 											<TooltipTrigger asChild>
 												<button
 													type="button"
-													className="pointer-events-auto flex size-8 items-center justify-center rounded-full border border-orange-300/60 bg-orange-100/85 text-xs text-orange-900 shadow-sm hover:bg-orange-200/85 focus:outline-none focus:ring-2 focus:ring-orange-300"
+													className="pointer-events-auto flex size-8 items-center justify-center rounded-full border border-orange-300/60 bg-orange-100/85 text-orange-900 text-xs shadow-sm hover:bg-orange-200/85 focus:outline-none focus:ring-2 focus:ring-orange-300"
 													onClick={handleBlockedClick}
 													aria-label={blockedPrimaryMessage}
 												>
@@ -343,7 +355,7 @@ export function FeatureGuard({
 												className="max-w-[220px] p-2 text-sm"
 											>
 												<p className="font-semibold">{blockedPrimaryMessage}</p>
-												<p className="text-xs text-muted-foreground">
+												<p className="text-muted-foreground text-xs">
 													{blockedSecondaryMessage}
 												</p>
 											</TooltipContent>
@@ -371,17 +383,18 @@ export function FeatureGuard({
 							{children}
 						</div>
 						<div
-							className="absolute inset-y-0 right-3 flex items-center gap-2 pointer-events-auto"
+							className="pointer-events-auto absolute inset-y-0 right-3 flex items-center gap-2"
 							onPointerDown={(event) => event.stopPropagation()}
 							onClick={(event) => event.stopPropagation()}
+							onKeyDown={(event) => event.stopPropagation()}
 						>
-							{showPopover ? (
+							{allowPopover ? (
 								<TooltipProvider>
 									<Tooltip delayDuration={popoverDelay}>
 										<TooltipTrigger asChild>
 											<button
 												type="button"
-												className="pointer-events-auto flex size-8 items-center justify-center rounded-full border border-orange-300/60 bg-orange-100/85 text-xs text-orange-900 shadow-sm hover:bg-orange-200/85 focus:outline-none focus:ring-2 focus:ring-orange-300"
+												className="pointer-events-auto flex size-8 items-center justify-center rounded-full border border-orange-300/60 bg-orange-100/85 text-orange-900 text-xs shadow-sm hover:bg-orange-200/85 focus:outline-none focus:ring-2 focus:ring-orange-300"
 												onClick={handleBlockedClick}
 												aria-label={blockedPrimaryMessage}
 											>
@@ -394,18 +407,18 @@ export function FeatureGuard({
 											className="max-w-[240px] p-2 text-sm"
 										>
 											<p className="font-semibold">{blockedPrimaryMessage}</p>
-											<p className="text-xs text-muted-foreground">
+											<p className="text-muted-foreground text-xs">
 												{blockedSecondaryMessage}
 											</p>
 										</TooltipContent>
 									</Tooltip>
 								</TooltipProvider>
 							) : (
-								<div className="pointer-events-none rounded-full bg-background/95 p-1 shadow-sm border border-orange-200">
+								<div className="pointer-events-none rounded-full border border-orange-200 bg-background/95 p-1 shadow-sm">
 									<span className="text-xs">🔒</span>
 								</div>
 							)}
-							<span className="pointer-events-none rounded-full border border-orange-200/80 bg-orange-100/80 px-3 py-1 text-[11px] font-semibold text-orange-900">
+							<span className="pointer-events-none rounded-full border border-orange-200/80 bg-orange-100/80 px-3 py-1 font-semibold text-[11px] text-orange-900">
 								{blockedPrimaryMessage}
 							</span>
 						</div>
@@ -429,10 +442,10 @@ export function FeatureGuard({
 					{effectiveOrientation === "horizontal" ? (
 						// Horizontal overlay for horizontal button layouts
 						<div
-							className={`absolute inset-0 flex items-center justify-center pointer-events-auto ${
+							className={`pointer-events-auto absolute inset-0 flex items-center justify-center ${
 								isSmallScreen
-									? "bg-gradient-to-r from-background/70 via-background/50 to-background/70 backdrop-blur-[1px] p-2 gap-2"
-									: "bg-gradient-to-r from-background/60 via-background/40 to-background/60 backdrop-blur-[2px] p-3 gap-3"
+									? "gap-2 bg-gradient-to-r from-background/70 via-background/50 to-background/70 p-2 backdrop-blur-[1px]"
+									: "gap-3 bg-gradient-to-r from-background/60 via-background/40 to-background/60 p-3 backdrop-blur-[2px]"
 							} border border-orange-200/50`}
 						>
 							{content ?? (
@@ -442,14 +455,14 @@ export function FeatureGuard({
 									}`}
 								>
 									{/* Horizontal lock icon with hover tooltip */}
-									{showPopover && (
+									{allowPopover && (
 										<TooltipProvider>
 											<Tooltip>
 												<TooltipTrigger asChild>
 													<button
 														type="button"
-														className={`flex items-center justify-center rounded-full bg-orange-100/80 border border-orange-300/60 hover:bg-orange-200/80 transition-all hover:scale-105 cursor-pointer focus:outline-none focus:ring-2 focus:ring-orange-300 ${
-															isSmallScreen ? "w-8 h-8" : "w-10 h-10"
+														className={`flex cursor-pointer items-center justify-center rounded-full border border-orange-300/60 bg-orange-100/80 transition-all hover:scale-105 hover:bg-orange-200/80 focus:outline-none focus:ring-2 focus:ring-orange-300 ${
+															isSmallScreen ? "h-8 w-8" : "h-10 w-10"
 														}`}
 														onClick={handleBlockedClick}
 														aria-label={`Access blocked: ${blockedPrimaryMessage}`}
@@ -468,7 +481,7 @@ export function FeatureGuard({
 													}`}
 													sideOffset={isSmallScreen ? 6 : 8}
 												>
-													<div className="text-center space-y-1">
+													<div className="space-y-1 text-center">
 														{denialReason === "tier" ? (
 															<>
 																<p
@@ -564,10 +577,10 @@ export function FeatureGuard({
 										<div
 											className={`space-y-1 ${isSmallScreen ? "hidden" : ""}`}
 										>
-											<p className="font-medium text-sm text-foreground/80">
+											<p className="font-medium text-foreground/80 text-sm">
 												Premium Feature
 											</p>
-											<p className="text-xs text-muted-foreground/80 truncate max-w-[200px]">
+											<p className="max-w-[200px] truncate text-muted-foreground/80 text-xs">
 												Unlock with{" "}
 												{denialReason === "tier"
 													? guard.requiredTier
@@ -582,27 +595,27 @@ export function FeatureGuard({
 					) : (
 						// Vertical overlay for vertical item layouts (default)
 						<div
-							className={`absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-md pointer-events-auto ${
+							className={`pointer-events-auto absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-md ${
 								isSmallScreen
-									? "bg-gradient-to-br from-background/70 via-background/50 to-background/70 backdrop-blur-[1px] p-2 gap-2"
-									: "bg-gradient-to-br from-background/60 via-background/40 to-background/60 backdrop-blur-[2px] p-4 gap-3"
+									? "gap-2 bg-gradient-to-br from-background/70 via-background/50 to-background/70 p-2 backdrop-blur-[1px]"
+									: "gap-3 bg-gradient-to-br from-background/60 via-background/40 to-background/60 p-4 backdrop-blur-[2px]"
 							} border border-orange-200/50`}
 						>
 							{content ?? (
 								<div
-									className={`space-y-3 text-center w-full max-w-[280px] ${
+									className={`w-full max-w-[280px] space-y-3 text-center ${
 										isSmallScreen ? "space-y-2" : "space-y-3"
 									}`}
 								>
 									{/* Vertical lock icon with hover tooltip for explanation */}
-									{showPopover && (
+									{allowPopover && (
 										<TooltipProvider>
 											<Tooltip>
 												<TooltipTrigger asChild>
 													<button
 														type="button"
-														className={`flex items-center justify-center rounded-full bg-orange-100/80 border border-orange-300/60 hover:bg-orange-200/80 transition-all hover:scale-105 cursor-pointer focus:outline-none focus:ring-2 focus:ring-orange-300 ${
-															isSmallScreen ? "w-8 h-8" : "w-10 h-10"
+														className={`flex cursor-pointer items-center justify-center rounded-full border border-orange-300/60 bg-orange-100/80 transition-all hover:scale-105 hover:bg-orange-200/80 focus:outline-none focus:ring-2 focus:ring-orange-300 ${
+															isSmallScreen ? "h-8 w-8" : "h-10 w-10"
 														}`}
 														onClick={handleBlockedClick}
 														aria-label={`Access blocked: ${blockedPrimaryMessage}`}
@@ -621,7 +634,7 @@ export function FeatureGuard({
 													}`}
 													sideOffset={isSmallScreen ? 6 : 8}
 												>
-													<div className="text-center space-y-1">
+													<div className="space-y-1 text-center">
 														{denialReason === "tier" ? (
 															<>
 																<p
@@ -723,8 +736,8 @@ export function FeatureGuard({
 												Premium Feature
 											</p>
 											<p
-												className={`text-muted-foreground/80 truncate max-w-[200px] ${
-													isSmallScreen ? "text-xs line-clamp-2" : "text-xs"
+												className={`max-w-[200px] truncate text-muted-foreground/80 ${
+													isSmallScreen ? "line-clamp-2 text-xs" : "text-xs"
 												}`}
 											>
 												Unlock with{" "}

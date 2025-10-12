@@ -1,244 +1,313 @@
 "use client";
 
+import * as React from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ActivityLineGraphContainer } from "@/external/activity-graph/components";
-import type {
-	ActivityDataPoint,
-	ChartConfigLocal,
-} from "@/external/activity-graph/types";
+import { CampaignActivitySummary } from "@/external/shadcn-table/src/components/data-table/campaign-activity-summary";
+import {
+	buildChannelActivityData,
+	type ChannelActivityData,
+} from "@/external/shadcn-table/src/components/data-table/activity";
+import { useCampaignCreationStore } from "@/lib/stores/campaignCreation";
 
 interface CampaignActivityStepProps {
 	onBack?: () => void;
 	onNext?: () => void;
 }
 
-// Mock data for demonstration - replace with real campaign data
-const mockCampaignData: ActivityDataPoint[] = [
-	{
-		timestamp: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString(),
-		calls: 15,
-		texts: 25,
-		emails: 8,
-		social: 12,
-	},
-	{
-		timestamp: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-		calls: 22,
-		texts: 31,
-		emails: 12,
-		social: 18,
-	},
-	{
-		timestamp: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
-		calls: 18,
-		texts: 28,
-		emails: 15,
-		social: 22,
-	},
-	{
-		timestamp: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-		calls: 25,
-		texts: 35,
-		emails: 18,
-		social: 28,
-	},
-	{
-		timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-		calls: 32,
-		texts: 42,
-		emails: 22,
-		social: 35,
-	},
-	{
-		timestamp: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-		calls: 28,
-		texts: 38,
-		emails: 25,
-		social: 32,
-	},
-	{
-		timestamp: new Date().toISOString(),
-		calls: 35,
-		texts: 45,
-		emails: 28,
-		social: 38,
-	},
-];
+type DerivedChannel = "voice" | "text" | "directMail" | "social";
 
-const campaignActivityConfig: ChartConfigLocal = {
-	calls: {
-		label: "Calls Made",
-		color: "hsl(var(--chart-1))",
+const CHANNEL_LABELS: Record<DerivedChannel, string> = {
+	voice: "Call",
+	text: "Text",
+	directMail: "Direct Mail",
+	social: "Social",
+};
+
+const channelActivityMocks: Record<DerivedChannel, Record<string, unknown>> = {
+	voice: {
+		name: "Voice Outreach",
+		status: "Active",
+		startDate: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+		calls: 186,
+		hungUp: 28,
+		dead: 9,
+		voicemail: 24,
+		transfers: 14,
+		inQueue: 18,
+		leads: 72,
 	},
-	texts: {
-		label: "Texts Sent",
-		color: "hsl(var(--chart-2))",
+	text: {
+		name: "SMS Follow Ups",
+		status: "Active",
+		startDate: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+		textStats: {
+			sent: 1284,
+			delivered: 1216,
+			failed: 36,
+		},
+		dnc: 14,
 	},
-	emails: {
-		label: "Emails Sent",
-		color: "hsl(var(--chart-3))",
+	directMail: {
+		name: "Mail Drop A",
+		status: "Delivering",
+		startDate: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
+		mailType: "postcard",
+		mailSize: "6x9",
+		deliveredCount: 432,
+		returnedCount: 11,
+		failedCount: 6,
+		cost: 2485.75,
 	},
 	social: {
-		label: "Social Engagements",
-		color: "hsl(var(--chart-4))",
+		name: "Social Outreach",
+		status: "Active",
+		startDate: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000).toISOString(),
+		platform: "LinkedIn",
+		interactionsDetails: Array.from({ length: 16 }).map((_, index) => ({
+			transfers: index % 4 === 0 ? 1 : 0,
+		})),
+		sent: 812,
+		delivered: 768,
+		failed: 22,
 	},
 };
 
-export default function CampaignActivityStep({
-	onBack,
-	onNext,
-}: CampaignActivityStepProps) {
+const channelInsights: Record<
+	DerivedChannel,
+	{ title: string; value: string; helper?: string }[]
+> = {
+	voice: [
+		{ title: "Connect Rate", value: "74%", helper: "+5.1% vs last week" },
+		{
+			title: "Average Handle Time",
+			value: "3m 42s",
+			helper: "12s faster than target",
+		},
+	],
+	text: [
+		{ title: "Reply Rate", value: "38%", helper: "+4.2% vs last week" },
+		{
+			title: "Queued Messages",
+			value: "62",
+			helper: "Scheduled across 3 hours",
+		},
+	],
+	directMail: [
+		{
+			title: "Delivery Rate",
+			value: "92%",
+			helper: "Majority expected in 2 days",
+		},
+		{ title: "Cost per Lead", value: "$3.20", helper: "Budget on track" },
+	],
+	social: [
+		{ title: "Engagement Rate", value: "17%", helper: "+2.5% vs prior cycle" },
+		{ title: "Transfers", value: "24", helper: "Escalated to live team" },
+	],
+};
+
+const channelFeed: Record<
+	DerivedChannel,
+	{ title: string; description: string; time: string }[]
+> = {
+	voice: [
+		{
+			title: "Connected with Jamie Ortega",
+			description: "Scheduled a property walkthrough",
+			time: "2 hours ago",
+		},
+		{
+			title: "Voicemail left for Casey Reed",
+			description: "Follow-up reminder queued",
+			time: "5 hours ago",
+		},
+		{
+			title: "Transfer from IVR",
+			description: "Routed to senior agent Alan",
+			time: "Yesterday",
+		},
+	],
+	text: [
+		{
+			title: "Message delivered to Alex Chen",
+			description: "Opted in via web form",
+			time: "15 minutes ago",
+		},
+		{
+			title: "Reply from Priya Patel",
+			description: "Confirmed appointment for Friday",
+			time: "1 hour ago",
+		},
+		{
+			title: "Queued broadcast",
+			description: "Evening reminders scheduled",
+			time: "Today, 6:00 PM",
+		},
+	],
+	directMail: [
+		{
+			title: "Batch delivered in Phoenix",
+			description: "78 postcards marked as arrived",
+			time: "Today",
+		},
+		{
+			title: "Return notice",
+			description: "3 mailers returned for invalid address",
+			time: "Yesterday",
+		},
+		{
+			title: "Print vendor confirmation",
+			description: "Next run scheduled for Monday",
+			time: "2 days ago",
+		},
+	],
+	social: [
+		{
+			title: "InMail response from Jordan",
+			description: "Requested pricing sheet",
+			time: "30 minutes ago",
+		},
+		{
+			title: "Comment thread trending",
+			description: "12 interactions on latest post",
+			time: "3 hours ago",
+		},
+		{
+			title: "Conversation transferred",
+			description: "Handed to live rep for demo",
+			time: "Yesterday",
+		},
+	],
+};
+
+export default function CampaignActivityStep(_: CampaignActivityStepProps) {
+	const primaryChannel = useCampaignCreationStore(
+		(state) => state.primaryChannel,
+	);
+
+	const derivedChannel = React.useMemo<DerivedChannel>(() => {
+		switch (primaryChannel) {
+			case "text":
+				return "text";
+			case "directmail":
+			case "email":
+				return "directMail";
+			case "social":
+				return "social";
+			case "call":
+			default:
+				return "voice";
+		}
+	}, [primaryChannel]);
+
+	const overviewActivity: ChannelActivityData | null = React.useMemo(() => {
+		return buildChannelActivityData(channelActivityMocks[derivedChannel]);
+	}, [derivedChannel]);
+
+	const tabs = React.useMemo(() => {
+		const items: { value: string; label: string; content: React.ReactNode }[] =
+			[];
+
+		if (overviewActivity) {
+			items.push({
+				value: "overview",
+				label: `${CHANNEL_LABELS[derivedChannel]} Overview`,
+				content: <CampaignActivitySummary activity={overviewActivity} />,
+			});
+		}
+
+		const insights = channelInsights[derivedChannel];
+		if (insights.length) {
+			items.push({
+				value: "insights",
+				label: "Channel Insights",
+				content: (
+					<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+						{insights.map((metric) => (
+							<div key={metric.title} className="rounded-lg border bg-card p-4">
+								<h4 className="mb-2 font-medium">{metric.title}</h4>
+								<div className="text-3xl font-bold text-primary">
+									{metric.value}
+								</div>
+								{metric.helper ? (
+									<div className="text-sm text-muted-foreground">
+										{metric.helper}
+									</div>
+								) : null}
+							</div>
+						))}
+					</div>
+				),
+			});
+		}
+
+		const feed = channelFeed[derivedChannel];
+		if (feed.length) {
+			items.push({
+				value: "activity",
+				label: "Recent Activity",
+				content: (
+					<div className="space-y-3">
+						{feed.map((item) => (
+							<div
+								key={`${item.title}-${item.time}`}
+								className="flex items-start justify-between rounded-lg border bg-card p-3"
+							>
+								<div>
+									<div className="font-medium">{item.title}</div>
+									<div className="text-sm text-muted-foreground">
+										{item.description}
+									</div>
+								</div>
+								<div className="text-sm text-muted-foreground">{item.time}</div>
+							</div>
+						))}
+					</div>
+				),
+			});
+		}
+
+		return items;
+	}, [derivedChannel, overviewActivity]);
+
+	const tabCount = tabs.length || 1;
+	const gridCols =
+		tabCount === 1
+			? "grid-cols-1"
+			: tabCount === 2
+				? "grid-cols-2"
+				: tabCount === 3
+					? "grid-cols-3"
+					: "grid-cols-4";
+	const defaultValue = tabs[0]?.value ?? "overview";
+
 	return (
 		<div className="space-y-6">
 			<div className="text-center">
 				<h2 className="text-2xl font-bold text-foreground">
-					Campaign Activity
+					{CHANNEL_LABELS[derivedChannel]} Campaign Activity
 				</h2>
 				<p className="text-muted-foreground">
-					View real-time activity and performance metrics for your campaign
+					Channel-specific metrics for your{" "}
+					{CHANNEL_LABELS[derivedChannel].toLowerCase()} campaign
 				</p>
 			</div>
 
-			<Tabs defaultValue="overview" className="w-full">
-				<TabsList className="grid w-full grid-cols-3">
-					<TabsTrigger value="overview">Overview</TabsTrigger>
-					<TabsTrigger value="performance">Performance</TabsTrigger>
-					<TabsTrigger value="leads">Lead Activity</TabsTrigger>
+			<Tabs defaultValue={defaultValue} className="w-full">
+				<TabsList className={`grid w-full ${gridCols}`}>
+					{tabs.map((tab) => (
+						<TabsTrigger key={tab.value} value={tab.value}>
+							{tab.label}
+						</TabsTrigger>
+					))}
 				</TabsList>
 
-				<TabsContent value="overview" className="space-y-4">
-					<div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-						<div className="bg-card p-4 rounded-lg border">
-							<div className="text-2xl font-bold text-primary">156</div>
-							<div className="text-sm text-muted-foreground">Total Calls</div>
-						</div>
-						<div className="bg-card p-4 rounded-lg border">
-							<div className="text-2xl font-bold text-primary">214</div>
-							<div className="text-sm text-muted-foreground">Texts Sent</div>
-						</div>
-						<div className="bg-card p-4 rounded-lg border">
-							<div className="text-2xl font-bold text-primary">128</div>
-							<div className="text-sm text-muted-foreground">Emails Sent</div>
-						</div>
-						<div className="bg-card p-4 rounded-lg border">
-							<div className="text-2xl font-bold text-primary">185</div>
-							<div className="text-sm text-muted-foreground">
-								Social Engagements
-							</div>
-						</div>
-					</div>
-
-					<div className="bg-card p-6 rounded-lg border">
-						<h3 className="text-lg font-semibold mb-4">Activity Trends</h3>
-						<ActivityLineGraphContainer
-							data={mockCampaignData}
-							config={campaignActivityConfig}
-							defaultLines={["calls", "texts", "emails", "social"]}
-							defaultRange="7d"
-							title=""
-							description=""
-						/>
-					</div>
-				</TabsContent>
-
-				<TabsContent value="performance" className="space-y-4">
-					<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-						<div className="bg-card p-4 rounded-lg border">
-							<h4 className="font-medium mb-2">Conversion Rate</h4>
-							<div className="text-3xl font-bold text-green-600">12.5%</div>
-							<div className="text-sm text-muted-foreground">
-								+2.1% from last week
-							</div>
-						</div>
-						<div className="bg-card p-4 rounded-lg border">
-							<h4 className="font-medium mb-2">Response Rate</h4>
-							<div className="text-3xl font-bold text-blue-600">34.2%</div>
-							<div className="text-sm text-muted-foreground">
-								+5.3% from last week
-							</div>
-						</div>
-					</div>
-
-					<div className="bg-card p-6 rounded-lg border">
-						<h3 className="text-lg font-semibold mb-4">Performance Metrics</h3>
-						<div className="space-y-4">
-							<div className="flex justify-between items-center">
-								<span className="text-sm">Call Success Rate</span>
-								<span className="font-medium">78%</span>
-							</div>
-							<div className="flex justify-between items-center">
-								<span className="text-sm">Text Response Rate</span>
-								<span className="font-medium">42%</span>
-							</div>
-							<div className="flex justify-between items-center">
-								<span className="text-sm">Email Open Rate</span>
-								<span className="font-medium">23%</span>
-							</div>
-							<div className="flex justify-between items-center">
-								<span className="text-sm">Social Engagement Rate</span>
-								<span className="font-medium">15%</span>
-							</div>
-						</div>
-					</div>
-				</TabsContent>
-
-				<TabsContent value="leads" className="space-y-4">
-					<div className="bg-card p-4 rounded-lg border">
-						<h4 className="font-medium mb-4">Recent Lead Activity</h4>
-						<div className="space-y-3">
-							<div className="flex items-center justify-between p-3 bg-muted/50 rounded">
-								<div>
-									<div className="font-medium">John Smith</div>
-									<div className="text-sm text-muted-foreground">
-										Responded to text
-									</div>
-								</div>
-								<div className="text-sm text-muted-foreground">2 hours ago</div>
-							</div>
-							<div className="flex items-center justify-between p-3 bg-muted/50 rounded">
-								<div>
-									<div className="font-medium">Sarah Johnson</div>
-									<div className="text-sm text-muted-foreground">
-										Called back
-									</div>
-								</div>
-								<div className="text-sm text-muted-foreground">4 hours ago</div>
-							</div>
-							<div className="flex items-center justify-between p-3 bg-muted/50 rounded">
-								<div>
-									<div className="font-medium">Mike Davis</div>
-									<div className="text-sm text-muted-foreground">
-										Email opened
-									</div>
-								</div>
-								<div className="text-sm text-muted-foreground">6 hours ago</div>
-							</div>
-						</div>
-					</div>
-				</TabsContent>
+				{tabs.map((tab) => (
+					<TabsContent key={tab.value} value={tab.value} className="space-y-4">
+						{tab.content}
+					</TabsContent>
+				))}
 			</Tabs>
-
-			{/* Navigation */}
-			<div className="flex justify-between pt-4">
-				{onBack && (
-					<button
-						type="button"
-						onClick={onBack}
-						className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground"
-					>
-						Back
-					</button>
-				)}
-				{onNext && (
-					<button
-						type="button"
-						onClick={onNext}
-						className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
-					>
-						Continue
-					</button>
-				)}
-			</div>
 		</div>
 	);
 }

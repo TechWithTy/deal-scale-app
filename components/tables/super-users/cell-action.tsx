@@ -29,6 +29,7 @@ import {
 	Edit,
 	Key,
 	Shield,
+	UserCog,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -41,6 +42,7 @@ interface CellActionProps {
 	onSuspendUser?: (user: AdminUser) => void;
 	onUnsuspendUser?: (user: AdminUser) => void;
 	onBanUser?: (user: AdminUser) => void;
+	onImpersonate?: (user: AdminUser) => void;
 }
 
 export function CellAction({
@@ -52,6 +54,7 @@ export function CellAction({
 	onSuspendUser,
 	onUnsuspendUser,
 	onBanUser,
+	onImpersonate,
 }: CellActionProps) {
 	const [confirmRetry, setConfirmRetry] = useState(false);
 
@@ -109,6 +112,14 @@ export function CellAction({
 						}}
 					>
 						<Sparkles className="mr-2 h-4 w-4" /> Adjust Credits
+					</DropdownMenuItem>
+					<DropdownMenuItem
+						onClick={(e) => {
+							e.stopPropagation();
+							if (onImpersonate) return onImpersonate(user);
+						}}
+					>
+						<UserCog className="mr-2 h-4 w-4" /> Impersonate
 					</DropdownMenuItem>
 					<DropdownMenuItem
 						onClick={(e) => {

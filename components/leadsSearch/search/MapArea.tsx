@@ -1,10 +1,11 @@
-import type React from "react";
-import { MapWithDrawing } from "external/google-maps-two/components";
+import React from "react";
+import { LoadScript } from "@react-google-maps/api";
+import { Coordinate } from "@/types/_dashboard/maps";
 import {
 	PlaceSearchPanel,
-	type UIPanelPlace,
+	UIPanelPlace,
 } from "external/google-maps-two/components/composit/components/PlaceSearchPanel";
-import type { Coordinate } from "@/types/_dashboard/maps";
+import { MapWithDrawing } from "external/google-maps-two/components";
 import { GOOGLE_LIBS } from "./helpers";
 
 type SelectPlacePayload = {
@@ -40,8 +41,32 @@ const MapArea: React.FC<MapAreaProps> = ({
 	onAddToList,
 	onViewPlace,
 }) => {
+	const [isClient, setIsClient] = React.useState(false);
+	const [mapsLoaded, setMapsLoaded] = React.useState(false);
+
+	React.useEffect(() => {
+		setIsClient(true);
+	}, []);
+
+	const apiKey =
+		process.env.NEXT_PUBLIC_GMAPS_KEY ||
+		process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ||
+		"";
+
 	return (
-		<>
+		<LoadScript
+			googleMapsApiKey={apiKey}
+			libraries={
+				GOOGLE_LIBS as unknown as (
+					| "drawing"
+					| "marker"
+					| "places"
+					| "geometry"
+				)[]
+			}
+			onLoad={() => setMapsLoaded(true)}
+			onError={(error) => console.error("Google Maps load error:", error)}
+		>
 			<PlaceSearchPanel
 				center={
 					{
@@ -58,41 +83,32 @@ const MapArea: React.FC<MapAreaProps> = ({
 				}
 			/>
 			<MapWithDrawing
-				apiKey={
-					process.env.NEXT_PUBLIC_GMAPS_KEY ||
-					process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ||
-					""
-				}
+				apiKey={apiKey}
 				mapId={
 					process.env.NEXT_PUBLIC_GMAPS_MAP_ID ||
 					process.env.NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID
 				}
-				libraries={
-					GOOGLE_LIBS as unknown as (
-						| "drawing"
-						| "marker"
-						| "places"
-						| "geometry"
-					)[]
-				}
 				center={center}
 				onCenterChange={onCenterChange}
 				results={markers as unknown as google.maps.LatLngLiteral[]}
-				onResultsChange={(pins) => {
-					const coords = pins.map((p) => ({ lat: p.lat, lng: p.lng }));
+				onResultsChange={(pins: google.maps.LatLngLiteral[]) => {
+					const coords = pins.map((p: google.maps.LatLngLiteral) => ({
+						lat: p.lat,
+						lng: p.lng,
+					}));
 					onResultsChange(coords as Coordinate[]);
 				}}
 				defaultZoom={11}
 				containerStyle={{ width: "100%", height: "420px" }}
 				showAddressHoverInfo
-				centerChangeZoom={16}
 				mapColorScheme="system"
 				selectedPlace={selectedPlace}
 				onViewPlace={onViewPlace}
 				onAddToList={onAddToList}
 				pinSnapToGrid={false}
+				assumeLoaded={mapsLoaded}
 			/>
-		</>
+		</LoadScript>
 	);
 };
 

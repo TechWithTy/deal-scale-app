@@ -31,7 +31,7 @@ export function SupademoTrigger({
 		// Load Supademo SDK if not already loaded
 		if (typeof window !== "undefined" && !window.Supademo) {
 			const script = document.createElement("script");
-			script.src = "https://script.supademo.com/script.js";
+			script.src = "/api/supademo/script";
 			script.async = true;
 			document.head.appendChild(script);
 		}
@@ -70,7 +70,7 @@ export function useSupademo() {
 	useEffect(() => {
 		if (typeof window !== "undefined" && !window.Supademo) {
 			const script = document.createElement("script");
-			script.src = "https://script.supademo.com/script.js";
+			script.src = "/api/supademo/script";
 			script.async = true;
 			document.head.appendChild(script);
 		}
