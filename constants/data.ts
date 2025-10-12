@@ -4,11 +4,11 @@ import { NEXT_PUBLIC_APP_TESTING_MODE } from "./testingMode";
 export { APP_TESTING_MODE, NEXT_PUBLIC_APP_TESTING_MODE } from "./testingMode";
 import type { NavItem } from "@/types";
 import type {
-        Address,
-        ContactInfo,
-        LeadStatus,
-        LeadTypeGlobal,
-        SocialLinks,
+	Address,
+	ContactInfo,
+	LeadStatus,
+	LeadTypeGlobal,
+	SocialLinks,
 } from "@/types/_dashboard/leads";
 
 //
@@ -164,14 +164,15 @@ export const navItems: NavItem[] = [
 		label: "Search Properties",
 		featureKey: "navigation.propertySearch",
 	},
-	// {
-	// 	title: "Create Automation",
-	// 	href: "/dashboard/quick-start",
-	// 	icon: "add",
-	// 	label: "Quick Start",
-	// 	featureKey: "navigation.quickStart",
-	// 	variant: "primary",
-	// },
+	{
+		title: "Quick Start",
+		href: "/dashboard/quickstart",
+		icon: "add",
+		label: "Quick Start",
+		featureKey: "navigation.quickStart",
+		variant: "primary",
+		onlyMobile: true,
+	},
 	{
 		title: "Campaign Manager",
 		href: "/dashboard/campaigns",
@@ -194,25 +195,25 @@ export const navItems: NavItem[] = [
 		label: "AI Kanban Board",
 		featureKey: "navigation.kanban",
 	},
-        {
-                title: "Chat",
-                href: "/dashboard/chat",
-                icon: "messageCircle",
-                label: "AI Chat",
-                featureKey: "navigation.chat",
-        },
-        {
-                title: "Connections",
-                href: "/dashboard/connections",
-                icon: "webhook",
-                label: "Webhooks & Feeds",
-                featureKey: "navigation.connections",
-        },
-        {
-                title: "Employee",
-                href: "/dashboard/employee",
-                icon: "employee",
-                label: "Employees",
+	{
+		title: "Chat",
+		href: "/dashboard/chat",
+		icon: "messageCircle",
+		label: "AI Chat",
+		featureKey: "navigation.chat",
+	},
+	{
+		title: "Connections",
+		href: "/dashboard/connections",
+		icon: "webhook",
+		label: "Webhooks & Feeds",
+		featureKey: "navigation.connections",
+	},
+	{
+		title: "Employee",
+		href: "/dashboard/employee",
+		icon: "employee",
+		label: "Employees",
 		featureKey: "navigation.employee",
 	},
 	{
