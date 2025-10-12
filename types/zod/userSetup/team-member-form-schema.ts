@@ -15,9 +15,12 @@ export const teamMemberFormSchema = z.object({
 		.max(20)
 		.optional()
 		.or(z.literal("")),
-	role: z.enum(["admin", "member"], {
-		errorMap: () => ({ message: "Role is required" }),
-	}),
+	role: z.enum(
+		["admin", "member", "support", "platform_support", "platform_admin"],
+		{
+			errorMap: () => ({ message: "Role is required" }),
+		},
+	),
 	permissions: z
 		.object({
 			canGenerateLeads: z.boolean(),

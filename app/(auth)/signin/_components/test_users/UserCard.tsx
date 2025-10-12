@@ -17,7 +17,13 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { updateCredits } from "./creditUtils";
+import {
+	getPermissionsForRole,
+	getRoleLabelForTestUser,
+	ROLE_SELECT_OPTIONS,
+} from "./userHelpers";
 import type { EditableUser } from "./userHelpers";
+import type { UserRole } from "@/types/user";
 import type { CreditsProps } from "./CreditsComponent";
 import type { PermissionsEditorProps } from "./PermissionsEditor";
 import { CreditsComponent } from "./CreditsComponent";
@@ -36,17 +42,25 @@ interface UserCardProps {
 }
 
 export function UserCard({ user, onUpdateUser, onLogin }: UserCardProps) {
-	const handleRoleChange = (role: "admin" | "member") => {
-		onUpdateUser(user.id, (u: EditableUser) => ({
-			...u,
-			role,
-			// Adjust permissions based on role selection
-			permissionList:
-				role === "admin"
-					? ["users:create", "users:read", "users:update", "users:delete"]
-					: ["users:read"],
-		}));
+	const handleRoleChange = (role: UserRole) => {
+		onUpdateUser(user.id, (u: EditableUser) => {
+			const permissions = getPermissionsForRole(role);
+
+			return {
+				...u,
+				role,
+				// Adjust permissions based on role selection
+				permissionList: permissions.list,
+				permissions: permissions.matrix,
+			};
+		});
 	};
+
+	const roleLabel = getRoleLabelForTestUser(user.role);
+	const roleAccentClass =
+		user.role === "admin" || user.role === "platform_admin"
+			? "bg-primary"
+			: "bg-accent";
 
 	const handleTierChange = (tier: SubscriptionTier) => {
 		onUpdateUser(user.id, (u: EditableUser) => ({
@@ -94,13 +108,13 @@ export function UserCard({ user, onUpdateUser, onLogin }: UserCardProps) {
 				<CardTitle className="flex items-center gap-2">
 					<div
 						aria-hidden
-						className={`h-3 w-3 rounded-full ${
-							user.role === "admin" ? "bg-primary" : "bg-accent"
-						}`}
+						className={`h-3 w-3 rounded-full ${roleAccentClass}`}
 					/>
 					{user.name}
 				</CardTitle>
-				<CardDescription>{user.email}</CardDescription>
+				<CardDescription>
+					{user.email} · {roleLabel}
+				</CardDescription>
 			</CardHeader>
 			<CardContent>
 				<div className="space-y-2">
@@ -109,14 +123,17 @@ export function UserCard({ user, onUpdateUser, onLogin }: UserCardProps) {
 						<Select
 							aria-label="Select role"
 							value={user.role}
-							onValueChange={handleRoleChange}
+							onValueChange={(value) => handleRoleChange(value as UserRole)}
 						>
 							<SelectTrigger className="w-32 bg-background">
 								<SelectValue />
 							</SelectTrigger>
 							<SelectContent>
-								<SelectItem value="admin">Admin</SelectItem>
-								<SelectItem value="member">Member</SelectItem>
+								{ROLE_SELECT_OPTIONS.map((option) => (
+									<SelectItem key={option.value} value={option.value}>
+										{option.label}
+									</SelectItem>
+								))}
 							</SelectContent>
 						</Select>
 					</div>
@@ -203,9 +220,7 @@ export function UserCard({ user, onUpdateUser, onLogin }: UserCardProps) {
 			</CardContent>
 			<CardFooter>
 				<Button type="button" onClick={() => onLogin(user)} className="w-full">
-					{user.role === "admin"
-						? `Login as Admin (${user.tier})`
-						: `Login as Regular (${user.tier})`}
+					{`Login as ${roleLabel} (${user.tier})`}
 				</Button>
 			</CardFooter>
 		</Card>

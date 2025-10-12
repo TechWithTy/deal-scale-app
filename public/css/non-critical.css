@@ -1,0 +1,20 @@
+@keyframes light-sweep {
+        0% {
+                transform: translateX(-50%);
+        }
+        100% {
+                transform: translateX(50%);
+        }
+}
+
+@layer utilities {
+        .animate-light-sweep {
+                animation: light-sweep 1.5s infinite;
+        }
+
+        [data-radix-popper-content-wrapper] {
+                background-color: hsl(var(--card)) !important;
+                border: 1px solid hsl(var(--border)) !important;
+                color: hsl(var(--card-foreground)) !important;
+        }
+}

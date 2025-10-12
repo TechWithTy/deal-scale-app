@@ -17,15 +17,15 @@ video {
 		--card-foreground: 222.2 84% 4.9%;
 		--popover: 0 0% 100%;
 		--popover-foreground: 222.2 84% 4.9%;
-		--primary: 202 87% 32%;
+		--primary: 210 96% 26%;
 		--primary-foreground: 210 40% 98%;
-		--secondary: 195 77% 40%;
+		--secondary: 204 82% 28%;
 		--secondary-foreground: 210 40% 98%;
 		--muted: 210 40% 96.1%;
-		--muted-foreground: 215.4 16.3% 46.9%;
-		--accent: 31 95% 56%;
+		--muted-foreground: 215.4 15% 32%;
+		--accent: 36 100% 84%;
 		--accent-foreground: 222.2 47.4% 11.2%;
-		--destructive: 0 84.2% 60.2%;
+		--destructive: 0 84.2% 42%;
 		--destructive-foreground: 210 40% 98%;
 		--border: 214.3 31.8% 91.4%;
 		--input: 214.3 31.8% 91.4%;
@@ -36,6 +36,10 @@ video {
 		--chart-3: 197 37% 24%;
 		--chart-4: 43 74% 66%;
 		--chart-5: 27 87% 67%;
+		--hero-background: 222 47% 15%;
+		--hero-foreground: 210 40% 98%;
+		--hero-accent: 197 88% 48%;
+		--hero-accent-foreground: 222 40% 12%;
 	}
 
 	.dark {
@@ -45,14 +49,14 @@ video {
 		--card-foreground: 210 40% 98%;
 		--popover: 222.2 84% 9.8%;
 		--popover-foreground: 210 40% 98%;
-		--primary: 202 87% 42%;
-		--primary-foreground: 210 40% 98%;
-		--secondary: 195 77% 50%;
-		--secondary-foreground: 210 40% 98%;
+		--primary: 204 88% 45%;
+		--primary-foreground: 222.2 47.4% 11.2%;
+		--secondary: 195 66% 72%;
+		--secondary-foreground: 222.2 47.4% 11.2%;
 		--muted: 217.2 32.6% 17.5%;
-		--muted-foreground: 215 20.2% 65.1%;
-		--accent: 31 95% 66%;
-		--accent-foreground: 222.2 47.4% 11.2%;
+		--muted-foreground: 215 20.2% 75%;
+		--accent: 36 100% 44%;
+		--accent-foreground: 210 40% 98%;
 		--destructive: 0 62.8% 30.6%;
 		--destructive-foreground: 210 40% 98%;
 		--border: 217.2 32.6% 17.5%;
@@ -63,6 +67,10 @@ video {
 		--chart-3: 197 37% 24%;
 		--chart-4: 43 74% 66%;
 		--chart-5: 27 87% 67%;
+		--hero-background: 222 47% 15%;
+		--hero-foreground: 210 40% 98%;
+		--hero-accent: 197 88% 48%;
+		--hero-accent-foreground: 222 40% 12%;
 	}
 }
 
@@ -83,23 +91,5 @@ video {
 	.h-screen {
 		height: 100vh; /* Fallback */
 		height: 100dvh;
-	}
-}
-@keyframes light-sweep {
-	0% {
-		transform: translateX(-50%); /* Start just outside the left edge of the button */
-	}
-	100% {
-		transform: translateX(50%); /* Move just outside the right edge of the button */
-	}
-}
-
-@layer utilities {
-	.animate-light-sweep {
-		animation: light-sweep 1.5s infinite;
-	}
-
-	[data-radix-popper-content-wrapper] {
-		@apply !bg-card !text-card-foreground !border !border-border;
 	}
 }

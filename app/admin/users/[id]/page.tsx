@@ -1,77 +1,41 @@
 "use client";
-
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useParams } from "next/navigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 import AdjustCreditsModal from "@/components/admin/AdjustCreditsModal";
-import ImpersonationBanner from "@/components/admin/ImpersonationBanner";
 import { useImpersonationStore } from "@/lib/stores/impersonationStore";
-
-interface AdminDetailUser {
-	id: string;
-	email: string;
-	firstName?: string;
-	lastName?: string;
-	role: string;
-	status?: string;
-	credits?: {
-		ai: { allotted: number; used: number };
-		leads: { allotted: number; used: number };
-		skipTraces: { allotted: number; used: number };
-	};
-}
-
-interface ActivityEvent {
-	id: string;
-	at: string; // ISO date
-	message: string;
-}
+import { formatAdminRole } from "@/lib/admin/roles";
+import {
+	getAdminActivityLog,
+	getAdminDirectoryUser,
+	type AdminActivityEvent,
+	type AdminDirectoryUser,
+} from "@/lib/admin/user-directory";
 
 export default function AdminUserDetailPage() {
 	const params = useParams();
 	const userId = String(params?.id ?? "");
-	const [user, setUser] = useState<AdminDetailUser | null>(null);
-	const [logs, setLogs] = useState<ActivityEvent[]>([]);
+	const [user, setUser] = useState<AdminDirectoryUser | null>(null);
+	const [logs, setLogs] = useState<AdminActivityEvent[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [creditsOpen, setCreditsOpen] = useState(false);
 	const { startImpersonation } = useImpersonationStore();
+	const router = useRouter();
 
 	useEffect(() => {
 		let alive = true;
 		const load = async () => {
+			setLoading(true);
 			try {
-				// Mock user fetch
-				await new Promise((r) => setTimeout(r, 300));
-				const mock: AdminDetailUser = {
-					id: userId,
-					email: `user_${userId}@example.com`,
-					firstName: "Jane",
-					lastName: "Doe",
-					role: "user",
-					status: "active",
-					credits: {
-						ai: { allotted: 1000, used: 250 },
-						leads: { allotted: 500, used: 120 },
-						skipTraces: { allotted: 300, used: 80 },
-					},
-				};
-				if (alive) setUser(mock);
-				// Mock logs fetch
-				await new Promise((r) => setTimeout(r, 200));
-				const mockLogs: ActivityEvent[] = [
-					{
-						id: "1",
-						at: new Date().toISOString(),
-						message: "Admin John granted 100 AI Credits",
-					},
-					{
-						id: "2",
-						at: new Date(Date.now() - 3600_000).toISOString(),
-						message: "User signed in",
-					},
-				];
-				if (alive) setLogs(mockLogs);
+				const detail = getAdminDirectoryUser(userId);
+				const activity = getAdminActivityLog(userId);
+				if (alive) {
+					setUser(detail);
+					setLogs(activity);
+				}
 			} finally {
 				if (alive) setLoading(false);
 			}
@@ -85,9 +49,30 @@ export default function AdminUserDetailPage() {
 	const remaining = (allotted: number, used: number) =>
 		Math.max(0, allotted - used);
 
+	const handleImpersonate = async (target: AdminDirectoryUser) => {
+		const fallbackName =
+			`${target.firstName ?? ""} ${target.lastName ?? ""}`.trim() ||
+			target.name?.trim() ||
+			target.email;
+		try {
+			const result = await startImpersonation({ userId: target.id });
+			const displayName =
+				result.impersonatedUser.name?.trim() ||
+				result.impersonatedUser.email ||
+				fallbackName;
+			toast.success(`Impersonation session started for ${displayName}`);
+			router.push("/dashboard");
+		} catch (error) {
+			const message =
+				error instanceof Error
+					? error.message
+					: "Unable to start impersonation";
+			toast.error(message);
+		}
+	};
+
 	return (
 		<div className="space-y-4 p-6">
-			<ImpersonationBanner />
 			<div>
 				<h1 className="font-semibold text-2xl">User Detail</h1>
 				<p className="text-muted-foreground text-sm">
@@ -107,6 +92,9 @@ export default function AdminUserDetailPage() {
 								<div className="text-muted-foreground text-sm">
 									{user.email}
 								</div>
+								<div className="text-muted-foreground text-xs">
+									Role: {formatAdminRole(user.role)}
+								</div>
 							</div>
 							<div className="flex items-center gap-2">
 								<Button
@@ -117,16 +105,7 @@ export default function AdminUserDetailPage() {
 								</Button>
 								<Button
 									onClick={() => {
-										// Mock API to start impersonation
-										startImpersonation({
-											adminToken: "mock-admin-jwt",
-											userName:
-												`${user.firstName ?? ""} ${user.lastName ?? ""}`.trim(),
-											userId: user.id,
-										});
-										// In real impl: navigate to main user dashboard
-										if (typeof window !== "undefined")
-											window.alert("Impersonation started (mock)");
+										void handleImpersonate(user);
 									}}
 								>
 									Impersonate
@@ -201,7 +180,7 @@ export default function AdminUserDetailPage() {
 							<div className="rounded-md border p-4 text-sm">
 								<div>
 									<span className="text-muted-foreground">Role:</span>{" "}
-									{user.role}
+									{formatAdminRole(user.role)}
 								</div>
 								<div>
 									<span className="text-muted-foreground">Status:</span>{" "}
@@ -210,6 +189,12 @@ export default function AdminUserDetailPage() {
 							</div>
 						</TabsContent>
 					</Tabs>
+				</div>
+			)}
+
+			{!loading && !user && (
+				<div className="text-muted-foreground text-sm">
+					Unable to locate user details.
 				</div>
 			)}
 

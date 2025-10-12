@@ -380,10 +380,20 @@ export function MapWithDrawing(props: MapWithDrawingProps) {
 	}, [mapInit, assumeLoaded, googleReady]);
 	// If a parent already loaded the script, mark googleReady when available
 	useEffect(() => {
+		console.log("MapWithDrawing: assumeLoaded =", assumeLoaded);
+		console.log("MapWithDrawing: window.google exists =", typeof window !== "undefined" && !!window.google);
+		console.log("MapWithDrawing: window.google.maps exists =", typeof window !== "undefined" && !!window.google?.maps);
+		console.log("MapWithDrawing: window.google.maps.Map exists =", typeof window !== "undefined" && !!window.google?.maps?.Map);
+		console.log("MapWithDrawing: window.google.maps.importLibrary exists =", typeof window !== "undefined" && !!window.google?.maps?.importLibrary);
+
 		if (!assumeLoaded) return;
 		if (typeof window === "undefined") return;
 		const w = window as unknown as { google?: typeof google };
-		if (w.google?.maps) setGoogleReady(true);
+		// Check for both modern importLibrary and legacy Map constructor
+		if (w.google?.maps?.Map && w.google?.maps?.importLibrary && typeof w.google.maps.importLibrary === "function") {
+			console.log("MapWithDrawing: Setting googleReady to true");
+			setGoogleReady(true);
+		}
 	}, [assumeLoaded]);
 	// Theme token HSL strings from CSS variables (no external util): e.g., "210 40% 98%"
 	const [themeHsl, setThemeHsl] = useState<{
@@ -975,6 +985,11 @@ export function MapWithDrawing(props: MapWithDrawingProps) {
 			googleMapsApiKey={apiKey}
 			libraries={libraries}
 			onLoad={() => setGoogleReady(true)}
+			loadingElement={<div>Loading Google Maps...</div>}
+			onError={(error) => {
+				console.error("Google Maps failed to load:", error);
+				setGoogleReady(false);
+			}}
 		>
 			{mapContent}
 		</LoadScript>

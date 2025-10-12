@@ -9,53 +9,8 @@ import {
 import type { CallCampaign } from "../../../../../../../types/_dashboard/campaign";
 import { Badge } from "../../../../components/ui/badge";
 import { PlaybackCell } from "./PlaybackCell";
-import { ActivityLineGraphContainer } from "../../../../../../activity-graph/components";
-import type {
-	ActivityDataPoint,
-	ChartConfigLocal,
-} from "../../../../../../activity-graph/types";
-
-// Mock campaign activity data - replace with real data
-const generateCampaignActivityData = (
-	campaign: CallCampaign,
-): ActivityDataPoint[] => {
-	const days = 7;
-	const data: ActivityDataPoint[] = [];
-
-	for (let i = days - 1; i >= 0; i--) {
-		const date = new Date();
-		date.setDate(date.getDate() - i);
-
-		data.push({
-			timestamp: date.toISOString(),
-			calls: Math.floor(Math.random() * 50) + 10,
-			texts: Math.floor(Math.random() * 30) + 5,
-			emails: Math.floor(Math.random() * 20) + 2,
-			social: Math.floor(Math.random() * 15) + 1,
-		});
-	}
-
-	return data;
-};
-
-const campaignActivityConfig: ChartConfigLocal = {
-	calls: {
-		label: "Calls Made",
-		color: "hsl(var(--chart-1))",
-	},
-	texts: {
-		label: "Texts Sent",
-		color: "hsl(var(--chart-2))",
-	},
-	emails: {
-		label: "Emails Sent",
-		color: "hsl(var(--chart-3))",
-	},
-	social: {
-		label: "Social Engagements",
-		color: "hsl(var(--chart-4))",
-	},
-};
+import { CampaignActivitySummary } from "../../../../components/data-table/campaign-activity-summary";
+import { buildChannelActivityData } from "../../../../components/data-table/activity";
 
 export function CallDetailsModal({
 	table,
@@ -204,93 +159,11 @@ export function CallDetailsModal({
 			);
 		},
 		activityRender: (row: Row<CallCampaign>) => {
-			const campaign = row.original;
-
-			const activityData = generateCampaignActivityData(campaign);
-
-			const totalCalls = campaign.calls || 0;
-			const totalTexts = Math.floor(totalCalls * 0.3);
-			const totalEmails = Math.floor(totalCalls * 0.2);
-			const totalSocial = Math.floor(totalCalls * 0.15);
-
-			return (
-				<div className="space-y-4">
-					<div className="text-center">
-						<h3 className="font-semibold text-lg">Campaign Activity</h3>
-						<p className="text-muted-foreground text-sm">
-							View real-time activity and performance metrics for "
-							{campaign.name}"
-						</p>
-					</div>
-
-					<div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-						<div className="rounded-lg border bg-card p-4">
-							<div className="font-bold text-2xl text-primary">
-								{totalCalls}
-							</div>
-							<div className="text-muted-foreground text-sm">Total Calls</div>
-						</div>
-						<div className="rounded-lg border bg-card p-4">
-							<div className="font-bold text-2xl text-primary">
-								{totalTexts}
-							</div>
-							<div className="text-muted-foreground text-sm">Texts Sent</div>
-						</div>
-						<div className="rounded-lg border bg-card p-4">
-							<div className="font-bold text-2xl text-primary">
-								{totalEmails}
-							</div>
-							<div className="text-muted-foreground text-sm">Emails Sent</div>
-						</div>
-						<div className="rounded-lg border bg-card p-4">
-							<div className="font-bold text-2xl text-primary">
-								{totalSocial}
-							</div>
-							<div className="text-muted-foreground text-sm">
-								Social Engagements
-							</div>
-						</div>
-					</div>
-
-					<div className="rounded-lg border bg-card p-6">
-						<h3 className="mb-4 font-semibold text-lg">Activity Trends</h3>
-						<ActivityLineGraphContainer
-							data={activityData}
-							config={campaignActivityConfig}
-							defaultLines={["calls", "texts", "emails", "social"]}
-							defaultRange="7d"
-							title=""
-							description=""
-						/>
-					</div>
-
-					<div className="rounded-lg border bg-card p-4">
-						<h4 className="mb-2 font-medium">Campaign Details</h4>
-						<div className="grid grid-cols-2 gap-4 text-sm">
-							<div>
-								<span className="text-muted-foreground">Status:</span>
-								<span className="ml-2 font-medium">{campaign.status}</span>
-							</div>
-							<div>
-								<span className="text-muted-foreground">Leads:</span>
-								<span className="ml-2 font-medium">{campaign.leads || 0}</span>
-							</div>
-							<div>
-								<span className="text-muted-foreground">In Queue:</span>
-								<span className="ml-2 font-medium">
-									{campaign.inQueue || 0}
-								</span>
-							</div>
-							<div>
-								<span className="text-muted-foreground">Start Date:</span>
-								<span className="ml-2 font-medium">
-									{new Date(campaign.startDate).toLocaleDateString()}
-								</span>
-							</div>
-						</div>
-					</div>
-				</div>
-			);
+			const activity = buildChannelActivityData(row.original);
+			if (!activity) {
+				return null;
+			}
+			return <CampaignActivitySummary activity={activity} />;
 		},
 	};
 

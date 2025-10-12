@@ -4,6 +4,7 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { DataTableColumnHeader } from "external/shadcn-table/src/components/data-table/data-table-column-header";
 import type { AdminUser } from "./types";
 import { CellAction } from "./cell-action";
+import { formatAdminRole } from "@/lib/admin/roles";
 
 interface AdminUserTableMeta {
 	onView?: (user: AdminUser) => void;
@@ -13,6 +14,7 @@ interface AdminUserTableMeta {
 	onSuspendUser?: (user: AdminUser) => void;
 	onUnsuspendUser?: (user: AdminUser) => void;
 	onBanUser?: (user: AdminUser) => void;
+	onImpersonate?: (user: AdminUser) => void;
 }
 
 declare module "@tanstack/react-table" {
@@ -47,6 +49,11 @@ export const adminUserColumns: ColumnDef<AdminUser>[] = [
 			<DataTableColumnHeader column={column} title="Role" />
 		),
 		enableSorting: true,
+		cell: ({ row }) => (
+			<span className="font-medium">
+				{formatAdminRole(row.getValue("role") as string | undefined)}
+			</span>
+		),
 	},
 	{
 		accessorKey: "status",
@@ -72,6 +79,7 @@ export const adminUserColumns: ColumnDef<AdminUser>[] = [
 			const onSuspendUser = table.options.meta?.onSuspendUser;
 			const onUnsuspendUser = table.options.meta?.onUnsuspendUser;
 			const onBanUser = table.options.meta?.onBanUser;
+			const onImpersonate = table.options.meta?.onImpersonate;
 			return (
 				<CellAction
 					user={row.original}
@@ -82,6 +90,7 @@ export const adminUserColumns: ColumnDef<AdminUser>[] = [
 					onSuspendUser={onSuspendUser}
 					onUnsuspendUser={onUnsuspendUser}
 					onBanUser={onBanUser}
+					onImpersonate={onImpersonate}
 				/>
 			);
 		},

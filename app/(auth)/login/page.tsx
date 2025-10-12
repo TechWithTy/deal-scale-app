@@ -7,6 +7,7 @@ import { Carousel } from "@/components/ui/carousel";
 
 import AuthToggle from "../signin/authToggle";
 import AuthForm from "../signin/userAuth";
+import { APP_TESTING_MODE } from "@/constants/testingMode";
 
 export default function AuthenticationPage() {
 	const [isSignUp, setIsSignUp] = useState(false);
@@ -26,7 +27,7 @@ export default function AuthenticationPage() {
 			</div>
 
 			<div className="flex h-full items-center p-4 lg:p-8">
-				<AuthForm isSignUp={isSignUp} setIsSignUp={setIsSignUp} />
+				<AuthForm isSignUp={isSignUp} mode={APP_TESTING_MODE} />
 			</div>
 		</div>
 	);

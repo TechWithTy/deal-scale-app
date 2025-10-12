@@ -1,4 +1,9 @@
-export type AdminUserRole = "user" | "admin" | "support";
+export type AdminUserRole =
+	| "user"
+	| "admin"
+	| "support"
+	| "platform_admin"
+	| "platform_support";
 
 export interface AdminUserCreditsBucket {
 	allotted: number;

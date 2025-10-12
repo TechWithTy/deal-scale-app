@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,12 +15,16 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useModalStore } from "@/lib/stores/dashboard";
 import { useUserProfileStore } from "@/lib/stores/user/userProfile";
+import { useSessionStore } from "@/lib/stores/user/useSessionStore";
 import { signOut } from "next-auth/react"; // Still needed for logging out
 import { useRouter } from "next/navigation";
 
+void React;
+
 export function UserNav() {
 	const router = useRouter();
-	const { userProfile } = useUserProfileStore(); // ✅ Fetching profile from Zustand store
+	const sessionUser = useSessionStore((state) => state.user);
+	const { userProfile } = useUserProfileStore();
 	const {
 		openUsageModal,
 		openBillingModal,
@@ -28,23 +33,35 @@ export function UserNav() {
 		openEmployeeModal,
 	} = useModalStore();
 
-	if (!userProfile) return null; // ✅ Ensure component doesn't render without profile
+	if (!sessionUser && !userProfile) return null;
 
-	const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(
-		userProfile.firstName,
-	)}`;
+	const displayName =
+		sessionUser?.name ||
+		sessionUser?.email ||
+		(userProfile?.firstName
+			? `${userProfile.firstName} ${userProfile.lastName ?? ""}`.trim()
+			: null) ||
+		"User";
+	const email = sessionUser?.email ?? userProfile?.email ?? "";
+	const avatarSeed =
+		sessionUser?.name ?? sessionUser?.email ?? userProfile?.firstName ?? "User";
+	const avatarUrl =
+		userProfile?.companyInfo?.companyLogo ||
+		sessionUser?.image ||
+		`https://ui-avatars.com/api/?name=${encodeURIComponent(avatarSeed)}`;
 
 	return (
 		<DropdownMenu>
 			<DropdownMenuTrigger asChild>
-				<Button variant="ghost" className="relative h-8 w-8 rounded-full">
+				<Button
+					variant="ghost"
+					className="relative h-8 w-8 rounded-full"
+					aria-label={`Open user menu for ${displayName}`}
+				>
 					<Avatar className="h-8 w-8">
-						<AvatarImage
-							src={userProfile?.companyInfo?.companyLogo ?? avatarUrl}
-							alt={userProfile?.firstName ?? ""}
-						/>
+						<AvatarImage src={avatarUrl} alt={displayName} />
 						<AvatarFallback>
-							{userProfile?.firstName?.charAt(0).toUpperCase() ?? "?"}
+							{avatarSeed?.charAt(0).toUpperCase() ?? "?"}
 						</AvatarFallback>
 					</Avatar>
 				</Button>
@@ -52,11 +69,9 @@ export function UserNav() {
 			<DropdownMenuContent className="w-56" align="end" forceMount>
 				<DropdownMenuLabel className="font-normal">
 					<div className="flex flex-col space-y-1">
-						<p className="font-medium text-sm leading-none">
-							{userProfile?.firstName ?? "User"}
-						</p>
+						<p className="font-medium text-sm leading-none">{displayName}</p>
 						<p className="text-muted-foreground text-xs leading-none">
-							{userProfile?.email}
+							{email}
 						</p>
 					</div>
 				</DropdownMenuLabel>

@@ -92,7 +92,7 @@ async function waitForGoogleMaps(timeoutMs = 10000) {
 	const start = Date.now();
 	while (Date.now() - start < timeoutMs) {
 		const maps = window.google?.maps;
-		if (typeof maps?.importLibrary === "function") {
+		if (typeof maps?.importLibrary === "function" && maps?.Map && maps?.Marker) {
 			return;
 		}
 		await new Promise((resolve) => setTimeout(resolve, 50));

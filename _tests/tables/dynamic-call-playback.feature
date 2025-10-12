@@ -70,7 +70,7 @@ Feature: Dynamic table for campaign calls with inline call playback
     When the audio ends
     Then the control returns to the Play state
 
-  @export (optional)
+  @export @optional
   Scenario: Export current page to CSV/Excel (if implemented)
     Given an export button is present on the dynamic table page
     When I click Export CSV

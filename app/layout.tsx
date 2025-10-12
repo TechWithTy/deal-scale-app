@@ -1,17 +1,31 @@
+import NonCriticalStyles from "@/components/layout/NonCriticalStyles";
 import Providers from "@/components/layout/providers";
-import { CommandPaletteProvider, ActionBarRoot } from "external/action-bar";
-import "@uploadthing/react/styles.css";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import NextTopLoader from "nextjs-toploader";
+import React, { type ReactNode } from "react";
 import "./globals.css";
 import { auth } from "@/auth";
-import SessionSync from "@/components/auth/SessionSync";
-import { NuqsAdapter } from "nuqs/adapters/next/app";
 import Script from "next/script";
-import SupademoClient from "@/components/integrations/SupademoClient";
+import dynamic from "next/dynamic";
 
 const inter = Inter({ subsets: ["latin"] });
+
+const SupademoClient = dynamic(
+	() => import("@/components/integrations/SupademoClient"),
+	{
+		ssr: false,
+		loading: () => null,
+	},
+);
+
+const ActionBarRoot = dynamic(
+	() => import("external/action-bar").then((mod) => mod.ActionBarRoot),
+	{
+		ssr: false,
+		loading: () => null,
+	},
+);
 
 export const metadata: Metadata = {
 	title: "Deal Scale | Real Estate Lead Generation",
@@ -22,32 +36,36 @@ export const metadata: Metadata = {
 export default async function RootLayout({
 	children,
 }: {
-	children: React.ReactNode;
-}) {
+	children: ReactNode;
+}): Promise<React.ReactElement> {
 	const session = await auth();
+	const isAuthenticated = Boolean(session);
+	const AuthenticatedAppShell = isAuthenticated
+		? (await import("@/components/layout/AuthenticatedAppShell")).default
+		: null;
+	void React;
+
 	return (
-		<html lang="en">
+		<html lang="en" suppressHydrationWarning>
 			<head>
-				{/* Supademo SDK */}
-				<Script
-					src="https://script.supademo.com/script.js"
-					strategy="beforeInteractive"
-				/>
+				{isAuthenticated ? (
+					<Script
+						id="supademo-script"
+						src="/api/supademo/script"
+						strategy="lazyOnload"
+					/>
+				) : null}
 			</head>
-			<body className={`${inter.className}  `} suppressHydrationWarning={true}>
-				{/* Move to Providers Next Command Nuqs */}
+			<body className={inter.className} suppressHydrationWarning={true}>
+				<NonCriticalStyles />
 				<NextTopLoader showSpinner={false} />
-				<CommandPaletteProvider>
-					<NuqsAdapter>
-						<Providers session={session}>
-							<SupademoClient />
-							{children}
-							<SessionSync />
-						</Providers>
-						{/* Global command palette dialog (Cmd/Ctrl+K) */}
-						<ActionBarRoot />
-					</NuqsAdapter>
-				</CommandPaletteProvider>
+				{isAuthenticated && AuthenticatedAppShell ? (
+					<AuthenticatedAppShell session={session}>
+						{children}
+					</AuthenticatedAppShell>
+				) : (
+					<Providers session={session}>{children}</Providers>
+				)}
 				<div id="sidebar-portal" />
 			</body>
 		</html>

@@ -15,7 +15,7 @@ The Supademo SDK is loaded globally in the application layout:
 ```typescript
 // app/layout.tsx
 <Script
-  src="https://script.supademo.com/script.js"
+  src="/api/supademo/script"
   strategy="beforeInteractive"
 />
 ```
