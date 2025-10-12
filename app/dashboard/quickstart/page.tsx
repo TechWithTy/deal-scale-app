@@ -85,7 +85,6 @@ export default function QuickStartPage() {
 			toast.info("Data source connections and API configuration coming soon!"),
 		[],
 	);
-	const openWebhookModal = useModalStore((state) => state.openWebhookModal);
 
 	const handleImportFromSource = useCallback(
 		() => setShowBulkSuiteModal(true),
