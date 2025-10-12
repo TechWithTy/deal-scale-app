@@ -55,6 +55,12 @@ const FinalizeCampaignStep: FC<FinalizeCampaignStepProps> = ({
 		selectedAgentId,
 		setSelectedAgentId,
 		availableAgents,
+		selectedWorkflowId,
+		setSelectedWorkflowId,
+		availableWorkflows,
+		selectedSalesScriptId,
+		setSelectedSalesScriptId,
+		availableSalesScripts,
 	} = useCampaignCreationStore();
 
 	const form: UseFormReturn<FinalizeCampaignForm> =
@@ -115,6 +121,8 @@ const FinalizeCampaignStep: FC<FinalizeCampaignStepProps> = ({
 	const handleLaunch = (data: FinalizeCampaignForm) => {
 		setCampaignName(data.campaignName);
 		setSelectedAgentId(data.selectedAgentId);
+		setSelectedWorkflowId(data.selectedWorkflowId);
+		setSelectedSalesScriptId(data.selectedSalesScriptId);
 		// campaignGoal is local to this component, but you could add it to the store if needed
 		onLaunch();
 	};
@@ -183,6 +191,60 @@ const FinalizeCampaignStep: FC<FinalizeCampaignStepProps> = ({
 													title={agent.status}
 												/>
 											</div>
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
+							<FormMessage />
+						</FormItem>
+					)}
+				/>
+
+				<FormField
+					control={form.control}
+					name="selectedWorkflowId"
+					render={({ field }) => (
+						<FormItem>
+							<FormLabel className="flex items-center gap-2">
+								Workflow
+							</FormLabel>
+							<Select onValueChange={field.onChange} defaultValue={field.value}>
+								<FormControl>
+									<SelectTrigger>
+										<SelectValue placeholder="Select a workflow" />
+									</SelectTrigger>
+								</FormControl>
+								<SelectContent>
+									{availableWorkflows.map((workflow) => (
+										<SelectItem key={workflow.id} value={workflow.id}>
+											{workflow.name}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
+							<FormMessage />
+						</FormItem>
+					)}
+				/>
+
+				<FormField
+					control={form.control}
+					name="selectedSalesScriptId"
+					render={({ field }) => (
+						<FormItem>
+							<FormLabel className="flex items-center gap-2">
+								Sales Script
+							</FormLabel>
+							<Select onValueChange={field.onChange} defaultValue={field.value}>
+								<FormControl>
+									<SelectTrigger>
+										<SelectValue placeholder="Select a sales script" />
+									</SelectTrigger>
+								</FormControl>
+								<SelectContent>
+									{availableSalesScripts.map((script) => (
+										<SelectItem key={script.id} value={script.id}>
+											{script.name}
 										</SelectItem>
 									))}
 								</SelectContent>

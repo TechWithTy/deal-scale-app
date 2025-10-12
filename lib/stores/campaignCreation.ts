@@ -31,6 +31,28 @@ const MOCK_AGENTS: Agent[] = [
 	},
 ];
 
+export interface WorkflowOption {
+	id: string;
+	name: string;
+}
+
+const MOCK_WORKFLOWS: WorkflowOption[] = [
+	{ id: "wf1", name: "Default: Nurture 7-day" },
+	{ id: "wf2", name: "Aggressive: 3-day blitz" },
+	{ id: "wf3", name: "Custom: Follow-up only" },
+];
+
+export interface SalesScriptOption {
+	id: string;
+	name: string;
+}
+
+const MOCK_SALES_SCRIPTS: SalesScriptOption[] = [
+	{ id: "ss1", name: "General Sales Script" },
+	{ id: "ss2", name: "Appointment Setter Script" },
+	{ id: "ss3", name: "Appraisal Follow-up Script" },
+];
+
 // * Campaign Creation Store for multi-step modal context
 export interface CampaignCreationState {
 	// Step 1: Channel Selection
@@ -48,6 +70,16 @@ export interface CampaignCreationState {
 	setSelectedAgentId: (id: string | null) => void;
 	availableAgents: Agent[];
 	setAvailableAgents: (agents: Agent[]) => void;
+
+	selectedWorkflowId: string | null;
+	setSelectedWorkflowId: (id: string | null) => void;
+	availableWorkflows: WorkflowOption[];
+	setAvailableWorkflows: (workflows: WorkflowOption[]) => void;
+
+	selectedSalesScriptId: string | null;
+	setSelectedSalesScriptId: (id: string | null) => void;
+	availableSalesScripts: SalesScriptOption[];
+	setAvailableSalesScripts: (scripts: SalesScriptOption[]) => void;
 
 	// Step 2: Area & Lead List
 	areaMode: "zip" | "leadList";
@@ -155,6 +187,18 @@ export const useCampaignCreationStore = create<CampaignCreationState>(
 		setSelectedAgentId: (selectedAgentId) => set({ selectedAgentId }),
 		availableAgents: MOCK_AGENTS,
 		setAvailableAgents: (availableAgents) => set({ availableAgents }),
+
+		selectedWorkflowId: null,
+		setSelectedWorkflowId: (selectedWorkflowId) => set({ selectedWorkflowId }),
+		availableWorkflows: MOCK_WORKFLOWS,
+		setAvailableWorkflows: (availableWorkflows) => set({ availableWorkflows }),
+
+		selectedSalesScriptId: null,
+		setSelectedSalesScriptId: (selectedSalesScriptId) =>
+			set({ selectedSalesScriptId }),
+		availableSalesScripts: MOCK_SALES_SCRIPTS,
+		setAvailableSalesScripts: (availableSalesScripts) =>
+			set({ availableSalesScripts }),
 
 		// Step 2: Area & Lead List
 		areaMode: "leadList",
@@ -339,6 +383,12 @@ export const useCampaignCreationStore = create<CampaignCreationState>(
 				// Agent Selection
 				selectedAgentId: null,
 				availableAgents: MOCK_AGENTS,
+
+				selectedWorkflowId: null,
+				availableWorkflows: MOCK_WORKFLOWS,
+
+				selectedSalesScriptId: null,
+				availableSalesScripts: MOCK_SALES_SCRIPTS,
 
 				// Step 2
 				areaMode: "leadList",
