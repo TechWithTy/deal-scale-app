@@ -1,3 +1,4 @@
+import React, { useMemo, type FC } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -22,7 +23,6 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
-import type { FC } from "react";
 import { FormProvider, useForm, type UseFormReturn } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useCampaignCreationStore } from "@/lib/stores/campaignCreation";
@@ -55,6 +55,12 @@ const FinalizeCampaignStep: FC<FinalizeCampaignStepProps> = ({
 		selectedAgentId,
 		setSelectedAgentId,
 		availableAgents,
+		selectedWorkflowId,
+		setSelectedWorkflowId,
+		availableWorkflows,
+		selectedSalesScriptId,
+		setSelectedSalesScriptId,
+		availableSalesScripts,
 	} = useCampaignCreationStore();
 
 	const form: UseFormReturn<FinalizeCampaignForm> =
@@ -63,14 +69,55 @@ const FinalizeCampaignStep: FC<FinalizeCampaignStepProps> = ({
 			defaultValues: {
 				campaignName: campaignName,
 				selectedAgentId: selectedAgentId || undefined,
+				selectedWorkflowId: selectedWorkflowId || undefined,
+				selectedSalesScriptId: selectedSalesScriptId || undefined,
 				campaignGoal: "",
 			},
 			mode: "onChange",
 		});
 
+	const watchedValues = form.watch();
+
+	const blockingIssues = useMemo(() => {
+		const normalizedValues = {
+			...watchedValues,
+			selectedAgentId:
+				typeof watchedValues.selectedAgentId === "string" &&
+				watchedValues.selectedAgentId.trim().length > 0
+					? watchedValues.selectedAgentId
+					: undefined,
+			selectedWorkflowId:
+				typeof watchedValues.selectedWorkflowId === "string" &&
+				watchedValues.selectedWorkflowId.trim().length > 0
+					? watchedValues.selectedWorkflowId
+					: undefined,
+			selectedSalesScriptId:
+				typeof watchedValues.selectedSalesScriptId === "string" &&
+				watchedValues.selectedSalesScriptId.trim().length > 0
+					? watchedValues.selectedSalesScriptId
+					: undefined,
+		};
+
+		const validation = finalizeCampaignSchema.safeParse(normalizedValues);
+
+		if (validation.success) {
+			return [];
+		}
+
+		const { fieldErrors, formErrors } = validation.error.flatten();
+		const issues = [
+			...formErrors,
+			...Object.values(fieldErrors).flatMap((messages) => messages ?? []),
+		].filter((message): message is string => Boolean(message));
+
+		return Array.from(new Set(issues));
+	}, [watchedValues]);
+
 	const handleLaunch = (data: FinalizeCampaignForm) => {
 		setCampaignName(data.campaignName);
 		setSelectedAgentId(data.selectedAgentId);
+		setSelectedWorkflowId(data.selectedWorkflowId);
+		setSelectedSalesScriptId(data.selectedSalesScriptId);
 		// campaignGoal is local to this component, but you could add it to the store if needed
 		onLaunch();
 	};
@@ -150,6 +197,60 @@ const FinalizeCampaignStep: FC<FinalizeCampaignStepProps> = ({
 
 				<FormField
 					control={form.control}
+					name="selectedWorkflowId"
+					render={({ field }) => (
+						<FormItem>
+							<FormLabel className="flex items-center gap-2">
+								Workflow
+							</FormLabel>
+							<Select onValueChange={field.onChange} defaultValue={field.value}>
+								<FormControl>
+									<SelectTrigger>
+										<SelectValue placeholder="Select a workflow" />
+									</SelectTrigger>
+								</FormControl>
+								<SelectContent>
+									{availableWorkflows.map((workflow) => (
+										<SelectItem key={workflow.id} value={workflow.id}>
+											{workflow.name}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
+							<FormMessage />
+						</FormItem>
+					)}
+				/>
+
+				<FormField
+					control={form.control}
+					name="selectedSalesScriptId"
+					render={({ field }) => (
+						<FormItem>
+							<FormLabel className="flex items-center gap-2">
+								Sales Script
+							</FormLabel>
+							<Select onValueChange={field.onChange} defaultValue={field.value}>
+								<FormControl>
+									<SelectTrigger>
+										<SelectValue placeholder="Select a sales script" />
+									</SelectTrigger>
+								</FormControl>
+								<SelectContent>
+									{availableSalesScripts.map((script) => (
+										<SelectItem key={script.id} value={script.id}>
+											{script.name}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
+							<FormMessage />
+						</FormItem>
+					)}
+				/>
+
+				<FormField
+					control={form.control}
 					name="campaignGoal"
 					render={({ field }) => (
 						<FormItem>
@@ -160,6 +261,7 @@ const FinalizeCampaignStep: FC<FinalizeCampaignStepProps> = ({
 									{...field}
 								/>
 							</FormControl>
+							<FormMessage />
 						</FormItem>
 					)}
 				/>
@@ -177,6 +279,22 @@ const FinalizeCampaignStep: FC<FinalizeCampaignStepProps> = ({
 							? `This campaign will cost ${estimatedCredits} credits.`
 							: "Configure your campaign settings to see cost estimate."}
 					</p>
+
+					{blockingIssues.length > 0 && (
+						<div
+							aria-live="polite"
+							className="rounded-md border border-destructive/40 bg-destructive/10 p-4 text-destructive"
+						>
+							<p className="font-medium text-sm">
+								Complete the following before launching:
+							</p>
+							<ul className="mt-2 list-disc space-y-1 pl-5 text-xs">
+								{blockingIssues.map((issue) => (
+									<li key={issue}>{issue}</li>
+								))}
+							</ul>
+						</div>
+					)}
 
 					<Button
 						type="submit"
