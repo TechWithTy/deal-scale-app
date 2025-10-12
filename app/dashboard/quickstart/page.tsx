@@ -2,14 +2,14 @@
 
 import { HelpCircle, List, Rss, Upload } from "lucide-react";
 import Link from "next/link";
-import { useRef, useState } from "react";
-import { toast } from "sonner";
+import { useCallback, useRef, useState } from "react";
 
 import { campaignSteps } from "@/_tests/tours/campaignTour";
 import WalkThroughModal from "@/components/leadsSearch/search/WalkthroughModal";
 import CampaignModalMain from "@/components/reusables/modals/user/campaign/CampaignModalMain";
 import LeadBulkSuiteModal from "@/components/reusables/modals/user/lead/LeadBulkSuiteModal";
 import LeadModalMain from "@/components/reusables/modals/user/lead/LeadModalMain";
+import SavedSearchModal from "@/components/reusables/modals/SavedSearchModal";
 import { Button } from "@/components/ui/button";
 import {
 	Card,
@@ -18,8 +18,17 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
+import { useBulkCsvUpload } from "@/components/quickstart/useBulkCsvUpload";
+import { useQuickStartSavedSearches } from "@/components/quickstart/useQuickStartSavedSearches";
 import { useCampaignCreationStore } from "@/lib/stores/campaignCreation";
 import { useModalStore } from "@/lib/stores/dashboard";
+import type { WebhookStage } from "@/lib/stores/dashboard";
+
+type CampaignContext = {
+	readonly leadListId: string;
+	readonly leadListName: string;
+	readonly leadCount: number;
+};
 
 export default function QuickStartPage() {
 	const [showLeadModal, setShowLeadModal] = useState(false);
@@ -36,7 +45,6 @@ export default function QuickStartPage() {
 		useState<CampaignContext | null>(null);
 
 	const fileInputRef = useRef<HTMLInputElement>(null);
-	const router = useRouter();
 	const openWebhookModal = useModalStore((state) => state.openWebhookModal);
 
 	const campaignStore = useCampaignCreationStore();
@@ -44,12 +52,14 @@ export default function QuickStartPage() {
 		savedSearches,
 		deleteSavedSearch,
 		setSearchPriority,
-		handleStartNewSearch,
-		handleOpenSavedSearches,
 		handleCloseSavedSearches,
 		handleSelectSavedSearch,
 		savedSearchModalOpen,
 	} = useQuickStartSavedSearches();
+
+	const triggerFileInput = useCallback(() => {
+		fileInputRef.current?.click();
+	}, []);
 
 	const handleSelectList = useCallback(() => {
 		setLeadModalMode("select");
@@ -80,51 +90,18 @@ export default function QuickStartPage() {
 
 	const handleCloseLeadModal = useCallback(() => setShowLeadModal(false), []);
 
-	const handleConnectionSettings = useCallback(
-		() =>
-			toast.info("Data source connections and API configuration coming soon!"),
-		[],
-	);
-
-	const handleImportFromSource = useCallback(
-		() => setShowBulkSuiteModal(true),
-		[],
-	);
-
-	const handleCampaignCreation = useCallback(() => {
-		campaignStore.reset();
-		campaignStore.setAreaMode("leadList");
-		setCampaignModalContext(null);
-		setShowCampaignModal(true);
-	}, [campaignStore]);
-
-	const handleViewTemplates = useCallback(
-		() => toast.info("Campaign templates feature coming soon!"),
-		[],
-	);
+	const handleImportFromSource = useCallback(() => {
+		triggerFileInput();
+	}, [triggerFileInput]);
 
 	const handleOpenWebhookModal = useCallback(
 		(stage: WebhookStage) => openWebhookModal(stage),
 		[openWebhookModal],
 	);
 
-	const handleWalkthroughOpen = useCallback(() => setShowWalkthrough(true), []);
-
 	const handleStartTour = useCallback(() => setIsTourOpen(true), []);
 
 	const handleCloseTour = useCallback(() => setIsTourOpen(false), []);
-
-	const handleBrowserExtension = useCallback(() => {
-		window.open("https://chrome.google.com/webstore", "_blank");
-		toast("Browser extension download coming soon!");
-	}, []);
-
-	const createRouterPush = useCallback(
-		(path: string) => () => {
-			router.push(path);
-		},
-		[router],
-	);
 
 	const handleCampaignModalToggle = useCallback(
 		(open: boolean) => {
@@ -141,25 +118,15 @@ export default function QuickStartPage() {
 		setShowBulkSuiteModal(false);
 		setBulkCsvFile(null);
 		setBulkCsvHeaders([]);
+		if (fileInputRef.current) {
+			fileInputRef.current.value = "";
+		}
 	}, []);
 
 	const handleCsvUpload = useBulkCsvUpload({
 		onFileChange: setBulkCsvFile,
 		onHeadersParsed: setBulkCsvHeaders,
 		onShowModal: () => setShowBulkSuiteModal(true),
-	});
-
-	const cards = useQuickStartCards({
-		onImport: handleImportFromSource,
-		onSelectList: handleSelectList,
-		onConfigureConnections: handleConnectionSettings,
-		onCampaignCreate: handleCampaignCreation,
-		onViewTemplates: handleViewTemplates,
-		onOpenWebhookModal: handleOpenWebhookModal,
-		onBrowserExtension: handleBrowserExtension,
-		createRouterPush,
-		onStartNewSearch: handleStartNewSearch,
-		onOpenSavedSearches: handleOpenSavedSearches,
 	});
 
 	return (
@@ -256,7 +223,7 @@ export default function QuickStartPage() {
 							variant="outline"
 							className="w-full"
 							size="lg"
-							onClick={handleImportData}
+							onClick={handleImportFromSource}
 							type="button"
 						>
 							Import Leads
@@ -280,7 +247,7 @@ export default function QuickStartPage() {
 							variant="outline"
 							className="w-full"
 							size="lg"
-							onClick={openWebhookModal}
+							onClick={() => handleOpenWebhookModal("incoming")}
 							type="button"
 						>
 							Configure Incoming
@@ -289,7 +256,7 @@ export default function QuickStartPage() {
 							variant="ghost"
 							className="w-full border border-input"
 							size="lg"
-							onClick={openWebhookModal}
+							onClick={() => handleOpenWebhookModal("outgoing")}
 							type="button"
 						>
 							Configure Outgoing
