@@ -97,7 +97,9 @@ export const FormSchema = z
 			.refine((val) => !val || /^MG[a-zA-Z0-9]{32}$/.test(val), {
 			}),
 		senderPoolNumbersCsv: z.string().default(""), // CSV of E.164 numbers
-		// TCPA and compliance fields
+		smartEncodingEnabled: z.boolean().default(true),
+		optOutHandlingEnabled: z.boolean().default(true),
+		perNumberDailyLimit: z.number().min(1).default(75),
 		tcpaSourceLink: z
 			.string()
 			.default("")

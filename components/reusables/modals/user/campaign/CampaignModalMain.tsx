@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useCampaignCreationStore } from "@/lib/stores/campaignCreation";
 import {
@@ -144,6 +145,8 @@ export default function CampaignModalMain({
 		}),
 		shallow,
 	);
+
+	const router = useRouter();
 
 	const [step, setStep] = useState(initialStep);
 
@@ -381,6 +384,13 @@ export default function CampaignModalMain({
 
 		const campaignType = channelTypeMap[primaryChannel || ""] || "call";
 
+		const params = new URLSearchParams({
+			type: campaignType,
+			campaignId,
+		});
+
+		router.push(`/dashboard/campaigns?${params.toString()}`);
+
 		// Close modal before notifying listeners to avoid Radix presence loops
 		closeModal();
 
@@ -388,7 +398,7 @@ export default function CampaignModalMain({
 			campaignId,
 			channelType: campaignType,
 		});
-	}, [primaryChannel, closeModal, onCampaignLaunched]);
+	}, [primaryChannel, closeModal, onCampaignLaunched, router]);
 
 	const handleCreateAbTest = (label?: string) => {
 		// Only create A/B test if explicitly requested
