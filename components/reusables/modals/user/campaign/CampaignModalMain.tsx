@@ -383,6 +383,18 @@ export default function CampaignModalMain({
 		};
 
 		const campaignType = channelTypeMap[primaryChannel || ""] || "call";
+		const payload = {
+			campaignId,
+			channelType: campaignType,
+		};
+
+		// Close modal before notifying listeners to avoid Radix presence loops
+		closeModal();
+
+		if (onCampaignLaunched) {
+			onCampaignLaunched(payload);
+			return;
+		}
 
 		const params = new URLSearchParams({
 			type: campaignType,
@@ -390,14 +402,6 @@ export default function CampaignModalMain({
 		});
 
 		router.push(`/dashboard/campaigns?${params.toString()}`);
-
-		// Close modal before notifying listeners to avoid Radix presence loops
-		closeModal();
-
-		onCampaignLaunched?.({
-			campaignId,
-			channelType: campaignType,
-		});
 	}, [primaryChannel, closeModal, onCampaignLaunched, router]);
 
 	const handleCreateAbTest = (label?: string) => {
