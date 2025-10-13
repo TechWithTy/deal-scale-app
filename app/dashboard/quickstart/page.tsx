@@ -306,17 +306,22 @@ export default function QuickStartPage() {
 				source: "launch-or-dismiss",
 			});
 
-			campaignResetTimeoutRef.current = window.setTimeout(() => {
-				logQuickStartDebug("campaign-store-reset", {
-					reason: "modal-close-timer",
-				});
-				resetCampaignStore();
-				campaignResetTimeoutRef.current = null;
-			}, 150);
+			campaignResetTimeoutRef.current =
+				typeof window !== "undefined"
+					? window.setTimeout(() => {
+							logQuickStartDebug("campaign-store-reset", {
+								reason: "modal-close-timer",
+							});
+							resetCampaignStore();
+							campaignResetTimeoutRef.current = null;
+						}, 150)
+					: null;
 
 			return () => {
 				if (campaignResetTimeoutRef.current !== null) {
-					clearTimeout(campaignResetTimeoutRef.current);
+					if (typeof window !== "undefined") {
+						clearTimeout(campaignResetTimeoutRef.current);
+					}
 					campaignResetTimeoutRef.current = null;
 				}
 			};
@@ -328,7 +333,9 @@ export default function QuickStartPage() {
 			});
 			return () => {
 				if (campaignResetTimeoutRef.current !== null) {
-					clearTimeout(campaignResetTimeoutRef.current);
+					if (typeof window !== "undefined") {
+						clearTimeout(campaignResetTimeoutRef.current);
+					}
 					campaignResetTimeoutRef.current = null;
 				}
 			};
@@ -348,7 +355,9 @@ export default function QuickStartPage() {
 				logQuickStartDebug("campaign-modal-timeout-dispose", {
 					reason: "component-unmount",
 				});
-				clearTimeout(campaignResetTimeoutRef.current);
+				if (typeof window !== "undefined") {
+					clearTimeout(campaignResetTimeoutRef.current);
+				}
 				campaignResetTimeoutRef.current = null;
 			}
 		},
