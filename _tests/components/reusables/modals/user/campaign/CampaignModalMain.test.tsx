@@ -6,9 +6,6 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import CampaignModalMain from "@/components/reusables/modals/user/campaign/CampaignModalMain";
 import { useCampaignCreationStore } from "@/lib/stores/campaignCreation";
 
-<<<<<<< HEAD
-void React;
-=======
 const pushMock = vi.fn();
 
 vi.mock("next/navigation", () => ({
@@ -16,7 +13,6 @@ vi.mock("next/navigation", () => ({
 		push: pushMock,
 	}),
 }));
->>>>>>> codex/fix-errors-in-campaignmodalmain.tsx-ghxuls
 
 vi.mock("@/components/ui/dialog", () => ({
 	Dialog: ({ children }: { children: React.ReactNode }) => (
