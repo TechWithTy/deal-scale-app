@@ -7,7 +7,6 @@ import {
 	getEstimatedCredits,
 } from "@/lib/utils/campaignCostCalculator";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter } from "next/navigation";
 import React, {
 	useCallback,
 	useEffect,
@@ -34,6 +33,10 @@ interface CampaignModalMainProps {
 	initialLeadCount?: number;
 	initialStep?: number;
 	defaultChannel?: "call" | "text" | "social" | "directmail";
+	onCampaignLaunched?: (payload: {
+		campaignId: string;
+		channelType: string;
+	}) => void;
 }
 
 const allChannels: ("directmail" | "call" | "text" | "social")[] = [
@@ -79,8 +82,8 @@ export default function CampaignModalMain({
 	initialLeadCount,
 	initialStep = 0,
 	defaultChannel,
+	onCampaignLaunched,
 }: CampaignModalMainProps) {
-	const router = useRouter();
 	const {
 		areaMode,
 		setAreaMode,
@@ -378,16 +381,14 @@ export default function CampaignModalMain({
 
 		const campaignType = channelTypeMap[primaryChannel || ""] || "call";
 
-		const params = new URLSearchParams({
-			type: campaignType,
-			campaignId,
-		});
-
-		router.push(`/dashboard/campaigns?${params.toString()}`);
-
-		// Close modal after navigation
+		// Close modal before notifying listeners to avoid Radix presence loops
 		closeModal();
-	}, [primaryChannel, closeModal, router]);
+
+		onCampaignLaunched?.({
+			campaignId,
+			channelType: campaignType,
+		});
+	}, [primaryChannel, closeModal, onCampaignLaunched]);
 
 	const handleCreateAbTest = (label?: string) => {
 		// Only create A/B test if explicitly requested
