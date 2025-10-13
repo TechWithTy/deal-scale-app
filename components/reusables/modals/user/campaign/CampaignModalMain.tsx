@@ -1,6 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, {
+	useCallback,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+} from "react";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import ChannelCustomizationStep, {
@@ -45,6 +52,7 @@ export default function CampaignModalMain({
 	initialStep = 0,
 	defaultChannel,
 }: CampaignModalMainProps) {
+	const router = useRouter();
 	const {
 		areaMode,
 		setAreaMode,
@@ -325,14 +333,16 @@ export default function CampaignModalMain({
 
 		const campaignType = channelTypeMap[primaryChannel || ""] || "call";
 
-		// Navigate to the campaign page - use window.location as fallback
-		if (typeof window !== "undefined") {
-			window.location.href = `/dashboard/campaigns/${campaignType}/${campaignId}`;
-		}
+		const params = new URLSearchParams({
+			type: campaignType,
+			campaignId,
+		});
+
+		router.push(`/dashboard/campaigns?${params.toString()}`);
 
 		// Close modal after navigation
 		closeModal();
-	}, [primaryChannel, closeModal]);
+	}, [primaryChannel, closeModal, router]);
 
 	const handleCreateAbTest = (label?: string) => {
 		// Only create A/B test if explicitly requested
