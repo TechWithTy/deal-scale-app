@@ -155,6 +155,21 @@ export default function QuickStartPage() {
 		setShowCampaignModal(open);
 	}, []);
 
+	const handleCampaignLaunched = useCallback(
+		({
+			campaignId,
+			channelType,
+		}: { campaignId: string; channelType: string }) => {
+			setShowCampaignModal(false);
+			const params = new URLSearchParams({
+				campaignId,
+				type: channelType,
+			});
+			router.push(`/dashboard/campaigns?${params.toString()}`);
+		},
+		[router],
+	);
+
 	useEffect(() => {
 		const wasOpen = previousCampaignModalOpenRef.current;
 		previousCampaignModalOpenRef.current = showCampaignModal;
@@ -229,6 +244,7 @@ export default function QuickStartPage() {
 				initialLeadListName={campaignModalContext?.leadListName}
 				initialLeadCount={campaignModalContext?.leadCount ?? 0}
 				initialStep={0}
+				onCampaignLaunched={handleCampaignLaunched}
 			/>
 
 			<SavedSearchModal
