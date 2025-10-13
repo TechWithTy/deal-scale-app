@@ -52,7 +52,12 @@ export default function page() {
 				<Breadcrumbs items={breadcrumbItems} />
 				{/* ! Keep inner content from forcing layout width */}
 				<div className="w-full min-w-0">
-					<CampaignPage />
+					<CampaignPage
+						urlParams={{
+							type: typeParam,
+							campaignId: campaignIdParam,
+						}}
+					/>
 				</div>
 
 				{/* WalkThrough Modal */}

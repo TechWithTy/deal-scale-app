@@ -1,11 +1,13 @@
 "use client";
 
 import * as React from "react";
+import type { Row } from "@tanstack/react-table";
 import { DataTable } from "../components/data-table/data-table";
 import { DataTableToolbar } from "../components/data-table/data-table-toolbar";
 import { DataTableExportButton } from "../components/data-table/data-table-export-button";
 import { Input } from "../components/ui/input";
 import { Button } from "../components/ui/button";
+import { Alert, AlertDescription, AlertTitle } from "../components/ui/alert";
 import { useDataTable } from "../hooks/use-data-table";
 import { useRowCarousel } from "../hooks/use-row-carousel";
 import { buildDirectMailColumns } from "./DirectMail/utils/columns";
@@ -18,17 +20,26 @@ import { DirectMailRowCarousel } from "./DirectMail/components/DirectMailRowCaro
 import type { CallCampaign } from "../../../../types/_dashboard/campaign";
 import { FeatureGuard } from "../../../../components/access/FeatureGuard";
 import CampaignModalMain from "./campaigns/modal/CampaignModalMain";
+import { useCampaignRowFocus } from "@/components/campaigns/utils/useCampaignRowFocus";
 import { AIDialogPanel } from "./DirectMail/components/AIDialogPanel";
 import { SelectionBar } from "./DirectMail/components/SelectionBar";
 
 type ParentTab = "calls" | "text" | "social" | "directMail";
 
+interface DirectMailCampaignsDemoTableProps {
+        onNavigate?: (tab: ParentTab) => void;
+        campaignId?: string | null;
+        onCampaignSelect?: (id: string) => void;
+        initialCampaigns?: DirectMailCampaign[];
+}
+
 export default function DirectMailCampaignsDemoTable({
-	onNavigate,
-}: {
-	onNavigate?: (tab: ParentTab) => void;
-}) {
-	const [data, setData] = React.useState<DirectMailCampaign[]>([]);
+        onNavigate,
+        campaignId = null,
+        onCampaignSelect,
+        initialCampaigns,
+}: DirectMailCampaignsDemoTableProps) {
+        const [data, setData] = React.useState<DirectMailCampaign[]>(() => initialCampaigns ?? []);
 	const [query, setQuery] = React.useState("");
 	const [aiOpen, setAiOpen] = React.useState(false);
 	const [aiOutput, setAiOutput] = React.useState<string>("");
@@ -48,9 +59,13 @@ export default function DirectMailCampaignsDemoTable({
 		[],
 	);
 
-	React.useEffect(() => {
-		setData(generateDirectMailCampaignData());
-	}, []);
+        React.useEffect(() => {
+                if (initialCampaigns && initialCampaigns.length > 0) {
+                        setData(initialCampaigns);
+                        return;
+                }
+                setData(generateDirectMailCampaignData());
+        }, [initialCampaigns]);
 	const columns = React.useMemo(() => buildDirectMailColumns(), []);
 
 	// Filter logic removed - now handled globally
@@ -187,9 +202,36 @@ export default function DirectMailCampaignsDemoTable({
 		},
 	});
 
-	const carousel = useRowCarousel(table, { loop: true });
+        const carousel = useRowCarousel(table, { loop: true });
 
-	function getSelectedRows(): DirectMailCampaign[] {
+        const rowIdResolver = React.useCallback(
+                (row: Row<DirectMailCampaign>) => (row.original as DirectMailCampaign).id,
+                [],
+        );
+
+        const handleRowFocused = React.useCallback(
+                (row: Row<DirectMailCampaign>) => {
+                        carousel.openAt(row);
+                        const targetId = rowIdResolver(row);
+                        if (!targetId) return;
+                        requestAnimationFrame(() => {
+                                const element = document.querySelector<HTMLTableRowElement>(
+                                        `[data-row-id="${targetId}"]`,
+                                );
+                                element?.scrollIntoView({ behavior: "smooth", block: "center" });
+                        });
+                },
+                [carousel, rowIdResolver],
+        );
+
+        const { focusedRowId, status } = useCampaignRowFocus<DirectMailCampaign>({
+                campaignId,
+                table,
+                resolveRowId: rowIdResolver,
+                onRowFocused: handleRowFocused,
+        });
+
+        function getSelectedRows(): DirectMailCampaign[] {
 		return table
 			.getFilteredSelectedRowModel()
 			.rows.map((r) => r.original as DirectMailCampaign);
@@ -235,12 +277,26 @@ export default function DirectMailCampaignsDemoTable({
 				}}
 			/>
 
-			<DataTable<DirectMailCampaign>
-				table={table}
-				className="mt-2"
-				onRowClick={(row) => {
-					carousel.openAt(row);
-				}}
+                        {status === "not-found" && campaignId ? (
+                                <Alert variant="destructive">
+                                        <AlertTitle>Campaign not found</AlertTitle>
+                                        <AlertDescription>
+                                                We couldn&apos;t locate a campaign with ID {campaignId} in the
+                                                Direct Mail table.
+                                        </AlertDescription>
+                                </Alert>
+                        ) : null}
+
+                        <DataTable<DirectMailCampaign>
+                                table={table}
+                                className="mt-2"
+                                focusedRowId={focusedRowId ?? undefined}
+                                getRowId={rowIdResolver}
+                                onRowClick={(row) => {
+                                        const id = rowIdResolver(row);
+                                        if (id) onCampaignSelect?.(id);
+                                        carousel.openAt(row);
+                                }}
 				actionBar={
 					<SelectionBar
 						table={table}
