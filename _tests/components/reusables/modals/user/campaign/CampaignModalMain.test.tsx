@@ -144,66 +144,98 @@ vi.mock(
 );
 
 describe("CampaignModalMain", () => {
-	beforeEach(() => {
-		act(() => {
-			const store = useCampaignCreationStore.getState();
-			store.reset();
-			store.setPrimaryChannel("call");
-			store.setCampaignName("Ready Campaign");
-			store.setSelectedAgentId("1");
-			store.setSelectedWorkflowId("wf1");
-			store.setSelectedSalesScriptId("ss1");
-		});
-	});
+        beforeEach(() => {
+                pushMock.mockReset();
+                act(() => {
+                        const store = useCampaignCreationStore.getState();
+                        store.reset();
+                        store.setPrimaryChannel("call");
+                        store.setCampaignName("Ready Campaign");
+                        store.setSelectedAgentId("1");
+                        store.setSelectedWorkflowId("wf1");
+                        store.setSelectedSalesScriptId("ss1");
+                });
+        });
 
-	it("closes the modal and notifies listeners after launching", () => {
-		const handleOpenChange = vi.fn();
-		const handleCampaignLaunched = vi.fn();
+        it("closes the modal before notifying launch listeners", () => {
+                const callOrder: string[] = [];
+                const handleOpenChange = vi.fn((open: boolean) => {
+                        if (!open) {
+                                callOrder.push("close");
+                        }
+                });
+                const handleCampaignLaunched = vi.fn(() => {
+                        callOrder.push("launched");
+                });
 
-		render(
-			<CampaignModalMain
-				isOpen
-				onOpenChange={handleOpenChange}
-				initialStep={3}
-				onCampaignLaunched={handleCampaignLaunched}
-			/>,
-		);
+                pushMock.mockImplementation(() => {
+                        callOrder.push("navigate");
+                });
 
-		const launchButtons = screen.getAllByRole("button", {
-			name: /launch campaign/i,
-		});
-		const launchButton = launchButtons[launchButtons.length - 1]; // Get the last one (from the current test)
+                render(
+                        <CampaignModalMain
+                                isOpen
+                                onOpenChange={handleOpenChange}
+                                initialStep={3}
+                                onCampaignLaunched={handleCampaignLaunched}
+                        />,
+                );
 
-		fireEvent.click(launchButton);
+                const launchButtons = screen.getAllByRole("button", {
+                        name: /launch campaign/i,
+                });
+                const launchButton = launchButtons[launchButtons.length - 1];
 
-		expect(handleOpenChange).toHaveBeenCalledWith(false);
-		expect(handleCampaignLaunched).toHaveBeenCalledTimes(1);
-		const payload = handleCampaignLaunched.mock.calls[0]?.[0];
-		expect(payload?.campaignId).toMatch(/^campaign_\d+$/);
-		expect(payload?.channelType).toBe("call");
-	});
+                fireEvent.click(launchButton);
 
-	it("navigates with campaign query parameters after launching", () => {
-		render(<CampaignModalMain isOpen onOpenChange={vi.fn()} initialStep={3} />);
+                expect(handleOpenChange).toHaveBeenCalledWith(false);
+                expect(handleCampaignLaunched).toHaveBeenCalledTimes(1);
+                expect(callOrder).toEqual(["close", "launched"]);
+                expect(pushMock).not.toHaveBeenCalled();
+                const payload = handleCampaignLaunched.mock.calls[0]?.[0];
+                expect(payload?.campaignId).toMatch(/^campaign_\d+$/);
+                expect(payload?.channelType).toBe("call");
+        });
 
-		// Fill in the campaign goal field (required for validation)
-		const goalField = screen.getByLabelText(/campaign goal/i);
-		fireEvent.change(goalField, {
-			target: {
-				value: "Generate at least 10 qualified leads for our sales team.",
-			},
-		});
+        it("navigates with campaign query parameters when no listeners are provided", () => {
+                const callOrder: string[] = [];
+                const handleOpenChange = vi.fn((open: boolean) => {
+                        if (!open) {
+                                callOrder.push("close");
+                        }
+                });
 
-		const launchButtons = screen.getAllByRole("button", {
-			name: /launch campaign/i,
-		});
-		const launchButton = launchButtons[launchButtons.length - 1]; // Get the last one (from the current test)
-		fireEvent.click(launchButton);
+                pushMock.mockImplementation((destination: string) => {
+                        callOrder.push("navigate");
+                        return destination;
+                });
 
-		expect(pushMock).toHaveBeenCalledTimes(1);
-		const destination = pushMock.mock.calls[0]?.[0];
-		expect(destination).toContain("/dashboard/campaigns?");
-		expect(destination).toContain("type=call");
-		expect(destination).toMatch(/campaignId=campaign_\d+/);
-	});
+                render(
+                        <CampaignModalMain
+                                isOpen
+                                onOpenChange={handleOpenChange}
+                                initialStep={3}
+                        />,
+                );
+
+                const goalField = screen.getByLabelText(/campaign goal/i);
+                fireEvent.change(goalField, {
+                        target: {
+                                value: "Generate at least 10 qualified leads for our sales team.",
+                        },
+                });
+
+                const launchButtons = screen.getAllByRole("button", {
+                        name: /launch campaign/i,
+                });
+                const launchButton = launchButtons[launchButtons.length - 1];
+                fireEvent.click(launchButton);
+
+                expect(callOrder).toEqual(["close", "navigate"]);
+                expect(pushMock).toHaveBeenCalledTimes(1);
+                const destination = pushMock.mock.calls[0]?.[0];
+                expect(destination).toContain("/dashboard/campaigns?");
+                expect(destination).toContain("type=call");
+                expect(destination).toMatch(/campaignId=campaign_\d+/);
+        });
 });

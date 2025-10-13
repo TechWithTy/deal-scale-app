@@ -380,6 +380,11 @@ export default function CampaignModalMain({
 			isOpen,
 		});
 
+		const campaignType = channelTypeMap[primaryChannel || ""] || "call";
+		const payload = {
+			campaignId,
+			channelType: campaignType,
+		};
 		try {
 			// Generate a campaign ID (using timestamp for now)
 			const campaignId = `campaign_${Date.now()}`;
@@ -406,6 +411,18 @@ export default function CampaignModalMain({
 			const fullUrl = `/dashboard/campaigns?${params.toString()}`;
 			console.log("🌐 FULL URL DEBUG:", fullUrl);
 
+		if (onCampaignLaunched) {
+			onCampaignLaunched(payload);
+			return;
+		}
+
+		const params = new URLSearchParams({
+			type: campaignType,
+			campaignId,
+		});
+
+		router.push(`/dashboard/campaigns?${params.toString()}`);
+	}, [primaryChannel, closeModal, onCampaignLaunched, router]);
 			// Check if router exists
 			console.log("🧭 ROUTER DEBUG:", {
 				routerExists: !!router,
