@@ -11,6 +11,7 @@ import QuickStartHeader from "@/components/quickstart/QuickStartHeader";
 import QuickStartHelp from "@/components/quickstart/QuickStartHelp";
 import { useQuickStartCards } from "@/components/quickstart/useQuickStartCards";
 import { useQuickStartSavedSearches } from "@/components/quickstart/useQuickStartSavedSearches";
+import HelpModal from "@/components/reusables/modals/HelpModal";
 import SavedSearchModal from "@/components/reusables/modals/SavedSearchModal";
 import { CampaignModalMain } from "@/components/reusables/modals/user/campaign/CampaignModalMain";
 import LeadBulkSuiteModal from "@/components/reusables/modals/user/lead/LeadBulkSuiteModal";
@@ -37,6 +38,7 @@ export default function QuickStartPage() {
 		"create",
 	);
 	const [showWalkthrough, setShowWalkthrough] = useState(false);
+	const [showHelpModal, setShowHelpModal] = useState(false);
 	const [showBulkSuiteModal, setShowBulkSuiteModal] = useState(false);
 	const [showCampaignModal, setShowCampaignModal] = useState(false);
 	const [campaignModalContext, setCampaignModalContext] =
@@ -176,7 +178,7 @@ export default function QuickStartPage() {
 		[openWebhookModal],
 	);
 
-	const handleWalkthroughOpen = useCallback(() => setShowWalkthrough(true), []);
+	const handleWalkthroughOpen = useCallback(() => setShowHelpModal(true), []);
 
 	const handleBrowserExtension = useCallback(() => {
 		window.open("https://chrome.google.com/webstore", "_blank");
@@ -417,12 +419,9 @@ export default function QuickStartPage() {
 				onSetPriority={setSearchPriority}
 			/>
 
-			<WalkThroughModal
-				isOpen={showWalkthrough}
-				onClose={() => setShowWalkthrough(false)}
-				videoUrl="https://app.supademo.com/embed/cmgpmix8616ou12sxl6bxk80s?embed_v=2&utm_source=embed"
-				title="Welcome To Deal Scale"
-				subtitle="Get help getting started with your lead generation platform."
+			<HelpModal
+				isOpen={showHelpModal}
+				onClose={() => setShowHelpModal(false)}
 			/>
 		</div>
 	);
