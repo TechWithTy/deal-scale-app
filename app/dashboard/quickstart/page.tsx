@@ -217,13 +217,17 @@ export default function QuickStartPage() {
 				stack: new Error("campaign-modal-launched").stack,
 			});
 			setShowCampaignModal(false);
-			const params = new URLSearchParams({
+
+			logQuickStartDebug("campaign-modal-opening-webhooks", {
 				campaignId,
-				type: channelType,
+				channelType,
+				stack: new Error("campaign-modal-opening-webhooks").stack,
 			});
-			router.push(`/dashboard/campaigns?${params.toString()}`);
+
+			// Open webhooks outgoing modal instead of navigating to campaigns
+			openWebhookModal();
 		},
-		[router],
+		[openWebhookModal, logQuickStartDebug],
 	);
 
 	// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
