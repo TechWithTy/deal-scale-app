@@ -16,9 +16,63 @@ import {
 } from "@/components/ui/popover";
 import CampaignModalMain from "../../../external/shadcn-table/src/examples/campaigns/modal/CampaignModalMain";
 
-export default function CampaignCallTablePage() {
+export default function CampaignCallTablePage({
+	urlParams,
+}: {
+	urlParams?: {
+		type?: string | null;
+		campaignId?: string | null;
+	};
+}) {
 	type ParentTab = "calls" | "text" | "social" | "directMail";
-	const [tab, setTab] = React.useState<ParentTab>("calls");
+
+	// Map URL type parameter to tab
+	const getInitialTab = React.useCallback((type?: string | null): ParentTab => {
+		switch (type) {
+			case "call":
+				return "calls";
+			case "text":
+				return "text";
+			case "social":
+				return "social";
+			case "direct":
+				return "directMail";
+			default:
+				return "calls";
+		}
+	}, []);
+
+	const [tab, setTab] = React.useState<ParentTab>(() =>
+		getInitialTab(urlParams?.type),
+	);
+
+	// Update tab when URL params change
+	React.useEffect(() => {
+		const newTab = getInitialTab(urlParams?.type);
+		if (newTab !== tab) {
+			console.log(
+				"🔄 CAMPAIGN TABLE: Switching tab from",
+				tab,
+				"to",
+				newTab,
+				"based on URL param:",
+				urlParams?.type,
+			);
+			setTab(newTab);
+		}
+	}, [urlParams?.type, tab, getInitialTab]);
+
+	// Debug URL parameters
+	React.useEffect(() => {
+		if (urlParams?.type || urlParams?.campaignId) {
+			console.log(
+				"📋 CAMPAIGN TABLE URL PARAMS:",
+				urlParams,
+				"-> Initial tab:",
+				getInitialTab(urlParams?.type),
+			);
+		}
+	}, [urlParams, getInitialTab]);
 	const [isLeadModalOpen, setIsLeadModalOpen] = React.useState(false);
 	const [isSkipTraceOpen, setIsSkipTraceOpen] = React.useState(false);
 	const [isCampaignModalOpen, setIsCampaignModalOpen] = React.useState(false);
@@ -61,7 +115,7 @@ export default function CampaignCallTablePage() {
 			</div>
 
 			{/* Enhanced Tab Navigation with Feature Blocking */}
-			<div className="mb-4 flex items-center justify-between gap-4 p-1 bg-muted rounded-lg">
+			<div className="bg-muted flex gap-4 items-center justify-between mb-4 p-1 rounded-lg">
 				<div className="flex items-center gap-2">
 					{tabs.map(({ key, label, featureKey }) => {
 						const isActive = tab === key;
