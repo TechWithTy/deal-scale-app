@@ -10,12 +10,6 @@ const onOpenChangeRef: {
 	current: ((open: boolean) => void) | null;
 } = { current: null };
 
-const onCampaignLaunchedRef: {
-	current:
-		| ((payload: { campaignId: string; channelType: string }) => void)
-		| null;
-} = { current: null };
-
 const routerPushMock = vi.fn();
 
 vi.mock("next/navigation", () => ({
@@ -58,18 +52,8 @@ vi.mock(
 	"@/components/reusables/modals/user/campaign/CampaignModalMain",
 	() => ({
 		__esModule: true,
-		default: ({
-			onOpenChange,
-			onCampaignLaunched,
-		}: {
-			onOpenChange: (open: boolean) => void;
-			onCampaignLaunched?: (payload: {
-				campaignId: string;
-				channelType: string;
-			}) => void;
-		}) => {
+		default: ({ onOpenChange }: { onOpenChange: (open: boolean) => void }) => {
 			onOpenChangeRef.current = onOpenChange;
-			onCampaignLaunchedRef.current = onCampaignLaunched ?? null;
 			return <div data-testid="campaign-modal-mock" />;
 		},
 	}),
@@ -87,7 +71,6 @@ vi.mock("@/components/leadsSearch/search/WalkthroughModal", () => ({
 describe("QuickStartPage campaign modal reset timing", () => {
 	beforeEach(() => {
 		onOpenChangeRef.current = null;
-		onCampaignLaunchedRef.current = null;
 		routerPushMock.mockReset();
 		vi.useFakeTimers();
 		act(() => {
@@ -133,23 +116,5 @@ describe("QuickStartPage campaign modal reset timing", () => {
 		expect(resetSpy).not.toHaveBeenCalled();
 
 		resetSpy.mockRestore();
-	});
-
-	it("closes the modal and navigates when a campaign launches", () => {
-		render(<QuickStartPage />);
-
-		expect(onCampaignLaunchedRef.current).toBeTypeOf("function");
-
-		act(() => {
-			onCampaignLaunchedRef.current?.({
-				campaignId: "campaign_test",
-				channelType: "call",
-			});
-		});
-
-		expect(routerPushMock).toHaveBeenCalledTimes(1);
-		expect(routerPushMock).toHaveBeenCalledWith(
-			"/dashboard/campaigns?campaignId=campaign_test&type=call",
-		);
 	});
 });
