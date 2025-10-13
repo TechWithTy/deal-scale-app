@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useCampaignCreationStore } from "@/lib/stores/campaignCreation";
 import {
@@ -25,6 +26,7 @@ import ChannelSelectionStep from "../../../../../external/shadcn-table/src/examp
 import { TimingPreferencesStep } from "../../../../../external/shadcn-table/src/examples/campaigns/modal/steps/TimingPreferencesStep";
 import CampaignSettingsDebug from "./CampaignSettingsDebug";
 import FinalizeCampaignStep from "./steps/FinalizeCampaignStep";
+import { shallow } from "zustand/shallow";
 interface CampaignModalMainProps {
 	isOpen: boolean;
 	onOpenChange: (open: boolean) => void;
@@ -144,6 +146,8 @@ export default function CampaignModalMain({
 		}),
 		shallow,
 	);
+
+	const router = useRouter();
 
 	const [step, setStep] = useState(initialStep);
 
@@ -381,6 +385,13 @@ export default function CampaignModalMain({
 
 		const campaignType = channelTypeMap[primaryChannel || ""] || "call";
 
+		const params = new URLSearchParams({
+			type: campaignType,
+			campaignId,
+		});
+
+		router.push(`/dashboard/campaigns?${params.toString()}`);
+
 		// Close modal before notifying listeners to avoid Radix presence loops
 		closeModal();
 
@@ -388,7 +399,7 @@ export default function CampaignModalMain({
 			campaignId,
 			channelType: campaignType,
 		});
-	}, [primaryChannel, closeModal, onCampaignLaunched]);
+	}, [primaryChannel, closeModal, onCampaignLaunched, router]);
 
 	const handleCreateAbTest = (label?: string) => {
 		// Only create A/B test if explicitly requested
