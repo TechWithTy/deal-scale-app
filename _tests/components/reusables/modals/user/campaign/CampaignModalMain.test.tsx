@@ -164,7 +164,7 @@ describe("CampaignModalMain", () => {
                                 callOrder.push("close");
                         }
                 });
-                const handleCampaignLaunched = vi.fn(() => {
+                const handleCampaignLaunched = vi.fn((payload?: { campaignId: string; channelType: string }) => {
                         callOrder.push("launched");
                 });
 
@@ -240,8 +240,11 @@ describe("CampaignModalMain", () => {
         });
 
         it("ignores duplicate launch attempts once the modal has started closing", () => {
+                const callOrder: string[] = [];
                 const handleOpenChange = vi.fn();
-                const handleCampaignLaunched = vi.fn();
+                const handleCampaignLaunched = vi.fn((payload?: { campaignId: string; channelType: string }) => {
+                        callOrder.push("launched");
+                });
                 const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
 
                 render(

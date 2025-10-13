@@ -2,7 +2,10 @@
 
 import { useRouter } from "next/navigation";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { useCampaignCreationStore } from "@/lib/stores/campaignCreation";
+import {
+	useCampaignCreationStore,
+	type CampaignCreationState,
+} from "@/lib/stores/campaignCreation";
 import { useCampaignStore } from "@/lib/stores/campaigns";
 import {
 	calculateCampaignCost,
@@ -132,7 +135,7 @@ export default function CampaignModalMain({
 		availableAgents,
 		perNumberDailyLimit,
 	} = useCampaignCreationStore(
-		(state) => ({
+		(state: CampaignCreationState) => ({
 			areaMode: state.areaMode,
 			setAreaMode: state.setAreaMode,
 			selectedLeadListId: state.selectedLeadListId,
@@ -245,7 +248,7 @@ export default function CampaignModalMain({
 				closingReleaseTimeoutRef.current = null;
 			}, 200);
 		}
-	}, [isOpen]);
+	}, [isOpen, step]);
 
 	useEffect(() => {
 		if (!closingStateRef.current.closing) return;

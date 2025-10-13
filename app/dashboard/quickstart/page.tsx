@@ -16,7 +16,10 @@ import SavedSearchModal from "@/components/reusables/modals/SavedSearchModal";
 import CampaignModalMain from "@/components/reusables/modals/user/campaign/CampaignModalMain";
 import LeadBulkSuiteModal from "@/components/reusables/modals/user/lead/LeadBulkSuiteModal";
 import LeadModalMain from "@/components/reusables/modals/user/lead/LeadModalMain";
-import { useCampaignCreationStore } from "@/lib/stores/campaignCreation";
+import {
+	useCampaignCreationStore,
+	type CampaignCreationState,
+} from "@/lib/stores/campaignCreation";
 import { useModalStore } from "@/lib/stores/dashboard";
 import type { WebhookStage } from "@/lib/stores/dashboard";
 import { shallow } from "zustand/shallow";
@@ -61,7 +64,7 @@ export default function QuickStartPage() {
 		setLeadCount,
 		setCampaignName,
 	} = useCampaignCreationStore(
-		(state) => ({
+		(state: CampaignCreationState) => ({
 			reset: state.reset,
 			setAreaMode: state.setAreaMode,
 			setSelectedLeadListId: state.setSelectedLeadListId,
@@ -180,6 +183,7 @@ export default function QuickStartPage() {
 		[router],
 	);
 
+	// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
 	useEffect(() => {
 		const wasOpen = previousCampaignModalOpenRef.current;
 		previousCampaignModalOpenRef.current = showCampaignModal;
