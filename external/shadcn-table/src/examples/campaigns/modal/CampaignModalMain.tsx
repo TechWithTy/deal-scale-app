@@ -3,6 +3,9 @@
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useEffect, useRef, useState } from "react";
+import { useForm } from "react-hook-form";
+import type { z } from "zod";
 import ChannelCustomizationStep, {
 	TransferConditionalSchema,
 	type FormSchema,
@@ -10,9 +13,6 @@ import ChannelCustomizationStep, {
 import ChannelSelectionStep from "./steps/ChannelSelectionStep";
 import FinalizeCampaignStep from "./steps/FinalizeCampaignStep";
 import { TimingPreferencesStep } from "./steps/TimingPreferencesStep";
-import { useCampaignCreationStore } from "@/lib/stores/campaignCreation";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
-import type { z } from "zod";
 
 // * Centralized Campaign Main Component
 const allChannels: ("directmail" | "call" | "text" | "social")[] = [
@@ -22,6 +22,24 @@ const allChannels: ("directmail" | "call" | "text" | "social")[] = [
 	"social",
 ];
 const disabledChannels: ("directmail" | "call" | "text" | "social")[] = [];
+
+const DEFAULT_CUSTOMIZATION_VALUES: z.input<typeof FormSchema> = {
+	primaryPhoneNumber: "+11234567890",
+	areaMode: "leadList",
+	selectedLeadListId: "",
+	templates: [],
+	transferEnabled: true,
+	transferType: "inbound_call",
+	transferAgentId: "",
+	transferGuidelines: "",
+	transferPrompt: "",
+	numberPoolingEnabled: false,
+	senderPoolNumbersCsv: "",
+	smartEncodingEnabled: true,
+	optOutHandlingEnabled: true,
+	perNumberDailyLimit: 75,
+	messagingServiceSid: "",
+};
 
 export default function CampaignModalMain({
 	open: controlledOpen,
