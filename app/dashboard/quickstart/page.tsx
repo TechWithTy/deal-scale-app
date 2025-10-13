@@ -94,12 +94,14 @@ export default function QuickStartPage() {
 		savedSearches,
 		deleteSavedSearch,
 		setSearchPriority,
-		handleStartNewSearch,
-		handleOpenSavedSearches,
 		handleCloseSavedSearches,
 		handleSelectSavedSearch,
 		savedSearchModalOpen,
 	} = useQuickStartSavedSearches();
+
+	const triggerFileInput = useCallback(() => {
+		fileInputRef.current?.click();
+	}, []);
 
 	const handleSelectList = useCallback(() => {
 		setLeadModalMode("select");
@@ -179,18 +181,6 @@ export default function QuickStartPage() {
 	);
 
 	const handleWalkthroughOpen = useCallback(() => setShowHelpModal(true), []);
-
-	const handleBrowserExtension = useCallback(() => {
-		window.open("https://chrome.google.com/webstore", "_blank");
-		toast("Browser extension download coming soon!");
-	}, []);
-
-	const createRouterPush = useCallback(
-		(path: string) => () => {
-			router.push(path);
-		},
-		[router],
-	);
 
 	const handleCampaignModalToggle = useCallback(
 		(open: boolean) => {
@@ -355,19 +345,6 @@ export default function QuickStartPage() {
 		() => setShowBulkSuiteModal(false),
 		[],
 	);
-
-	const cards = useQuickStartCards({
-		onImport: handleImportFromSource,
-		onSelectList: handleSelectList,
-		onConfigureConnections: handleConnectionSettings,
-		onCampaignCreate: handleCampaignCreation,
-		onViewTemplates: handleViewTemplates,
-		onOpenWebhookModal: handleOpenWebhookModal,
-		onBrowserExtension: handleBrowserExtension,
-		createRouterPush,
-		onStartNewSearch: handleStartNewSearch,
-		onOpenSavedSearches: handleOpenSavedSearches,
-	});
 
 	return (
 		<div className="container mx-auto px-4 py-8">
