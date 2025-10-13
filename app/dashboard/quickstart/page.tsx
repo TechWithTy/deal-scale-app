@@ -1,10 +1,11 @@
 "use client";
 
-import { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { campaignSteps } from "@/_tests/tours/campaignTour";
+import WalkThroughModal from "@/components/leadsSearch/search/WalkthroughModal";
 import QuickStartActionsGrid from "@/components/quickstart/QuickStartActionsGrid";
 import QuickStartBadgeList from "@/components/quickstart/QuickStartBadgeList";
 import QuickStartHeader from "@/components/quickstart/QuickStartHeader";
@@ -15,10 +16,11 @@ import SavedSearchModal from "@/components/reusables/modals/SavedSearchModal";
 import CampaignModalMain from "@/components/reusables/modals/user/campaign/CampaignModalMain";
 import LeadBulkSuiteModal from "@/components/reusables/modals/user/lead/LeadBulkSuiteModal";
 import LeadModalMain from "@/components/reusables/modals/user/lead/LeadModalMain";
-import WalkThroughModal from "@/components/leadsSearch/search/WalkthroughModal";
 import { useCampaignCreationStore } from "@/lib/stores/campaignCreation";
 import { useModalStore } from "@/lib/stores/dashboard";
 import type { WebhookStage } from "@/lib/stores/dashboard";
+
+void React;
 
 interface CampaignContext {
 	readonly leadListId: string;
@@ -37,10 +39,12 @@ export default function QuickStartPage() {
 	const [showCampaignModal, setShowCampaignModal] = useState(false);
 	const [campaignModalContext, setCampaignModalContext] =
 		useState<CampaignContext | null>(null);
+	const previousCampaignModalOpenRef = useRef(showCampaignModal);
 
 	const router = useRouter();
 	const openWebhookModal = useModalStore((state) => state.openWebhookModal);
 	const campaignStore = useCampaignCreationStore();
+	const resetCampaignStore = campaignStore.reset;
 
 	const {
 		savedSearches,
@@ -126,16 +130,27 @@ export default function QuickStartPage() {
 		[router],
 	);
 
-	const handleCampaignModalToggle = useCallback(
-		(open: boolean) => {
-			setShowCampaignModal(open);
-			if (!open) {
-				setCampaignModalContext(null);
-				campaignStore.reset();
-			}
-		},
-		[campaignStore],
-	);
+	const handleCampaignModalToggle = useCallback((open: boolean) => {
+		setShowCampaignModal(open);
+	}, []);
+
+	useEffect(() => {
+		const wasOpen = previousCampaignModalOpenRef.current;
+		previousCampaignModalOpenRef.current = showCampaignModal;
+
+		if (wasOpen && !showCampaignModal) {
+			setCampaignModalContext(null);
+			const timeout = setTimeout(() => {
+				resetCampaignStore();
+			}, 0);
+
+			return () => {
+				clearTimeout(timeout);
+			};
+		}
+
+		return undefined;
+	}, [showCampaignModal, resetCampaignStore]);
 
 	const handleCloseBulkModal = useCallback(
 		() => setShowBulkSuiteModal(false),
