@@ -183,7 +183,7 @@ export const navItems: NavItem[] = [
 
 	{
 		title: "Lead Lists",
-		href: "/dashboard/leadList",
+		href: "/dashboard/lead-list",
 		icon: "scribe",
 		label: "Lead Lists",
 		featureKey: "navigation.leadLists",
