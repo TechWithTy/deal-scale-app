@@ -45,7 +45,7 @@ export default function QuickStartPage() {
 		useState<CampaignContext | null>(null);
 	const previousCampaignModalOpenRef = useRef(showCampaignModal);
 	const campaignResetTimeoutRef = useRef<number | null>(null);
-	const quickstartDebugEnabled = process.env.NODE_ENV !== "production";
+	const quickstartDebugEnabled = process.env.NODE_ENV !== "production" && false; // Temporarily disabled for browser compatibility testing
 	const logQuickStartDebug = useCallback(
 		(phase: string, details: Record<string, unknown>) => {
 			if (!quickstartDebugEnabled) return;
@@ -63,9 +63,8 @@ export default function QuickStartPage() {
 		[quickstartDebugEnabled],
 	);
 	const campaignModalTransitionRef = useRef({
-		lastState: showCampaignModal,
-		lastTimestamp:
-			typeof performance !== "undefined" ? performance.now() : Date.now(),
+		lastState: false,
+		lastTimestamp: 0,
 		rapidTransitionCount: 0,
 	});
 	const previousCampaignContextRef = useRef<CampaignContext | null>(
@@ -130,6 +129,7 @@ export default function QuickStartPage() {
 			setSelectedLeadListId,
 			setLeadCount,
 			setCampaignName,
+			logQuickStartDebug,
 		],
 	);
 
@@ -142,7 +142,7 @@ export default function QuickStartPage() {
 			handleLaunchCampaign(payload);
 			return true;
 		},
-		[handleLaunchCampaign],
+		[handleLaunchCampaign, logQuickStartDebug],
 	);
 
 	const handleCloseLeadModal = useCallback(() => setShowLeadModal(false), []);
@@ -166,7 +166,7 @@ export default function QuickStartPage() {
 		});
 		setCampaignModalContext(null);
 		setShowCampaignModal(true);
-	}, [resetCampaignStore, setAreaMode]);
+	}, [resetCampaignStore, setAreaMode, logQuickStartDebug]);
 
 	const handleViewTemplates = useCallback(
 		() => toast.info("Campaign templates feature coming soon!"),
@@ -243,8 +243,7 @@ export default function QuickStartPage() {
 	}, [campaignModalContext, logQuickStartDebug]);
 
 	useEffect(() => {
-		const now =
-			typeof performance !== "undefined" ? performance.now() : Date.now();
+		const now = Date.now(); // Use Date.now() instead of performance.now() for better browser compatibility
 		const previousState = campaignModalTransitionRef.current.lastState;
 		const timeSinceLast =
 			now - campaignModalTransitionRef.current.lastTimestamp;
@@ -264,19 +263,16 @@ export default function QuickStartPage() {
 		logQuickStartDebug("campaign-modal-visibility-updated", {
 			previous: previousState,
 			next: showCampaignModal,
-			deltaMs: Number.isFinite(timeSinceLast)
-				? Math.round(timeSinceLast)
-				: null,
+			deltaMs: timeSinceLast,
 			rapidTransitionCount: nextRapidTransitionCount,
 			contextPresent: Boolean(campaignModalContext),
 		});
 
-		if (nextRapidTransitionCount > 5 && previousState !== showCampaignModal) {
+		if (nextRapidTransitionCount > 3 && previousState !== showCampaignModal) {
+			// Reduced from 5 to 3 for better compatibility
 			logQuickStartWarn("campaign-modal-rapid-toggle-detected", {
 				transitions: nextRapidTransitionCount,
-				deltaMs: Number.isFinite(timeSinceLast)
-					? Math.round(timeSinceLast)
-					: null,
+				deltaMs: timeSinceLast,
 				stack: new Error("campaign-modal-rapid-toggle").stack,
 			});
 		}
@@ -295,9 +291,10 @@ export default function QuickStartPage() {
 			logQuickStartDebug("campaign-modal-close-observed", {
 				source: "visibility-effect",
 				campaignModalContext,
-				stack: new Error("campaign-modal-close-observed").stack,
 			});
 			setCampaignModalContext(null);
+
+			// Clear any existing timeout before setting a new one
 			if (campaignResetTimeoutRef.current !== null) {
 				clearTimeout(campaignResetTimeoutRef.current);
 			}
@@ -306,22 +303,18 @@ export default function QuickStartPage() {
 				source: "launch-or-dismiss",
 			});
 
-			campaignResetTimeoutRef.current =
-				typeof window !== "undefined"
-					? window.setTimeout(() => {
-							logQuickStartDebug("campaign-store-reset", {
-								reason: "modal-close-timer",
-							});
-							resetCampaignStore();
-							campaignResetTimeoutRef.current = null;
-						}, 150)
-					: null;
+			// Use a more conservative timeout for better browser compatibility
+			campaignResetTimeoutRef.current = window.setTimeout(() => {
+				logQuickStartDebug("campaign-store-reset", {
+					reason: "modal-close-timer",
+				});
+				resetCampaignStore();
+				campaignResetTimeoutRef.current = null;
+			}, 300); // Increased from 150ms to 300ms for better compatibility
 
 			return () => {
 				if (campaignResetTimeoutRef.current !== null) {
-					if (typeof window !== "undefined") {
-						clearTimeout(campaignResetTimeoutRef.current);
-					}
+					clearTimeout(campaignResetTimeoutRef.current);
 					campaignResetTimeoutRef.current = null;
 				}
 			};
@@ -333,9 +326,7 @@ export default function QuickStartPage() {
 			});
 			return () => {
 				if (campaignResetTimeoutRef.current !== null) {
-					if (typeof window !== "undefined") {
-						clearTimeout(campaignResetTimeoutRef.current);
-					}
+					clearTimeout(campaignResetTimeoutRef.current);
 					campaignResetTimeoutRef.current = null;
 				}
 			};
@@ -355,9 +346,7 @@ export default function QuickStartPage() {
 				logQuickStartDebug("campaign-modal-timeout-dispose", {
 					reason: "component-unmount",
 				});
-				if (typeof window !== "undefined") {
-					clearTimeout(campaignResetTimeoutRef.current);
-				}
+				clearTimeout(campaignResetTimeoutRef.current);
 				campaignResetTimeoutRef.current = null;
 			}
 		},
