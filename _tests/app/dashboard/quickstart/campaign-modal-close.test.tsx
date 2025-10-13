@@ -135,10 +135,10 @@ describe("QuickStartPage campaign modal reset timing", () => {
 		resetSpy.mockRestore();
 	});
 
-	it("closes the modal and navigates when a campaign launches", () => {
-		render(<QuickStartPage />);
+        it("closes the modal and navigates when a campaign launches", () => {
+                render(<QuickStartPage />);
 
-		expect(onCampaignLaunchedRef.current).toBeTypeOf("function");
+                expect(onCampaignLaunchedRef.current).toBeTypeOf("function");
 
 		act(() => {
 			onCampaignLaunchedRef.current?.({
@@ -147,9 +147,46 @@ describe("QuickStartPage campaign modal reset timing", () => {
 			});
 		});
 
-		expect(routerPushMock).toHaveBeenCalledTimes(1);
-		expect(routerPushMock).toHaveBeenCalledWith(
-			"/dashboard/campaigns?campaignId=campaign_test&type=call",
-		);
-	});
+                expect(routerPushMock).toHaveBeenCalledTimes(1);
+                expect(routerPushMock).toHaveBeenCalledWith(
+                        "/dashboard/campaigns?campaignId=campaign_test&type=call",
+                );
+        });
+
+        it("defers the campaign store reset until the close timers flush after launch", () => {
+                render(<QuickStartPage />);
+
+                const resetSpy = vi.spyOn(useCampaignCreationStore.getState(), "reset");
+
+                expect(onOpenChangeRef.current).toBeTypeOf("function");
+                expect(onCampaignLaunchedRef.current).toBeTypeOf("function");
+
+                act(() => {
+                        onOpenChangeRef.current?.(true);
+                });
+
+                resetSpy.mockClear();
+
+                act(() => {
+                        onCampaignLaunchedRef.current?.({
+                                campaignId: "campaign_test",
+                                channelType: "call",
+                        });
+                });
+
+                expect(resetSpy).not.toHaveBeenCalled();
+
+                act(() => {
+                        vi.advanceTimersByTime(149);
+                });
+
+                expect(resetSpy).not.toHaveBeenCalled();
+
+                act(() => {
+                        vi.advanceTimersByTime(1);
+                });
+
+                expect(resetSpy).toHaveBeenCalledTimes(1);
+                resetSpy.mockRestore();
+        });
 });
