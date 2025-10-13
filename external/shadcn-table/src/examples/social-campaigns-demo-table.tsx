@@ -38,7 +38,21 @@ export default function SocialCampaignsDemoTable({
         onCampaignSelect,
         initialCampaigns,
 }: SocialCampaignsDemoTableProps) {
-        const [data, setData] = React.useState<CallCampaign[]>(() => initialCampaigns ?? []);
+        const fallbackCampaigns = React.useMemo(() => generateSocialCampaignData(), []);
+
+        const mergeCampaigns = React.useCallback(
+                (incoming?: CallCampaign[]) => {
+                        if (!incoming || incoming.length === 0) {
+                                return [...fallbackCampaigns];
+                        }
+                        const seen = new Set(incoming.map((campaign) => campaign.id));
+                        const extras = fallbackCampaigns.filter((campaign) => !seen.has(campaign.id));
+                        return [...incoming, ...extras];
+                },
+                [fallbackCampaigns],
+        );
+
+        const [data, setData] = React.useState<CallCampaign[]>(() => mergeCampaigns(initialCampaigns));
 	const [query, setQuery] = React.useState("");
 	const [aiOpen, setAiOpen] = React.useState(false);
 	const [aiRows, setAiRows] = React.useState<CallCampaign[]>([]);
@@ -55,12 +69,8 @@ export default function SocialCampaignsDemoTable({
 	const getKey = React.useCallback((r: CallCampaign) => r.id ?? r.name, []);
 
         React.useEffect(() => {
-                if (initialCampaigns && initialCampaigns.length > 0) {
-                        setData(initialCampaigns);
-                        return;
-                }
-                setData(generateSocialCampaignData());
-        }, [initialCampaigns]);
+                setData(mergeCampaigns(initialCampaigns));
+        }, [initialCampaigns, mergeCampaigns]);
 
 	const columns = React.useMemo<ColumnDef<CallCampaign>[]>(
 		() => buildSocialColumns(),

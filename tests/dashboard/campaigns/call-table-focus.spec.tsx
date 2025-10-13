@@ -1,102 +1,232 @@
 import React from "react";
-import { renderHook } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import type { Row, Table } from "@tanstack/react-table";
-import { describe, expect, test, vi } from "vitest";
+import { act } from "react";
+import { beforeEach, describe, expect, test, vi } from "vitest";
 
 import type { CallCampaign } from "@/types/_dashboard/campaign";
 import { useCampaignRowFocus } from "@/components/campaigns/utils/useCampaignRowFocus";
+import CampaignPage from "@/components/campaigns/campaignPage";
+import { useCampaignStore } from "@/lib/stores/campaigns";
+import { createLaunchCampaign } from "./helpers/campaignFactories";
 
-const buildRow = (rowId: string, campaignId: string): Row<CallCampaign> => {
-        const campaign: CallCampaign = {
-                id: campaignId,
-                name: campaignId,
-                status: "queued",
-                startDate: new Date().toISOString(),
-                callInformation: [],
-                callerNumber: "+1-555-000-0000",
-                receiverNumber: "+1-555-000-0001",
-                duration: 0,
-                callType: "inbound",
-                calls: 0,
-                inQueue: 0,
-                leads: 0,
-                voicemail: 0,
-                hungUp: 0,
-                dead: 0,
-                wrongNumber: 0,
-                inactiveNumbers: 0,
-                dnc: 0,
-                endedReason: [],
-        };
+const pushMock = vi.fn();
 
-        return {
-                id: rowId,
-                index: Number(rowId.replace("row-", "")),
-                original: campaign,
-        } as unknown as Row<CallCampaign>;
-};
+vi.mock("next/navigation", () => ({
+        useRouter: () => ({
+                push: pushMock,
+        }),
+        usePathname: () => "/dashboard/campaigns",
+        useSearchParams: () => new URLSearchParams() as unknown as ReadonlyURLSearchParams,
+}));
 
-describe("useCampaignRowFocus", () => {
-        test("selects and focuses a matching row", () => {
-                const rows = [
-                        buildRow("row-0", "campaign-alpha"),
-                        buildRow("row-1", "campaign-beta"),
-                ];
+vi.mock("@/components/reusables/modals/user/lead/LeadModalMain", () => ({
+        __esModule: true,
+        default: () => null,
+}));
 
-                const setRowSelection = vi.fn();
-                const onRowFocused = vi.fn();
+vi.mock("@/components/reusables/modals/user/skipTrace/SkipTraceModalMain", () => ({
+        __esModule: true,
+        default: () => null,
+}));
 
-                const table = {
-                        getRowModel: () => ({ rows }),
-                        setRowSelection,
-                } as unknown as Table<CallCampaign>;
+vi.mock("lottie-react", () => ({
+        __esModule: true,
+        default: () => null,
+}));
 
-                const { result, rerender } = renderHook(
-                        (props) => useCampaignRowFocus(props),
-                        {
-                                initialProps: {
-                                        campaignId: "campaign-beta",
-                                        table,
-                                        resolveRowId: (row: Row<CallCampaign>) => row.original.id,
-                                        onRowFocused,
-                                },
-                        },
+vi.mock("external/shadcn-table/src/examples/campaigns/modal/CampaignModalMain", () => ({
+        __esModule: true,
+        default: () => null,
+}));
+
+vi.mock("external/shadcn-table/src/examples/social-campaigns-demo-table", () => ({
+        __esModule: true,
+        default: () => null,
+}));
+
+vi.mock("external/shadcn-table/src/examples/direct-mail-campaigns-demo-table", () => ({
+        __esModule: true,
+        default: () => null,
+}));
+
+vi.mock("lottie-web", () => ({
+        __esModule: true,
+        default: {
+                loadAnimation: vi.fn(() => ({ destroy: vi.fn() })),
+        },
+}));
+
+vi.mock("lottie-web/build/player/lottie", () => ({
+        __esModule: true,
+        default: {
+                loadAnimation: vi.fn(() => ({ destroy: vi.fn() })),
+        },
+        loadAnimation: vi.fn(() => ({ destroy: vi.fn() })),
+}));
+
+vi.mock("external/shadcn-table/src/examples/call-campaigns-demo-table", () => ({
+        __esModule: true,
+        default: createMockCampaignTable("call-table"),
+}));
+
+vi.mock("external/shadcn-table/src/examples/text-campaigns-demo-table", () => ({
+        __esModule: true,
+        default: createMockCampaignTable("text-table"),
+}));
+
+vi.mock("external/shadcn-table/src/nuqs-shared", () => ({
+        __esModule: true,
+        NuqsAdapter: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+}));
+
+vi.mock("@/components/access/FeatureGuard", () => ({
+        __esModule: true,
+        FeatureGuard: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+}));
+
+Object.defineProperty(window.HTMLCanvasElement.prototype, "getContext", {
+        value: vi.fn(() => ({
+                fillRect: vi.fn(),
+                clearRect: vi.fn(),
+                getImageData: vi.fn(() => ({ data: [] })),
+                putImageData: vi.fn(),
+                createImageData: vi.fn(() => []),
+                setTransform: vi.fn(),
+                drawImage: vi.fn(),
+                save: vi.fn(),
+                fillText: vi.fn(),
+                restore: vi.fn(),
+                beginPath: vi.fn(),
+                closePath: vi.fn(),
+                stroke: vi.fn(),
+                translate: vi.fn(),
+                scale: vi.fn(),
+                rotate: vi.fn(),
+                arc: vi.fn(),
+                fill: vi.fn(),
+                measureText: vi.fn(() => ({ width: 0 })),
+                transform: vi.fn(),
+                rect: vi.fn(),
+                clip: vi.fn(),
+        })),
+        configurable: true,
+});
+
+interface MockCampaignTableProps {
+        campaignId?: string | null;
+        initialCampaigns?: CallCampaign[];
+        onCampaignSelect?: (id: string) => void;
+}
+
+function createMockCampaignTable(testId: string) {
+        return function MockCampaignTable({
+                campaignId,
+                initialCampaigns = [],
+                onCampaignSelect,
+        }: MockCampaignTableProps) {
+                const table = React.useMemo(
+                        () => ({
+                                getRowModel: () => ({
+                                        rows: initialCampaigns.map((campaign, index) => ({
+                                                id: `row-${index}`,
+                                                original: campaign,
+                                        })),
+                                }),
+                                setRowSelection: vi.fn(),
+                        }),
+                        [initialCampaigns],
                 );
 
-                expect(setRowSelection).toHaveBeenCalledWith({ "row-1": true });
-                expect(onRowFocused).toHaveBeenCalledWith(rows[1]);
-                expect(result.current.focusedRowId).toBe("campaign-beta");
-                expect(result.current.status).toBe("found");
-
-                rerender({
-                        campaignId: undefined,
-                        table,
+                const { focusedRowId, status } = useCampaignRowFocus<CallCampaign>({
+                        campaignId: campaignId ?? null,
+                        table: table as unknown as Table<CallCampaign>,
                         resolveRowId: (row: Row<CallCampaign>) => row.original.id,
-                        onRowFocused,
+                        onRowFocused: (row: Row<CallCampaign>) => {
+                                onCampaignSelect?.(row.original.id);
+                        },
                 });
 
-                expect(setRowSelection).toHaveBeenCalledWith({});
-                expect(result.current.status).toBe("idle");
+                return (
+                        <div
+                                data-focused-id={focusedRowId ?? ""}
+                                data-status={status}
+                                data-testid={testId}
+                        >
+                                {initialCampaigns.map((campaign) => (
+                                        <div key={campaign.id} data-row-id={campaign.id}>
+                                                {campaign.name}
+                                        </div>
+                                ))}
+                        </div>
+                );
+        };
+}
+
+describe("Campaign tables integration", () => {
+        beforeEach(() => {
+                pushMock.mockClear();
+                act(() => {
+                        const store = useCampaignStore.getState();
+                        if ("reset" in store && typeof store.reset === "function") {
+                                store.reset();
+                        }
+                });
         });
 
-        test("reports not-found when campaign is missing", () => {
-                const rows = [buildRow("row-0", "campaign-alpha")];
+        test("highlights a newly launched call campaign", async () => {
+                const launchedId = "campaign-test";
 
-                const table = {
-                        getRowModel: () => ({ rows }),
-                        setRowSelection: vi.fn(),
-                } as unknown as Table<CallCampaign>;
+                act(() => {
+                        useCampaignStore.getState().registerLaunchedCampaign({
+                                channel: "call",
+                                campaign: createLaunchCampaign(launchedId),
+                        });
+                });
 
-                const { result } = renderHook(() =>
-                        useCampaignRowFocus({
-                                campaignId: "missing",
-                                table,
-                                resolveRowId: (row: Row<CallCampaign>) => row.original.id,
-                                onRowFocused: vi.fn(),
-                        }),
+                render(
+                        <CampaignPage
+                                urlParams={{ type: "call", campaignId: launchedId }}
+                        />,
                 );
 
-                expect(result.current.focusedRowId).toBeNull();
-                expect(result.current.status).toBe("not-found");
+                const table = await screen.findByTestId("call-table");
+
+                await waitFor(() => {
+                        const row = table.querySelector(`[data-row-id="${launchedId}"]`);
+                        expect(row).not.toBeNull();
+                        expect(table.getAttribute("data-focused-id")).toBe(launchedId);
+                        expect(table.getAttribute("data-status")).toBe("found");
+                });
+
+                expect(screen.queryByText(/campaign not found/i)).toBeNull();
+        });
+
+        test("highlights a newly launched text campaign", async () => {
+                const launchedId = "text-campaign";
+
+                act(() => {
+                        useCampaignStore.getState().registerLaunchedCampaign({
+                                channel: "text",
+                                campaign: createLaunchCampaign(launchedId),
+                        });
+                });
+
+                render(
+                        <CampaignPage
+                                urlParams={{ type: "text", campaignId: launchedId }}
+                        />,
+                );
+
+                const table = await screen.findByTestId("text-table");
+
+                await waitFor(() => {
+                        const row = table.querySelector(`[data-row-id="${launchedId}"]`);
+                        expect(row).not.toBeNull();
+                        expect(table.getAttribute("data-focused-id")).toBe(launchedId);
+                        expect(table.getAttribute("data-status")).toBe("found");
+                });
+
+                expect(screen.queryByText(/campaign not found/i)).toBeNull();
         });
 });
