@@ -23,6 +23,8 @@ import { shallow } from "zustand/shallow";
 
 void React;
 
+void React;
+
 interface CampaignContext {
 	readonly leadListId: string;
 	readonly leadListName: string;
@@ -44,22 +46,8 @@ export default function QuickStartPage() {
 
 	const router = useRouter();
 	const openWebhookModal = useModalStore((state) => state.openWebhookModal);
-	const {
-		reset: resetCampaignStore,
-		setAreaMode,
-		setSelectedLeadListId,
-		setLeadCount,
-		setCampaignName,
-	} = useCampaignCreationStore(
-		(state) => ({
-			reset: state.reset,
-			setAreaMode: state.setAreaMode,
-			setSelectedLeadListId: state.setSelectedLeadListId,
-			setLeadCount: state.setLeadCount,
-			setCampaignName: state.setCampaignName,
-		}),
-		shallow,
-	);
+	const campaignStore = useCampaignCreationStore();
+	const resetCampaignStore = campaignStore.reset;
 
 	const {
 		savedSearches,
@@ -155,20 +143,23 @@ export default function QuickStartPage() {
 		setShowCampaignModal(open);
 	}, []);
 
-	const handleCampaignLaunched = useCallback(
-		({
-			campaignId,
-			channelType,
-		}: { campaignId: string; channelType: string }) => {
-			setShowCampaignModal(false);
-			const params = new URLSearchParams({
-				campaignId,
-				type: channelType,
-			});
-			router.push(`/dashboard/campaigns?${params.toString()}`);
-		},
-		[router],
-	);
+	useEffect(() => {
+		const wasOpen = previousCampaignModalOpenRef.current;
+		previousCampaignModalOpenRef.current = showCampaignModal;
+
+		if (wasOpen && !showCampaignModal) {
+			setCampaignModalContext(null);
+			const timeout = setTimeout(() => {
+				resetCampaignStore();
+			}, 0);
+
+			return () => {
+				clearTimeout(timeout);
+			};
+		}
+
+		return undefined;
+	}, [showCampaignModal, resetCampaignStore]);
 
 	useEffect(() => {
 		const wasOpen = previousCampaignModalOpenRef.current;
