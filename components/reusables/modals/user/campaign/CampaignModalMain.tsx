@@ -33,6 +33,10 @@ interface CampaignModalMainProps {
 	initialLeadCount?: number;
 	initialStep?: number;
 	defaultChannel?: "call" | "text" | "social" | "directmail";
+	onCampaignLaunched?: (payload: {
+		campaignId: string;
+		channelType: string;
+	}) => void;
 }
 
 const allChannels: ("directmail" | "call" | "text" | "social")[] = [
@@ -78,8 +82,8 @@ export default function CampaignModalMain({
 	initialLeadCount,
 	initialStep = 0,
 	defaultChannel,
+	onCampaignLaunched,
 }: CampaignModalMainProps) {
-	const router = useRouter();
 	const {
 		areaMode,
 		setAreaMode,
@@ -89,7 +93,6 @@ export default function CampaignModalMain({
 		setSelectedLeadListAId,
 		leadCount,
 		setLeadCount,
-		daysSelected,
 		setDaysSelected,
 		reachBeforeBusiness,
 		reachAfterBusiness,
@@ -109,7 +112,38 @@ export default function CampaignModalMain({
 		isLeadListSelectionValid,
 		availableAgents,
 		perNumberDailyLimit,
-	} = useCampaignCreationStore();
+	} = useCampaignCreationStore(
+		(state) => ({
+			areaMode: state.areaMode,
+			setAreaMode: state.setAreaMode,
+			selectedLeadListId: state.selectedLeadListId,
+			setSelectedLeadListId: state.setSelectedLeadListId,
+			selectedLeadListAId: state.selectedLeadListAId,
+			setSelectedLeadListAId: state.setSelectedLeadListAId,
+			leadCount: state.leadCount,
+			setLeadCount: state.setLeadCount,
+			setDaysSelected: state.setDaysSelected,
+			reachBeforeBusiness: state.reachBeforeBusiness,
+			reachAfterBusiness: state.reachAfterBusiness,
+			reachOnWeekend: state.reachOnWeekend,
+			startDate: state.startDate,
+			endDate: state.endDate,
+			primaryChannel: state.primaryChannel,
+			setPrimaryChannel: state.setPrimaryChannel,
+			campaignName: state.campaignName,
+			setCampaignName: state.setCampaignName,
+			abTestingEnabled: state.abTestingEnabled,
+			setAbTestingEnabled: state.setAbTestingEnabled,
+			minDailyAttempts: state.minDailyAttempts,
+			maxDailyAttempts: state.maxDailyAttempts,
+			doVoicemailDrops: state.doVoicemailDrops,
+			includeWeekends: state.includeWeekends,
+			isLeadListSelectionValid: state.isLeadListSelectionValid,
+			availableAgents: state.availableAgents,
+			perNumberDailyLimit: state.perNumberDailyLimit,
+		}),
+		shallow,
+	);
 
 	const [step, setStep] = useState(initialStep);
 
@@ -138,12 +172,14 @@ export default function CampaignModalMain({
 	}, [days, reachOnWeekend]);
 
 	useEffect(() => {
+		if (!isOpen) return;
+		const currentDaysSelected =
+			useCampaignCreationStore.getState().daysSelected;
+		if (currentDaysSelected === mutatedDays) return;
 		setDaysSelected(mutatedDays);
-	}, [mutatedDays, setDaysSelected]);
+	}, [isOpen, mutatedDays, setDaysSelected]);
 
 	const watchedCustomizationValues = customizationForm.watch();
-	const watchedChannelSelection = useCampaignCreationStore();
-
 	const campaignCost = useMemo(() => {
 		// Debug logging for troubleshooting
 		console.log("Campaign Cost Calculation Debug:", {
@@ -171,7 +207,7 @@ export default function CampaignModalMain({
 				SocialCost: 0,
 				DirectMailCost: 0,
 				TotalCost: 0,
-				AgentsAvailable: watchedChannelSelection.availableAgents?.length || 0,
+				AgentsAvailable: availableAgents?.length || 0,
 				Plan: "starter",
 				TotalBillableCredits: 0,
 				Margin: 0.85,
@@ -192,7 +228,7 @@ export default function CampaignModalMain({
 			endDate,
 			daysSelected: mutatedDays,
 			campaignName,
-			availableAgents: watchedChannelSelection.availableAgents,
+			availableAgents,
 			plan: "starter", // Default plan for now
 		});
 
@@ -212,7 +248,7 @@ export default function CampaignModalMain({
 		endDate,
 		mutatedDays,
 		campaignName,
-		watchedChannelSelection.availableAgents,
+		availableAgents,
 	]);
 
 	const estimatedCredits = getEstimatedCredits(campaignCost);
@@ -228,12 +264,19 @@ export default function CampaignModalMain({
 	});
 
 	const hasInitializedRef = useRef(false);
+	const previousIsOpenRef = useRef(isOpen);
 
 	useEffect(() => {
 		if (!isOpen) {
 			hasInitializedRef.current = false;
+			if (previousIsOpenRef.current) {
+				customizationForm.reset(DEFAULT_CUSTOMIZATION_VALUES);
+			}
+			previousIsOpenRef.current = isOpen;
 			return;
 		}
+
+		previousIsOpenRef.current = isOpen;
 
 		const runInitialization = () => {
 			if (defaultChannel) {
@@ -338,16 +381,14 @@ export default function CampaignModalMain({
 
 		const campaignType = channelTypeMap[primaryChannel || ""] || "call";
 
-		const params = new URLSearchParams({
-			type: campaignType,
-			campaignId,
-		});
-
-		router.push(`/dashboard/campaigns?${params.toString()}`);
-
-		// Close modal after navigation
+		// Close modal before notifying listeners to avoid Radix presence loops
 		closeModal();
-	}, [primaryChannel, closeModal, router]);
+
+		onCampaignLaunched?.({
+			campaignId,
+			channelType: campaignType,
+		});
+	}, [primaryChannel, closeModal, onCampaignLaunched]);
 
 	const handleCreateAbTest = (label?: string) => {
 		// Only create A/B test if explicitly requested
@@ -409,7 +450,6 @@ export default function CampaignModalMain({
 					{/* Debug Log - Shows all selected campaign settings */}
 					<CampaignSettingsDebug
 						formData={watchedCustomizationValues}
-						storeSnapshot={watchedChannelSelection}
 						campaignCost={campaignCost}
 					/>
 				</div>
