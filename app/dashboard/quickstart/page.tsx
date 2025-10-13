@@ -377,9 +377,9 @@ export default function QuickStartPage() {
 		<div className="container mx-auto px-4 py-8">
 			<QuickStartHeader onOpenWalkthrough={handleWalkthroughOpen} />
 
-			<div className="mb-10 flex justify-center">
+			{/* <div className="mb-10 flex justify-center">
 				<QuickStartBadgeList />
-			</div>
+			</div> */}
 
 			<QuickStartActionsGrid cards={cards} />
 

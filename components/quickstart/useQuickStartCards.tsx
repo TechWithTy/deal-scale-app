@@ -63,8 +63,7 @@ export const useQuickStartCards = ({
 					{
 						label: "Import from Any Source",
 						icon: Upload,
-						variant: "outline",
-						className: "border-primary/30 text-primary hover:bg-primary/10",
+						variant: "default",
 						onClick: onImport,
 					},
 					{
@@ -94,6 +93,10 @@ export const useQuickStartCards = ({
 				description:
 					"Launch automated outreach campaigns with AI-powered messaging and lead management",
 				icon: Plus,
+				cardClassName:
+					"border-blue-500/30 bg-gradient-to-br from-blue-500/5 to-blue-400/10 hover:border-blue-500/50 hover:shadow-xl hover:shadow-blue-500/20",
+				titleClassName: "text-blue-600",
+				iconWrapperClassName: "bg-blue-500/20 group-hover:bg-blue-500/30",
 				featureChips: [
 					{ label: "AI Messaging", tone: "primary" },
 					{ label: "Multi-Channel Touches", tone: "accent" },
@@ -115,7 +118,7 @@ export const useQuickStartCards = ({
 						label: "View Campaigns",
 						icon: Settings,
 						variant: "outline",
-						className: "border-primary/30 text-primary hover:bg-primary/10",
+						className: "border-blue-500/30 text-blue-600 hover:bg-blue-500/10",
 						onClick: createRouterPush("/dashboard/campaigns"),
 					},
 				],
@@ -125,11 +128,15 @@ export const useQuickStartCards = ({
 				title: "Webhooks & Feeds",
 				description:
 					"Connect DealScale with your CRM and publish updates instantly.",
-				iconWrapperClassName: "relative",
+				cardClassName:
+					"border-purple-500/30 bg-gradient-to-br from-purple-500/5 to-purple-400/10 hover:border-purple-500/50 hover:shadow-xl hover:shadow-purple-500/20",
+				titleClassName: "text-purple-600",
+				iconWrapperClassName:
+					"relative bg-purple-500/20 group-hover:bg-purple-500/30",
 				iconNode: (
 					<>
-						<Webhook className="h-6 w-6 text-primary" />
-						<Rss className="-bottom-1 -right-1 absolute h-4 w-4 text-primary/70" />
+						<Webhook className="h-6 w-6 text-purple-600" />
+						<Rss className="-bottom-1 -right-1 absolute h-4 w-4 text-purple-600/70" />
 					</>
 				),
 				featureChips: [
@@ -139,14 +146,24 @@ export const useQuickStartCards = ({
 				],
 				actions: [
 					{
-						label: "Setup Incoming",
+						label: "Trigger Campaigns",
 						icon: Settings,
 						onClick: () => onOpenWebhookModal("incoming"),
 					},
 					{
-						label: "Setup Outgoing",
+						label: "Sync Leads",
 						icon: List,
 						variant: "outline",
+						className:
+							"border-purple-500/30 text-purple-600 hover:bg-purple-500/10",
+						onClick: () => onOpenWebhookModal("outgoing"),
+					},
+					{
+						label: "Get Real Time Alerts",
+						icon: Webhook,
+						variant: "outline",
+						className:
+							"border-purple-500/30 text-purple-600 hover:bg-purple-500/10",
 						onClick: () => onOpenWebhookModal("outgoing"),
 					},
 				],
@@ -158,9 +175,9 @@ export const useQuickStartCards = ({
 					"View & manage campaigns, export lead lists, conduct A/B tests, and analyze your data",
 				icon: Database,
 				cardClassName:
-					"border-primary/30 bg-gradient-to-br from-primary/5 to-primary/10 hover:border-primary/50 hover:shadow-xl hover:shadow-primary/20",
-				titleClassName: "text-primary",
-				iconWrapperClassName: "bg-primary/20 group-hover:bg-primary/30",
+					"border-teal-500/30 bg-gradient-to-br from-teal-500/5 to-teal-400/10 hover:border-teal-500/50 hover:shadow-xl hover:shadow-teal-500/20",
+				titleClassName: "text-teal-600",
+				iconWrapperClassName: "bg-teal-500/20 group-hover:bg-teal-500/30",
 				featureChips: [
 					{ label: "Performance Dashboards", tone: "info" },
 					{ label: "A/B Testing", tone: "warning" },
@@ -170,56 +187,20 @@ export const useQuickStartCards = ({
 					{
 						label: "Download Leads",
 						icon: Upload,
-						onClick: createRouterPush("/dashboard/lead-lists?download=true"),
+						onClick: createRouterPush(
+							"/dashboard/lead-list?listId=default-lead-list&download=true",
+						),
 					},
 					{
 						label: "Create A/B Test",
 						icon: List,
 						variant: "outline",
-						className: "border-primary/30 text-primary hover:bg-primary/10",
+						className: "border-teal-500/30 text-teal-600 hover:bg-teal-500/10",
 						onClick: createRouterPush(
 							"/dashboard/lead-lists?abtest=true&listname=ai-optimized-leads",
 						),
 					},
-					{
-						label: "Manage Leads",
-						icon: Settings,
-						variant: "outline",
-						onClick: createRouterPush("/dashboard/lead-lists"),
-					},
 				],
-			},
-			{
-				key: "extension",
-				title: "Browser Extension",
-				description:
-					"Enhance your workflow with our browser extension for seamless lead capture",
-				icon: Download,
-				cardClassName:
-					"border-orange-500/30 bg-gradient-to-br from-orange-500/5 to-orange-400/10 hover:border-orange-500/50 hover:shadow-xl hover:shadow-orange-500/20",
-				titleClassName: "text-orange-600",
-				iconWrapperClassName: "bg-orange-500/20 group-hover:bg-orange-500/30",
-				iconClassName: "text-orange-600",
-				featureChips: [
-					{ label: "One-Click Capture", tone: "primary" },
-					{ label: "Auto Enrich Profiles", tone: "success" },
-					{ label: "Works on Any Site", tone: "info" },
-				],
-				actions: [
-					{
-						label: "Download Extension",
-						icon: Download,
-						variant: "outline",
-						className:
-							"border-orange-500/30 text-orange-600 hover:bg-orange-500/10",
-						onClick: onBrowserExtension,
-					},
-				],
-				footer: (
-					<p className="text-center text-muted-foreground text-xs">
-						Capture leads directly from any website
-					</p>
-				),
 			},
 			{
 				key: "market-deals",
@@ -262,6 +243,48 @@ export const useQuickStartCards = ({
 						),
 					},
 				],
+			},
+			{
+				key: "extension",
+				title: "Browser Extension",
+				description:
+					"Enhance your workflow with our browser extension for seamless lead capture",
+				icon: Download,
+				cardClassName:
+					"border-orange-500/30 bg-gradient-to-br from-orange-500/5 to-orange-400/10 hover:border-orange-500/50 hover:shadow-xl hover:shadow-orange-500/20",
+				titleClassName: "text-orange-600",
+				iconWrapperClassName: "bg-orange-500/20 group-hover:bg-orange-500/30",
+				iconClassName: "text-orange-600",
+				featureChips: [
+					{ label: "One-Click Capture", tone: "primary" },
+					{ label: "Auto Enrich Profiles", tone: "success" },
+					{ label: "Manage Conversations Anywhere", tone: "accent" },
+
+					{ label: "Works on Any Site", tone: "info" },
+				],
+				actions: [
+					{
+						label: "Download Extension",
+						icon: Download,
+						variant: "outline",
+						className:
+							"bg-orange-500 text-white border-orange-500 hover:bg-orange-600",
+						onClick: onBrowserExtension,
+					},
+					{
+						label: "Manage Leads",
+						icon: Settings,
+						variant: "outline",
+						className:
+							"border-orange-500/30 text-orange-600 hover:bg-orange-500/10",
+						onClick: createRouterPush("/dashboard/lead-lists"),
+					},
+				],
+				footer: (
+					<p className="text-center text-muted-foreground text-xs">
+						Capture leads directly from any website
+					</p>
+				),
 			},
 		],
 		[

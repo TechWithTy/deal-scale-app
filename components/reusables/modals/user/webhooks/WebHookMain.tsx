@@ -257,7 +257,7 @@ export const WebhookModal: React.FC = () => {
 		if (webhookStage === "incoming") {
 			toast("Incoming webhook endpoint confirmed.");
 			closeWebhookModal();
-			router.push("/lead-list");
+			router.push("/dashboard/lead-list");
 			return;
 		}
 
@@ -265,13 +265,13 @@ export const WebhookModal: React.FC = () => {
 			const urlToPersist = outgoingWebhookUrl;
 			toast(`Outgoing webhook saved for ${urlToPersist || "your CRM"}.`);
 			closeWebhookModal();
-			router.push("/lead-list");
+			router.push("/dashboard/lead-list");
 			return;
 		}
 
 		toast("Feed preferences saved. Subscribers now receive real-time updates.");
 		closeWebhookModal();
-		router.push("/lead-list");
+		router.push("/dashboard/lead-list");
 	};
 
 	return (
