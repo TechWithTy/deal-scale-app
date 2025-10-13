@@ -1,12 +1,22 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+// biome-ignore lint/style/useImportType: <explanation>
 import React from "react";
-import { act } from "react";
+import { fireEvent, render, screen, act } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import CampaignModalMain from "@/components/reusables/modals/user/campaign/CampaignModalMain";
 import { useCampaignCreationStore } from "@/lib/stores/campaignCreation";
 
+<<<<<<< HEAD
 void React;
+=======
+const pushMock = vi.fn();
+
+vi.mock("next/navigation", () => ({
+	useRouter: () => ({
+		push: pushMock,
+	}),
+}));
+>>>>>>> codex/fix-errors-in-campaignmodalmain.tsx-ghxuls
 
 vi.mock("@/components/ui/dialog", () => ({
 	Dialog: ({ children }: { children: React.ReactNode }) => (
@@ -38,12 +48,96 @@ vi.mock(
 	() => ({
 		__esModule: true,
 		default: ({ onLaunch }: { onLaunch: () => void }) => (
-			<button type="button" onClick={onLaunch}>
-				Launch Campaign
-			</button>
+			<div>
+				<h2>Finalize your campaign</h2>
+				<label htmlFor="campaignName">Campaign Name</label>
+				<input id="campaignName" defaultValue="Ready Campaign" />
+
+				<label htmlFor="selectedAgentId">Assign AI Agent</label>
+				<select id="selectedAgentId" defaultValue="1">
+					<option value="1">John Doe</option>
+				</select>
+
+				<label htmlFor="selectedWorkflowId">Workflow</label>
+				<select id="selectedWorkflowId" defaultValue="wf1">
+					<option value="wf1">Default: Nurture 7-day</option>
+				</select>
+
+				<label htmlFor="selectedSalesScriptId">Sales Script</label>
+				<select id="selectedSalesScriptId" defaultValue="ss1">
+					<option value="ss1">General Sales Script</option>
+				</select>
+
+				<label htmlFor="campaignGoal">Campaign Goal</label>
+				<textarea
+					id="campaignGoal"
+					placeholder="Enter your campaign goal (1 sentence min, 1-2 paragraphs max)"
+					defaultValue="Generate at least 10 qualified leads for our sales team."
+				/>
+
+				<button type="button" onClick={onLaunch}>
+					Launch Campaign
+				</button>
+			</div>
 		),
 	}),
 );
+
+vi.mock("@/components/ui/form", () => ({
+	FormProvider: ({ children }: { children: React.ReactNode }) => (
+		<>{children}</>
+	),
+	FormField: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+	FormItem: ({ children }: { children: React.ReactNode }) => (
+		<div>{children}</div>
+	),
+	FormLabel: ({
+		children,
+		htmlFor,
+		...props
+	}: {
+		children: React.ReactNode;
+		htmlFor?: string;
+		[key: string]: unknown;
+	}) => (
+		<label htmlFor={htmlFor} {...props}>
+			{children}
+		</label>
+	),
+	FormControl: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+	FormMessage: () => null,
+}));
+
+vi.mock("@/components/ui/input", () => ({
+	Input: ({ ...props }) => <input {...props} />,
+}));
+
+vi.mock("@/components/ui/textarea", () => ({
+	Textarea: ({ ...props }) => <textarea {...props} />,
+}));
+
+vi.mock("@/components/ui/select", () => ({
+	Select: ({
+		children,
+		onValueChange,
+	}: {
+		children: React.ReactNode;
+		onValueChange?: (value: string) => void;
+	}) => <>{children}</>,
+	SelectContent: ({ children }: { children: React.ReactNode }) => (
+		<>{children}</>
+	),
+	SelectItem: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+	SelectTrigger: ({ children }: { children: React.ReactNode }) => (
+		<>{children}</>
+	),
+	SelectValue: ({ placeholder }: { placeholder?: string }) => (
+		<>{placeholder}</>
+	),
+}));
+vi.mock("@radix-ui/react-icons", () => ({
+	InfoCircledIcon: () => <div>Info</div>,
+}));
 
 vi.mock(
 	"@/components/reusables/modals/user/campaign/CampaignSettingsDebug",
@@ -79,9 +173,10 @@ describe("CampaignModalMain", () => {
 			/>,
 		);
 
-		const launchButton = screen.getByRole("button", {
+		const launchButtons = screen.getAllByRole("button", {
 			name: /launch campaign/i,
 		});
+		const launchButton = launchButtons[launchButtons.length - 1]; // Get the last one (from the current test)
 
 		fireEvent.click(launchButton);
 
@@ -90,5 +185,29 @@ describe("CampaignModalMain", () => {
 		const payload = handleCampaignLaunched.mock.calls[0]?.[0];
 		expect(payload?.campaignId).toMatch(/^campaign_\d+$/);
 		expect(payload?.channelType).toBe("call");
+	});
+
+	it("navigates with campaign query parameters after launching", () => {
+		render(<CampaignModalMain isOpen onOpenChange={vi.fn()} initialStep={3} />);
+
+		// Fill in the campaign goal field (required for validation)
+		const goalField = screen.getByLabelText(/campaign goal/i);
+		fireEvent.change(goalField, {
+			target: {
+				value: "Generate at least 10 qualified leads for our sales team.",
+			},
+		});
+
+		const launchButtons = screen.getAllByRole("button", {
+			name: /launch campaign/i,
+		});
+		const launchButton = launchButtons[launchButtons.length - 1]; // Get the last one (from the current test)
+		fireEvent.click(launchButton);
+
+		expect(pushMock).toHaveBeenCalledTimes(1);
+		const destination = pushMock.mock.calls[0]?.[0];
+		expect(destination).toContain("/dashboard/campaigns?");
+		expect(destination).toContain("type=call");
+		expect(destination).toMatch(/campaignId=campaign_\d+/);
 	});
 });
