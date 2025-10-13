@@ -8,6 +8,8 @@ import { HelpCircle } from "lucide-react";
 import { useState } from "react";
 import WalkThroughModal from "@/components/leadsSearch/search/WalkthroughModal";
 import { campaignSteps } from "@/_tests/tours/campaignTour";
+import { useSearchParams } from "next/navigation";
+import { useEffect } from "react";
 
 const breadcrumbItems = [
 	{ title: "Dashboard", link: "/dashboard" },
@@ -17,9 +19,21 @@ const breadcrumbItems = [
 export default function page() {
 	const [showWalkthrough, setShowWalkthrough] = useState(false);
 	const [isTourOpen, setIsTourOpen] = useState(false);
+	const searchParams = useSearchParams();
 
 	const handleStartTour = () => setIsTourOpen(true);
 	const handleCloseTour = () => setIsTourOpen(false);
+
+	// Handle URL parameters for direct navigation to specific campaign type
+	const typeParam = searchParams.get("type");
+	const campaignIdParam = searchParams.get("campaignId");
+
+	useEffect(() => {
+		// Log URL parameters for debugging
+		if (typeParam || campaignIdParam) {
+			console.log("🚀 CAMPAIGN URL PARAMS:", { typeParam, campaignIdParam });
+		}
+	}, [typeParam, campaignIdParam]);
 
 	return (
 		<PageContainer>
@@ -27,10 +41,11 @@ export default function page() {
 				{/* Question Mark Help Button */}
 				<div className="absolute top-2 right-2 z-10">
 					<button
+						type="button"
 						onClick={() => setShowWalkthrough(true)}
-						className="rounded-full w-10 h-10 p-0 hover:bg-muted bg-transparent border-none"
+						className="border-none bg-transparent hover:bg-muted p-0 rounded-full w-10 h-10"
 					>
-						<HelpCircle className="w-5 h-5 text-muted-foreground" />
+						<HelpCircle className="text-muted-foreground w-5 h-5" />
 					</button>
 				</div>
 
