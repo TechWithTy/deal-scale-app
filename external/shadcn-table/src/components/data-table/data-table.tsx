@@ -18,18 +18,22 @@ import { getCommonPinningStyles } from "../../lib/data-table";
 import { cn } from "../../lib/utils";
 
 interface DataTableProps<TData> extends React.ComponentProps<"div"> {
-	table: TanstackTable<TData>;
-	actionBar?: React.ReactNode;
-	onRowClick?: (row: Row<TData>) => void;
+        table: TanstackTable<TData>;
+        actionBar?: React.ReactNode;
+        onRowClick?: (row: Row<TData>) => void;
+        focusedRowId?: string | null;
+        getRowId?: (row: Row<TData>) => string | null | undefined;
 }
 
 export function DataTable<TData>({
-	table,
-	actionBar,
-	children,
-	className,
-	onRowClick,
-	...props
+        table,
+        actionBar,
+        children,
+        className,
+        onRowClick,
+        focusedRowId,
+        getRowId,
+        ...props
 }: DataTableProps<TData>) {
 	return (
 		<div className={cn("flex w-full flex-col gap-2.5", className)} {...props}>
@@ -62,15 +66,34 @@ export function DataTable<TData>({
 						))}
 					</TableHeader>
 					<TableBody>
-						{table.getRowModel().rows?.length ? (
-							table.getRowModel().rows.map((row) => (
-								<TableRow
-									key={row.id}
-									data-state={row.getIsSelected() && "selected"}
-									onClick={onRowClick ? () => onRowClick(row) : undefined}
-									className={
-										onRowClick ? "cursor-pointer hover:bg-accent" : undefined
-									}
+                                                {table.getRowModel().rows?.length ? (
+                                                        table.getRowModel().rows.map((row) => {
+                                                                const resolvedRowId =
+                                                                        getRowId?.(row) ?? row.id;
+                                                                const isFocused =
+                                                                        focusedRowId !== null &&
+                                                                        focusedRowId !== undefined &&
+                                                                        resolvedRowId === focusedRowId;
+
+                                                                return (
+                                                                        <TableRow
+                                                                        key={row.id}
+                                                                        data-state={row.getIsSelected() && "selected"}
+                                                                        data-row-id={resolvedRowId}
+                                                                        data-focused={isFocused ? "true" : undefined}
+                                                                        onClick={
+                                                                                onRowClick
+                                                                                        ? () => onRowClick(row)
+                                                                                        : undefined
+                                                                        }
+                                                                        className={cn(
+                                                                                onRowClick
+                                                                                        ? "cursor-pointer hover:bg-accent"
+                                                                                        : undefined,
+                                                                                isFocused
+                                                                                        ? "ring-2 ring-primary/60 ring-offset-2"
+                                                                                        : undefined,
+                                                                        )}
 								>
 									{row.getVisibleCells().map((cell) => (
 										<TableCell
@@ -85,9 +108,10 @@ export function DataTable<TData>({
 											)}
 										</TableCell>
 									))}
-								</TableRow>
-							))
-						) : (
+                                                                        </TableRow>
+                                                                );
+                                                        })
+                                                ) : (
 							<TableRow>
 								<TableCell
 									colSpan={table.getAllColumns().length}
