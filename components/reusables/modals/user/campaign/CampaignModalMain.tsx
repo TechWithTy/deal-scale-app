@@ -96,6 +96,31 @@ const campaignWarnLog = (phase: string, details: Record<string, unknown>) => {
 	console.warn(`[CampaignModalMain] ${phase}`, details);
 };
 
+type CampaignStoreDebugSnapshot = Pick<
+	CampaignCreationState,
+	| "areaMode"
+	| "selectedLeadListId"
+	| "selectedLeadListAId"
+	| "leadCount"
+	| "campaignName"
+	| "primaryChannel"
+	| "abTestingEnabled"
+	| "daysSelected"
+>;
+
+const selectCampaignStoreDebugSnapshot = (
+	state: CampaignCreationState,
+): CampaignStoreDebugSnapshot => ({
+	areaMode: state.areaMode,
+	selectedLeadListId: state.selectedLeadListId,
+	selectedLeadListAId: state.selectedLeadListAId,
+	leadCount: state.leadCount,
+	campaignName: state.campaignName,
+	primaryChannel: state.primaryChannel,
+	abTestingEnabled: state.abTestingEnabled,
+	daysSelected: state.daysSelected,
+});
+
 export default function CampaignModalMain({
 	isOpen,
 	onOpenChange,
@@ -178,6 +203,8 @@ export default function CampaignModalMain({
 	const closingStateRef = useRef({ closing: false, renderCount: 0 });
 	const closingReleaseTimeoutRef = useRef<number | null>(null);
 	const launchGuardRef = useRef(false);
+	const renderDebugCounterRef = useRef(0);
+	const liveIsOpenRef = useRef(isOpen);
 
 	const customizationForm = useForm<z.input<typeof FormSchema>>({
 		resolver: zodResolver(TransferConditionalSchema),
@@ -203,6 +230,109 @@ export default function CampaignModalMain({
 	);
 
 	useEffect(() => {
+		liveIsOpenRef.current = isOpen;
+	}, [isOpen]);
+
+	useEffect(() => {
+		renderDebugCounterRef.current += 1;
+		if (!campaignModalDebugEnabled) return;
+		const counter = renderDebugCounterRef.current;
+		if (counter % 25 === 0) {
+			campaignWarnLog("render-iteration-threshold", {
+				counter,
+				isOpen: liveIsOpenRef.current,
+				closing: closingStateRef.current.closing,
+				step: stepRef.current,
+			});
+			return;
+		}
+		if (counter % 5 === 0) {
+			campaignDebugLog("render-iteration", {
+				counter,
+				isOpen: liveIsOpenRef.current,
+				closing: closingStateRef.current.closing,
+				step: stepRef.current,
+			});
+		}
+	});
+
+	useEffect(() => {
+		if (!campaignModalDebugEnabled) return;
+		let hasLoggedInitialSnapshot = false;
+		try {
+			const unsubscribe = useCampaignCreationStore.subscribe(
+				selectCampaignStoreDebugSnapshot,
+				(currentSnapshot, previousSnapshot) => {
+					if (!liveIsOpenRef.current && !closingStateRef.current.closing) {
+						return;
+					}
+
+					if (!hasLoggedInitialSnapshot) {
+						hasLoggedInitialSnapshot = true;
+						campaignDebugLog("store-snapshot-initial", {
+							snapshot: currentSnapshot,
+							isOpen: liveIsOpenRef.current,
+							closing: closingStateRef.current.closing,
+							step: stepRef.current,
+						});
+					}
+
+					if (!previousSnapshot) {
+						return;
+					}
+
+					const diffEntries = Object.entries(currentSnapshot).reduce<
+						Record<
+							string,
+							{
+								previous: unknown;
+								next: unknown;
+							}
+						>
+					>((accumulator, [key, value]) => {
+						const typedKey = key as keyof CampaignStoreDebugSnapshot;
+						const previousValue = previousSnapshot[typedKey];
+						if (!Object.is(value, previousValue)) {
+							accumulator[key] = {
+								previous: previousValue,
+								next: value,
+							};
+						}
+						return accumulator;
+					}, {});
+
+					if (Object.keys(diffEntries).length === 0) {
+						return;
+					}
+
+					campaignDebugLog("store-change", {
+						diff: diffEntries,
+						isOpen: liveIsOpenRef.current,
+						closing: closingStateRef.current.closing,
+						renderCount: closingStateRef.current.renderCount,
+						step: stepRef.current,
+					});
+				},
+			);
+
+			return () => {
+				unsubscribe();
+				campaignDebugLog("store-subscription-cleanup", {
+					isOpen: liveIsOpenRef.current,
+					closing: closingStateRef.current.closing,
+					step: stepRef.current,
+				});
+			};
+		} catch (error) {
+			campaignWarnLog("store-subscription-error", {
+				message: (error as Error).message,
+				stack: (error as Error).stack,
+			});
+			return undefined;
+		}
+	}, []);
+
+	useEffect(() => {
 		if (isOpen) {
 			if (
 				typeof window !== "undefined" &&
@@ -214,6 +344,7 @@ export default function CampaignModalMain({
 			closingStateRef.current.closing = false;
 			closingStateRef.current.renderCount = 0;
 			launchGuardRef.current = false;
+			renderDebugCounterRef.current = 0;
 			campaignDebugLog("modal-open", {
 				step,
 			});
