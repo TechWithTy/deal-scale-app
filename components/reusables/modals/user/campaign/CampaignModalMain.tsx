@@ -8,7 +8,6 @@ import {
 	getEstimatedCredits,
 } from "@/lib/utils/campaignCostCalculator";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter } from "next/navigation";
 import React, {
 	useCallback,
 	useEffect,
@@ -26,6 +25,7 @@ import ChannelSelectionStep from "../../../../../external/shadcn-table/src/examp
 import { TimingPreferencesStep } from "../../../../../external/shadcn-table/src/examples/campaigns/modal/steps/TimingPreferencesStep";
 import CampaignSettingsDebug from "./CampaignSettingsDebug";
 import FinalizeCampaignStep from "./steps/FinalizeCampaignStep";
+import { shallow } from "zustand/shallow";
 interface CampaignModalMainProps {
 	isOpen: boolean;
 	onOpenChange: (open: boolean) => void;
