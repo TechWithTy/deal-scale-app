@@ -43,7 +43,26 @@ export default function TextCampaignsDemoTable({
         onCampaignSelect,
         initialCampaigns,
 }: TextCampaignsDemoTableProps) {
-        const [data, setData] = React.useState<CallCampaign[]>(() => initialCampaigns ?? []);
+        const fallbackCampaigns = React.useMemo(
+                () =>
+                        (mockCallCampaignData as CallCampaign[] | false) ||
+                        generateCallCampaignData(),
+                [],
+        );
+
+        const mergeCampaigns = React.useCallback(
+                (incoming?: CallCampaign[]) => {
+                        if (!incoming || incoming.length === 0) {
+                                return [...fallbackCampaigns];
+                        }
+                        const seen = new Set(incoming.map((campaign) => campaign.id));
+                        const extras = fallbackCampaigns.filter((campaign) => !seen.has(campaign.id));
+                        return [...incoming, ...extras];
+                },
+                [fallbackCampaigns],
+        );
+
+        const [data, setData] = React.useState<CallCampaign[]>(() => mergeCampaigns(initialCampaigns));
 	const [query, setQuery] = React.useState("");
 	const [aiOpen, setAiOpen] = React.useState(false);
 	const [aiOutput, setAiOutput] = React.useState<string>("");
@@ -60,14 +79,8 @@ export default function TextCampaignsDemoTable({
 	>({});
 
         React.useEffect(() => {
-                if (initialCampaigns && initialCampaigns.length > 0) {
-                        setData(initialCampaigns);
-                        return;
-                }
-                const d =
-                        (mockCallCampaignData as CallCampaign[] | false) ||
-                        generateCallCampaignData();
-                const withMessages = d.map((row) => {
+                const merged = mergeCampaigns(initialCampaigns);
+                const withMessages = merged.map((row) => {
                         const count = faker.number.int({ min: 1, max: 5 });
                         const msgs = Array.from({ length: count }, () =>
                                 generateSampleTextMessage(),
@@ -82,7 +95,7 @@ export default function TextCampaignsDemoTable({
                         return { ...row, messages: msgs };
                 });
                 setData(withMessages as unknown as CallCampaign[]);
-        }, [initialCampaigns]);
+        }, [initialCampaigns, mergeCampaigns]);
 
 	const columns = React.useMemo(() => buildTextCampaignColumns(), []);
 

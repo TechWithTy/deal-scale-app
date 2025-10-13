@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useCampaignCreationStore } from "@/lib/stores/campaignCreation";
+import { useCampaignStore } from "@/lib/stores/campaigns";
 import {
 	calculateCampaignCost,
 	getEstimatedCredits,
@@ -26,6 +27,9 @@ import { TimingPreferencesStep } from "../../../../../external/shadcn-table/src/
 import CampaignSettingsDebug from "./CampaignSettingsDebug";
 import FinalizeCampaignStep from "./steps/FinalizeCampaignStep";
 import { shallow } from "zustand/shallow";
+import type { CallCampaign } from "@/types/_dashboard/campaign";
+import type { EmailCampaign } from "@/types/goHighLevel/email";
+import type { DirectMailCampaign } from "external/shadcn-table/src/examples/DirectMail/utils/mock";
 interface CampaignModalMainProps {
 	isOpen: boolean;
 	onOpenChange: (open: boolean) => void;
@@ -158,6 +162,10 @@ export default function CampaignModalMain({
 			perNumberDailyLimit: state.perNumberDailyLimit,
 		}),
 		shallow,
+	);
+
+	const registerLaunchedCampaign = useCampaignStore(
+		(state) => state.registerLaunchedCampaign,
 	);
 
 	const router = useRouter();
@@ -519,7 +527,10 @@ export default function CampaignModalMain({
 			const campaignId = `campaign_${Date.now()}`;
 			campaignDebugLog("launch-campaign-id", { campaignId });
 
-			const channelTypeMap: Record<string, string> = {
+			const channelTypeMap: Record<
+				string,
+				"call" | "text" | "social" | "direct"
+			> = {
 				call: "call",
 				text: "text",
 				social: "social",
@@ -532,6 +543,138 @@ export default function CampaignModalMain({
 				campaignType,
 				primaryChannel,
 			});
+
+			const registrationChannel:
+				| "call"
+				| "text"
+				| "social"
+				| "direct"
+				| "email" =
+				primaryChannel === "directmail"
+					? "direct"
+					: primaryChannel === "email"
+						? "email"
+						: ((primaryChannel as
+								| "call"
+								| "text"
+								| "social"
+								| "direct"
+								| null) ?? "call");
+
+			const nowIso = new Date().toISOString();
+			const startIso = startDate?.toISOString() ?? nowIso;
+			const endIso = endDate ? endDate.toISOString() : undefined;
+			const safeLeadCount = Number.isFinite(leadCount)
+				? Math.max(0, leadCount)
+				: 0;
+			const normalizedName =
+				(campaignName || "New Campaign").trim() || "New Campaign";
+
+			const buildCallLikeCampaign = (): CallCampaign => ({
+				id: campaignId,
+				name: normalizedName,
+				status: "queued",
+				startDate: startIso,
+				endDate: endIso,
+				callInformation: [],
+				callerNumber: "+1-555-0100",
+				receiverNumber: "+1-555-0101",
+				duration: 0,
+				callType: "outbound",
+				calls: 0,
+				inQueue: safeLeadCount,
+				leads: safeLeadCount,
+				voicemail: 0,
+				hungUp: 0,
+				dead: 0,
+				wrongNumber: 0,
+				inactiveNumbers: 0,
+				dnc: 0,
+				endedReason: [],
+				textStats: {
+					sent: 0,
+					delivered: 0,
+					failed: 0,
+					total: 0,
+					lastMessageAt: startIso,
+				},
+				messages: [],
+			});
+
+			const registerPayload = () => {
+				switch (registrationChannel) {
+					case "call":
+						registerLaunchedCampaign({
+							channel: "call",
+							campaign: buildCallLikeCampaign(),
+						});
+						break;
+					case "text":
+						registerLaunchedCampaign({
+							channel: "text",
+							campaign: buildCallLikeCampaign(),
+						});
+						break;
+					case "social":
+						registerLaunchedCampaign({
+							channel: "social",
+							campaign: buildCallLikeCampaign(),
+						});
+						break;
+					case "email": {
+						const emailCampaign: EmailCampaign = {
+							id: campaignId,
+							name: normalizedName,
+							status: "queued",
+							startDate: startIso,
+							endDate: endIso,
+							emails: [],
+							senderEmail: "noreply@example.com",
+							recipientCount: safeLeadCount,
+							sentCount: 0,
+							deliveredCount: 0,
+							openedCount: 0,
+							bouncedCount: 0,
+							failedCount: 0,
+						};
+						registerLaunchedCampaign({
+							channel: "email",
+							campaign: emailCampaign,
+						});
+						break;
+					}
+					case "direct": {
+						const directCampaign: DirectMailCampaign = {
+							id: campaignId,
+							name: normalizedName,
+							status: "queued",
+							startDate: startIso,
+							endDate: endIso,
+							template: { id: `tmpl_${campaignId}`, name: normalizedName },
+							mailType: "letter",
+							mailSize: "8.5x11",
+							addressVerified: false,
+							expectedDeliveryAt: new Date(
+								Date.now() + 7 * 24 * 60 * 60 * 1000,
+							).toISOString(),
+							lastEventAt: nowIso,
+							deliveredCount: 0,
+							returnedCount: 0,
+							failedCount: 0,
+							cost: 0,
+							leadsDetails: [],
+							lob: null,
+						};
+						registerLaunchedCampaign({
+							channel: "direct",
+							campaign: directCampaign,
+						});
+						break;
+					}
+				}
+			};
+
+			registerPayload();
 
 			const params = new URLSearchParams({
 				type: campaignType,
@@ -589,6 +732,9 @@ export default function CampaignModalMain({
 		step,
 		campaignName,
 		leadCount,
+		startDate,
+		endDate,
+		registerLaunchedCampaign,
 	]);
 
 	const handleCreateAbTest = (label?: string) => {

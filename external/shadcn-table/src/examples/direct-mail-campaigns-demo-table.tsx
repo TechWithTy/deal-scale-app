@@ -39,7 +39,21 @@ export default function DirectMailCampaignsDemoTable({
         onCampaignSelect,
         initialCampaigns,
 }: DirectMailCampaignsDemoTableProps) {
-        const [data, setData] = React.useState<DirectMailCampaign[]>(() => initialCampaigns ?? []);
+        const fallbackCampaigns = React.useMemo(() => generateDirectMailCampaignData(), []);
+
+        const mergeCampaigns = React.useCallback(
+                (incoming?: DirectMailCampaign[]) => {
+                        if (!incoming || incoming.length === 0) {
+                                return [...fallbackCampaigns];
+                        }
+                        const seen = new Set(incoming.map((campaign) => campaign.id));
+                        const extras = fallbackCampaigns.filter((campaign) => !seen.has(campaign.id));
+                        return [...incoming, ...extras];
+                },
+                [fallbackCampaigns],
+        );
+
+        const [data, setData] = React.useState<DirectMailCampaign[]>(() => mergeCampaigns(initialCampaigns));
 	const [query, setQuery] = React.useState("");
 	const [aiOpen, setAiOpen] = React.useState(false);
 	const [aiOutput, setAiOutput] = React.useState<string>("");
@@ -60,12 +74,8 @@ export default function DirectMailCampaignsDemoTable({
 	);
 
         React.useEffect(() => {
-                if (initialCampaigns && initialCampaigns.length > 0) {
-                        setData(initialCampaigns);
-                        return;
-                }
-                setData(generateDirectMailCampaignData());
-        }, [initialCampaigns]);
+                setData(mergeCampaigns(initialCampaigns));
+        }, [initialCampaigns, mergeCampaigns]);
 	const columns = React.useMemo(() => buildDirectMailColumns(), []);
 
 	// Filter logic removed - now handled globally

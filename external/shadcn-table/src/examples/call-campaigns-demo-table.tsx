@@ -45,7 +45,26 @@ export default function CallCampaignsDemoTable({
         onCampaignSelect,
         initialCampaigns,
 }: CallCampaignsDemoTableProps) {
-        const [data, setData] = React.useState<CallCampaign[]>(() => initialCampaigns ?? []);
+        const fallbackCampaigns = React.useMemo(
+                () =>
+                        (mockCallCampaignData as CallCampaign[] | false) ||
+                        generateCallCampaignData(),
+                [],
+        );
+
+        const mergeCampaigns = React.useCallback(
+                (incoming?: CallCampaign[]) => {
+                        if (!incoming || incoming.length === 0) {
+                                return [...fallbackCampaigns];
+                        }
+                        const seen = new Set(incoming.map((campaign) => campaign.id));
+                        const extras = fallbackCampaigns.filter((campaign) => !seen.has(campaign.id));
+                        return [...incoming, ...extras];
+                },
+                [fallbackCampaigns],
+        );
+
+        const [data, setData] = React.useState<CallCampaign[]>(() => mergeCampaigns(initialCampaigns));
 	const [query, setQuery] = React.useState("");
 	const [detailIndex, setDetailIndex] = React.useState(0);
 	const [campaignType, setCampaignType] = React.useState<CampaignType>("Calls");
@@ -65,15 +84,8 @@ export default function CallCampaignsDemoTable({
 
 	// Avoid hydration mismatch: only generate data on the client
         React.useEffect(() => {
-                if (initialCampaigns && initialCampaigns.length > 0) {
-                        setData(initialCampaigns);
-                        return;
-                }
-                const d =
-                        (mockCallCampaignData as CallCampaign[] | false) ||
-                        generateCallCampaignData();
-                setData(d);
-        }, [initialCampaigns]);
+                setData(mergeCampaigns(initialCampaigns));
+        }, [initialCampaigns, mergeCampaigns]);
 
 	// Build columns dynamically based on selected campaign type (internal util)
 	const columns = React.useMemo<ColumnDef<CallCampaign>[]>(

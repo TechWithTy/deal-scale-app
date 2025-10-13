@@ -2,118 +2,193 @@ import { create } from "zustand";
 import { withAnalytics } from "./_middleware/analytics";
 
 import { MockUserProfile } from "@/constants/_faker/profile/userProfile";
-import type {
-	CallCampaign,
-	SocialMediaCampaign,
-} from "@/types/_dashboard/campaign";
+import type { CallCampaign } from "@/types/_dashboard/campaign";
 import type { EmailCampaign } from "@/types/goHighLevel/email";
-import type { GHLTextMessageCampaign } from "@/types/goHighLevel/text";
-// Define the campaign state and actions for Zustand
+import type { DirectMailCampaign } from "external/shadcn-table/src/examples/DirectMail/utils/mock";
+
+type CampaignChannel = "email" | "call" | "text" | "social" | "direct";
+
+type CampaignCollections = {
+	call: CallCampaign[];
+	text: CallCampaign[];
+	social: CallCampaign[];
+	email: EmailCampaign[];
+	direct: DirectMailCampaign[];
+};
+
+type CampaignRecord = CampaignCollections[keyof CampaignCollections][number];
+
+type RegisterPayload =
+	| { channel: "call"; campaign: CallCampaign }
+	| { channel: "text"; campaign: CallCampaign }
+	| { channel: "social"; campaign: CallCampaign }
+	| { channel: "email"; campaign: EmailCampaign }
+	| { channel: "direct"; campaign: DirectMailCampaign };
+
 interface CampaignState {
-	currentCampaignType: "email" | "call" | "text" | "social"; // Track the current campaign type
-	currentCampaign: (
-		| EmailCampaign
-		| CallCampaign
-		| GHLTextMessageCampaign
-		| SocialMediaCampaign
-	)[]; // Holds the currently active campaign data
-	filteredCampaigns: (
-		| EmailCampaign
-		| CallCampaign
-		| GHLTextMessageCampaign
-		| SocialMediaCampaign
-	)[]; // Holds the filtered campaigns
-	setCampaignType: (type: "email" | "call" | "text" | "social") => void;
+	currentCampaignType: CampaignChannel;
+	campaignsByType: CampaignCollections;
+	currentCampaign: CampaignRecord[];
+	filteredCampaigns: CampaignRecord[];
+	setCampaignType: (type: CampaignChannel) => void;
 	filterCampaignsByStatus: (
 		status: "all" | "scheduled" | "active" | "completed",
 	) => void;
 	getNumberOfCampaigns: () => number;
+	registerLaunchedCampaign: (payload: RegisterPayload) => void;
+	reset: () => void;
 }
 
+const profile = MockUserProfile;
+const baseCampaignData: CampaignCollections = {
+	call: Array.isArray(profile?.companyInfo.campaigns.callCampaigns)
+		? [...profile.companyInfo.campaigns.callCampaigns]
+		: [],
+	text: [],
+	social: [],
+	email: Array.isArray(profile?.companyInfo.campaigns.emailCampaigns)
+		? [...profile.companyInfo.campaigns.emailCampaigns]
+		: [],
+	direct: [],
+};
+
+const createInitialState = (): CampaignState => {
+	const campaignsByType: CampaignCollections = {
+		call: [...baseCampaignData.call],
+		text: [...baseCampaignData.text],
+		social: [...baseCampaignData.social],
+		email: [...baseCampaignData.email],
+		direct: [...baseCampaignData.direct],
+	};
+	const defaultType: CampaignChannel = "call";
+	const defaultCampaigns = campaignsByType[defaultType];
+
+	return {
+		currentCampaignType: defaultType,
+		campaignsByType,
+		currentCampaign: [...defaultCampaigns],
+		filteredCampaigns: [...defaultCampaigns],
+		setCampaignType: () => undefined,
+		filterCampaignsByStatus: () => undefined,
+		getNumberOfCampaigns: () => 0,
+		registerLaunchedCampaign: () => undefined,
+		reset: () => undefined,
+	} as CampaignState;
+};
+
+const mergeById = <T extends { id: string }>(
+	existing: T[],
+	incoming: T,
+): T[] => {
+	const withoutIncoming = existing.filter((entry) => entry.id !== incoming.id);
+	return [...withoutIncoming, incoming];
+};
+
 // Create Zustand store
-export const useCampaignStore = create<CampaignState>(
-	withAnalytics<CampaignState>("campaigns", (set, get) => ({
-		currentCampaignType: "call", // Default to 'call'
-		currentCampaign: MockUserProfile?.companyInfo.campaigns.callCampaigns ?? [], // Default campaign data (calls)
-		filteredCampaigns:
-			MockUserProfile?.companyInfo.campaigns.callCampaigns ?? [], // Start with no filter applied, showing all campaigns
+export const useCampaignStore = create<CampaignState>()(
+	withAnalytics<CampaignState>("campaigns", (set, get) => {
+		const initial = createInitialState();
 
-		// Action to set the current campaign type and update the campaign data accordingly
-		setCampaignType: (type) => {
-			let campaignData: (
-				| EmailCampaign
-				| CallCampaign
-				| GHLTextMessageCampaign
-				| SocialMediaCampaign
-			)[] = [];
+		return {
+			...initial,
+			setCampaignType: (type) => {
+				const campaigns = get().campaignsByType[type] ?? [];
+				set({
+					currentCampaignType: type,
+					currentCampaign: [...campaigns],
+					filteredCampaigns: [...campaigns],
+				});
+			},
+			filterCampaignsByStatus: (status) => {
+				const { currentCampaign } = get();
+				let filteredCampaigns = currentCampaign;
 
-			// Update `currentCampaign` and `filteredCampaigns` based on selected type
-			switch (type) {
-				case "email":
-					campaignData =
-						MockUserProfile?.companyInfo.campaigns.emailCampaigns ?? []; // Email campaign data
-					break;
-				case "call":
-					campaignData =
-						MockUserProfile?.companyInfo.campaigns.callCampaigns ?? []; // Call campaign data
-					break;
-				case "text":
-					campaignData =
-						MockUserProfile?.companyInfo.campaigns.textCampaigns ?? []; // Text message campaign data
-					break;
-				case "social":
-					campaignData =
-						MockUserProfile?.companyInfo.campaigns.socialCampaigns ?? []; // Social media campaign data
-					break;
-				default:
-					campaignData = [];
-			}
+				switch (status) {
+					case "scheduled":
+						filteredCampaigns = currentCampaign.filter(
+							(campaign) =>
+								campaign.status === "pending" || campaign.status === "queued",
+						);
+						break;
+					case "active":
+						filteredCampaigns = currentCampaign.filter(
+							(campaign) => campaign.status === "delivering",
+						);
+						break;
+					case "completed":
+						filteredCampaigns = currentCampaign.filter(
+							(campaign) => campaign.status === "completed",
+						);
+						break;
+					default:
+						filteredCampaigns = currentCampaign;
+						break;
+				}
 
-			// Set the new campaign data for both `currentCampaign` and `filteredCampaigns`
-			set({
-				currentCampaignType: type,
-				currentCampaign: campaignData,
-				filteredCampaigns: campaignData,
-			});
-		},
+				set({ filteredCampaigns });
+			},
+			getNumberOfCampaigns: () => get().filteredCampaigns.length || 0,
+			registerLaunchedCampaign: ({ channel, campaign }) => {
+				set((state) => {
+					const nextCollection: CampaignCollections = {
+						...state.campaignsByType,
+					};
 
-		// Action to filter campaigns by status
-		filterCampaignsByStatus: (status) => {
-			const { currentCampaign } = get();
-			let filteredCampaigns = currentCampaign;
+					switch (channel) {
+						case "call":
+							nextCollection.call = mergeById(
+								state.campaignsByType.call,
+								campaign,
+							);
+							break;
+						case "text":
+							nextCollection.text = mergeById(
+								state.campaignsByType.text,
+								campaign,
+							);
+							break;
+						case "social":
+							nextCollection.social = mergeById(
+								state.campaignsByType.social,
+								campaign,
+							);
+							break;
+						case "email":
+							nextCollection.email = mergeById(
+								state.campaignsByType.email,
+								campaign,
+							);
+							break;
+						case "direct":
+							nextCollection.direct = mergeById(
+								state.campaignsByType.direct,
+								campaign,
+							);
+							break;
+					}
 
-			// Apply filtering based on the status
-			switch (status) {
-				case "scheduled":
-					filteredCampaigns = currentCampaign.filter(
-						(campaign) =>
-							campaign.status === "pending" || campaign.status === "queued",
-					);
-					break;
-				case "active":
-					filteredCampaigns = currentCampaign.filter(
-						(campaign) => campaign.status === "delivering",
-					);
-					break;
-				case "completed":
-					filteredCampaigns = currentCampaign.filter(
-						(campaign) => campaign.status === "completed",
-					);
-					break;
-				default:
-					// For 'all', we don't filter and just show all campaigns
-					filteredCampaigns = currentCampaign;
-					break;
-			}
+					const updates: Partial<CampaignState> = {
+						campaignsByType: nextCollection,
+					};
 
-			// Set the filtered campaigns
-			set({ filteredCampaigns });
-		},
+					if (state.currentCampaignType === channel) {
+						const nextCampaigns = nextCollection[channel] as CampaignRecord[];
+						updates.currentCampaign = [...nextCampaigns];
+						updates.filteredCampaigns = [...nextCampaigns];
+					}
 
-		// Getter for the number of campaigns in the current type
-		getNumberOfCampaigns: () => {
-			const { filteredCampaigns } = get();
-			return filteredCampaigns.length || 0;
-		},
-	})),
+					return updates;
+				});
+			},
+			reset: () => {
+				const next = createInitialState();
+				set({
+					currentCampaignType: next.currentCampaignType,
+					campaignsByType: next.campaignsByType,
+					currentCampaign: next.currentCampaign,
+					filteredCampaigns: next.filteredCampaigns,
+				});
+			},
+		};
+	}),
 );
