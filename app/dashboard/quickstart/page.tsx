@@ -13,7 +13,7 @@ import QuickStartHelp from "@/components/quickstart/QuickStartHelp";
 import { useQuickStartCards } from "@/components/quickstart/useQuickStartCards";
 import { useQuickStartSavedSearches } from "@/components/quickstart/useQuickStartSavedSearches";
 import SavedSearchModal from "@/components/reusables/modals/SavedSearchModal";
-import CampaignModalMain from "@/components/reusables/modals/user/campaign/CampaignModalMain";
+import { CampaignModalMain } from "@/components/reusables/modals/user/campaign/CampaignModalMain";
 import LeadBulkSuiteModal from "@/components/reusables/modals/user/lead/LeadBulkSuiteModal";
 import LeadModalMain from "@/components/reusables/modals/user/lead/LeadModalMain";
 import {
@@ -225,7 +225,7 @@ export default function QuickStartPage() {
 			});
 
 			// Open webhooks outgoing modal instead of navigating to campaigns
-			openWebhookModal();
+			openWebhookModal("outgoing");
 		},
 		[openWebhookModal, logQuickStartDebug],
 	);
