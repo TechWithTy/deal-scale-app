@@ -14,14 +14,6 @@ vi.mock("next/navigation", () => ({
 	}),
 }));
 
-const pushMock = vi.fn();
-
-vi.mock("next/navigation", () => ({
-	useRouter: () => ({
-		push: pushMock,
-	}),
-}));
-
 vi.mock("@/components/ui/dialog", () => ({
 	Dialog: ({ children }: { children: React.ReactNode }) => (
 		<div>{children}</div>
@@ -88,10 +80,26 @@ vi.mock(
 );
 
 vi.mock("@/components/ui/form", () => ({
-	FormProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+	FormProvider: ({ children }: { children: React.ReactNode }) => (
+		<>{children}</>
+	),
 	FormField: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-	FormItem: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-	FormLabel: ({ children, htmlFor, ...props }: { children: React.ReactNode; htmlFor?: string; [key: string]: unknown }) => <label htmlFor={htmlFor} {...props}>{children}</label>,
+	FormItem: ({ children }: { children: React.ReactNode }) => (
+		<div>{children}</div>
+	),
+	FormLabel: ({
+		children,
+		htmlFor,
+		...props
+	}: {
+		children: React.ReactNode;
+		htmlFor?: string;
+		[key: string]: unknown;
+	}) => (
+		<label htmlFor={htmlFor} {...props}>
+			{children}
+		</label>
+	),
 	FormControl: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 	FormMessage: () => null,
 }));
@@ -105,11 +113,23 @@ vi.mock("@/components/ui/textarea", () => ({
 }));
 
 vi.mock("@/components/ui/select", () => ({
-	Select: ({ children, onValueChange }: { children: React.ReactNode; onValueChange?: (value: string) => void }) => <>{children}</>,
-	SelectContent: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+	Select: ({
+		children,
+		onValueChange,
+	}: {
+		children: React.ReactNode;
+		onValueChange?: (value: string) => void;
+	}) => <>{children}</>,
+	SelectContent: ({ children }: { children: React.ReactNode }) => (
+		<>{children}</>
+	),
 	SelectItem: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-	SelectTrigger: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-	SelectValue: ({ placeholder }: { placeholder?: string }) => <>{placeholder}</>,
+	SelectTrigger: ({ children }: { children: React.ReactNode }) => (
+		<>{children}</>
+	),
+	SelectValue: ({ placeholder }: { placeholder?: string }) => (
+		<>{placeholder}</>
+	),
 }));
 vi.mock("@radix-ui/react-icons", () => ({
 	InfoCircledIcon: () => <div>Info</div>,
@@ -167,18 +187,14 @@ describe("CampaignModalMain", () => {
 	});
 
 	it("navigates with campaign query parameters after launching", () => {
-		render(
-			<CampaignModalMain
-				isOpen
-				onOpenChange={vi.fn()}
-				initialStep={3}
-			/>,
-		);
+		render(<CampaignModalMain isOpen onOpenChange={vi.fn()} initialStep={3} />);
 
 		// Fill in the campaign goal field (required for validation)
 		const goalField = screen.getByLabelText(/campaign goal/i);
 		fireEvent.change(goalField, {
-			target: { value: "Generate at least 10 qualified leads for our sales team." },
+			target: {
+				value: "Generate at least 10 qualified leads for our sales team.",
+			},
 		});
 
 		const launchButtons = screen.getAllByRole("button", {
