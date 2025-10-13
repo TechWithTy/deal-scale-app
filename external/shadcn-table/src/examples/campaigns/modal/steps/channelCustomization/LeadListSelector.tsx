@@ -14,9 +14,9 @@ import {
 	FormControl,
 	FormMessage,
 } from "../../../../../components/ui/form";
-import { useLeadListStore } from "@/lib/stores/leadList";
-import { useCampaignCreationStore } from "@/lib/stores/campaignCreation";
-import { LEAD_LISTS_MOCK } from "@/constants/dashboard/leadLists.mock";
+import { useLeadListStore } from "../../../../../lib/stores/leadList";
+import { useCampaignCreationStore } from "../../../../../lib/stores/campaignCreation";
+import { LEAD_LISTS_MOCK } from "../../../../../constants/leadLists.mock";
 
 interface LeadListSelectorProps {
 	value: string;

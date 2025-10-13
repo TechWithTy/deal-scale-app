@@ -80,6 +80,8 @@ export function generateMockLeads(count: number): LeadTypeGlobal[] {
 				linkedin: `https://linkedin.com/in/${faker.internet.username()}`,
 				instagram: `https://instagram.com/${faker.internet.username()}`,
 				twitter: `https://twitter.com/${faker.internet.username()}`,
+				tiktok: `https://tiktok.com/@${faker.internet.username()}`,
+				youtube: `https://youtube.com/@${faker.internet.username()}`,
 			},
 			// Channel-specific opt-out flags (low probabilities)
 			smsOptOut: faker.datatype.boolean(0.08),
