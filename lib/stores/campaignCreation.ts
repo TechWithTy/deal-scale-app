@@ -1,4 +1,4 @@
-import { createWithEqualityFn } from "zustand/traditional";
+import { create } from "zustand";
 import { withAnalytics } from "./_middleware/analytics";
 
 // Types for agent selection
@@ -172,270 +172,265 @@ export interface CampaignCreationState {
 	reset: () => void;
 }
 
-export const useCampaignCreationStore =
-	createWithEqualityFn<CampaignCreationState>(
-		withAnalytics<CampaignCreationState>("campaign_creation", (set, get) => ({
-			// Step 1: Channel Selection
-			primaryChannel: null,
-			setPrimaryChannel: (primaryChannel) => set({ primaryChannel }),
+export const useCampaignCreationStore = create<CampaignCreationState>(
+	withAnalytics<CampaignCreationState>("campaign_creation", (set, get) => ({
+		// Step 1: Channel Selection
+		primaryChannel: null,
+		setPrimaryChannel: (primaryChannel) => set({ primaryChannel }),
 
-			// Campaign Name
-			campaignName: "",
-			setCampaignName: (campaignName) => set({ campaignName }),
+		// Campaign Name
+		campaignName: "",
+		setCampaignName: (campaignName) => set({ campaignName }),
 
-			// Agent selection
-			selectedAgentId: null,
-			setSelectedAgentId: (selectedAgentId) => set({ selectedAgentId }),
-			availableAgents: MOCK_AGENTS,
-			setAvailableAgents: (availableAgents) => set({ availableAgents }),
+		// Agent selection
+		selectedAgentId: null,
+		setSelectedAgentId: (selectedAgentId) => set({ selectedAgentId }),
+		availableAgents: MOCK_AGENTS,
+		setAvailableAgents: (availableAgents) => set({ availableAgents }),
 
-			selectedWorkflowId: null,
-			setSelectedWorkflowId: (selectedWorkflowId) =>
-				set({ selectedWorkflowId }),
-			availableWorkflows: MOCK_WORKFLOWS,
-			setAvailableWorkflows: (availableWorkflows) =>
-				set({ availableWorkflows }),
+		selectedWorkflowId: null,
+		setSelectedWorkflowId: (selectedWorkflowId) => set({ selectedWorkflowId }),
+		availableWorkflows: MOCK_WORKFLOWS,
+		setAvailableWorkflows: (availableWorkflows) => set({ availableWorkflows }),
 
-			selectedSalesScriptId: null,
-			setSelectedSalesScriptId: (selectedSalesScriptId) =>
-				set({ selectedSalesScriptId }),
-			availableSalesScripts: MOCK_SALES_SCRIPTS,
-			setAvailableSalesScripts: (availableSalesScripts) =>
-				set({ availableSalesScripts }),
+		selectedSalesScriptId: null,
+		setSelectedSalesScriptId: (selectedSalesScriptId) =>
+			set({ selectedSalesScriptId }),
+		availableSalesScripts: MOCK_SALES_SCRIPTS,
+		setAvailableSalesScripts: (availableSalesScripts) =>
+			set({ availableSalesScripts }),
 
-			// Step 2: Area & Lead List
-			areaMode: "leadList",
-			setAreaMode: (areaMode) => set({ areaMode }),
-			selectedLeadListId: "",
-			setSelectedLeadListId: (selectedLeadListId) =>
-				set({ selectedLeadListId }),
-			// A/B testing defaults
-			abTestingEnabled: false,
-			setAbTestingEnabled: (abTestingEnabled) => set({ abTestingEnabled }),
-			selectedLeadListAId: "",
-			setSelectedLeadListAId: (selectedLeadListAId) =>
-				set({ selectedLeadListAId }),
-			selectedLeadListBId: "",
-			setSelectedLeadListBId: (selectedLeadListBId) =>
-				set({ selectedLeadListBId }),
-			campaignArea: "",
-			setCampaignArea: (campaignArea) => set({ campaignArea }),
-			leadCount: 0,
-			setLeadCount: (leadCount) => set({ leadCount }),
-			includeWeekends: false,
-			setIncludeWeekends: (includeWeekends) => set({ includeWeekends }),
+		// Step 2: Area & Lead List
+		areaMode: "leadList",
+		setAreaMode: (areaMode) => set({ areaMode }),
+		selectedLeadListId: "",
+		setSelectedLeadListId: (selectedLeadListId) => set({ selectedLeadListId }),
+		// A/B testing defaults
+		abTestingEnabled: false,
+		setAbTestingEnabled: (abTestingEnabled) => set({ abTestingEnabled }),
+		selectedLeadListAId: "",
+		setSelectedLeadListAId: (selectedLeadListAId) =>
+			set({ selectedLeadListAId }),
+		selectedLeadListBId: "",
+		setSelectedLeadListBId: (selectedLeadListBId) =>
+			set({ selectedLeadListBId }),
+		campaignArea: "",
+		setCampaignArea: (campaignArea) => set({ campaignArea }),
+		leadCount: 0,
+		setLeadCount: (leadCount) => set({ leadCount }),
+		includeWeekends: false,
+		setIncludeWeekends: (includeWeekends) => set({ includeWeekends }),
 
-			// Validation helpers
-			isLeadListSelectionValid: () => {
-				const s = get();
-				if (s.areaMode !== "leadList") return true;
-				if (!s.abTestingEnabled)
-					return Boolean(s.selectedLeadListId || s.selectedLeadListAId);
-				return Boolean(s.selectedLeadListAId && s.selectedLeadListBId);
-			},
+		// Validation helpers
+		isLeadListSelectionValid: () => {
+			const s = get();
+			if (s.areaMode !== "leadList") return true;
+			if (!s.abTestingEnabled)
+				return Boolean(s.selectedLeadListId || s.selectedLeadListAId);
+			return Boolean(s.selectedLeadListAId && s.selectedLeadListBId);
+		},
 
-			// Step 3: Timing Preferences
-			daysSelected: 7,
-			setDaysSelected: (daysSelected) => set({ daysSelected }),
-			startDate: new Date(),
-			setStartDate: (startDate) => set({ startDate }),
-			endDate: null,
-			setEndDate: (endDate) => set({ endDate }),
-			reachBeforeBusiness: false,
-			setReachBeforeBusiness: (reachBeforeBusiness) =>
-				set({ reachBeforeBusiness }),
-			reachAfterBusiness: false,
-			setReachAfterBusiness: (reachAfterBusiness) =>
-				set({ reachAfterBusiness }),
-			reachOnWeekend: false,
-			setReachOnWeekend: (reachOnWeekend) => set({ reachOnWeekend }),
-			reachOnHolidays: false,
-			setReachOnHolidays: (reachOnHolidays) => set({ reachOnHolidays }),
-			// Dial attempt preferences
-			minDailyAttempts: 1,
-			setMinDailyAttempts: (minDailyAttempts) => set({ minDailyAttempts }),
-			maxDailyAttempts: 3,
-			setMaxDailyAttempts: (maxDailyAttempts) => set({ maxDailyAttempts }),
-			countVoicemailAsAnswered: false,
-			setCountVoicemailAsAnswered: (countVoicemailAsAnswered) =>
-				set({ countVoicemailAsAnswered }),
+		// Step 3: Timing Preferences
+		daysSelected: 7,
+		setDaysSelected: (daysSelected) => set({ daysSelected }),
+		startDate: new Date(),
+		setStartDate: (startDate) => set({ startDate }),
+		endDate: null,
+		setEndDate: (endDate) => set({ endDate }),
+		reachBeforeBusiness: false,
+		setReachBeforeBusiness: (reachBeforeBusiness) =>
+			set({ reachBeforeBusiness }),
+		reachAfterBusiness: false,
+		setReachAfterBusiness: (reachAfterBusiness) => set({ reachAfterBusiness }),
+		reachOnWeekend: false,
+		setReachOnWeekend: (reachOnWeekend) => set({ reachOnWeekend }),
+		reachOnHolidays: false,
+		setReachOnHolidays: (reachOnHolidays) => set({ reachOnHolidays }),
+		// Dial attempt preferences
+		minDailyAttempts: 1,
+		setMinDailyAttempts: (minDailyAttempts) => set({ minDailyAttempts }),
+		maxDailyAttempts: 3,
+		setMaxDailyAttempts: (maxDailyAttempts) => set({ maxDailyAttempts }),
+		countVoicemailAsAnswered: false,
+		setCountVoicemailAsAnswered: (countVoicemailAsAnswered) =>
+			set({ countVoicemailAsAnswered }),
 
-			// TCPA and Voicemail preferences
-			tcpaNotOptedIn: false,
-			setTcpaNotOptedIn: (tcpaNotOptedIn) => set({ tcpaNotOptedIn }),
-			doVoicemailDrops: false,
-			setDoVoicemailDrops: (doVoicemailDrops) => set({ doVoicemailDrops }),
+		// TCPA and Voicemail preferences
+		tcpaNotOptedIn: false,
+		setTcpaNotOptedIn: (tcpaNotOptedIn) => set({ tcpaNotOptedIn }),
+		doVoicemailDrops: false,
+		setDoVoicemailDrops: (doVoicemailDrops) => set({ doVoicemailDrops }),
 
-			// Timezone handling
-			getTimezoneFromLeadLocation: true,
-			setGetTimezoneFromLeadLocation: (getTimezoneFromLeadLocation) =>
-				set({ getTimezoneFromLeadLocation }),
+		// Timezone handling
+		getTimezoneFromLeadLocation: true,
+		setGetTimezoneFromLeadLocation: (getTimezoneFromLeadLocation) =>
+			set({ getTimezoneFromLeadLocation }),
 
-			// Number Pooling (Calls/Text)
-			numberPoolingEnabled: false,
-			setNumberPoolingEnabled: (numberPoolingEnabled) =>
-				set({ numberPoolingEnabled }),
-			messagingServiceSid: "",
-			setMessagingServiceSid: (messagingServiceSid) =>
-				set({ messagingServiceSid }),
-			senderPoolNumbersCsv: "",
-			setSenderPoolNumbersCsv: (senderPoolNumbersCsv) =>
-				set({ senderPoolNumbersCsv }),
-			smartEncodingEnabled: true,
-			setSmartEncodingEnabled: (smartEncodingEnabled) =>
-				set({ smartEncodingEnabled }),
-			optOutHandlingEnabled: true,
-			setOptOutHandlingEnabled: (optOutHandlingEnabled) =>
-				set({ optOutHandlingEnabled }),
-			perNumberDailyLimit: 75,
-			setPerNumberDailyLimit: (perNumberDailyLimit) =>
-				set({ perNumberDailyLimit }),
+		// Number Pooling (Calls/Text)
+		numberPoolingEnabled: false,
+		setNumberPoolingEnabled: (numberPoolingEnabled) =>
+			set({ numberPoolingEnabled }),
+		messagingServiceSid: "",
+		setMessagingServiceSid: (messagingServiceSid) =>
+			set({ messagingServiceSid }),
+		senderPoolNumbersCsv: "",
+		setSenderPoolNumbersCsv: (senderPoolNumbersCsv) =>
+			set({ senderPoolNumbersCsv }),
+		smartEncodingEnabled: true,
+		setSmartEncodingEnabled: (smartEncodingEnabled) =>
+			set({ smartEncodingEnabled }),
+		optOutHandlingEnabled: true,
+		setOptOutHandlingEnabled: (optOutHandlingEnabled) =>
+			set({ optOutHandlingEnabled }),
+		perNumberDailyLimit: 75,
+		setPerNumberDailyLimit: (perNumberDailyLimit) =>
+			set({ perNumberDailyLimit }),
 
-			// Sender pool UI/data
-			availableSenderNumbers: [
-				"+15551230001",
-				"+15551230002",
-				"+15551230003",
-				"+15551230004",
-			],
-			setAvailableSenderNumbers: (availableSenderNumbers) =>
-				set({ availableSenderNumbers }),
-			selectedSenderNumbers: [],
-			setSelectedSenderNumbers: (selectedSenderNumbers) =>
-				set({ selectedSenderNumbers }),
-			numberSelectionStrategy: "round_robin",
-			setNumberSelectionStrategy: (numberSelectionStrategy) =>
-				set({ numberSelectionStrategy }),
+		// Sender pool UI/data
+		availableSenderNumbers: [
+			"+15551230001",
+			"+15551230002",
+			"+15551230003",
+			"+15551230004",
+		],
+		setAvailableSenderNumbers: (availableSenderNumbers) =>
+			set({ availableSenderNumbers }),
+		selectedSenderNumbers: [],
+		setSelectedSenderNumbers: (selectedSenderNumbers) =>
+			set({ selectedSenderNumbers }),
+		numberSelectionStrategy: "round_robin",
+		setNumberSelectionStrategy: (numberSelectionStrategy) =>
+			set({ numberSelectionStrategy }),
 
-			// Runtime usage tracking
-			senderUsageToday: {},
-			lastUsageResetDate: new Date().toISOString().slice(0, 10),
-			resetDailySenderUsageIfNeeded: () =>
-				set((state) => {
-					const today = new Date().toISOString().slice(0, 10);
-					if (state.lastUsageResetDate !== today) {
-						return { senderUsageToday: {}, lastUsageResetDate: today };
-					}
-					return {} as Partial<CampaignCreationState>;
-				}),
-			pickSenderNumber: ({ leadKey }) => {
-				// Delegate to Messaging Service if configured
-				const s = get();
-				if (s.messagingServiceSid) return undefined;
-				// Ensure usage is fresh
-				(s.resetDailySenderUsageIfNeeded as () => void)();
-				const pool = s.selectedSenderNumbers.length
-					? s.selectedSenderNumbers
-					: s.availableSenderNumbers;
-				if (!pool.length) return undefined;
-				const usage = s.senderUsageToday || {};
-				const limit = s.perNumberDailyLimit || 75;
-
-				const eligible = pool.filter((n) => (usage[n] || 0) < limit);
-				if (!eligible.length) return undefined;
-
-				let chosen = eligible[0];
-				switch (s.numberSelectionStrategy) {
-					case "random": {
-						chosen = eligible[Math.floor(Math.random() * eligible.length)];
-						break;
-					}
-					case "sticky_by_lead": {
-						if (leadKey) {
-							// Simple stable mapping: hash leadKey to index
-							let hash = 0;
-							for (let i = 0; i < leadKey.length; i++)
-								hash = (hash * 31 + leadKey.charCodeAt(i)) >>> 0;
-							chosen = eligible[hash % eligible.length];
-							break;
-						}
-						// No leadKey provided; fall back to round-robin logic explicitly (no switch fallthrough)
-						chosen = eligible.reduce((a, b) =>
-							(usage[a] || 0) <= (usage[b] || 0) ? a : b,
-						);
-						break;
-					}
-					case "round_robin": {
-						// pick the number with the least usage
-						chosen = eligible.reduce((a, b) =>
-							(usage[a] || 0) <= (usage[b] || 0) ? a : b,
-						);
-						break;
-					}
-					default: {
-						// default to least-used number when strategy is unrecognized
-						chosen = eligible.reduce((a, b) =>
-							(usage[a] || 0) <= (usage[b] || 0) ? a : b,
-						);
-						break;
-					}
+		// Runtime usage tracking
+		senderUsageToday: {},
+		lastUsageResetDate: new Date().toISOString().slice(0, 10),
+		resetDailySenderUsageIfNeeded: () =>
+			set((state) => {
+				const today = new Date().toISOString().slice(0, 10);
+				if (state.lastUsageResetDate !== today) {
+					return { senderUsageToday: {}, lastUsageResetDate: today };
 				}
+				return {} as Partial<CampaignCreationState>;
+			}),
+		pickSenderNumber: ({ leadKey }) => {
+			// Delegate to Messaging Service if configured
+			const s = get();
+			if (s.messagingServiceSid) return undefined;
+			// Ensure usage is fresh
+			(s.resetDailySenderUsageIfNeeded as () => void)();
+			const pool = s.selectedSenderNumbers.length
+				? s.selectedSenderNumbers
+				: s.availableSenderNumbers;
+			if (!pool.length) return undefined;
+			const usage = s.senderUsageToday || {};
+			const limit = s.perNumberDailyLimit || 75;
 
-				// increment usage
-				set({
-					senderUsageToday: { ...usage, [chosen]: (usage[chosen] || 0) + 1 },
-				});
-				return chosen;
-			},
+			const eligible = pool.filter((n) => (usage[n] || 0) < limit);
+			if (!eligible.length) return undefined;
 
-			// Reset function
-			reset: () =>
-				set({
-					// Step 1
-					primaryChannel: null,
-					campaignName: "",
+			let chosen = eligible[0];
+			switch (s.numberSelectionStrategy) {
+				case "random": {
+					chosen = eligible[Math.floor(Math.random() * eligible.length)];
+					break;
+				}
+				case "sticky_by_lead": {
+					if (leadKey) {
+						// Simple stable mapping: hash leadKey to index
+						let hash = 0;
+						for (let i = 0; i < leadKey.length; i++)
+							hash = (hash * 31 + leadKey.charCodeAt(i)) >>> 0;
+						chosen = eligible[hash % eligible.length];
+						break;
+					}
+					// No leadKey provided; fall back to round-robin logic explicitly (no switch fallthrough)
+					chosen = eligible.reduce((a, b) =>
+						(usage[a] || 0) <= (usage[b] || 0) ? a : b,
+					);
+					break;
+				}
+				case "round_robin": {
+					// pick the number with the least usage
+					chosen = eligible.reduce((a, b) =>
+						(usage[a] || 0) <= (usage[b] || 0) ? a : b,
+					);
+					break;
+				}
+				default: {
+					// default to least-used number when strategy is unrecognized
+					chosen = eligible.reduce((a, b) =>
+						(usage[a] || 0) <= (usage[b] || 0) ? a : b,
+					);
+					break;
+				}
+			}
 
-					// Agent Selection
-					selectedAgentId: null,
-					availableAgents: MOCK_AGENTS,
+			// increment usage
+			set({
+				senderUsageToday: { ...usage, [chosen]: (usage[chosen] || 0) + 1 },
+			});
+			return chosen;
+		},
 
-					selectedWorkflowId: null,
-					availableWorkflows: MOCK_WORKFLOWS,
+		// Reset function
+		reset: () =>
+			set({
+				// Step 1
+				primaryChannel: null,
+				campaignName: "",
 
-					selectedSalesScriptId: null,
-					availableSalesScripts: MOCK_SALES_SCRIPTS,
+				// Agent Selection
+				selectedAgentId: null,
+				availableAgents: MOCK_AGENTS,
 
-					// Step 2
-					areaMode: "leadList",
-					selectedLeadListId: "",
-					abTestingEnabled: false,
-					selectedLeadListAId: "",
-					selectedLeadListBId: "",
-					campaignArea: "",
-					leadCount: 0,
-					includeWeekends: false,
+				selectedWorkflowId: null,
+				availableWorkflows: MOCK_WORKFLOWS,
 
-					// Step 3
-					daysSelected: 7,
-					startDate: new Date(),
-					endDate: null,
-					reachBeforeBusiness: false,
-					reachAfterBusiness: false,
-					reachOnWeekend: false,
-					reachOnHolidays: false,
-					minDailyAttempts: 1,
-					maxDailyAttempts: 3,
-					countVoicemailAsAnswered: false,
-					tcpaNotOptedIn: false,
-					doVoicemailDrops: false,
-					getTimezoneFromLeadLocation: true,
-					// Number Pooling
-					numberPoolingEnabled: false,
-					messagingServiceSid: "",
-					senderPoolNumbersCsv: "",
-					smartEncodingEnabled: true,
-					optOutHandlingEnabled: true,
-					perNumberDailyLimit: 75,
-					availableSenderNumbers: [
-						"+15551230001",
-						"+15551230002",
-						"+15551230003",
-						"+15551230004",
-					],
-					selectedSenderNumbers: [],
-					numberSelectionStrategy: "round_robin",
-					senderUsageToday: {},
-					lastUsageResetDate: new Date().toISOString().slice(0, 10),
-				}),
-		})),
-	);
+				selectedSalesScriptId: null,
+				availableSalesScripts: MOCK_SALES_SCRIPTS,
+
+				// Step 2
+				areaMode: "leadList",
+				selectedLeadListId: "",
+				abTestingEnabled: false,
+				selectedLeadListAId: "",
+				selectedLeadListBId: "",
+				campaignArea: "",
+				leadCount: 0,
+				includeWeekends: false,
+
+				// Step 3
+				daysSelected: 7,
+				startDate: new Date(),
+				endDate: null,
+				reachBeforeBusiness: false,
+				reachAfterBusiness: false,
+				reachOnWeekend: false,
+				reachOnHolidays: false,
+				minDailyAttempts: 1,
+				maxDailyAttempts: 3,
+				countVoicemailAsAnswered: false,
+				tcpaNotOptedIn: false,
+				doVoicemailDrops: false,
+				getTimezoneFromLeadLocation: true,
+				// Number Pooling
+				numberPoolingEnabled: false,
+				messagingServiceSid: "",
+				senderPoolNumbersCsv: "",
+				smartEncodingEnabled: true,
+				optOutHandlingEnabled: true,
+				perNumberDailyLimit: 75,
+				availableSenderNumbers: [
+					"+15551230001",
+					"+15551230002",
+					"+15551230003",
+					"+15551230004",
+				],
+				selectedSenderNumbers: [],
+				numberSelectionStrategy: "round_robin",
+				senderUsageToday: {},
+				lastUsageResetDate: new Date().toISOString().slice(0, 10),
+			}),
+	})),
+);
