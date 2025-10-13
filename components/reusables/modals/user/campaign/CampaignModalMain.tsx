@@ -406,18 +406,6 @@ export default function CampaignModalMain({
 			const fullUrl = `/dashboard/campaigns?${params.toString()}`;
 			console.log("🌐 FULL URL DEBUG:", fullUrl);
 
-			// Check if router exists
-			console.log("🧭 ROUTER DEBUG:", {
-				routerExists: !!router,
-				routerType: typeof router,
-				routerPush: typeof router?.push,
-			});
-
-			if (!router?.push) {
-				console.error("❌ ROUTER ERROR: router.push is not available");
-				throw new Error("Router not available for navigation");
-			}
-
 			// Close modal before notifying listeners to avoid Radix presence loops
 			console.log("🔒 MODAL DEBUG: Closing modal");
 			closeModal();
@@ -428,8 +416,11 @@ export default function CampaignModalMain({
 				channelType: campaignType,
 			});
 
-			router.push(fullUrl);
-			console.log("✅ NAVIGATION DEBUG: router.push called successfully");
+			// Don't navigate if callback was provided - let parent component handle navigation
+			if (!onCampaignLaunched) {
+				router.push(fullUrl);
+				console.log("✅ NAVIGATION DEBUG: router.push called successfully");
+			}
 
 			console.log(
 				"🎉 CAMPAIGN LAUNCH DEBUG: Campaign launch completed successfully",
