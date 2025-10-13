@@ -4,7 +4,6 @@ import { useRouter } from "next/navigation";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
-import { campaignSteps } from "@/_tests/tours/campaignTour";
 import WalkThroughModal from "@/components/leadsSearch/search/WalkthroughModal";
 import QuickStartActionsGrid from "@/components/quickstart/QuickStartActionsGrid";
 import QuickStartBadgeList from "@/components/quickstart/QuickStartBadgeList";
@@ -38,7 +37,6 @@ export default function QuickStartPage() {
 		"create",
 	);
 	const [showWalkthrough, setShowWalkthrough] = useState(false);
-	const [isTourOpen, setIsTourOpen] = useState(false);
 	const [showBulkSuiteModal, setShowBulkSuiteModal] = useState(false);
 	const [showCampaignModal, setShowCampaignModal] = useState(false);
 	const [campaignModalContext, setCampaignModalContext] =
@@ -179,8 +177,6 @@ export default function QuickStartPage() {
 	);
 
 	const handleWalkthroughOpen = useCallback(() => setShowWalkthrough(true), []);
-	const handleStartTour = useCallback(() => setIsTourOpen(true), []);
-	const handleCloseTour = useCallback(() => setIsTourOpen(false), []);
 
 	const handleBrowserExtension = useCallback(() => {
 		window.open("https://chrome.google.com/webstore", "_blank");
@@ -424,13 +420,9 @@ export default function QuickStartPage() {
 			<WalkThroughModal
 				isOpen={showWalkthrough}
 				onClose={() => setShowWalkthrough(false)}
-				videoUrl="https://www.youtube.com/watch?v=hyosynoNbSU"
+				videoUrl="https://app.supademo.com/embed/cmgpmix8616ou12sxl6bxk80s?embed_v=2&utm_source=embed"
 				title="Welcome To Deal Scale"
 				subtitle="Get help getting started with your lead generation platform."
-				steps={campaignSteps}
-				isTourOpen={isTourOpen}
-				onStartTour={handleStartTour}
-				onCloseTour={handleCloseTour}
 			/>
 		</div>
 	);
