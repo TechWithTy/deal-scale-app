@@ -8,6 +8,7 @@ import {
 	getEstimatedCredits,
 } from "@/lib/utils/campaignCostCalculator";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "next/navigation";
 import React, {
 	useCallback,
 	useEffect,
@@ -17,7 +18,6 @@ import React, {
 } from "react";
 import { useForm } from "react-hook-form";
 import type { z } from "zod";
-import { shallow } from "zustand/shallow";
 import ChannelCustomizationStep, {
 	TransferConditionalSchema,
 	type FormSchema,
