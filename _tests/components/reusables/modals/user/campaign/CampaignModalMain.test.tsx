@@ -8,14 +8,6 @@ import { useCampaignCreationStore } from "@/lib/stores/campaignCreation";
 
 void React;
 
-const pushMock = vi.fn();
-
-vi.mock("next/navigation", () => ({
-	useRouter: () => ({
-		push: pushMock,
-	}),
-}));
-
 vi.mock("@/components/ui/dialog", () => ({
 	Dialog: ({ children }: { children: React.ReactNode }) => (
 		<div>{children}</div>
@@ -63,8 +55,6 @@ vi.mock(
 
 describe("CampaignModalMain", () => {
 	beforeEach(() => {
-		pushMock.mockClear();
-
 		act(() => {
 			const store = useCampaignCreationStore.getState();
 			store.reset();
@@ -76,14 +66,16 @@ describe("CampaignModalMain", () => {
 		});
 	});
 
-	it("navigates with campaign query parameters after launching", () => {
+	it("closes the modal and notifies listeners after launching", () => {
 		const handleOpenChange = vi.fn();
+		const handleCampaignLaunched = vi.fn();
 
 		render(
 			<CampaignModalMain
 				isOpen
 				onOpenChange={handleOpenChange}
 				initialStep={3}
+				onCampaignLaunched={handleCampaignLaunched}
 			/>,
 		);
 
@@ -93,13 +85,10 @@ describe("CampaignModalMain", () => {
 
 		fireEvent.click(launchButton);
 
-		expect(pushMock).toHaveBeenCalledTimes(1);
-		const destination = pushMock.mock.calls[0]?.[0];
-		expect(destination).toBeTruthy();
-		expect(destination).toContain("/dashboard/campaigns?");
-		expect(destination).toContain("type=call");
-		expect(destination).toMatch(/campaignId=campaign_\d+/);
-
 		expect(handleOpenChange).toHaveBeenCalledWith(false);
+		expect(handleCampaignLaunched).toHaveBeenCalledTimes(1);
+		const payload = handleCampaignLaunched.mock.calls[0]?.[0];
+		expect(payload?.campaignId).toMatch(/^campaign_\d+$/);
+		expect(payload?.channelType).toBe("call");
 	});
 });
