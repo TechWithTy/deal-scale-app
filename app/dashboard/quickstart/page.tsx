@@ -19,6 +19,9 @@ import LeadModalMain from "@/components/reusables/modals/user/lead/LeadModalMain
 import { useCampaignCreationStore } from "@/lib/stores/campaignCreation";
 import { useModalStore } from "@/lib/stores/dashboard";
 import type { WebhookStage } from "@/lib/stores/dashboard";
+import { shallow } from "zustand/shallow";
+
+void React;
 
 void React;
 
@@ -64,16 +67,22 @@ export default function QuickStartPage() {
 
 	const handleLaunchCampaign = useCallback(
 		({ leadListId, leadListName, leadCount }: CampaignContext) => {
-			campaignStore.reset();
-			campaignStore.setAreaMode("leadList");
-			campaignStore.setSelectedLeadListId(leadListId);
-			campaignStore.setLeadCount(leadCount);
-			campaignStore.setCampaignName(`${leadListName} Campaign`);
+			resetCampaignStore();
+			setAreaMode("leadList");
+			setSelectedLeadListId(leadListId);
+			setLeadCount(leadCount);
+			setCampaignName(`${leadListName} Campaign`);
 			setCampaignModalContext({ leadListId, leadListName, leadCount });
 			setShowCampaignModal(true);
 			setShowLeadModal(false);
 		},
-		[campaignStore],
+		[
+			resetCampaignStore,
+			setAreaMode,
+			setSelectedLeadListId,
+			setLeadCount,
+			setCampaignName,
+		],
 	);
 
 	const handleSuiteLaunchComplete = useCallback(
@@ -98,11 +107,11 @@ export default function QuickStartPage() {
 	);
 
 	const handleCampaignCreation = useCallback(() => {
-		campaignStore.reset();
-		campaignStore.setAreaMode("leadList");
+		resetCampaignStore();
+		setAreaMode("leadList");
 		setCampaignModalContext(null);
 		setShowCampaignModal(true);
-	}, [campaignStore]);
+	}, [resetCampaignStore, setAreaMode]);
 
 	const handleViewTemplates = useCallback(
 		() => toast.info("Campaign templates feature coming soon!"),
@@ -133,6 +142,24 @@ export default function QuickStartPage() {
 	const handleCampaignModalToggle = useCallback((open: boolean) => {
 		setShowCampaignModal(open);
 	}, []);
+
+	useEffect(() => {
+		const wasOpen = previousCampaignModalOpenRef.current;
+		previousCampaignModalOpenRef.current = showCampaignModal;
+
+		if (wasOpen && !showCampaignModal) {
+			setCampaignModalContext(null);
+			const timeout = setTimeout(() => {
+				resetCampaignStore();
+			}, 0);
+
+			return () => {
+				clearTimeout(timeout);
+			};
+		}
+
+		return undefined;
+	}, [showCampaignModal, resetCampaignStore]);
 
 	useEffect(() => {
 		const wasOpen = previousCampaignModalOpenRef.current;
@@ -208,6 +235,7 @@ export default function QuickStartPage() {
 				initialLeadListName={campaignModalContext?.leadListName}
 				initialLeadCount={campaignModalContext?.leadCount ?? 0}
 				initialStep={0}
+				onCampaignLaunched={handleCampaignLaunched}
 			/>
 
 			<SavedSearchModal
