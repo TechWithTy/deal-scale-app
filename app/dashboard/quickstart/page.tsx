@@ -54,6 +54,23 @@ export default function QuickStartPage() {
 		},
 		[quickstartDebugEnabled],
 	);
+	const logQuickStartWarn = useCallback(
+		(phase: string, details: Record<string, unknown>) => {
+			if (!quickstartDebugEnabled) return;
+			// eslint-disable-next-line no-console -- intentional debug surface for modal close loops
+			console.warn(`[QuickStart] ${phase}`, details);
+		},
+		[quickstartDebugEnabled],
+	);
+	const campaignModalTransitionRef = useRef({
+		lastState: showCampaignModal,
+		lastTimestamp:
+			typeof performance !== "undefined" ? performance.now() : Date.now(),
+		rapidTransitionCount: 0,
+	});
+	const previousCampaignContextRef = useRef<CampaignContext | null>(
+		campaignModalContext,
+	);
 
 	const router = useRouter();
 	const openWebhookModal = useModalStore((state) => state.openWebhookModal);
@@ -97,6 +114,12 @@ export default function QuickStartPage() {
 			setSelectedLeadListId(leadListId);
 			setLeadCount(leadCount);
 			setCampaignName(`${leadListName} Campaign`);
+			logQuickStartDebug("campaign-modal-launch-request", {
+				leadListId,
+				leadListName,
+				leadCount,
+				stack: new Error("campaign-modal-launch-request").stack,
+			});
 			setCampaignModalContext({ leadListId, leadListName, leadCount });
 			setShowCampaignModal(true);
 			setShowLeadModal(false);
@@ -112,6 +135,10 @@ export default function QuickStartPage() {
 
 	const handleSuiteLaunchComplete = useCallback(
 		(payload: CampaignContext) => {
+			logQuickStartDebug("campaign-modal-bulk-suite-request", {
+				payload,
+				stack: new Error("campaign-modal-bulk-suite-request").stack,
+			});
 			handleLaunchCampaign(payload);
 			return true;
 		},
@@ -134,6 +161,9 @@ export default function QuickStartPage() {
 	const handleCampaignCreation = useCallback(() => {
 		resetCampaignStore();
 		setAreaMode("leadList");
+		logQuickStartDebug("campaign-modal-new-campaign", {
+			stack: new Error("campaign-modal-new-campaign").stack,
+		});
 		setCampaignModalContext(null);
 		setShowCampaignModal(true);
 	}, [resetCampaignStore, setAreaMode]);
@@ -164,15 +194,28 @@ export default function QuickStartPage() {
 		[router],
 	);
 
-	const handleCampaignModalToggle = useCallback((open: boolean) => {
-		setShowCampaignModal(open);
-	}, []);
+	const handleCampaignModalToggle = useCallback(
+		(open: boolean) => {
+			logQuickStartDebug("campaign-modal-open-change", {
+				open,
+				origin: "CampaignModalMain.onOpenChange",
+				stack: new Error("campaign-modal-open-change").stack,
+			});
+			setShowCampaignModal(open);
+		},
+		[logQuickStartDebug],
+	);
 
 	const handleCampaignLaunched = useCallback(
 		({
 			campaignId,
 			channelType,
 		}: { campaignId: string; channelType: string }) => {
+			logQuickStartDebug("campaign-modal-launched", {
+				campaignId,
+				channelType,
+				stack: new Error("campaign-modal-launched").stack,
+			});
 			setShowCampaignModal(false);
 			const params = new URLSearchParams({
 				campaignId,
@@ -185,10 +228,71 @@ export default function QuickStartPage() {
 
 	// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
 	useEffect(() => {
+		const previous = previousCampaignContextRef.current;
+		if (previous !== campaignModalContext) {
+			logQuickStartDebug("campaign-modal-context-changed", {
+				previous,
+				next: campaignModalContext,
+			});
+			previousCampaignContextRef.current = campaignModalContext;
+		}
+	}, [campaignModalContext, logQuickStartDebug]);
+
+	useEffect(() => {
+		const now =
+			typeof performance !== "undefined" ? performance.now() : Date.now();
+		const previousState = campaignModalTransitionRef.current.lastState;
+		const timeSinceLast =
+			now - campaignModalTransitionRef.current.lastTimestamp;
+		const nextRapidTransitionCount =
+			previousState === showCampaignModal
+				? campaignModalTransitionRef.current.rapidTransitionCount
+				: timeSinceLast < 750
+					? campaignModalTransitionRef.current.rapidTransitionCount + 1
+					: 1;
+
+		campaignModalTransitionRef.current = {
+			lastState: showCampaignModal,
+			lastTimestamp: now,
+			rapidTransitionCount: nextRapidTransitionCount,
+		};
+
+		logQuickStartDebug("campaign-modal-visibility-updated", {
+			previous: previousState,
+			next: showCampaignModal,
+			deltaMs: Number.isFinite(timeSinceLast)
+				? Math.round(timeSinceLast)
+				: null,
+			rapidTransitionCount: nextRapidTransitionCount,
+			contextPresent: Boolean(campaignModalContext),
+		});
+
+		if (nextRapidTransitionCount > 5 && previousState !== showCampaignModal) {
+			logQuickStartWarn("campaign-modal-rapid-toggle-detected", {
+				transitions: nextRapidTransitionCount,
+				deltaMs: Number.isFinite(timeSinceLast)
+					? Math.round(timeSinceLast)
+					: null,
+				stack: new Error("campaign-modal-rapid-toggle").stack,
+			});
+		}
+	}, [
+		showCampaignModal,
+		campaignModalContext,
+		logQuickStartDebug,
+		logQuickStartWarn,
+	]);
+
+	useEffect(() => {
 		const wasOpen = previousCampaignModalOpenRef.current;
 		previousCampaignModalOpenRef.current = showCampaignModal;
 
 		if (wasOpen && !showCampaignModal) {
+			logQuickStartDebug("campaign-modal-close-observed", {
+				source: "visibility-effect",
+				campaignModalContext,
+				stack: new Error("campaign-modal-close-observed").stack,
+			});
 			setCampaignModalContext(null);
 			if (campaignResetTimeoutRef.current !== null) {
 				clearTimeout(campaignResetTimeoutRef.current);
@@ -215,6 +319,9 @@ export default function QuickStartPage() {
 		}
 
 		if (!showCampaignModal && campaignResetTimeoutRef.current !== null) {
+			logQuickStartDebug("campaign-modal-close-cleanup", {
+				hasTimeout: true,
+			});
 			return () => {
 				if (campaignResetTimeoutRef.current !== null) {
 					clearTimeout(campaignResetTimeoutRef.current);
@@ -234,6 +341,9 @@ export default function QuickStartPage() {
 	useEffect(
 		() => () => {
 			if (campaignResetTimeoutRef.current !== null) {
+				logQuickStartDebug("campaign-modal-timeout-dispose", {
+					reason: "component-unmount",
+				});
 				clearTimeout(campaignResetTimeoutRef.current);
 				campaignResetTimeoutRef.current = null;
 			}
