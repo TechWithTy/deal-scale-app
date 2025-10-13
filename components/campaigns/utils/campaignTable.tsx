@@ -16,6 +16,10 @@ import {
 } from "@/components/ui/popover";
 import CampaignModalMain from "../../../external/shadcn-table/src/examples/campaigns/modal/CampaignModalMain";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useCampaignStore } from "@/lib/stores/campaigns";
+import { shallow } from "zustand/shallow";
+import type { CallCampaign } from "@/types/_dashboard/campaign";
+import type { DirectMailCampaign } from "external/shadcn-table/src/examples/DirectMail/utils/mock";
 
 export default function CampaignCallTablePage({
 	urlParams,
@@ -123,6 +127,40 @@ export default function CampaignCallTablePage({
 			);
 		}
 	}, [urlParams, getInitialTab]);
+	const { callCampaigns, textCampaigns, socialCampaigns, directMailCampaigns } =
+		useCampaignStore(
+			React.useCallback(
+				(state) => ({
+					callCampaigns: state.campaignsByType.call,
+					textCampaigns: state.campaignsByType.text,
+					socialCampaigns: state.campaignsByType.social,
+					directMailCampaigns: state.campaignsByType.direct,
+				}),
+				[],
+			),
+			shallow,
+		);
+
+	const memoizedCallCampaigns = React.useMemo<CallCampaign[]>(
+		() => callCampaigns.map((campaign) => ({ ...campaign })),
+		[callCampaigns],
+	);
+
+	const memoizedTextCampaigns = React.useMemo<CallCampaign[]>(
+		() => textCampaigns.map((campaign) => ({ ...campaign })),
+		[textCampaigns],
+	);
+
+	const memoizedSocialCampaigns = React.useMemo<CallCampaign[]>(
+		() => socialCampaigns.map((campaign) => ({ ...campaign })),
+		[socialCampaigns],
+	);
+
+	const memoizedDirectMailCampaigns = React.useMemo<DirectMailCampaign[]>(
+		() => directMailCampaigns.map((campaign) => ({ ...campaign })),
+		[directMailCampaigns],
+	);
+
 	const [isLeadModalOpen, setIsLeadModalOpen] = React.useState(false);
 	const [isSkipTraceOpen, setIsSkipTraceOpen] = React.useState(false);
 	const [isCampaignModalOpen, setIsCampaignModalOpen] = React.useState(false);
@@ -223,6 +261,7 @@ export default function CampaignCallTablePage({
 					onNavigate={handleTabChange}
 					campaignId={campaignId}
 					onCampaignSelect={handleCampaignSelect}
+					initialCampaigns={memoizedCallCampaigns}
 				/>
 			)}
 			{tab === "text" && (
@@ -231,6 +270,7 @@ export default function CampaignCallTablePage({
 					onNavigate={handleTabChange}
 					campaignId={campaignId}
 					onCampaignSelect={handleCampaignSelect}
+					initialCampaigns={memoizedTextCampaigns}
 				/>
 			)}
 			{tab === "social" && (
@@ -243,6 +283,7 @@ export default function CampaignCallTablePage({
 						onNavigate={handleTabChange}
 						campaignId={campaignId}
 						onCampaignSelect={handleCampaignSelect}
+						initialCampaigns={memoizedSocialCampaigns}
 					/>
 				</FeatureGuard>
 			)}
@@ -256,6 +297,7 @@ export default function CampaignCallTablePage({
 						onNavigate={handleTabChange}
 						campaignId={campaignId}
 						onCampaignSelect={handleCampaignSelect}
+						initialCampaigns={memoizedDirectMailCampaigns}
 					/>
 				</FeatureGuard>
 			)}
