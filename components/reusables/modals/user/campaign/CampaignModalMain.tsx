@@ -370,26 +370,46 @@ export default function CampaignModalMain({
 	const prevStep = () => setStep((s) => Math.max(0, s - 1));
 
 	const launchCampaign = useCallback(() => {
-		// Generate a campaign ID (using timestamp for now)
-		const campaignId = `campaign_${Date.now()}`;
-
-		// Map primary channel to campaign type
-		const channelTypeMap: Record<string, string> = {
-			call: "call",
-			text: "text",
-			social: "social",
-			directmail: "direct",
-			email: "direct", // Map email to direct for now
-		};
+		console.log("🚀 CAMPAIGN LAUNCH DEBUG - Starting launchCampaign");
+		console.log("📊 CAMPAIGN STATE DEBUG:", {
+			primaryChannel,
+			campaignName,
+			leadCount,
+			areaMode,
+			step,
+			isOpen,
+		});
 
 		const campaignType = channelTypeMap[primaryChannel || ""] || "call";
 		const payload = {
 			campaignId,
 			channelType: campaignType,
 		};
+		try {
+			// Generate a campaign ID (using timestamp for now)
+			const campaignId = `campaign_${Date.now()}`;
+			console.log("🆔 CAMPAIGN ID DEBUG:", { campaignId });
 
-		// Close modal before notifying listeners to avoid Radix presence loops
-		closeModal();
+			// Map primary channel to campaign type
+			const channelTypeMap: Record<string, string> = {
+				call: "call",
+				text: "text",
+				social: "social",
+				directmail: "direct",
+				email: "direct", // Map email to direct for now
+			};
+
+			const campaignType = channelTypeMap[primaryChannel || ""] || "call";
+			console.log("📡 CAMPAIGN TYPE DEBUG:", { campaignType, primaryChannel });
+
+			const params = new URLSearchParams({
+				type: campaignType,
+				campaignId,
+			});
+			console.log("🔗 URL PARAMS DEBUG:", params.toString());
+
+			const fullUrl = `/dashboard/campaigns?${params.toString()}`;
+			console.log("🌐 FULL URL DEBUG:", fullUrl);
 
 		if (onCampaignLaunched) {
 			onCampaignLaunched(payload);
@@ -403,6 +423,54 @@ export default function CampaignModalMain({
 
 		router.push(`/dashboard/campaigns?${params.toString()}`);
 	}, [primaryChannel, closeModal, onCampaignLaunched, router]);
+			// Check if router exists
+			console.log("🧭 ROUTER DEBUG:", {
+				routerExists: !!router,
+				routerType: typeof router,
+				routerPush: typeof router?.push,
+			});
+
+			if (!router?.push) {
+				console.error("❌ ROUTER ERROR: router.push is not available");
+				throw new Error("Router not available for navigation");
+			}
+
+			router.push(fullUrl);
+			console.log("✅ NAVIGATION DEBUG: router.push called successfully");
+
+			// Close modal before notifying listeners to avoid Radix presence loops
+			console.log("🔒 MODAL DEBUG: Closing modal");
+			closeModal();
+
+			console.log("📢 CALLBACK DEBUG: Calling onCampaignLaunched");
+			onCampaignLaunched?.({
+				campaignId,
+				channelType: campaignType,
+			});
+
+			console.log(
+				"🎉 CAMPAIGN LAUNCH DEBUG: Campaign launch completed successfully",
+			);
+		} catch (error: unknown) {
+			console.error("💥 CAMPAIGN LAUNCH ERROR:", error);
+			console.error("🔍 ERROR DETAILS:", {
+				name: (error as Error)?.name,
+				message: (error as Error)?.message,
+				stack: (error as Error)?.stack,
+			});
+			throw error; // Re-throw so the error still propagates
+		}
+	}, [
+		primaryChannel,
+		closeModal,
+		onCampaignLaunched,
+		router,
+		areaMode,
+		isOpen,
+		step,
+		campaignName,
+		leadCount,
+	]);
 
 	const handleCreateAbTest = (label?: string) => {
 		// Only create A/B test if explicitly requested
