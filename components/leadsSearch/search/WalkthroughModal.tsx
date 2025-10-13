@@ -82,6 +82,13 @@ const WalkThroughModal: FC<WalkThroughModalProps> = ({
 		}
 	};
 
+	// Function to handle keyboard events for accessibility
+	const handleKeyDown = (e: React.KeyboardEvent) => {
+		if (e.key === "Escape") {
+			onClose();
+		}
+	};
+
 	// Handle Supademo triggers
 	const handleSupademoClick = () => {
 		if (supademoDemoId) {
@@ -97,6 +104,10 @@ const WalkThroughModal: FC<WalkThroughModalProps> = ({
 			<div
 				className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm"
 				onClick={handleOutsideClick}
+				onKeyDown={handleKeyDown}
+				tabIndex={-1}
+				role="dialog"
+				aria-modal="true"
 			>
 				<div className="w-96 rounded-lg bg-card p-6 text-center shadow-lg">
 					{/* X Button for closing the modal */}
@@ -121,18 +132,19 @@ const WalkThroughModal: FC<WalkThroughModalProps> = ({
 						)}
 
 						{embedInfo.type === "supademo" ? (
-							<div className="h-full w-full rounded bg-muted flex items-center justify-center">
+							<div className="flex h-full w-full items-center justify-center rounded bg-muted">
 								<div className="text-center">
-									<div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+									<div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
 										<button
+											type="button"
 											onClick={handleSupademoClick}
-											className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center hover:bg-primary/90 transition-colors"
+											className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground transition-colors hover:bg-primary/90"
 										>
 											▶
 										</button>
 									</div>
-									<p className="text-muted-foreground mb-2">Interactive Demo</p>
-									<p className="text-sm text-muted-foreground">
+									<p className="mb-2 text-muted-foreground">Interactive Demo</p>
+									<p className="text-muted-foreground text-sm">
 										Click to start the Supademo interactive guide
 									</p>
 								</div>
@@ -154,7 +166,7 @@ const WalkThroughModal: FC<WalkThroughModalProps> = ({
 					</div>
 
 					{/* Title */}
-					<h2 className="mb-2 text-xl font-bold text-foreground">{title}</h2>
+					<h2 className="mb-2 font-bold text-foreground text-xl">{title}</h2>
 
 					{/* Subtitle */}
 					<p className="mb-4 text-muted-foreground">{subtitle}</p>
@@ -170,7 +182,7 @@ const WalkThroughModal: FC<WalkThroughModalProps> = ({
 
 					{/* Conditionally render the Terms of Use clause */}
 					{termsUrl && (
-						<p className="mt-4 text-sm text-muted-foreground">
+						<p className="mt-4 text-muted-foreground text-sm">
 							The use of the Deal Scale Property Search is subject to our{" "}
 							<a href={termsUrl} className="text-primary underline">
 								Terms of Use
@@ -182,7 +194,7 @@ const WalkThroughModal: FC<WalkThroughModalProps> = ({
 					{/* Help Button for starting the tour */}
 					<button
 						type="button"
-						className="mt-4 text-sm text-muted-foreground hover:underline"
+						className="mt-4 text-muted-foreground text-sm hover:underline"
 						onClick={onStartTour} // Trigger the tour when clicked
 					>
 						Still need help? Get a tour

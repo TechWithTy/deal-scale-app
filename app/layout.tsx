@@ -19,14 +19,6 @@ const SupademoClient = dynamic(
 	},
 );
 
-const ActionBarRoot = dynamic(
-	() => import("external/action-bar").then((mod) => mod.ActionBarRoot),
-	{
-		ssr: false,
-		loading: () => null,
-	},
-);
-
 export const metadata: Metadata = {
 	title: "Deal Scale | Real Estate Lead Generation",
 	description:
