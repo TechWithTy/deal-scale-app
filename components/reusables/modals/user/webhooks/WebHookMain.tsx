@@ -254,24 +254,25 @@ export const WebhookModal: React.FC = () => {
 	};
 
 	const handleSaveWebhook = () => {
-		if (webhookStage === "incoming") {
-			toast("Incoming webhook endpoint confirmed.");
-			closeWebhookModal();
-			router.push("/dashboard/lead-list");
-			return;
-		}
-
-		if (webhookStage === "outgoing") {
-			const urlToPersist = outgoingWebhookUrl;
-			toast(`Outgoing webhook saved for ${urlToPersist || "your CRM"}.`);
-			closeWebhookModal();
-			router.push("/dashboard/lead-list");
-			return;
-		}
-
-		toast("Feed preferences saved. Subscribers now receive real-time updates.");
+		// Close modal first
 		closeWebhookModal();
-		router.push("/dashboard/lead-list");
+
+		// Use requestAnimationFrame for better cross-platform timing
+		requestAnimationFrame(() => {
+			if (webhookStage === "incoming") {
+				toast("Incoming webhook endpoint confirmed.");
+			} else if (webhookStage === "outgoing") {
+				const urlToPersist = outgoingWebhookUrl;
+				toast(`Outgoing webhook saved for ${urlToPersist || "your CRM"}.`);
+			} else {
+				toast(
+					"Feed preferences saved. Subscribers now receive real-time updates.",
+				);
+			}
+
+			// Navigate to lead list page
+			router.push("/dashboard/lead-list");
+		});
 	};
 
 	return (
