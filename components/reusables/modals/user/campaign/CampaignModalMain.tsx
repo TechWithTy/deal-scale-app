@@ -1,5 +1,13 @@
 "use client";
 
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { useCampaignCreationStore } from "@/lib/stores/campaignCreation";
+import {
+	calculateCampaignCost,
+	getEstimatedCredits,
+} from "@/lib/utils/campaignCostCalculator";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "next/navigation";
 import React, {
 	useCallback,
 	useEffect,
@@ -7,24 +15,16 @@ import React, {
 	useRef,
 	useState,
 } from "react";
-import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import type { z } from "zod";
 import ChannelCustomizationStep, {
 	TransferConditionalSchema,
-	FormSchema,
+	type FormSchema,
 } from "../../../../../external/shadcn-table/src/examples/campaigns/modal/steps/ChannelCustomizationStep";
 import ChannelSelectionStep from "../../../../../external/shadcn-table/src/examples/campaigns/modal/steps/ChannelSelectionStep";
-import FinalizeCampaignStep from "./steps/FinalizeCampaignStep";
 import { TimingPreferencesStep } from "../../../../../external/shadcn-table/src/examples/campaigns/modal/steps/TimingPreferencesStep";
-import { useCampaignCreationStore } from "@/lib/stores/campaignCreation";
-import {
-	calculateCampaignCost,
-	getEstimatedCredits,
-} from "@/lib/utils/campaignCostCalculator";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
-import type { z } from "zod";
 import CampaignSettingsDebug from "./CampaignSettingsDebug";
+import FinalizeCampaignStep from "./steps/FinalizeCampaignStep";
 interface CampaignModalMainProps {
 	isOpen: boolean;
 	onOpenChange: (open: boolean) => void;
@@ -42,6 +42,33 @@ const allChannels: ("directmail" | "call" | "text" | "social")[] = [
 	"social",
 ];
 const disabledChannels: ("directmail" | "call" | "text" | "social")[] = [];
+
+const DEFAULT_CUSTOMIZATION_VALUES: z.input<typeof FormSchema> = {
+	primaryPhoneNumber: "+11234567890",
+	areaMode: "leadList",
+	selectedLeadListId: "",
+	templates: [],
+	transferEnabled: false,
+	transferType: "inbound_call",
+	transferAgentId: "",
+	transferGuidelines: "",
+	transferPrompt: "",
+	numberPoolingEnabled: false,
+	senderPoolNumbersCsv: "",
+	smartEncodingEnabled: true,
+	optOutHandlingEnabled: true,
+	perNumberDailyLimit: 75,
+	messagingServiceSid: "",
+	tcpaSourceLink: "",
+	skipName: false,
+	addressVerified: false,
+	phoneVerified: false,
+	emailAddress: "",
+	emailVerified: false,
+	possiblePhones: "",
+	possibleEmails: "",
+	possibleHandles: "",
+};
 
 export default function CampaignModalMain({
 	isOpen,
@@ -80,7 +107,6 @@ export default function CampaignModalMain({
 		doVoicemailDrops,
 		includeWeekends,
 		isLeadListSelectionValid,
-		reset,
 		availableAgents,
 		perNumberDailyLimit,
 	} = useCampaignCreationStore();
@@ -90,31 +116,11 @@ export default function CampaignModalMain({
 	const customizationForm = useForm<z.input<typeof FormSchema>>({
 		resolver: zodResolver(TransferConditionalSchema),
 		defaultValues: {
-			primaryPhoneNumber: "+11234567890",
-			areaMode: areaMode || "leadList",
-			selectedLeadListId: selectedLeadListId || "",
-			templates: [],
-			transferEnabled: false,
-			transferType: "inbound_call",
-			transferAgentId: "",
-			transferGuidelines: "",
-			transferPrompt: "",
-			numberPoolingEnabled: false,
-			senderPoolNumbersCsv: "",
-			smartEncodingEnabled: true,
-			optOutHandlingEnabled: true,
-			perNumberDailyLimit: 75,
-			messagingServiceSid: "",
-			tcpaSourceLink: "",
-			skipName: false,
-			addressVerified: false,
-			phoneVerified: false,
-			emailAddress: "",
-			emailVerified: false,
-			possiblePhones: "",
-			possibleEmails: "",
-			possibleHandles: "",
-		} as z.input<typeof FormSchema>,
+			...DEFAULT_CUSTOMIZATION_VALUES,
+			areaMode: areaMode || DEFAULT_CUSTOMIZATION_VALUES.areaMode,
+			selectedLeadListId:
+				selectedLeadListId || DEFAULT_CUSTOMIZATION_VALUES.selectedLeadListId,
+		},
 	});
 
 	const days = useMemo(() => {
@@ -296,10 +302,9 @@ export default function CampaignModalMain({
 		customizationForm,
 	]);
 
-	const closeModal = () => {
-		reset();
+	const closeModal = useCallback(() => {
 		onOpenChange(false);
-	};
+	}, [onOpenChange]);
 
 	const nextStep = async () => {
 		if (step === 1) {
@@ -363,34 +368,9 @@ export default function CampaignModalMain({
 
 	useEffect(() => {
 		if (!isOpen) {
-			customizationForm.reset({
-				primaryPhoneNumber: "+11234567890",
-				areaMode: areaMode || "leadList",
-				selectedLeadListId: selectedLeadListId || "",
-				templates: [],
-				transferEnabled: false,
-				transferType: "inbound_call",
-				transferAgentId: "",
-				transferGuidelines: "",
-				transferPrompt: "",
-				numberPoolingEnabled: false,
-				senderPoolNumbersCsv: "",
-				smartEncodingEnabled: true,
-				optOutHandlingEnabled: true,
-				perNumberDailyLimit: 75,
-				messagingServiceSid: "",
-				tcpaSourceLink: "",
-				skipName: false,
-				addressVerified: false,
-				phoneVerified: false,
-				emailAddress: "",
-				emailVerified: false,
-				possiblePhones: "",
-				possibleEmails: "",
-				possibleHandles: "",
-			} as z.input<typeof FormSchema>);
+			customizationForm.reset(DEFAULT_CUSTOMIZATION_VALUES);
 		}
-	}, [isOpen, customizationForm, areaMode]);
+	}, [isOpen, customizationForm]);
 
 	return (
 		<Dialog open={isOpen} onOpenChange={onOpenChange}>
