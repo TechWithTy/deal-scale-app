@@ -1,7 +1,7 @@
 "use client";
 
-import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { useCampaignCreationStore } from "@/lib/stores/campaignCreation";
+import { useEffect, useRef, useState } from "react";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -180,92 +180,78 @@ export default function CampaignModalMain({
 		setStep(0);
 	};
 
-	const previousOpenRef = useRef(open);
-	const setPrimaryChannelRef = useRef(setPrimaryChannel);
-	const setSelectedLeadListIdRef = useRef(setSelectedLeadListId);
-	const setSelectedLeadListAIdRef = useRef(setSelectedLeadListAId);
-	const setCampaignNameRef = useRef(setCampaignName);
-	const resetRef = useRef(reset);
-	const customizationFormRef = useRef(customizationForm);
+        const previousOpenRef = useRef(open);
 
-	useEffect(() => {
-		setPrimaryChannelRef.current = setPrimaryChannel;
-	}, [setPrimaryChannel]);
+        useEffect(() => {
+                if (!open) return;
 
-	useEffect(() => {
-		setSelectedLeadListIdRef.current = setSelectedLeadListId;
-	}, [setSelectedLeadListId]);
+                setStep(initialStep);
 
-	useEffect(() => {
-		setSelectedLeadListAIdRef.current = setSelectedLeadListAId;
-	}, [setSelectedLeadListAId]);
+                if (defaultChannel) {
+                        const mapped: "email" | "call" | "text" | "social" =
+                                defaultChannel === "directmail" ? "email" : defaultChannel;
+                        (setPrimaryChannel as (c: "email" | "call" | "text" | "social") => void)(mapped);
+                }
 
-	useEffect(() => {
-		setCampaignNameRef.current = setCampaignName;
-	}, [setCampaignName]);
+                if (initialLeadListId) {
+                        const {
+                                selectedLeadListId: currentLeadListId,
+                                abTestingEnabled: abTestingIsEnabled,
+                                selectedLeadListAId: currentLeadListAId,
+                        } = useCampaignCreationStore.getState();
 
-	useEffect(() => {
-		resetRef.current = reset;
-	}, [reset]);
+                        if (initialLeadListId !== currentLeadListId) {
+                                setSelectedLeadListId(initialLeadListId);
+                                customizationForm.setValue("selectedLeadListId", initialLeadListId);
+                        }
 
-	useEffect(() => {
-		customizationFormRef.current = customizationForm;
-	}, [customizationForm]);
+                        if (abTestingIsEnabled && !currentLeadListAId) {
+                                setSelectedLeadListAId(initialLeadListId);
+                        }
+                }
 
-	useEffect(() => {
-		if (!open) return;
+                if (initialLeadListName) {
+                        setCampaignName(`${initialLeadListName} Campaign`);
+                }
+        }, [
+                open,
+                initialStep,
+                defaultChannel,
+                initialLeadListId,
+                initialLeadListName,
+                setPrimaryChannel,
+                setSelectedLeadListId,
+                setSelectedLeadListAId,
+                setCampaignName,
+                customizationForm,
+        ]);
 
-		setStep(initialStep);
+        useEffect(() => {
+                const wasOpen = previousOpenRef.current;
+                if (wasOpen && !open) {
+                        setStep(0);
+                        reset();
+                        customizationForm.reset({
+                                primaryPhoneNumber: "+11234567890",
+                                areaMode: "leadList",
+                                selectedLeadListId: "",
+                                templates: [],
+                                transferEnabled: true,
+                                transferType: "inbound_call",
+                                transferAgentId: "",
+                                transferGuidelines: "",
+                                transferPrompt: "",
+                                numberPoolingEnabled: false,
+                                senderPoolNumbersCsv: "",
+                                smartEncodingEnabled: true,
+                                optOutHandlingEnabled: true,
+                                perNumberDailyLimit: 75,
+                                messagingServiceSid: "",
+                        });
+                }
 
-		if (defaultChannel) {
-			const mapped: "email" | "call" | "text" | "social" =
-				defaultChannel === "directmail" ? "email" : defaultChannel;
-			setPrimaryChannelRef.current?.(mapped);
-		}
-
-		if (initialLeadListId) {
-			const {
-				selectedLeadListId: currentLeadListId,
-				abTestingEnabled: abTestingIsEnabled,
-				selectedLeadListAId: currentLeadListAId,
-			} = useCampaignCreationStore.getState();
-
-			if (initialLeadListId !== currentLeadListId) {
-				setSelectedLeadListIdRef.current?.(initialLeadListId);
-				customizationFormRef.current?.setValue(
-					"selectedLeadListId",
-					initialLeadListId,
-				);
-			}
-
-			if (abTestingIsEnabled && !currentLeadListAId) {
-				setSelectedLeadListAIdRef.current?.(initialLeadListId);
-			}
-		}
-
-		if (initialLeadListName) {
-			setCampaignNameRef.current?.(`${initialLeadListName} Campaign`);
-		}
-	}, [
-		open,
-		initialStep,
-		defaultChannel,
-		initialLeadListId,
-		initialLeadListName,
-	]);
-
-	useEffect(() => {
-		const wasOpen = previousOpenRef.current;
-		if (wasOpen && !open) {
-			setStep(0);
-			resetRef.current?.();
-			customizationFormRef.current?.reset({
-				...DEFAULT_CUSTOMIZATION_VALUES,
-			});
-		}
-
-		previousOpenRef.current = open;
-	}, [open]);
+                previousOpenRef.current = open;
+        }, [open, reset, customizationForm]);
 
 	return (
 		<Dialog open={open} onOpenChange={setOpen}>
