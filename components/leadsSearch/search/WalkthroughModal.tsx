@@ -1,9 +1,6 @@
 import React, { type FC } from "react";
-import Joyride, { type Step } from "react-joyride";
-import { useSupademo } from "@/components/ui/supademo-trigger";
 
-// * Joyride is used for guided tours. Step[] defines the steps for the tour.
-// ! If you see a type error about 'steps', check the parent/consumer component. This file expects Step[] as required by Joyride.
+// WalkthroughModal component for displaying video content and interactive demos
 
 interface WalkThroughModalProps {
 	isOpen: boolean; // To control the modal's visibility
@@ -12,12 +9,6 @@ interface WalkThroughModalProps {
 	title: string; // Title of the modal
 	subtitle: string; // Subtitle for additional context
 	termsUrl?: string; // Optional link to the Terms of Use
-	steps: Step[]; // Steps for the tour (Joyride uses Step[] type)
-	isTourOpen: boolean; // Control if the tour is running or not
-	onStartTour: () => void; // Function to start the tour
-	onCloseTour: () => void; // Function to close the tour
-	supademoDemoId?: string; // Optional Supademo demo ID
-	supademoShowcaseId?: string; // Optional Supademo showcase ID
 }
 
 // Utility to detect embed type and convert URLs
@@ -62,14 +53,7 @@ const WalkThroughModal: FC<WalkThroughModalProps> = ({
 	title,
 	subtitle,
 	termsUrl, // Optional terms URL
-	steps, // Tour steps array passed as prop
-	isTourOpen, // Tour visibility state
-	onStartTour, // Function to start the tour
-	onCloseTour, // Function to close the tour
-	supademoDemoId,
-	supademoShowcaseId,
 }) => {
-	const { loadDemo, loadShowcase } = useSupademo();
 	const [videoLoading, setVideoLoading] = React.useState(true);
 	const embedInfo = getEmbedInfo(videoUrl);
 
@@ -86,15 +70,6 @@ const WalkThroughModal: FC<WalkThroughModalProps> = ({
 	const handleKeyDown = (e: React.KeyboardEvent) => {
 		if (e.key === "Escape") {
 			onClose();
-		}
-	};
-
-	// Handle Supademo triggers
-	const handleSupademoClick = () => {
-		if (supademoDemoId) {
-			loadDemo(supademoDemoId);
-		} else if (supademoShowcaseId) {
-			loadShowcase(supademoShowcaseId);
 		}
 	};
 
@@ -133,22 +108,32 @@ const WalkThroughModal: FC<WalkThroughModalProps> = ({
 						)}
 
 						{embedInfo.type === "supademo" ? (
-							<div className="flex h-full w-full items-center justify-center rounded bg-muted">
-								<div className="text-center">
-									<div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
-										<button
-											type="button"
-											onClick={handleSupademoClick}
-											className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground transition-colors hover:bg-primary/90"
-										>
-											▶
-										</button>
-									</div>
-									<p className="mb-2 text-muted-foreground">Interactive Demo</p>
-									<p className="text-muted-foreground text-sm">
-										Click to start the Supademo interactive guide
-									</p>
-								</div>
+							<div
+								style={{
+									position: "relative",
+									boxSizing: "content-box",
+									maxHeight: "80svh",
+									width: "100%",
+									aspectRatio: "2.028985507246377",
+									padding: "40px 0 40px 0",
+								}}
+							>
+								<iframe
+									src={`https://app.supademo.com/embed/${embedInfo.demoId}?embed_v=2&utm_source=embed`}
+									loading="lazy"
+									title="Supademo Demo"
+									allow="clipboard-write"
+									frameBorder="0"
+									allowFullScreen
+									style={{
+										position: "absolute",
+										top: 0,
+										left: 0,
+										width: "100%",
+										height: "100%",
+									}}
+									onLoad={() => setVideoLoading(false)}
+								/>
 							</div>
 						) : (
 							<iframe
@@ -192,34 +177,16 @@ const WalkThroughModal: FC<WalkThroughModalProps> = ({
 						</p>
 					)}
 
-					{/* Help Button for starting the tour */}
+					{/* Help Button for closing modal */}
 					<button
 						type="button"
 						className="mt-4 text-muted-foreground text-sm hover:underline"
-						onClick={onStartTour} // Trigger the tour when clicked
+						onClick={onClose} // Close modal since demo is already visible
 					>
-						Still need help? Get a tour
+						Close Demo
 					</button>
 				</div>
 			</div>
-
-			{/* Joyride Tour Component */}
-			<Joyride
-				steps={steps} // The steps for the guided tour
-				run={isTourOpen} // Control if the tour is running
-				continuous={true} // Set true if you want the user to continue through steps automatically
-				scrollToFirstStep // Scroll to the first step
-				showProgress // Show progress bar
-				showSkipButton // Allow skipping the tour
-				// * Joyride callback provides tour status and step info
-				callback={(data: { status?: string }) => {
-					const { status } = data;
-					// ! Only close the tour if finished or skipped
-					if (status === "finished" || status === "skipped") {
-						onCloseTour();
-					}
-				}}
-			/>
 		</>
 	);
 };
