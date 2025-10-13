@@ -41,6 +41,16 @@ export default function QuickStartPage() {
 	const [campaignModalContext, setCampaignModalContext] =
 		useState<CampaignContext | null>(null);
 	const previousCampaignModalOpenRef = useRef(showCampaignModal);
+	const campaignResetTimeoutRef = useRef<number | null>(null);
+	const quickstartDebugEnabled = process.env.NODE_ENV !== "production";
+	const logQuickStartDebug = useCallback(
+		(phase: string, details: Record<string, unknown>) => {
+			if (!quickstartDebugEnabled) return;
+			// eslint-disable-next-line no-console -- intentional debug surface for modal close loops
+			console.debug(`[QuickStart] ${phase}`, details);
+		},
+		[quickstartDebugEnabled],
+	);
 
 	const router = useRouter();
 	const openWebhookModal = useModalStore((state) => state.openWebhookModal);
@@ -176,17 +186,56 @@ export default function QuickStartPage() {
 
 		if (wasOpen && !showCampaignModal) {
 			setCampaignModalContext(null);
-			const timeout = setTimeout(() => {
+			if (campaignResetTimeoutRef.current !== null) {
+				clearTimeout(campaignResetTimeoutRef.current);
+			}
+
+			logQuickStartDebug("campaign-modal-close-detected", {
+				source: "launch-or-dismiss",
+			});
+
+			campaignResetTimeoutRef.current = window.setTimeout(() => {
+				logQuickStartDebug("campaign-store-reset", {
+					reason: "modal-close-timer",
+				});
 				resetCampaignStore();
-			}, 0);
+				campaignResetTimeoutRef.current = null;
+			}, 150);
 
 			return () => {
-				clearTimeout(timeout);
+				if (campaignResetTimeoutRef.current !== null) {
+					clearTimeout(campaignResetTimeoutRef.current);
+					campaignResetTimeoutRef.current = null;
+				}
+			};
+		}
+
+		if (!showCampaignModal && campaignResetTimeoutRef.current !== null) {
+			return () => {
+				if (campaignResetTimeoutRef.current !== null) {
+					clearTimeout(campaignResetTimeoutRef.current);
+					campaignResetTimeoutRef.current = null;
+				}
 			};
 		}
 
 		return undefined;
-	}, [showCampaignModal, resetCampaignStore]);
+	}, [
+		showCampaignModal,
+		resetCampaignStore,
+		logQuickStartDebug,
+		setCampaignModalContext,
+	]);
+
+	useEffect(
+		() => () => {
+			if (campaignResetTimeoutRef.current !== null) {
+				clearTimeout(campaignResetTimeoutRef.current);
+				campaignResetTimeoutRef.current = null;
+			}
+		},
+		[],
+	);
 
 	const handleCloseBulkModal = useCallback(
 		() => setShowBulkSuiteModal(false),
