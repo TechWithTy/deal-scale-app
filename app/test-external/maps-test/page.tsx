@@ -14,7 +14,7 @@ export default function MapsTestPage() {
 	return (
 		<>
 			{!apiKey && (
-				<div className="container mx-auto mb-4 max-w-5xl rounded border border-border bg-card p-4 text-sm text-foreground">
+				<div className="container mx-auto mb-4 max-w-5xl rounded border border-border bg-card p-4 text-foreground text-sm">
 					<b>Google Maps API key missing.</b> Set NEXT_PUBLIC_GMAPS_KEY or
 					NEXT_PUBLIC_GOOGLE_MAPS_API_KEY in your environment.
 				</div>

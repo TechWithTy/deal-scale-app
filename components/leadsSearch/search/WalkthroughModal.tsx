@@ -106,6 +106,7 @@ const WalkThroughModal: FC<WalkThroughModalProps> = ({
 				onClick={handleOutsideClick}
 				onKeyDown={handleKeyDown}
 				tabIndex={-1}
+				// biome-ignore lint/a11y/useSemanticElements: <explanation>
 				role="dialog"
 				aria-modal="true"
 			>

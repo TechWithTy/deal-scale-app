@@ -18,6 +18,7 @@ import React, {
 	useMemo,
 	useRef,
 	useState,
+	type FC,
 } from "react";
 import { useForm } from "react-hook-form";
 import type { z } from "zod";
@@ -121,16 +122,29 @@ const selectCampaignStoreDebugSnapshot = (
 	daysSelected: state.daysSelected,
 });
 
-export default function CampaignModalMain({
+export const CampaignModalMain: FC<CampaignModalMainProps> = ({
 	isOpen,
 	onOpenChange,
 	initialLeadListId,
 	initialLeadListName,
-	initialLeadCount,
+	initialLeadCount = 0,
 	initialStep = 0,
 	defaultChannel,
 	onCampaignLaunched,
-}: CampaignModalMainProps) {
+}) => {
+	console.log("🔧 CAMPAIGN MODAL DEBUG - Component rendering", {
+		isOpen,
+		initialStep,
+		defaultChannel,
+		hasOnCampaignLaunched: !!onCampaignLaunched,
+	});
+
+	const registerLaunchedCampaign = useCampaignStore(
+		(state) => state.registerLaunchedCampaign,
+	);
+
+	const router = useRouter();
+
 	const {
 		areaMode,
 		setAreaMode,
@@ -192,19 +206,13 @@ export default function CampaignModalMain({
 		shallow,
 	);
 
-	const registerLaunchedCampaign = useCampaignStore(
-		(state) => state.registerLaunchedCampaign,
-	);
-
-	const router = useRouter();
-
 	const [step, setStep] = useState(initialStep);
-	const stepRef = useRef(step);
+	const stepRef = useRef<number>(0);
 	const closingStateRef = useRef({ closing: false, renderCount: 0 });
 	const closingReleaseTimeoutRef = useRef<number | null>(null);
 	const launchGuardRef = useRef(false);
 	const renderDebugCounterRef = useRef(0);
-	const liveIsOpenRef = useRef(isOpen);
+	const liveIsOpenRef = useRef<boolean>(false);
 
 	const customizationForm = useForm<z.input<typeof FormSchema>>({
 		resolver: zodResolver(TransferConditionalSchema),
@@ -262,7 +270,10 @@ export default function CampaignModalMain({
 		try {
 			const unsubscribe = useCampaignCreationStore.subscribe(
 				selectCampaignStoreDebugSnapshot,
-				(currentSnapshot, previousSnapshot) => {
+				(
+					currentSnapshot: CampaignStoreDebugSnapshot,
+					previousSnapshot: CampaignStoreDebugSnapshot | undefined,
+				) => {
 					if (!liveIsOpenRef.current && !closingStateRef.current.closing) {
 						return;
 					}
@@ -521,8 +532,8 @@ export default function CampaignModalMain({
 		testCredits: Math.max(estimatedCredits, leadCount > 0 ? 100 : 0),
 	});
 
-	const hasInitializedRef = useRef(false);
-	const previousIsOpenRef = useRef(isOpen);
+	const hasInitializedRef = useRef<boolean>(false);
+	const previousIsOpenRef = useRef<boolean>(false);
 
 	useEffect(() => {
 		if (!isOpen) {
@@ -937,4 +948,4 @@ export default function CampaignModalMain({
 			</DialogContent>
 		</Dialog>
 	);
-}
+};
