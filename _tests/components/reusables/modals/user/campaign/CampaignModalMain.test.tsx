@@ -238,4 +238,32 @@ describe("CampaignModalMain", () => {
                 expect(destination).toContain("type=call");
                 expect(destination).toMatch(/campaignId=campaign_\d+/);
         });
+
+        it("ignores duplicate launch attempts once the modal has started closing", () => {
+                const handleOpenChange = vi.fn();
+                const handleCampaignLaunched = vi.fn();
+                const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+                render(
+                        <CampaignModalMain
+                                isOpen
+                                onOpenChange={handleOpenChange}
+                                initialStep={3}
+                                onCampaignLaunched={handleCampaignLaunched}
+                        />,
+                );
+
+                const launchButtons = screen.getAllByRole("button", {
+                        name: /launch campaign/i,
+                });
+                const launchButton = launchButtons[launchButtons.length - 1];
+
+                fireEvent.click(launchButton);
+                fireEvent.click(launchButton);
+
+                expect(handleOpenChange).toHaveBeenCalledTimes(1);
+                expect(handleOpenChange).toHaveBeenCalledWith(false);
+                expect(handleCampaignLaunched).toHaveBeenCalledTimes(1);
+                warnSpy.mockRestore();
+        });
 });

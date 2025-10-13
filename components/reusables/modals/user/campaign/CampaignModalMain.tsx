@@ -75,6 +75,20 @@ const DEFAULT_CUSTOMIZATION_VALUES: z.input<typeof FormSchema> = {
 	possibleHandles: "",
 };
 
+const campaignModalDebugEnabled = process.env.NODE_ENV !== "production";
+
+const campaignDebugLog = (phase: string, details: Record<string, unknown>) => {
+	if (!campaignModalDebugEnabled) return;
+	// eslint-disable-next-line no-console -- debug instrumentation for campaign launch lifecycle
+	console.debug(`[CampaignModalMain] ${phase}`, details);
+};
+
+const campaignWarnLog = (phase: string, details: Record<string, unknown>) => {
+	if (!campaignModalDebugEnabled) return;
+	// eslint-disable-next-line no-console -- debug instrumentation for campaign launch lifecycle
+	console.warn(`[CampaignModalMain] ${phase}`, details);
+};
+
 export default function CampaignModalMain({
 	isOpen,
 	onOpenChange,
@@ -149,6 +163,10 @@ export default function CampaignModalMain({
 	const router = useRouter();
 
 	const [step, setStep] = useState(initialStep);
+	const stepRef = useRef(step);
+	const closingStateRef = useRef({ closing: false, renderCount: 0 });
+	const closingReleaseTimeoutRef = useRef<number | null>(null);
+	const launchGuardRef = useRef(false);
 
 	const customizationForm = useForm<z.input<typeof FormSchema>>({
 		resolver: zodResolver(TransferConditionalSchema),
@@ -158,6 +176,85 @@ export default function CampaignModalMain({
 			selectedLeadListId:
 				selectedLeadListId || DEFAULT_CUSTOMIZATION_VALUES.selectedLeadListId,
 		},
+	});
+
+	useEffect(
+		() => () => {
+			if (
+				typeof window !== "undefined" &&
+				closingReleaseTimeoutRef.current !== null
+			) {
+				window.clearTimeout(closingReleaseTimeoutRef.current);
+				closingReleaseTimeoutRef.current = null;
+			}
+		},
+		[],
+	);
+
+	useEffect(() => {
+		if (isOpen) {
+			if (
+				typeof window !== "undefined" &&
+				closingReleaseTimeoutRef.current !== null
+			) {
+				window.clearTimeout(closingReleaseTimeoutRef.current);
+				closingReleaseTimeoutRef.current = null;
+			}
+			closingStateRef.current.closing = false;
+			closingStateRef.current.renderCount = 0;
+			launchGuardRef.current = false;
+			campaignDebugLog("modal-open", {
+				step,
+			});
+			return;
+		}
+
+		if (!closingStateRef.current.closing) {
+			closingStateRef.current.closing = true;
+			closingStateRef.current.renderCount = 0;
+			campaignDebugLog("modal-close-start", {
+				step: stepRef.current,
+			});
+		} else {
+			campaignDebugLog("modal-close-progress", {
+				step: stepRef.current,
+				renderCount: closingStateRef.current.renderCount,
+			});
+		}
+
+		if (typeof window !== "undefined") {
+			if (closingReleaseTimeoutRef.current !== null) {
+				window.clearTimeout(closingReleaseTimeoutRef.current);
+			}
+
+			closingReleaseTimeoutRef.current = window.setTimeout(() => {
+				closingStateRef.current.closing = false;
+				closingStateRef.current.renderCount = 0;
+				launchGuardRef.current = false;
+				campaignDebugLog("modal-close-finalized", {
+					step: stepRef.current,
+				});
+				closingReleaseTimeoutRef.current = null;
+			}, 200);
+		}
+	}, [isOpen]);
+
+	useEffect(() => {
+		if (!closingStateRef.current.closing) return;
+		closingStateRef.current.renderCount += 1;
+		if (closingStateRef.current.renderCount === 10) {
+			campaignWarnLog("modal-close-render-streak", {
+				step: stepRef.current,
+				renderCount: closingStateRef.current.renderCount,
+			});
+		}
+		if (closingStateRef.current.renderCount > 25) {
+			campaignWarnLog("modal-close-render-streak-critical", {
+				step: stepRef.current,
+				renderCount: closingStateRef.current.renderCount,
+			});
+			closingStateRef.current.renderCount = 0;
+		}
 	});
 
 	const days = useMemo(() => {
@@ -175,12 +272,28 @@ export default function CampaignModalMain({
 	}, [days, reachOnWeekend]);
 
 	useEffect(() => {
-		if (!isOpen) return;
+		if (!isOpen || closingStateRef.current.closing) {
+			if (closingStateRef.current.closing) {
+				campaignDebugLog("days-selected-skip", {
+					mutatedDays,
+					reason: "closing",
+				});
+			}
+			return;
+		}
 		const currentDaysSelected =
 			useCampaignCreationStore.getState().daysSelected;
 		if (currentDaysSelected === mutatedDays) return;
+		campaignDebugLog("days-selected-update", {
+			previous: currentDaysSelected,
+			next: mutatedDays,
+		});
 		setDaysSelected(mutatedDays);
 	}, [isOpen, mutatedDays, setDaysSelected]);
+
+	useEffect(() => {
+		stepRef.current = step;
+	}, [step]);
 
 	const watchedCustomizationValues = customizationForm.watch();
 	const campaignCost = useMemo(() => {
@@ -349,8 +462,21 @@ export default function CampaignModalMain({
 	]);
 
 	const closeModal = useCallback(() => {
+		if (closingStateRef.current.closing) {
+			campaignWarnLog("duplicate-close-ignored", {
+				step: stepRef.current,
+				isOpen,
+			});
+			return;
+		}
+		closingStateRef.current.closing = true;
+		closingStateRef.current.renderCount = 0;
+		campaignDebugLog("close-requested", {
+			step: stepRef.current,
+			isOpen,
+		});
 		onOpenChange(false);
-	}, [onOpenChange]);
+	}, [isOpen, onOpenChange]);
 
 	const nextStep = async () => {
 		if (step === 1) {
@@ -370,8 +496,17 @@ export default function CampaignModalMain({
 	const prevStep = () => setStep((s) => Math.max(0, s - 1));
 
 	const launchCampaign = useCallback(() => {
-		console.log("🚀 CAMPAIGN LAUNCH DEBUG - Starting launchCampaign");
-		console.log("📊 CAMPAIGN STATE DEBUG:", {
+		if (launchGuardRef.current) {
+			campaignWarnLog("duplicate-launch-ignored", {
+				step,
+				isOpen,
+				campaignName,
+			});
+			return;
+		}
+
+		launchGuardRef.current = true;
+		campaignDebugLog("launch-start", {
 			primaryChannel,
 			campaignName,
 			leadCount,
@@ -381,58 +516,68 @@ export default function CampaignModalMain({
 		});
 
 		try {
-			// Generate a campaign ID (using timestamp for now)
 			const campaignId = `campaign_${Date.now()}`;
-			console.log("🆔 CAMPAIGN ID DEBUG:", { campaignId });
+			campaignDebugLog("launch-campaign-id", { campaignId });
 
-			// Map primary channel to campaign type
 			const channelTypeMap: Record<string, string> = {
 				call: "call",
 				text: "text",
 				social: "social",
 				directmail: "direct",
-				email: "direct", // Map email to direct for now
+				email: "direct",
 			};
 
 			const campaignType = channelTypeMap[primaryChannel || ""] || "call";
-			console.log("📡 CAMPAIGN TYPE DEBUG:", { campaignType, primaryChannel });
+			campaignDebugLog("launch-campaign-type", {
+				campaignType,
+				primaryChannel,
+			});
 
 			const params = new URLSearchParams({
 				type: campaignType,
 				campaignId,
 			});
-			console.log("🔗 URL PARAMS DEBUG:", params.toString());
+			const paramsString = params.toString();
+			const fullUrl = `/dashboard/campaigns?${paramsString}`;
+			campaignDebugLog("launch-navigation-target", {
+				params: paramsString,
+				fullUrl,
+			});
 
-			const fullUrl = `/dashboard/campaigns?${params.toString()}`;
-			console.log("🌐 FULL URL DEBUG:", fullUrl);
-
-			// Close modal before notifying listeners to avoid Radix presence loops
-			console.log("🔒 MODAL DEBUG: Closing modal");
+			campaignDebugLog("launch-close-dispatch", {
+				step: stepRef.current,
+			});
 			closeModal();
 
-			console.log("📢 CALLBACK DEBUG: Calling onCampaignLaunched");
+			campaignDebugLog("launch-callback-notify", {
+				hasListener: Boolean(onCampaignLaunched),
+			});
 			onCampaignLaunched?.({
 				campaignId,
 				channelType: campaignType,
 			});
 
-			// Don't navigate if callback was provided - let parent component handle navigation
 			if (!onCampaignLaunched) {
 				router.push(fullUrl);
-				console.log("✅ NAVIGATION DEBUG: router.push called successfully");
+				campaignDebugLog("launch-router-push", {
+					destination: fullUrl,
+				});
 			}
 
-			console.log(
-				"🎉 CAMPAIGN LAUNCH DEBUG: Campaign launch completed successfully",
-			);
+			campaignDebugLog("launch-success", {
+				campaignId,
+				campaignType,
+			});
 		} catch (error: unknown) {
+			launchGuardRef.current = false;
+			closingStateRef.current.closing = false;
 			console.error("💥 CAMPAIGN LAUNCH ERROR:", error);
 			console.error("🔍 ERROR DETAILS:", {
 				name: (error as Error)?.name,
 				message: (error as Error)?.message,
 				stack: (error as Error)?.stack,
 			});
-			throw error; // Re-throw so the error still propagates
+			throw error;
 		}
 	}, [
 		primaryChannel,
