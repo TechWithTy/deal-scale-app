@@ -99,10 +99,6 @@ export default function QuickStartPage() {
 		savedSearchModalOpen,
 	} = useQuickStartSavedSearches();
 
-	const triggerFileInput = useCallback(() => {
-		fileInputRef.current?.click();
-	}, []);
-
 	const handleSelectList = useCallback(() => {
 		setLeadModalMode("select");
 		setShowLeadModal(true);
