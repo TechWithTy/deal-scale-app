@@ -1,6 +1,7 @@
 import { create } from "zustand";
 
 import type { QuickStartWizardPreset } from "@/components/quickstart/types";
+import { useQuickStartWizardDataStore } from "./quickstartWizardData";
 
 export type QuickStartWizardStep =
 	| "lead-intake"
@@ -44,6 +45,7 @@ export const useQuickStartWizardStore = create<QuickStartWizardState>(
 			});
 		},
 		close: () => {
+			useQuickStartWizardDataStore.getState().reset();
 			set({ ...defaultState });
 		},
 		goToStep: (step) => {
@@ -54,6 +56,7 @@ export const useQuickStartWizardStore = create<QuickStartWizardState>(
 			set({ activeStep: step });
 		},
 		reset: () => {
+			useQuickStartWizardDataStore.getState().reset();
 			set({ ...defaultState });
 		},
 	}),

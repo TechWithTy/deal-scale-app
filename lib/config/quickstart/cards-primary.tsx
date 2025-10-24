@@ -1,5 +1,16 @@
 import React from "react";
-import { List, Plus, Settings, Upload, Webhook, Rss } from "lucide-react";
+import {
+	List,
+	Plus,
+	Settings,
+	Upload,
+	Webhook,
+	Rss,
+	Sparkles,
+	PlayCircle,
+} from "lucide-react";
+
+import { cn } from "@/lib/_utils";
 
 import {
 	handlerAction,
@@ -11,6 +22,34 @@ import {
 import type { QuickStartCardDescriptor } from "./types";
 
 export const primaryQuickStartCards: readonly QuickStartCardDescriptor[] = [
+	{
+		id: "wizard",
+		enabled: true,
+		order: 5,
+		title: "Guided QuickStart",
+		description:
+			"Launch the guided wizard to import leads, enrich data, and build campaigns in minutes.",
+		icon: Sparkles,
+		featureChips: [
+			{ label: "Guided Setup", tone: "primary" },
+			{ label: "Prefilled Templates", tone: "accent" },
+			{ label: "State Persistence", tone: "success" },
+		],
+		actions: [
+			handlerAction({
+				id: "wizard-launch",
+				label: "Launch Guided Setup",
+				icon: PlayCircle,
+				handler: "onWizardStub",
+			}),
+		],
+		wizardPreset: { startStep: "lead-intake", templateId: "lead-import" },
+		...primaryCardStyles,
+		cardClassName: cn(
+			primaryCardStyles.cardClassName,
+			"md:row-span-2 md:col-span-2 md:max-w-none xl:row-span-2",
+		),
+	},
 	{
 		id: "import",
 		enabled: true,
