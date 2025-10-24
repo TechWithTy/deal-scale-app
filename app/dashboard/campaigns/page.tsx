@@ -8,6 +8,8 @@ import { HelpCircle } from "lucide-react";
 import { useState } from "react";
 import WalkThroughModal from "@/components/leadsSearch/search/WalkthroughModal";
 import { campaignSteps } from "@/_tests/tours/campaignTour";
+import { useSearchParams } from "next/navigation";
+import { useEffect } from "react";
 
 const breadcrumbItems = [
 	{ title: "Dashboard", link: "/dashboard" },
@@ -17,20 +19,34 @@ const breadcrumbItems = [
 export default function page() {
 	const [showWalkthrough, setShowWalkthrough] = useState(false);
 	const [isTourOpen, setIsTourOpen] = useState(false);
+	const searchParams = useSearchParams();
 
 	const handleStartTour = () => setIsTourOpen(true);
 	const handleCloseTour = () => setIsTourOpen(false);
 
+	// Handle URL parameters for direct navigation to specific campaign type
+	const typeParam = searchParams.get("type");
+	const campaignIdParam = searchParams.get("campaignId");
+
+	// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
+	useEffect(() => {
+		// Log URL parameters for debugging
+		if (typeParam || campaignIdParam) {
+			console.log("🚀 CAMPAIGN URL PARAMS:", { typeParam, campaignIdParam });
+		}
+	}, [searchParams, typeParam, campaignIdParam]);
+
 	return (
 		<PageContainer>
-			<div className="w-full min-w-0 space-y-2 relative">
+			<div className="relative w-full min-w-0 space-y-2">
 				{/* Question Mark Help Button */}
 				<div className="absolute top-2 right-2 z-10">
 					<button
+						type="button"
 						onClick={() => setShowWalkthrough(true)}
-						className="rounded-full w-10 h-10 p-0 hover:bg-muted bg-transparent border-none"
+						className="h-10 w-10 rounded-full border-none bg-transparent p-0 hover:bg-muted"
 					>
-						<HelpCircle className="w-5 h-5 text-muted-foreground" />
+						<HelpCircle className="h-5 w-5 text-muted-foreground" />
 					</button>
 				</div>
 

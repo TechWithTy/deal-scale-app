@@ -1,34 +1,36 @@
 "use client";
 
-import { HelpCircle, List, Rss, Upload } from "lucide-react";
-import Link from "next/link";
-import { useCallback, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 
-import { campaignSteps } from "@/_tests/tours/campaignTour";
 import WalkThroughModal from "@/components/leadsSearch/search/WalkthroughModal";
-import CampaignModalMain from "@/components/reusables/modals/user/campaign/CampaignModalMain";
+import QuickStartActionsGrid from "@/components/quickstart/QuickStartActionsGrid";
+import QuickStartBadgeList from "@/components/quickstart/QuickStartBadgeList";
+import QuickStartHeader from "@/components/quickstart/QuickStartHeader";
+import QuickStartHelp from "@/components/quickstart/QuickStartHelp";
+import { useQuickStartCards } from "@/components/quickstart/useQuickStartCards";
+import { useQuickStartSavedSearches } from "@/components/quickstart/useQuickStartSavedSearches";
+import HelpModal from "@/components/reusables/modals/HelpModal";
+import SavedSearchModal from "@/components/reusables/modals/SavedSearchModal";
+import { CampaignModalMain } from "@/components/reusables/modals/user/campaign/CampaignModalMain";
 import LeadBulkSuiteModal from "@/components/reusables/modals/user/lead/LeadBulkSuiteModal";
 import LeadModalMain from "@/components/reusables/modals/user/lead/LeadModalMain";
-import SavedSearchModal from "@/components/reusables/modals/SavedSearchModal";
-import { Button } from "@/components/ui/button";
 import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
-import { useBulkCsvUpload } from "@/components/quickstart/useBulkCsvUpload";
-import { useQuickStartSavedSearches } from "@/components/quickstart/useQuickStartSavedSearches";
-import { useCampaignCreationStore } from "@/lib/stores/campaignCreation";
+	useCampaignCreationStore,
+	type CampaignCreationState,
+} from "@/lib/stores/campaignCreation";
 import { useModalStore } from "@/lib/stores/dashboard";
 import type { WebhookStage } from "@/lib/stores/dashboard";
+import { shallow } from "zustand/shallow";
 
-type CampaignContext = {
+void React;
+
+interface CampaignContext {
 	readonly leadListId: string;
 	readonly leadListName: string;
 	readonly leadCount: number;
-};
+}
 
 export default function QuickStartPage() {
 	const [showLeadModal, setShowLeadModal] = useState(false);
@@ -36,18 +38,58 @@ export default function QuickStartPage() {
 		"create",
 	);
 	const [showWalkthrough, setShowWalkthrough] = useState(false);
-	const [isTourOpen, setIsTourOpen] = useState(false);
-	const [bulkCsvFile, setBulkCsvFile] = useState<File | null>(null);
-	const [bulkCsvHeaders, setBulkCsvHeaders] = useState<string[]>([]);
+	const [showHelpModal, setShowHelpModal] = useState(false);
 	const [showBulkSuiteModal, setShowBulkSuiteModal] = useState(false);
 	const [showCampaignModal, setShowCampaignModal] = useState(false);
 	const [campaignModalContext, setCampaignModalContext] =
 		useState<CampaignContext | null>(null);
+	const previousCampaignModalOpenRef = useRef(showCampaignModal);
+	const campaignResetTimeoutRef = useRef<number | null>(null);
+	const quickstartDebugEnabled = process.env.NODE_ENV !== "production" && false; // Temporarily disabled for browser compatibility testing
+	const logQuickStartDebug = useCallback(
+		(phase: string, details: Record<string, unknown>) => {
+			if (!quickstartDebugEnabled) return;
+			// eslint-disable-next-line no-console -- intentional debug surface for modal close loops
+			console.debug(`[QuickStart] ${phase}`, details);
+		},
+		[quickstartDebugEnabled],
+	);
+	const logQuickStartWarn = useCallback(
+		(phase: string, details: Record<string, unknown>) => {
+			if (!quickstartDebugEnabled) return;
+			// eslint-disable-next-line no-console -- intentional debug surface for modal close loops
+			console.warn(`[QuickStart] ${phase}`, details);
+		},
+		[quickstartDebugEnabled],
+	);
+	const campaignModalTransitionRef = useRef({
+		lastState: false,
+		lastTimestamp: 0,
+		rapidTransitionCount: 0,
+	});
+	const previousCampaignContextRef = useRef<CampaignContext | null>(
+		campaignModalContext,
+	);
 
-	const fileInputRef = useRef<HTMLInputElement>(null);
+	const router = useRouter();
 	const openWebhookModal = useModalStore((state) => state.openWebhookModal);
+	const {
+		reset: resetCampaignStore,
+		setAreaMode,
+		setSelectedLeadListId,
+		setLeadCount,
+		setCampaignName,
+	} = useCampaignCreationStore(
+		(state: CampaignCreationState) => ({
+			reset: state.reset,
+			setAreaMode: state.setAreaMode,
+			setSelectedLeadListId: state.setSelectedLeadListId,
+			setLeadCount: state.setLeadCount,
+			setCampaignName: state.setCampaignName,
+		}),
+		shallow,
+	);
 
-	const campaignStore = useCampaignCreationStore();
 	const {
 		savedSearches,
 		deleteSavedSearch,
@@ -57,10 +99,6 @@ export default function QuickStartPage() {
 		savedSearchModalOpen,
 	} = useQuickStartSavedSearches();
 
-	const triggerFileInput = useCallback(() => {
-		fileInputRef.current?.click();
-	}, []);
-
 	const handleSelectList = useCallback(() => {
 		setLeadModalMode("select");
 		setShowLeadModal(true);
@@ -68,210 +106,253 @@ export default function QuickStartPage() {
 
 	const handleLaunchCampaign = useCallback(
 		({ leadListId, leadListName, leadCount }: CampaignContext) => {
-			campaignStore.reset();
-			campaignStore.setAreaMode("leadList");
-			campaignStore.setSelectedLeadListId(leadListId);
-			campaignStore.setLeadCount(leadCount);
-			campaignStore.setCampaignName(`${leadListName} Campaign`);
+			resetCampaignStore();
+			setAreaMode("leadList");
+			setSelectedLeadListId(leadListId);
+			setLeadCount(leadCount);
+			setCampaignName(`${leadListName} Campaign`);
+			logQuickStartDebug("campaign-modal-launch-request", {
+				leadListId,
+				leadListName,
+				leadCount,
+				stack: new Error("campaign-modal-launch-request").stack,
+			});
 			setCampaignModalContext({ leadListId, leadListName, leadCount });
 			setShowCampaignModal(true);
 			setShowLeadModal(false);
 		},
-		[campaignStore],
+		[
+			resetCampaignStore,
+			setAreaMode,
+			setSelectedLeadListId,
+			setLeadCount,
+			setCampaignName,
+			logQuickStartDebug,
+		],
 	);
 
 	const handleSuiteLaunchComplete = useCallback(
 		(payload: CampaignContext) => {
+			logQuickStartDebug("campaign-modal-bulk-suite-request", {
+				payload,
+				stack: new Error("campaign-modal-bulk-suite-request").stack,
+			});
 			handleLaunchCampaign(payload);
 			return true;
 		},
-		[handleLaunchCampaign],
+		[handleLaunchCampaign, logQuickStartDebug],
 	);
 
 	const handleCloseLeadModal = useCallback(() => setShowLeadModal(false), []);
 
-	const handleImportFromSource = useCallback(() => {
-		triggerFileInput();
-	}, [triggerFileInput]);
+	const handleConnectionSettings = useCallback(
+		() =>
+			toast.info("Data source connections and API configuration coming soon!"),
+		[],
+	);
+
+	const handleImportFromSource = useCallback(
+		() => setShowBulkSuiteModal(true),
+		[],
+	);
+
+	const handleCampaignCreation = useCallback(() => {
+		resetCampaignStore();
+		setAreaMode("leadList");
+		logQuickStartDebug("campaign-modal-new-campaign", {
+			stack: new Error("campaign-modal-new-campaign").stack,
+		});
+		setCampaignModalContext(null);
+		setShowCampaignModal(true);
+	}, [resetCampaignStore, setAreaMode, logQuickStartDebug]);
+
+	const handleViewTemplates = useCallback(
+		() => toast.info("Campaign templates feature coming soon!"),
+		[],
+	);
 
 	const handleOpenWebhookModal = useCallback(
 		(stage: WebhookStage) => openWebhookModal(stage),
 		[openWebhookModal],
 	);
 
-	const handleStartTour = useCallback(() => setIsTourOpen(true), []);
-
-	const handleCloseTour = useCallback(() => setIsTourOpen(false), []);
+	const handleWalkthroughOpen = useCallback(() => setShowHelpModal(true), []);
 
 	const handleCampaignModalToggle = useCallback(
 		(open: boolean) => {
+			logQuickStartDebug("campaign-modal-open-change", {
+				open,
+				origin: "CampaignModalMain.onOpenChange",
+				stack: new Error("campaign-modal-open-change").stack,
+			});
 			setShowCampaignModal(open);
-			if (!open) {
-				setCampaignModalContext(null);
-				campaignStore.reset();
-			}
 		},
-		[campaignStore],
+		[logQuickStartDebug],
 	);
 
-	const handleCloseBulkModal = useCallback(() => {
-		setShowBulkSuiteModal(false);
-		setBulkCsvFile(null);
-		setBulkCsvHeaders([]);
-		if (fileInputRef.current) {
-			fileInputRef.current.value = "";
-		}
-	}, []);
+	const handleCampaignLaunched = useCallback(
+		({
+			campaignId,
+			channelType,
+		}: { campaignId: string; channelType: string }) => {
+			logQuickStartDebug("campaign-modal-launched", {
+				campaignId,
+				channelType,
+				stack: new Error("campaign-modal-launched").stack,
+			});
+			setShowCampaignModal(false);
 
-	const handleCsvUpload = useBulkCsvUpload({
-		onFileChange: setBulkCsvFile,
-		onHeadersParsed: setBulkCsvHeaders,
-		onShowModal: () => setShowBulkSuiteModal(true),
-	});
+			logQuickStartDebug("campaign-modal-opening-webhooks", {
+				campaignId,
+				channelType,
+				stack: new Error("campaign-modal-opening-webhooks").stack,
+			});
+
+			// Open webhooks outgoing modal instead of navigating to campaigns
+			openWebhookModal("outgoing");
+		},
+		[openWebhookModal, logQuickStartDebug],
+	);
+
+	// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
+	useEffect(() => {
+		const previous = previousCampaignContextRef.current;
+		if (previous !== campaignModalContext) {
+			logQuickStartDebug("campaign-modal-context-changed", {
+				previous,
+				next: campaignModalContext,
+			});
+			previousCampaignContextRef.current = campaignModalContext;
+		}
+	}, [campaignModalContext, logQuickStartDebug]);
+
+	useEffect(() => {
+		const now = Date.now(); // Use Date.now() instead of performance.now() for better browser compatibility
+		const previousState = campaignModalTransitionRef.current.lastState;
+		const timeSinceLast =
+			now - campaignModalTransitionRef.current.lastTimestamp;
+		const nextRapidTransitionCount =
+			previousState === showCampaignModal
+				? campaignModalTransitionRef.current.rapidTransitionCount
+				: timeSinceLast < 750
+					? campaignModalTransitionRef.current.rapidTransitionCount + 1
+					: 1;
+
+		campaignModalTransitionRef.current = {
+			lastState: showCampaignModal,
+			lastTimestamp: now,
+			rapidTransitionCount: nextRapidTransitionCount,
+		};
+
+		logQuickStartDebug("campaign-modal-visibility-updated", {
+			previous: previousState,
+			next: showCampaignModal,
+			deltaMs: timeSinceLast,
+			rapidTransitionCount: nextRapidTransitionCount,
+			contextPresent: Boolean(campaignModalContext),
+		});
+
+		if (nextRapidTransitionCount > 3 && previousState !== showCampaignModal) {
+			// Reduced from 5 to 3 for better compatibility
+			logQuickStartWarn("campaign-modal-rapid-toggle-detected", {
+				transitions: nextRapidTransitionCount,
+				deltaMs: timeSinceLast,
+				stack: new Error("campaign-modal-rapid-toggle").stack,
+			});
+		}
+	}, [
+		showCampaignModal,
+		campaignModalContext,
+		logQuickStartDebug,
+		logQuickStartWarn,
+	]);
+
+	useEffect(() => {
+		const wasOpen = previousCampaignModalOpenRef.current;
+		previousCampaignModalOpenRef.current = showCampaignModal;
+
+		if (wasOpen && !showCampaignModal) {
+			logQuickStartDebug("campaign-modal-close-observed", {
+				source: "visibility-effect",
+				campaignModalContext,
+			});
+			setCampaignModalContext(null);
+
+			// Clear any existing timeout before setting a new one
+			if (campaignResetTimeoutRef.current !== null) {
+				clearTimeout(campaignResetTimeoutRef.current);
+			}
+
+			logQuickStartDebug("campaign-modal-close-detected", {
+				source: "launch-or-dismiss",
+			});
+
+			// Use a more conservative timeout for better browser compatibility
+			campaignResetTimeoutRef.current = window.setTimeout(() => {
+				logQuickStartDebug("campaign-store-reset", {
+					reason: "modal-close-timer",
+				});
+				resetCampaignStore();
+				campaignResetTimeoutRef.current = null;
+			}, 300); // Increased from 150ms to 300ms for better compatibility
+
+			return () => {
+				if (campaignResetTimeoutRef.current !== null) {
+					clearTimeout(campaignResetTimeoutRef.current);
+					campaignResetTimeoutRef.current = null;
+				}
+			};
+		}
+
+		if (!showCampaignModal && campaignResetTimeoutRef.current !== null) {
+			logQuickStartDebug("campaign-modal-close-cleanup", {
+				hasTimeout: true,
+			});
+			return () => {
+				if (campaignResetTimeoutRef.current !== null) {
+					clearTimeout(campaignResetTimeoutRef.current);
+					campaignResetTimeoutRef.current = null;
+				}
+			};
+		}
+
+		return undefined;
+	}, [
+		showCampaignModal,
+		resetCampaignStore,
+		logQuickStartDebug,
+		setCampaignModalContext,
+	]);
+
+	useEffect(
+		() => () => {
+			if (campaignResetTimeoutRef.current !== null) {
+				logQuickStartDebug("campaign-modal-timeout-dispose", {
+					reason: "component-unmount",
+				});
+				clearTimeout(campaignResetTimeoutRef.current);
+				campaignResetTimeoutRef.current = null;
+			}
+		},
+		[],
+	);
+
+	const handleCloseBulkModal = useCallback(
+		() => setShowBulkSuiteModal(false),
+		[],
+	);
 
 	return (
 		<div className="container mx-auto px-4 py-8">
-			<div className="relative mb-8 text-center">
-				<h1 className="mb-2 font-bold text-3xl text-foreground">Quick Start</h1>
-				<p className="text-lg text-muted-foreground">
-					Get up and running in minutes. Choose how you’d like to begin.
-				</p>
-				<button
-					onClick={() => setShowWalkthrough(true)}
-					className="absolute top-0 right-0 flex h-10 w-10 items-center justify-center rounded-full border border-transparent text-muted-foreground transition hover:bg-muted"
-					type="button"
-				>
-					<HelpCircle className="h-5 w-5" />
-				</button>
-			</div>
+			<QuickStartHeader onOpenWalkthrough={handleWalkthroughOpen} />
 
-			<div className="mx-auto grid max-w-6xl items-stretch gap-6 md:grid-cols-2 xl:grid-cols-4">
-				<Card className="group flex h-full flex-col border-2 transition hover:border-primary/20 hover:shadow-lg">
-					<CardHeader className="pb-4 text-center">
-						<div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 transition-colors group-hover:bg-primary/20">
-							<Upload className="h-6 w-6 text-primary" />
-						</div>
-						<CardTitle className="text-xl">Create List</CardTitle>
-						<CardDescription>
-							Upload a CSV to build a new lead list and map your columns
-							instantly.
-						</CardDescription>
-					</CardHeader>
-					<CardContent className="flex flex-1 flex-col pt-0">
-						<div className="flex flex-1 flex-col gap-3">
-							<Button
-								variant="outline"
-								className="w-full"
-								size="lg"
-								onClick={triggerFileInput}
-								type="button"
-							>
-								<Upload className="mr-2 h-4 w-4" />
-								{bulkCsvFile ? "Change CSV File" : "Upload CSV File"}
-							</Button>
+			{/* <div className="mb-10 flex justify-center">
+				<QuickStartBadgeList />
+			</div> */}
 
-							{bulkCsvFile && (
-								<div className="text-center text-muted-foreground text-sm">
-									<p className="font-medium">{bulkCsvFile.name}</p>
-									<p className="text-xs">
-										{bulkCsvHeaders.length} columns detected
-									</p>
-									<p className="text-xs">
-										We’ll open the list wizard to finish setup.
-									</p>
-								</div>
-							)}
-						</div>
-					</CardContent>
-				</Card>
+			<QuickStartActionsGrid cards={cards} />
 
-				<Card className="group flex h-full flex-col border-2 transition hover:border-primary/20 hover:shadow-lg">
-					<CardHeader className="pb-4 text-center">
-						<div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 transition-colors group-hover:bg-primary/20">
-							<List className="h-6 w-6 text-primary" />
-						</div>
-						<CardTitle className="text-xl">Select List</CardTitle>
-						<CardDescription>
-							Choose from your existing lead lists to work with
-						</CardDescription>
-					</CardHeader>
-					<CardContent className="flex flex-1 flex-col pt-0">
-						<Button
-							variant="outline"
-							className="w-full"
-							size="lg"
-							onClick={handleSelectList}
-							type="button"
-						>
-							Browse Lists
-						</Button>
-					</CardContent>
-				</Card>
-
-				<Card className="group flex h-full flex-col border-2 transition hover:border-primary/20 hover:shadow-lg">
-					<CardHeader className="pb-4 text-center">
-						<div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 transition-colors group-hover:bg-primary/20">
-							<Upload className="h-6 w-6 text-primary" />
-						</div>
-						<CardTitle className="text-xl">Import Data</CardTitle>
-						<CardDescription>
-							Upload your existing lead data or connect external sources
-						</CardDescription>
-					</CardHeader>
-					<CardContent className="flex flex-1 flex-col pt-0">
-						<Button
-							variant="outline"
-							className="w-full"
-							size="lg"
-							onClick={handleImportFromSource}
-							type="button"
-						>
-							Import Leads
-						</Button>
-					</CardContent>
-				</Card>
-
-				<Card className="group flex h-full flex-col border-2 transition hover:border-primary/20 hover:shadow-lg">
-					<CardHeader className="pb-4 text-center">
-						<div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 transition-colors group-hover:bg-primary/20">
-							<Rss className="h-6 w-6 text-primary" />
-						</div>
-						<CardTitle className="text-xl">Webhooks &amp; Feeds</CardTitle>
-						<CardDescription>
-							Connect DealScale with your CRM and publish lead updates
-							instantly.
-						</CardDescription>
-					</CardHeader>
-					<CardContent className="flex flex-1 flex-col gap-3 pt-0">
-						<Button
-							variant="outline"
-							className="w-full"
-							size="lg"
-							onClick={() => handleOpenWebhookModal("incoming")}
-							type="button"
-						>
-							Configure Incoming
-						</Button>
-						<Button
-							variant="ghost"
-							className="w-full border border-input"
-							size="lg"
-							onClick={() => handleOpenWebhookModal("outgoing")}
-							type="button"
-						>
-							Configure Outgoing
-						</Button>
-					</CardContent>
-				</Card>
-			</div>
-
-			<input
-				ref={fileInputRef}
-				type="file"
-				accept=".csv,text/csv"
-				onChange={handleCsvUpload}
-				className="hidden"
-			/>
+			<QuickStartHelp />
 
 			<LeadModalMain
 				isOpen={showLeadModal}
@@ -283,8 +364,8 @@ export default function QuickStartPage() {
 			<LeadBulkSuiteModal
 				isOpen={showBulkSuiteModal}
 				onClose={handleCloseBulkModal}
-				initialCsvFile={bulkCsvFile}
-				initialCsvHeaders={bulkCsvHeaders}
+				initialCsvFile={null}
+				initialCsvHeaders={[]}
 				onSuiteLaunchComplete={(payload) => {
 					handleSuiteLaunchComplete(payload);
 					handleCloseBulkModal();
@@ -299,6 +380,7 @@ export default function QuickStartPage() {
 				initialLeadListName={campaignModalContext?.leadListName}
 				initialLeadCount={campaignModalContext?.leadCount ?? 0}
 				initialStep={0}
+				onCampaignLaunched={handleCampaignLaunched}
 			/>
 
 			<SavedSearchModal
@@ -310,34 +392,10 @@ export default function QuickStartPage() {
 				onSetPriority={setSearchPriority}
 			/>
 
-			<WalkThroughModal
-				isOpen={showWalkthrough}
-				onClose={() => setShowWalkthrough(false)}
-				videoUrl="https://www.youtube.com/watch?v=hyosynoNbSU"
-				title="Welcome To Deal Scale"
-				subtitle="Get help getting started with your lead generation platform."
-				steps={campaignSteps}
-				isTourOpen={isTourOpen}
-				onStartTour={handleStartTour}
-				onCloseTour={handleCloseTour}
+			<HelpModal
+				isOpen={showHelpModal}
+				onClose={() => setShowHelpModal(false)}
 			/>
-
-			<div className="mx-auto mt-12 max-w-2xl text-center">
-				<div className="rounded-lg bg-muted/50 p-6">
-					<h3 className="mb-2 font-semibold text-lg">
-						Need Help Getting Started?
-					</h3>
-					<p className="mb-4 text-muted-foreground text-sm">
-						Our step-by-step guide will walk you through creating your first
-						campaign, managing leads, and optimizing your outreach strategy.
-					</p>
-					<Button asChild variant="outline" size="sm">
-						<Link href="https://docs.dealscale.io/quick-start" target="_blank">
-							View Getting Started Guide
-						</Link>
-					</Button>
-				</div>
-			</div>
 		</div>
 	);
 }

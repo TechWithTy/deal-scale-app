@@ -62,9 +62,9 @@ export function TimingPreferencesStep({
 		const fromDate = new Date(from);
 		const toDate = new Date(to);
 
-		// Ensure the end date is after the start date
-		if (fromDate >= toDate) {
-			setDateError("End date must be after start date.");
+		// Ensure the end date is not before the start date
+		if (fromDate > toDate) {
+			setDateError("End date must be on or after the start date.");
 			return;
 		}
 
@@ -89,24 +89,16 @@ export function TimingPreferencesStep({
 
 	// Ensure the next button is only enabled when we have valid start and end dates
 	const isNextEnabled = Boolean(
-		startDate && endDate && !dateError && startDate < endDate,
+		startDate && endDate && !dateError && startDate <= endDate,
 	);
 
 	const handleNextClick = () => {
-		if (!startDate || !endDate) {
-			setDateError("Please select both a start and end date.");
+		if (!isNextEnabled) {
+			setDateError(
+				"Please select both a start and end date before continuing.",
+			);
 			return;
 		}
-
-		if (startDate >= endDate) {
-			setDateError("End date must be after start date.");
-			return;
-		}
-
-		if (dateError) {
-			return;
-		}
-
 		onNext();
 	};
 
@@ -229,12 +221,8 @@ export function TimingPreferencesStep({
 				</button>
 				<button
 					type="button"
-					aria-disabled={!isNextEnabled}
-					className={`rounded px-4 py-2 text-white ${
-						isNextEnabled
-							? "bg-primary hover:bg-primary/90"
-							: "cursor-not-allowed bg-gray-300 text-gray-600"
-					}`}
+					className="rounded bg-primary px-4 py-2 text-white disabled:bg-gray-300"
+					disabled={!isNextEnabled}
 					onClick={handleNextClick}
 				>
 					Next

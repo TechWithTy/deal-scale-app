@@ -1,3 +1,5 @@
+"use client";
+
 export * from "./components/providers/CommandPaletteProvider";
 export { default as ActionBarRoot } from "./components/ActionBarRoot";
 export { StandaloneCommandPaletteProvider } from "./components/providers/StandaloneCommandPaletteProvider";
