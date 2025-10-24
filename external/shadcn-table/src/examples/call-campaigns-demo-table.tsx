@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import type { ColumnDef } from "@tanstack/react-table";
+import type { ColumnDef, Row } from "@tanstack/react-table";
 
 import { DataTable } from "../components/data-table/data-table";
 import { DataTableToolbar } from "../components/data-table/data-table-toolbar";
@@ -10,6 +10,7 @@ import { DataTableExportButton } from "../components/data-table/data-table-expor
 import { Input } from "../components/ui/input";
 import { useDataTable } from "../hooks/use-data-table";
 import { Button } from "../components/ui/button";
+import { Alert, AlertDescription, AlertTitle } from "../components/ui/alert";
 import { AiActions } from "./Phone/call/components/AiActions";
 import { CallDetailsModal } from "./Phone/call/components/CallDetailsModal";
 import { useRowCarousel } from "../hooks/use-row-carousel";
@@ -25,17 +26,45 @@ import {
 	mockCallCampaignData,
 } from "../../../../constants/_faker/calls/callCampaign";
 import CampaignModalMain from "./campaigns/modal/CampaignModalMain";
+import { useCampaignRowFocus } from "@/components/campaigns/utils/useCampaignRowFocus";
 
 // CampaignType comes from buildColumns
 
 type ParentTab = "calls" | "text" | "social" | "directMail";
 
+interface CallCampaignsDemoTableProps {
+        onNavigate?: (tab: ParentTab) => void;
+        campaignId?: string | null;
+        onCampaignSelect?: (id: string) => void;
+        initialCampaigns?: CallCampaign[];
+}
+
 export default function CallCampaignsDemoTable({
-	onNavigate,
-}: {
-	onNavigate?: (tab: ParentTab) => void;
-}) {
-	const [data, setData] = React.useState<CallCampaign[]>([]);
+        onNavigate,
+        campaignId = null,
+        onCampaignSelect,
+        initialCampaigns,
+}: CallCampaignsDemoTableProps) {
+        const fallbackCampaigns = React.useMemo(
+                () =>
+                        (mockCallCampaignData as CallCampaign[] | false) ||
+                        generateCallCampaignData(),
+                [],
+        );
+
+        const mergeCampaigns = React.useCallback(
+                (incoming?: CallCampaign[]) => {
+                        if (!incoming || incoming.length === 0) {
+                                return [...fallbackCampaigns];
+                        }
+                        const seen = new Set(incoming.map((campaign) => campaign.id));
+                        const extras = fallbackCampaigns.filter((campaign) => !seen.has(campaign.id));
+                        return [...incoming, ...extras];
+                },
+                [fallbackCampaigns],
+        );
+
+        const [data, setData] = React.useState<CallCampaign[]>(() => mergeCampaigns(initialCampaigns));
 	const [query, setQuery] = React.useState("");
 	const [detailIndex, setDetailIndex] = React.useState(0);
 	const [campaignType, setCampaignType] = React.useState<CampaignType>("Calls");
@@ -54,12 +83,9 @@ export default function CallCampaignsDemoTable({
 	);
 
 	// Avoid hydration mismatch: only generate data on the client
-	React.useEffect(() => {
-		const d =
-			(mockCallCampaignData as CallCampaign[] | false) ||
-			generateCallCampaignData();
-		setData(d);
-	}, []);
+        React.useEffect(() => {
+                setData(mergeCampaigns(initialCampaigns));
+        }, [initialCampaigns, mergeCampaigns]);
 
 	// Build columns dynamically based on selected campaign type (internal util)
 	const columns = React.useMemo<ColumnDef<CallCampaign>[]>(
@@ -220,17 +246,45 @@ export default function CallCampaignsDemoTable({
 		table.setColumnOrder(desired);
 	}, [campaignType, table]);
 
-	const carousel = useRowCarousel(table, { loop: true });
+        const carousel = useRowCarousel(table, { loop: true });
 
-	// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
-	React.useEffect(() => {
-		if (carousel.open) setDetailIndex(0);
-	}, [carousel.open, carousel.index]);
+        // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
+        React.useEffect(() => {
+                if (carousel.open) setDetailIndex(0);
+        }, [carousel.open, carousel.index]);
 
-	// Status quick actions and AI helpers are encapsulated in internal components
+        const rowIdResolver = React.useCallback(
+                (row: Row<CallCampaign>) => (row.original as CallCampaign).id,
+                [],
+        );
 
-	return (
-		<main className="container mx-auto max-w-7xl space-y-6 p-6">
+        const handleRowFocused = React.useCallback(
+                (row: Row<CallCampaign>) => {
+                        setDetailIndex(0);
+                        carousel.openAt(row);
+                        const targetId = rowIdResolver(row);
+                        if (!targetId) return;
+                        requestAnimationFrame(() => {
+                                const element = document.querySelector<HTMLTableRowElement>(
+                                        `[data-row-id="${targetId}"]`,
+                                );
+                                element?.scrollIntoView({ behavior: "smooth", block: "center" });
+                        });
+                },
+                [carousel, rowIdResolver],
+        );
+
+        const { focusedRowId, status } = useCampaignRowFocus<CallCampaign>({
+                campaignId,
+                table,
+                resolveRowId: rowIdResolver,
+                onRowFocused: handleRowFocused,
+        });
+
+        // Status quick actions and AI helpers are encapsulated in internal components
+
+        return (
+                <main className="container mx-auto max-w-7xl space-y-6 p-6">
 			<header className="space-y-1">
 				<div className="flex flex-wrap items-center justify-between gap-3">
 					<div>
@@ -245,20 +299,34 @@ export default function CallCampaignsDemoTable({
 				</div>
 			</header>
 
-			<SummaryCard
-				table={table}
-				campaignType={campaignType}
-				dateChip={dateChip}
-				setDateChip={setDateChip}
-			/>
+                        <SummaryCard
+                                table={table}
+                                campaignType={campaignType}
+                                dateChip={dateChip}
+                                setDateChip={setDateChip}
+                        />
 
-			<DataTable<CallCampaign>
-				table={table}
-				className="mt-2"
-				onRowClick={(row) => {
-					setDetailIndex(0);
-					carousel.openAt(row);
-				}}
+                        {status === "not-found" && campaignId ? (
+                                <Alert variant="destructive">
+                                        <AlertTitle>Campaign not found</AlertTitle>
+                                        <AlertDescription>
+                                                We couldn&apos;t locate a campaign with ID {campaignId} in the
+                                                Calls table.
+                                        </AlertDescription>
+                                </Alert>
+                        ) : null}
+
+                        <DataTable<CallCampaign>
+                                table={table}
+                                className="mt-2"
+                                focusedRowId={focusedRowId ?? undefined}
+                                getRowId={rowIdResolver}
+                                onRowClick={(row) => {
+                                        const id = rowIdResolver(row);
+                                        if (id) onCampaignSelect?.(id);
+                                        setDetailIndex(0);
+                                        carousel.openAt(row);
+                                }}
 				actionBar={
 					<div className="flex items-center gap-2">
 						<span className="text-sm">

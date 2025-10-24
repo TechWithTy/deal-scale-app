@@ -20,6 +20,7 @@ import { useQuickStartWizardStore } from "@/lib/stores/quickstartWizard";
 import { useCampaignCreationStore } from "@/lib/stores/campaignCreation";
 import { useModalStore } from "@/lib/stores/dashboard";
 import type { WebhookStage } from "@/lib/stores/dashboard";
+import { shallow } from "zustand/shallow";
 
 export default function QuickStartPage() {
 	const router = useRouter();
@@ -28,19 +29,16 @@ export default function QuickStartPage() {
 		"create",
 	);
 	const [showWalkthrough, setShowWalkthrough] = useState(false);
-	const [isTourOpen, setIsTourOpen] = useState(false);
-	const [bulkCsvFile, setBulkCsvFile] = useState<File | null>(null);
-	const [bulkCsvHeaders, setBulkCsvHeaders] = useState<string[]>([]);
+	const [showHelpModal, setShowHelpModal] = useState(false);
 	const [showBulkSuiteModal, setShowBulkSuiteModal] = useState(false);
 	const [showCampaignModal, setShowCampaignModal] = useState(false);
 	const [campaignModalContext, setCampaignModalContext] =
 		useState<QuickStartCampaignContext | null>(null);
 
-	const fileInputRef = useRef<HTMLInputElement>(null);
+	const router = useRouter();
 	const openWebhookModal = useModalStore((state) => state.openWebhookModal);
 	const openWizard = useQuickStartWizardStore((state) => state.open);
 
-	const campaignStore = useCampaignCreationStore();
 	const {
 		savedSearches,
 		deleteSavedSearch,
@@ -50,6 +48,8 @@ export default function QuickStartPage() {
 		handleStartNewSearch,
 		handleOpenSavedSearches,
 		savedSearchModalOpen,
+		handleStartNewSearch,
+		handleOpenSavedSearches,
 	} = useQuickStartSavedSearches();
 
 	const triggerFileInput = () => {
@@ -72,7 +72,14 @@ export default function QuickStartPage() {
 			setShowCampaignModal(true);
 			setShowLeadModal(false);
 		},
-		[campaignStore],
+		[
+			resetCampaignStore,
+			setAreaMode,
+			setSelectedLeadListId,
+			setLeadCount,
+			setCampaignName,
+			logQuickStartDebug,
+		],
 	);
 
 	const handleSuiteLaunchComplete = useCallback(
@@ -80,7 +87,7 @@ export default function QuickStartPage() {
 			handleLaunchCampaign(payload);
 			return true;
 		},
-		[handleLaunchCampaign],
+		[handleLaunchCampaign, logQuickStartDebug],
 	);
 
 	const handleCloseLeadModal = () => setShowLeadModal(false);
@@ -125,10 +132,55 @@ export default function QuickStartPage() {
 		}
 	};
 
-	const handleCsvUpload = useBulkCsvUpload({
-		onFileChange: setBulkCsvFile,
-		onHeadersParsed: setBulkCsvHeaders,
-		onShowModal: () => setShowBulkSuiteModal(true),
+		if (!showCampaignModal && campaignResetTimeoutRef.current !== null) {
+			logQuickStartDebug("campaign-modal-close-cleanup", {
+				hasTimeout: true,
+			});
+			return () => {
+				if (campaignResetTimeoutRef.current !== null) {
+					clearTimeout(campaignResetTimeoutRef.current);
+					campaignResetTimeoutRef.current = null;
+				}
+			};
+		}
+
+		return undefined;
+	}, [
+		showCampaignModal,
+		resetCampaignStore,
+		logQuickStartDebug,
+		setCampaignModalContext,
+	]);
+
+	useEffect(
+		() => () => {
+			if (campaignResetTimeoutRef.current !== null) {
+				logQuickStartDebug("campaign-modal-timeout-dispose", {
+					reason: "component-unmount",
+				});
+				clearTimeout(campaignResetTimeoutRef.current);
+				campaignResetTimeoutRef.current = null;
+			}
+		},
+		[],
+	);
+
+	const handleCloseBulkModal = useCallback(
+		() => setShowBulkSuiteModal(false),
+		[],
+	);
+
+	const cards = useQuickStartCards({
+		onImport: handleImportFromSource,
+		onSelectList: handleSelectList,
+		onConfigureConnections: handleConnectionSettings,
+		onCampaignCreate: handleCampaignCreation,
+		onViewTemplates: handleViewTemplates,
+		onOpenWebhookModal: handleOpenWebhookModal,
+		onBrowserExtension: handleBrowserExtension,
+		createRouterPush,
+		onStartNewSearch: handleStartNewSearch,
+		onOpenSavedSearches: handleOpenSavedSearches,
 	});
 
 	const handleWizardLaunch = useCallback(
