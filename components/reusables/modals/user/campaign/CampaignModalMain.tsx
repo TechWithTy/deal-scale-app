@@ -122,7 +122,7 @@ const selectCampaignStoreDebugSnapshot = (
 	daysSelected: state.daysSelected,
 });
 
-export const CampaignModalMain: FC<CampaignModalMainProps> = ({
+const CampaignModalMain: FC<CampaignModalMainProps> = ({
 	isOpen,
 	onOpenChange,
 	initialLeadListId,
@@ -949,3 +949,5 @@ export const CampaignModalMain: FC<CampaignModalMainProps> = ({
 		</Dialog>
 	);
 };
+
+export default CampaignModalMain;
