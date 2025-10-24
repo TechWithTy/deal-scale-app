@@ -92,6 +92,11 @@ describe("useQuickStartCards", () => {
                         expect.objectContaining({ startStep: "lead-intake" }),
                 );
 
+                const wizardCard = cards.find((card) => card.key === "wizard");
+                expect(wizardCard).toBeDefined();
+                expect(wizardCard?.actions[0]?.label).toMatch(/launch guided setup/i);
+                expect(typeof wizardCard?.actions[0]?.onClick).toBe("function");
+
                 const campaignCard = cards.find((card) => card.key === "campaign");
                 expect(campaignCard?.featureChips).toEqual(
                         expect.arrayContaining([

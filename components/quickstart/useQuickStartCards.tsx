@@ -65,6 +65,7 @@ export const useQuickStartCards = ({
 			onBrowserExtension,
 			onStartNewSearch,
 			onOpenSavedSearches,
+			onWizardStub: () => {},
 		};
 
 		const resolveAction = (descriptor: QuickStartActionDescriptor) => {

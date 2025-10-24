@@ -16,6 +16,12 @@ import {
 	type QuickStartWizardStep,
 	useQuickStartWizardStore,
 } from "@/lib/stores/quickstartWizard";
+import LeadCaptureStep from "./steps/LeadCaptureStep";
+import LeadIntakeStep from "./steps/LeadIntakeStep";
+import MarketDiscoveryStep from "./steps/MarketDiscoveryStep";
+import CampaignBasicsStep from "./steps/CampaignBasicsStep";
+import ReviewStep from "./steps/ReviewStep";
+import TestAndLaunchStep from "./steps/TestAndLaunchStep";
 
 const WIZARD_STEPS: QuickStartWizardStep[] = [
 	"lead-intake",
@@ -62,6 +68,15 @@ const STEP_METADATA: Record<
 	},
 };
 
+const STEP_COMPONENTS: Record<QuickStartWizardStep, FC> = {
+	"lead-intake": LeadIntakeStep,
+	"market-discovery": MarketDiscoveryStep,
+	"campaign-basics": CampaignBasicsStep,
+	review: ReviewStep,
+	"test-and-launch": TestAndLaunchStep,
+	"lead-capture": LeadCaptureStep,
+};
+
 const QuickStartWizard: FC = () => {
 	const { isOpen, activeStep, activePreset, goToStep, close } =
 		useQuickStartWizardStore();
@@ -74,6 +89,8 @@ const QuickStartWizard: FC = () => {
 		activePreset?.templateId && getQuickStartTemplate(activePreset.templateId);
 	const stepMeta =
 		STEP_METADATA[activeStep] ?? STEP_METADATA[QUICK_START_DEFAULT_STEP];
+	const ActiveComponent =
+		STEP_COMPONENTS[activeStep] ?? STEP_COMPONENTS[QUICK_START_DEFAULT_STEP];
 
 	return (
 		<Card
@@ -107,11 +124,14 @@ const QuickStartWizard: FC = () => {
 						</Button>
 					))}
 				</div>
-				<div className="rounded-lg border bg-muted/30 p-6">
-					<h3 className="mb-2 font-semibold text-xl">{stepMeta.title}</h3>
-					<p className="text-muted-foreground text-sm leading-relaxed">
-						{stepMeta.description}
-					</p>
+				<div className="space-y-4">
+					<div className="rounded-lg border bg-muted/30 p-6">
+						<h3 className="mb-2 font-semibold text-xl">{stepMeta.title}</h3>
+						<p className="text-muted-foreground text-sm leading-relaxed">
+							{stepMeta.description}
+						</p>
+					</div>
+					<ActiveComponent />
 				</div>
 			</CardContent>
 		</Card>
