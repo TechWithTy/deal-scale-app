@@ -4,12 +4,12 @@ import type { FC } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogHeader,
+	DialogTitle,
+} from "@/components/ui/dialog";
 import { getQuickStartTemplate } from "@/lib/config/quickstart/templates";
 import {
 	QUICK_START_DEFAULT_STEP,
@@ -81,10 +81,6 @@ const QuickStartWizard: FC = () => {
 	const { isOpen, activeStep, activePreset, goToStep, close } =
 		useQuickStartWizardStore();
 
-	if (!isOpen) {
-		return null;
-	}
-
 	const template =
 		activePreset?.templateId && getQuickStartTemplate(activePreset.templateId);
 	const stepMeta =
@@ -92,49 +88,62 @@ const QuickStartWizard: FC = () => {
 	const ActiveComponent =
 		STEP_COMPONENTS[activeStep] ?? STEP_COMPONENTS[QUICK_START_DEFAULT_STEP];
 
+	if (!isOpen) {
+		return null;
+	}
+
 	return (
-		<Card
-			data-testid="quickstart-wizard"
-			className="mx-auto mt-10 w-full max-w-5xl border-2"
+		<Dialog
+			open={isOpen}
+			onOpenChange={(open) => {
+				if (!open) {
+					close();
+				}
+			}}
 		>
-			<CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-				<div>
-					<CardTitle className="text-2xl">QuickStart Wizard</CardTitle>
-					<CardDescription>
-						{template
-							? `Template: ${template.label}`
-							: "Follow the guided steps to launch your DealScale workflow."}
-					</CardDescription>
-				</div>
-				<Button type="button" variant="ghost" onClick={close}>
-					Close Wizard
-				</Button>
-			</CardHeader>
-			<CardContent className="flex flex-col gap-6">
-				<div className="flex flex-wrap gap-2">
-					{WIZARD_STEPS.map((step) => (
-						<Button
-							key={step}
-							type="button"
-							variant={step === activeStep ? "default" : "outline"}
-							onClick={() => goToStep(step)}
-							className="capitalize"
-						>
-							{STEP_METADATA[step].title}
-						</Button>
-					))}
-				</div>
-				<div className="space-y-4">
-					<div className="rounded-lg border bg-muted/30 p-6">
-						<h3 className="mb-2 font-semibold text-xl">{stepMeta.title}</h3>
-						<p className="text-muted-foreground text-sm leading-relaxed">
-							{stepMeta.description}
-						</p>
+			<DialogContent
+				data-testid="quickstart-wizard"
+				className="w-full max-w-5xl space-y-6"
+			>
+				<DialogHeader className="gap-4 sm:flex-row sm:items-start sm:justify-between sm:space-y-0">
+					<div className="text-left">
+						<DialogTitle className="text-2xl">QuickStart Wizard</DialogTitle>
+						<DialogDescription>
+							{template
+								? `Template: ${template.label}`
+								: "Follow the guided steps to launch your DealScale workflow."}
+						</DialogDescription>
 					</div>
-					<ActiveComponent />
+					<Button type="button" variant="ghost" onClick={close}>
+						Close Wizard
+					</Button>
+				</DialogHeader>
+				<div className="flex flex-col gap-6">
+					<div className="flex flex-wrap gap-2">
+						{WIZARD_STEPS.map((step) => (
+							<Button
+								key={step}
+								type="button"
+								variant={step === activeStep ? "default" : "outline"}
+								onClick={() => goToStep(step)}
+								className="capitalize"
+							>
+								{STEP_METADATA[step].title}
+							</Button>
+						))}
+					</div>
+					<div className="space-y-4">
+						<div className="rounded-lg border bg-muted/30 p-6">
+							<h3 className="mb-2 text-xl font-semibold">{stepMeta.title}</h3>
+							<p className="text-muted-foreground text-sm leading-relaxed">
+								{stepMeta.description}
+							</p>
+						</div>
+						<ActiveComponent />
+					</div>
 				</div>
-			</CardContent>
-		</Card>
+			</DialogContent>
+		</Dialog>
 	);
 };
 

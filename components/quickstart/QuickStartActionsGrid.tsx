@@ -35,15 +35,7 @@ const featureToneStyles: Record<QuickStartCardChipTone, string> = {
 };
 
 const QuickStartActionsGrid: FC<QuickStartActionsGridProps> = ({ cards }) => (
-	<div
-		className="mx-auto grid max-w-5xl gap-6 md:grid-cols-2 xl:grid-cols-3"
-		style={{
-			display: "grid",
-			gridAutoRows: "auto",
-			alignItems: "start",
-			justifyItems: "center",
-		}}
-	>
+	<div className="mx-auto grid max-w-5xl items-start justify-items-stretch gap-6 md:auto-rows-[minmax(0,1fr)] md:grid-cols-2 xl:grid-cols-3">
 		{cards.map(
 			({
 				key,
@@ -62,7 +54,7 @@ const QuickStartActionsGrid: FC<QuickStartActionsGridProps> = ({ cards }) => (
 				<Card
 					key={key}
 					className={cn(
-						"group flex h-auto w-full max-w-sm flex-col border-2 transition hover:border-primary/20 hover:shadow-lg",
+						"group flex h-full w-full max-w-sm flex-col border-2 transition hover:border-primary/20 hover:shadow-lg",
 						cardClassName,
 					)}
 				>
