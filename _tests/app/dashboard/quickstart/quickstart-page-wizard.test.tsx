@@ -119,12 +119,12 @@ describe("QuickStartPage wizard modal", () => {
         it("applies presets and generates a summary plan when launched from a card", () => {
                 render(<QuickStartPage />);
 
-                const [importButton] = screen.getAllByRole("button", {
-                        name: /import from any source/i,
+                const [launchWizardButton] = screen.getAllByRole("button", {
+                        name: /launch guided setup/i,
                 });
 
                 act(() => {
-                        fireEvent.click(importButton);
+                        fireEvent.click(launchWizardButton);
                 });
 
                 const wizard = screen.getByRole("dialog", { name: /quickstart wizard/i });
