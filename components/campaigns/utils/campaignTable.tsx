@@ -15,10 +15,152 @@ import {
 	PopoverTrigger,
 } from "@/components/ui/popover";
 import CampaignModalMain from "../../../external/shadcn-table/src/examples/campaigns/modal/CampaignModalMain";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useCampaignStore } from "@/lib/stores/campaigns";
+import { shallow } from "zustand/shallow";
+import type { CallCampaign } from "@/types/_dashboard/campaign";
+import type { DirectMailCampaign } from "external/shadcn-table/src/examples/DirectMail/utils/mock";
 
-export default function CampaignCallTablePage() {
+export default function CampaignCallTablePage({
+	urlParams,
+}: {
+	urlParams?: {
+		type?: string | null;
+		campaignId?: string | null;
+	};
+}) {
 	type ParentTab = "calls" | "text" | "social" | "directMail";
-	const [tab, setTab] = React.useState<ParentTab>("calls");
+
+	const router = useRouter();
+	const pathname = usePathname();
+	const searchParams = useSearchParams();
+	const searchParamsString = searchParams?.toString() ?? "";
+
+	const tabToType = React.useMemo<
+		Record<ParentTab, "call" | "text" | "social" | "direct">
+	>(
+		() => ({
+			calls: "call",
+			text: "text",
+			social: "social",
+			directMail: "direct",
+		}),
+		[],
+	);
+
+	const campaignId = urlParams?.campaignId ?? null;
+
+	// Map URL type parameter to tab
+	const getInitialTab = React.useCallback((type?: string | null): ParentTab => {
+		switch (type) {
+			case "call":
+				return "calls";
+			case "text":
+				return "text";
+			case "social":
+				return "social";
+			case "direct":
+				return "directMail";
+			default:
+				return "calls";
+		}
+	}, []);
+
+	const [tab, setTab] = React.useState<ParentTab>(() =>
+		getInitialTab(urlParams?.type),
+	);
+
+	const pushParams = React.useCallback(
+		(nextTab: ParentTab, nextCampaignId?: string | null) => {
+			const params = new URLSearchParams(searchParamsString);
+			params.set("type", tabToType[nextTab]);
+			if (nextCampaignId) {
+				params.set("campaignId", nextCampaignId);
+			} else {
+				params.delete("campaignId");
+			}
+			const query = params.toString();
+			router.push(query ? `${pathname}?${query}` : pathname);
+		},
+		[pathname, router, searchParamsString, tabToType],
+	);
+
+	const handleTabChange = React.useCallback(
+		(next: ParentTab) => {
+			setTab(next);
+			pushParams(next, null);
+		},
+		[pushParams],
+	);
+
+	const handleCampaignSelect = React.useCallback(
+		(id: string) => {
+			pushParams(tab, id);
+		},
+		[pushParams, tab],
+	);
+
+	// Update tab when URL params change
+	React.useEffect(() => {
+		const newTab = getInitialTab(urlParams?.type);
+		if (newTab !== tab) {
+			console.log(
+				"🔄 CAMPAIGN TABLE: Switching tab from",
+				tab,
+				"to",
+				newTab,
+				"based on URL param:",
+				urlParams?.type,
+			);
+			setTab(newTab);
+		}
+	}, [urlParams?.type, tab, getInitialTab]);
+
+	// Debug URL parameters
+	React.useEffect(() => {
+		if (urlParams?.type || urlParams?.campaignId) {
+			console.log(
+				"📋 CAMPAIGN TABLE URL PARAMS:",
+				urlParams,
+				"-> Initial tab:",
+				getInitialTab(urlParams?.type),
+			);
+		}
+	}, [urlParams, getInitialTab]);
+	const { callCampaigns, textCampaigns, socialCampaigns, directMailCampaigns } =
+		useCampaignStore(
+			React.useCallback(
+				(state) => ({
+					callCampaigns: state.campaignsByType.call,
+					textCampaigns: state.campaignsByType.text,
+					socialCampaigns: state.campaignsByType.social,
+					directMailCampaigns: state.campaignsByType.direct,
+				}),
+				[],
+			),
+			shallow,
+		);
+
+	const memoizedCallCampaigns = React.useMemo<CallCampaign[]>(
+		() => callCampaigns.map((campaign) => ({ ...campaign })),
+		[callCampaigns],
+	);
+
+	const memoizedTextCampaigns = React.useMemo<CallCampaign[]>(
+		() => textCampaigns.map((campaign) => ({ ...campaign })),
+		[textCampaigns],
+	);
+
+	const memoizedSocialCampaigns = React.useMemo<CallCampaign[]>(
+		() => socialCampaigns.map((campaign) => ({ ...campaign })),
+		[socialCampaigns],
+	);
+
+	const memoizedDirectMailCampaigns = React.useMemo<DirectMailCampaign[]>(
+		() => directMailCampaigns.map((campaign) => ({ ...campaign })),
+		[directMailCampaigns],
+	);
+
 	const [isLeadModalOpen, setIsLeadModalOpen] = React.useState(false);
 	const [isSkipTraceOpen, setIsSkipTraceOpen] = React.useState(false);
 	const [isCampaignModalOpen, setIsCampaignModalOpen] = React.useState(false);
@@ -61,7 +203,7 @@ export default function CampaignCallTablePage() {
 			</div>
 
 			{/* Enhanced Tab Navigation with Feature Blocking */}
-			<div className="mb-4 flex items-center justify-between gap-4 p-1 bg-muted rounded-lg">
+			<div className="bg-muted flex gap-4 items-center justify-between mb-4 p-1 rounded-lg">
 				<div className="flex items-center gap-2">
 					{tabs.map(({ key, label, featureKey }) => {
 						const isActive = tab === key;
@@ -74,7 +216,7 @@ export default function CampaignCallTablePage() {
 								variant={isActive ? "default" : "ghost"}
 								size="sm"
 								className={`relative ${isActive ? "" : "hover:bg-background/50"}`}
-								onClick={() => setTab(key)}
+								onClick={() => handleTabChange(key)}
 							>
 								{label}
 							</Button>
@@ -116,13 +258,19 @@ export default function CampaignCallTablePage() {
 			{tab === "calls" && (
 				<CallCampaignsDemoTable
 					key="calls"
-					onNavigate={(next: ParentTab) => setTab(next)}
+					onNavigate={handleTabChange}
+					campaignId={campaignId}
+					onCampaignSelect={handleCampaignSelect}
+					initialCampaigns={memoizedCallCampaigns}
 				/>
 			)}
 			{tab === "text" && (
 				<TextCampaignsDemoTable
 					key="text"
-					onNavigate={(next: ParentTab) => setTab(next)}
+					onNavigate={handleTabChange}
+					campaignId={campaignId}
+					onCampaignSelect={handleCampaignSelect}
+					initialCampaigns={memoizedTextCampaigns}
 				/>
 			)}
 			{tab === "social" && (
@@ -132,7 +280,10 @@ export default function CampaignCallTablePage() {
 				>
 					<SocialCampaignsDemoTable
 						key="social"
-						onNavigate={(next: ParentTab) => setTab(next)}
+						onNavigate={handleTabChange}
+						campaignId={campaignId}
+						onCampaignSelect={handleCampaignSelect}
+						initialCampaigns={memoizedSocialCampaigns}
 					/>
 				</FeatureGuard>
 			)}
@@ -143,7 +294,10 @@ export default function CampaignCallTablePage() {
 				>
 					<DirectMailCampaignsDemoTable
 						key="directMail"
-						onNavigate={(next: ParentTab) => setTab(next)}
+						onNavigate={handleTabChange}
+						campaignId={campaignId}
+						onCampaignSelect={handleCampaignSelect}
+						initialCampaigns={memoizedDirectMailCampaigns}
 					/>
 				</FeatureGuard>
 			)}

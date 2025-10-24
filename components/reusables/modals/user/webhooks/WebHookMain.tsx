@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { mockUserProfile } from "@/constants/_faker/profile/userProfile";
 import { useModalStore, type WebhookStage } from "@/lib/stores/dashboard";
+import { useRouter } from "next/navigation";
 import type React from "react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -163,6 +164,8 @@ export const WebhookModal: React.FC = () => {
 		setWebhookStage,
 	} = useModalStore();
 
+	const router = useRouter();
+
 	const orgId = mockUserProfile?.companyInfo?.GHLID?.locationId ?? "org-demo";
 	const compactOrgId = orgId.replace(/[^a-zA-Z0-9]/g, "");
 	const defaultIncomingEndpoint = `https://app.dealscale.io/api/webhooks/${orgId}/incoming`;
@@ -251,21 +254,22 @@ export const WebhookModal: React.FC = () => {
 	};
 
 	const handleSaveWebhook = () => {
+		// Close modal and show toast immediately
+		closeWebhookModal();
+
 		if (webhookStage === "incoming") {
 			toast("Incoming webhook endpoint confirmed.");
-			closeWebhookModal();
-			return;
-		}
-
-		if (webhookStage === "outgoing") {
+		} else if (webhookStage === "outgoing") {
 			const urlToPersist = outgoingWebhookUrl;
 			toast(`Outgoing webhook saved for ${urlToPersist || "your CRM"}.`);
-			closeWebhookModal();
-			return;
+		} else {
+			toast(
+				"Feed preferences saved. Subscribers now receive real-time updates.",
+			);
 		}
 
-		toast("Feed preferences saved. Subscribers now receive real-time updates.");
-		closeWebhookModal();
+		// Navigate immediately - modal should be closed by now
+		router.push("/dashboard/lead-list");
 	};
 
 	return (
