@@ -43,7 +43,7 @@ export const primaryQuickStartCards: readonly QuickStartCardDescriptor[] = [
 				handler: "onWizardStub",
 			}),
 		],
-		wizardPreset: { startStep: "lead-intake", templateId: "lead-import" },
+		wizardPreset: {},
 		...primaryCardStyles,
 		cardClassName: cn(
 			primaryCardStyles.cardClassName,
@@ -94,7 +94,11 @@ export const primaryQuickStartCards: readonly QuickStartCardDescriptor[] = [
 				Connect APIs, CRM systems, databases, and more
 			</p>
 		),
-		wizardPreset: { startStep: "lead-intake", templateId: "lead-import" },
+		wizardPreset: {
+			personaId: "investor",
+			goalId: "investor-pipeline",
+			templateId: "lead-import",
+		},
 		...primaryCardStyles,
 	},
 	{
@@ -134,7 +138,8 @@ export const primaryQuickStartCards: readonly QuickStartCardDescriptor[] = [
 			}),
 		],
 		wizardPreset: {
-			startStep: "campaign-basics",
+			personaId: "wholesaler",
+			goalId: "wholesaler-dispositions",
 			templateId: "campaign-default",
 		},
 	},
@@ -172,6 +177,9 @@ export const primaryQuickStartCards: readonly QuickStartCardDescriptor[] = [
 				variant: "outline",
 			}),
 		],
-		wizardPreset: { startStep: "test-and-launch" },
+		wizardPreset: {
+			personaId: "agent",
+			goalId: "agent-sphere",
+		},
 	},
 ];

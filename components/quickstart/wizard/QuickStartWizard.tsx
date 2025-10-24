@@ -1,6 +1,6 @@
 "use client";
 
-import type { FC } from "react";
+import { useMemo } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -10,87 +10,133 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
+import PersonaStep from "@/components/quickstart/wizard/steps/PersonaStep";
+import GoalStep from "@/components/quickstart/wizard/steps/GoalStep";
+import SummaryStep from "@/components/quickstart/wizard/steps/SummaryStep";
+import { quickStartCardDescriptors } from "@/lib/config/quickstart";
 import { getQuickStartTemplate } from "@/lib/config/quickstart/templates";
+import {
+	getGoalDefinition,
+	getGoalsForPersona,
+	quickStartPersonas,
+	type QuickStartGoalId,
+	type QuickStartPersonaId,
+} from "@/lib/config/quickstart/wizardFlows";
 import {
 	QUICK_START_DEFAULT_STEP,
 	type QuickStartWizardStep,
 	useQuickStartWizardStore,
 } from "@/lib/stores/quickstartWizard";
-import LeadCaptureStep from "./steps/LeadCaptureStep";
-import LeadIntakeStep from "./steps/LeadIntakeStep";
-import MarketDiscoveryStep from "./steps/MarketDiscoveryStep";
-import CampaignBasicsStep from "./steps/CampaignBasicsStep";
-import ReviewStep from "./steps/ReviewStep";
-import TestAndLaunchStep from "./steps/TestAndLaunchStep";
+import { useQuickStartWizardDataStore } from "@/lib/stores/quickstartWizardData";
 
-const WIZARD_STEPS: QuickStartWizardStep[] = [
-	"lead-intake",
-	"market-discovery",
-	"campaign-basics",
-	"review",
-	"test-and-launch",
-	"lead-capture",
+const STEP_ORDER: readonly QuickStartWizardStep[] = [
+	"persona",
+	"goal",
+	"summary",
 ];
 
-const STEP_METADATA: Record<
-	QuickStartWizardStep,
-	{ title: string; description: string }
-> = {
-	"lead-intake": {
-		title: "Lead Intake",
-		description:
-			"Upload lists, capture leads from integrations, or sync saved searches to prime your pipeline.",
-	},
-	"market-discovery": {
-		title: "Market Discovery",
-		description:
-			"Explore distressed opportunities and geo-target segments to fuel your campaigns with intelligence.",
-	},
-	"campaign-basics": {
-		title: "Campaign Basics",
-		description:
-			"Configure channels, cadences, and agent assignments before activating automations.",
-	},
-	review: {
-		title: "Review",
-		description:
-			"Confirm your targeting, messaging, and safeguards before handing off to the launch step.",
-	},
-	"test-and-launch": {
-		title: "Test & Launch",
-		description:
-			"Validate routing, deliverability, and handoffs—then activate the campaign when everything looks good.",
-	},
-	"lead-capture": {
-		title: "Lead Capture",
-		description:
-			"Deploy browser extensions and on-site widgets to feed new contacts directly into DealScale.",
-	},
-};
-
-const STEP_COMPONENTS: Record<QuickStartWizardStep, FC> = {
-	"lead-intake": LeadIntakeStep,
-	"market-discovery": MarketDiscoveryStep,
-	"campaign-basics": CampaignBasicsStep,
-	review: ReviewStep,
-	"test-and-launch": TestAndLaunchStep,
-	"lead-capture": LeadCaptureStep,
-};
-
-const QuickStartWizard: FC = () => {
+const QuickStartWizard = () => {
 	const { isOpen, activeStep, activePreset, goToStep, close } =
 		useQuickStartWizardStore();
+	const { personaId, goalId, selectPersona, selectGoal } =
+		useQuickStartWizardDataStore();
 
 	const template =
 		activePreset?.templateId && getQuickStartTemplate(activePreset.templateId);
-	const stepMeta =
-		STEP_METADATA[activeStep] ?? STEP_METADATA[QUICK_START_DEFAULT_STEP];
-	const ActiveComponent =
-		STEP_COMPONENTS[activeStep] ?? STEP_COMPONENTS[QUICK_START_DEFAULT_STEP];
+	const personaOptions = quickStartPersonas;
+	const goalOptions = personaId ? getGoalsForPersona(personaId) : [];
+	const selectedGoal = goalId ? getGoalDefinition(goalId) : null;
+
+	const cardDescriptorById = useMemo(() => {
+		const entries = quickStartCardDescriptors.map(
+			(descriptor) =>
+				[
+					descriptor.id,
+					{
+						title: descriptor.title,
+						description: descriptor.description,
+					},
+				] as const,
+		);
+
+		return new Map(entries);
+	}, []);
+
+	const summarySteps = useMemo(() => {
+		if (!selectedGoal) {
+			return [];
+		}
+
+		return selectedGoal.flow
+			.map((flowStep) => {
+				const descriptor = cardDescriptorById.get(flowStep.cardId);
+				if (!descriptor) {
+					return null;
+				}
+
+				return {
+					...flowStep,
+					title: descriptor.title,
+					description: descriptor.description,
+				};
+			})
+			.filter((step): step is NonNullable<typeof step> => step !== null);
+	}, [cardDescriptorById, selectedGoal]);
 
 	if (!isOpen) {
 		return null;
 	}
+
+	const stepIndex = STEP_ORDER.indexOf(activeStep);
+	const progressLabel =
+		stepIndex >= 0 ? `Step ${stepIndex + 1} of ${STEP_ORDER.length}` : null;
+
+	const handlePersonaSelect = (nextPersonaId: QuickStartPersonaId) => {
+		selectPersona(nextPersonaId);
+		goToStep("goal");
+	};
+
+	const handleGoalSelect = (nextGoalId: QuickStartGoalId) => {
+		selectGoal(nextGoalId);
+		goToStep("summary");
+	};
+
+	const handleBack = () => {
+		if (activeStep === "goal") {
+			goToStep("persona");
+			return;
+		}
+
+		if (activeStep === "summary") {
+			goToStep("goal");
+		}
+	};
+
+	const handlePrimary = () => {
+		if (activeStep === "persona") {
+			goToStep("goal");
+			return;
+		}
+
+		if (activeStep === "goal") {
+			if (goalId) {
+				goToStep("summary");
+			}
+			return;
+		}
+
+		close();
+	};
+
+	const primaryLabel =
+		activeStep === "summary"
+			? "Close & start plan"
+			: activeStep === "goal"
+				? "Generate plan"
+				: "Continue";
+	const primaryDisabled =
+		(activeStep === "persona" && !personaId) ||
+		(activeStep === "goal" && !goalId);
 
 	return (
 		<Dialog
@@ -106,40 +152,71 @@ const QuickStartWizard: FC = () => {
 				className="w-full max-w-5xl space-y-6"
 			>
 				<DialogHeader className="gap-4 sm:flex-row sm:items-start sm:justify-between sm:space-y-0">
-					<div className="text-left">
+					<div className="text-left space-y-1">
 						<DialogTitle className="text-2xl">QuickStart Wizard</DialogTitle>
 						<DialogDescription>
 							{template
 								? `Template: ${template.label}`
-								: "Follow the guided steps to launch your DealScale workflow."}
+								: "We’ll guide you through the exact cards to launch your workflow."}
 						</DialogDescription>
 					</div>
 					<Button type="button" variant="ghost" onClick={close}>
 						Close Wizard
 					</Button>
 				</DialogHeader>
-				<div className="flex flex-col gap-6">
-					<div className="flex flex-wrap gap-2">
-						{WIZARD_STEPS.map((step) => (
-							<Button
-								key={step}
-								type="button"
-								variant={step === activeStep ? "default" : "outline"}
-								onClick={() => goToStep(step)}
-								className="capitalize"
-							>
-								{STEP_METADATA[step].title}
-							</Button>
-						))}
+				<div className="space-y-6">
+					<div className="flex items-center justify-between">
+						<span className="font-medium text-sm uppercase tracking-wide text-muted-foreground">
+							{progressLabel ?? "QuickStart"}
+						</span>
+						{personaId ? (
+							<span className="rounded-full bg-primary/10 px-3 py-1 text-primary text-xs font-medium">
+								Persona:{" "}
+								{personaOptions.find((persona) => persona.id === personaId)
+									?.title ?? ""}
+							</span>
+						) : null}
 					</div>
-					<div className="space-y-4">
-						<div className="rounded-lg border bg-muted/30 p-6">
-							<h3 className="mb-2 text-xl font-semibold">{stepMeta.title}</h3>
-							<p className="text-muted-foreground text-sm leading-relaxed">
-								{stepMeta.description}
-							</p>
+					{activeStep === "persona" ? (
+						<PersonaStep
+							personas={personaOptions}
+							selectedPersonaId={personaId}
+							onSelect={handlePersonaSelect}
+						/>
+					) : null}
+					{activeStep === "goal" ? (
+						<GoalStep
+							goals={goalOptions}
+							selectedGoalId={goalId}
+							onSelect={handleGoalSelect}
+						/>
+					) : null}
+					{activeStep === "summary" ? (
+						<SummaryStep goal={selectedGoal} steps={summarySteps} />
+					) : null}
+					<div className="flex flex-col gap-3 border-t pt-4 sm:flex-row sm:items-center sm:justify-between">
+						<div className="text-muted-foreground text-sm">
+							{activeStep === "summary"
+								? "Follow the plan below in order—each card is ready when you close the wizard."
+								: "You can revisit previous steps at any time."}
 						</div>
-						<ActiveComponent />
+						<div className="flex items-center gap-3">
+							<Button
+								type="button"
+								variant="outline"
+								onClick={handleBack}
+								disabled={activeStep === QUICK_START_DEFAULT_STEP}
+							>
+								Back
+							</Button>
+							<Button
+								type="button"
+								onClick={handlePrimary}
+								disabled={primaryDisabled}
+							>
+								{primaryLabel}
+							</Button>
+						</div>
 					</div>
 				</div>
 			</DialogContent>

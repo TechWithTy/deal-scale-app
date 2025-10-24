@@ -3,15 +3,9 @@ import { create } from "zustand";
 import type { QuickStartWizardPreset } from "@/components/quickstart/types";
 import { useQuickStartWizardDataStore } from "./quickstartWizardData";
 
-export type QuickStartWizardStep =
-	| "lead-intake"
-	| "campaign-basics"
-	| "review"
-	| "test-and-launch"
-	| "lead-capture"
-	| "market-discovery";
+export type QuickStartWizardStep = "persona" | "goal" | "summary";
 
-export const QUICK_START_DEFAULT_STEP: QuickStartWizardStep = "lead-intake";
+export const QUICK_START_DEFAULT_STEP: QuickStartWizardStep = "persona";
 
 interface QuickStartWizardState {
 	readonly isOpen: boolean;
@@ -36,7 +30,14 @@ export const useQuickStartWizardStore = create<QuickStartWizardState>(
 	(set, get) => ({
 		...defaultState,
 		open: (preset) => {
-			const nextStep = preset?.startStep ?? QUICK_START_DEFAULT_STEP;
+			useQuickStartWizardDataStore.getState().applyPreset(preset);
+
+			const { personaId, goalId } = useQuickStartWizardDataStore.getState();
+			const nextStep: QuickStartWizardStep = goalId
+				? "summary"
+				: personaId
+					? "goal"
+					: QUICK_START_DEFAULT_STEP;
 
 			set({
 				isOpen: true,

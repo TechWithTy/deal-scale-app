@@ -75,7 +75,10 @@ export const secondaryQuickStartCards: readonly QuickStartCardDescriptor[] = [
 				className: outlineOrange,
 			}),
 		],
-		wizardPreset: { startStep: "lead-capture" },
+		wizardPreset: {
+			personaId: "agent",
+			goalId: "agent-expansion",
+		},
 		...orangeCardStyles,
 	},
 	{
@@ -116,7 +119,8 @@ export const secondaryQuickStartCards: readonly QuickStartCardDescriptor[] = [
 			}),
 		],
 		wizardPreset: {
-			startStep: "market-discovery",
+			personaId: "investor",
+			goalId: "investor-market",
 			templateId: "market-research",
 		},
 		...greenCardStyles,

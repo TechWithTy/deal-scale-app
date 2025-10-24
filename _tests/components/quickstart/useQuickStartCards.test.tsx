@@ -89,7 +89,10 @@ describe("useQuickStartCards", () => {
                         ]),
                 );
                 expect(importCard?.wizardPreset).toEqual(
-                        expect.objectContaining({ startStep: "lead-intake" }),
+                        expect.objectContaining({
+                                personaId: "investor",
+                                goalId: "investor-pipeline",
+                        }),
                 );
 
                 const wizardCard = cards.find((card) => card.key === "wizard");
@@ -159,7 +162,8 @@ describe("useQuickStartCards", () => {
                                                 icon: Plus,
                                                 featureChips: [],
                                                 wizardPreset: {
-                                                        startStep: "review",
+                                                        personaId: "investor",
+                                                        goalId: "investor-pipeline",
                                                         templateId: "template-beta",
                                                 },
                                                 actions: [
@@ -198,7 +202,8 @@ describe("useQuickStartCards", () => {
 
                 expect(cards[1]?.wizardPreset).toEqual(
                         expect.objectContaining({
-                                startStep: "review",
+                                personaId: "investor",
+                                goalId: "investor-pipeline",
                                 templateId: "template-beta",
                         }),
                 );
