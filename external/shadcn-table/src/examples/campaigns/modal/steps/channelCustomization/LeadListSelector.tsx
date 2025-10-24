@@ -14,8 +14,9 @@ import {
 	FormControl,
 	FormMessage,
 } from "../../../../../components/ui/form";
-import { useLeadListStore } from "@/lib/stores/leadList";
-import { LEAD_LISTS_MOCK } from "@/constants/dashboard/leadLists.mock";
+import { useLeadListStore } from "../../../../../lib/stores/leadList";
+import { useCampaignCreationStore } from "../../../../../lib/stores/campaignCreation";
+import { LEAD_LISTS_MOCK } from "../../../../../constants/leadLists.mock";
 
 interface LeadListSelectorProps {
 	value: string;
@@ -27,14 +28,15 @@ interface LeadListSelectorProps {
 }
 
 const LeadListSelector: FC<LeadListSelectorProps> = ({
-	value,
-	onChange,
-	disabled = false,
-	abTestingEnabled = false,
-	valueB = "",
-	onChangeB,
+        value,
+        onChange,
+        disabled = false,
+        abTestingEnabled = false,
+        valueB = "",
+        onChangeB,
 }) => {
-	const leadLists = useLeadListStore((state) => state.leadLists);
+        const leadLists = useLeadListStore((state) => state.leadLists);
+        const currentLeadCount = useCampaignCreationStore((state) => state.leadCount);
 
 	const storeItems = useMemo(
 		() =>
@@ -62,25 +64,33 @@ const LeadListSelector: FC<LeadListSelectorProps> = ({
 		for (const item of baseItems) {
 			map.set(item.id, item);
 		}
-		if (value && !map.has(value)) {
-			map.set(value, { id: value, listName: "Selected Lead List", records: 0 });
-		}
-		if (abTestingEnabled && valueB && !map.has(valueB)) {
-			map.set(valueB, { id: valueB, listName: "Selected Lead List", records: 0 });
-		}
-		return Array.from(map.values());
-	}, [baseItems, value, valueB, abTestingEnabled]);
+                if (value && !map.has(value)) {
+                        map.set(value, {
+                                id: value,
+                                listName: "Selected Lead List",
+                                records: currentLeadCount ?? 0,
+                        });
+                }
+                if (abTestingEnabled && valueB && !map.has(valueB)) {
+                        map.set(valueB, {
+                                id: valueB,
+                                listName: "Selected Lead List",
+                                records: currentLeadCount ?? 0,
+                        });
+                }
+                return Array.from(map.values());
+        }, [baseItems, value, valueB, abTestingEnabled, currentLeadCount]);
 
-	const handleValueChange = (selectedValue: string) => {
-		const selectedItem = options.find((item) => item.id === selectedValue);
-		onChange(selectedValue, selectedItem?.records ?? 0);
-	};
+        const handleValueChange = (selectedValue: string) => {
+                const selectedItem = options.find((item) => item.id === selectedValue);
+                onChange(selectedValue, selectedItem?.records ?? currentLeadCount ?? 0);
+        };
 
-	const handleValueChangeB = (selectedValue: string) => {
-		if (!onChangeB) return;
-		const selectedItem = options.find((item) => item.id === selectedValue);
-		onChangeB(selectedValue, selectedItem?.records ?? 0);
-	};
+        const handleValueChangeB = (selectedValue: string) => {
+                if (!onChangeB) return;
+                const selectedItem = options.find((item) => item.id === selectedValue);
+                onChangeB(selectedValue, selectedItem?.records ?? currentLeadCount ?? 0);
+        };
 
 	return (
 		<FormItem>

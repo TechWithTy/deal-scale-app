@@ -1,3 +1,5 @@
+"use client";
+
 import SessionSync from "@/components/auth/SessionSync";
 import Providers from "@/components/layout/providers";
 import { CommandPaletteProvider } from "external/action-bar";
