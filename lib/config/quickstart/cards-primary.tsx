@@ -10,6 +10,8 @@ import {
 	PlayCircle,
 } from "lucide-react";
 
+import { cn } from "@/lib/_utils";
+
 import {
 	handlerAction,
 	primaryCardStyles,
@@ -43,6 +45,10 @@ export const primaryQuickStartCards: readonly QuickStartCardDescriptor[] = [
 		],
 		wizardPreset: { startStep: "lead-intake", templateId: "lead-import" },
 		...primaryCardStyles,
+		cardClassName: cn(
+			primaryCardStyles.cardClassName,
+			"md:row-span-2 md:col-span-2 md:max-w-none xl:row-span-2",
+		),
 	},
 	{
 		id: "import",

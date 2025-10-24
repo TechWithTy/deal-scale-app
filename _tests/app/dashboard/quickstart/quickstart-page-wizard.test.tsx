@@ -9,6 +9,7 @@ import { useCampaignCreationStore } from "@/lib/stores/campaignCreation";
 import { useQuickStartWizardStore } from "@/lib/stores/quickstartWizard";
 
 (globalThis as Record<string, unknown>).React = React;
+(globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true;
 
 vi.mock("next/link", () => ({
         __esModule: true,
@@ -93,7 +94,7 @@ describe("QuickStartPage inline wizard", () => {
                 ).toBeDefined();
         });
 
-        it("opens the inline wizard with template presets when wizard card is clicked", () => {
+        it("opens the wizard modal with template presets when wizard card is clicked", () => {
                 render(<QuickStartPage />);
 
                 const [launchWizardButton] = screen.getAllByRole("button", {
@@ -104,7 +105,7 @@ describe("QuickStartPage inline wizard", () => {
                         fireEvent.click(launchWizardButton);
                 });
 
-                const wizard = screen.getAllByTestId("quickstart-wizard")[0];
+                const wizard = screen.getByRole("dialog", { name: /quickstart wizard/i });
                 const wizardQueries = within(wizard);
                 expect(wizard).toBeTruthy();
                 expect(wizard.textContent).toMatch(/lead intake/i);
@@ -132,12 +133,12 @@ describe("QuickStartPage inline wizard", () => {
                         fireEvent.click(importButton);
                 });
 
-                const wizard = screen.getAllByTestId("quickstart-wizard")[0];
-                const wizardQueries = within(wizard);
-                const [closeButton] = wizardQueries.getAllByRole("button", { name: /close wizard/i });
+                let wizard = screen.getByRole("dialog", { name: /quickstart wizard/i });
+                let wizardQueries = within(wizard);
+                const closeWizardButton = wizardQueries.getByRole("button", { name: /close wizard/i });
 
                 act(() => {
-                        fireEvent.click(closeButton);
+                        fireEvent.click(closeWizardButton);
                 });
 
                 const wizardState = useQuickStartWizardStore.getState();
@@ -146,6 +147,22 @@ describe("QuickStartPage inline wizard", () => {
 
                 const wizardDataState = useQuickStartWizardDataStore.getState();
                 expect(wizardDataState.targetMarkets).toHaveLength(0);
+
+                act(() => {
+                        fireEvent.click(importButton);
+                });
+
+                wizard = screen.getByRole("dialog", { name: /quickstart wizard/i });
+                wizardQueries = within(wizard);
+                const dialogCloseButton = wizardQueries.getByRole("button", { name: /^close$/i });
+
+                act(() => {
+                        fireEvent.click(dialogCloseButton);
+                });
+
+                expect(
+                        screen.queryByRole("dialog", { name: /quickstart wizard/i }),
+                ).toBeNull();
         });
 
         it("persists lead intake data when navigating between steps", () => {
@@ -159,7 +176,7 @@ describe("QuickStartPage inline wizard", () => {
                         fireEvent.click(launchWizardButton);
                 });
 
-                const wizard = screen.getAllByTestId("quickstart-wizard")[0];
+                const wizard = screen.getByRole("dialog", { name: /quickstart wizard/i });
                 const wizardQueries = within(wizard);
                 const leadIntakeStep = wizardQueries.getAllByTestId("lead-intake-step")[0];
                 const leadIntakeQueries = within(leadIntakeStep);
