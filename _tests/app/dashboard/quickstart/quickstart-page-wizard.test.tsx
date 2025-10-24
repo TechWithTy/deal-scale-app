@@ -65,11 +65,13 @@ vi.mock("@/components/quickstart/useQuickStartSavedSearches", () => ({
                 setSearchPriority: vi.fn(),
                 handleCloseSavedSearches: vi.fn(),
                 handleSelectSavedSearch: vi.fn(),
+                handleStartNewSearch: vi.fn(),
+                handleOpenSavedSearches: vi.fn(),
                 savedSearchModalOpen: false,
         }),
 }));
 
-describe("QuickStartPage inline wizard", () => {
+describe("QuickStartPage wizard modal", () => {
         beforeEach(() => {
                 act(() => {
                         useCampaignCreationStore.getState().reset();
@@ -85,7 +87,6 @@ describe("QuickStartPage inline wizard", () => {
                 expect(
                         screen.getByRole("heading", { name: /quick start/i, level: 1 }),
                 ).toBeDefined();
-
                 expect(
                         screen.getAllByRole("button", { name: /import from any source/i })[0],
                 ).toBeDefined();
@@ -94,7 +95,7 @@ describe("QuickStartPage inline wizard", () => {
                 ).toBeDefined();
         });
 
-        it("opens the wizard modal with template presets when wizard card is clicked", () => {
+        it("opens the wizard on the persona step when the guided card is selected", () => {
                 render(<QuickStartPage />);
 
                 const [launchWizardButton] = screen.getAllByRole("button", {
@@ -108,18 +109,77 @@ describe("QuickStartPage inline wizard", () => {
                 const wizard = screen.getByRole("dialog", { name: /quickstart wizard/i });
                 const wizardQueries = within(wizard);
                 expect(wizard).toBeTruthy();
-                expect(wizard.textContent).toMatch(/lead intake/i);
+                expect(wizardQueries.getByTestId("quickstart-persona-step")).toBeTruthy();
+                expect(wizard.textContent).toMatch(/step 1 of 3/i);
+
+                const wizardState = useQuickStartWizardStore.getState();
+                expect(wizardState.activeStep).toBe("persona");
+        });
+
+        it("applies presets and generates a summary plan when launched from a card", () => {
+                render(<QuickStartPage />);
+
+                const [launchWizardButton] = screen.getAllByRole("button", {
+                        name: /launch guided setup/i,
+                });
+
+                act(() => {
+                        fireEvent.click(launchWizardButton);
+                });
+
+                const wizard = screen.getByRole("dialog", { name: /quickstart wizard/i });
+                const wizardQueries = within(wizard);
+                expect(wizardQueries.getByTestId("quickstart-summary-step")).toBeTruthy();
+                expect(wizard.textContent).toMatch(/launch a seller pipeline/i);
+                expect(wizard.textContent).toMatch(/import & manage data/i);
+
+                const wizardState = useQuickStartWizardStore.getState();
+                expect(wizardState.activeStep).toBe("summary");
+
+                const dataState = useQuickStartWizardDataStore.getState();
+                expect(dataState.personaId).toBe("investor");
+                expect(dataState.goalId).toBe("investor-pipeline");
 
                 const campaignState = useCampaignCreationStore.getState();
                 expect(campaignState.campaignName).toContain("Lead Import");
+        });
 
-                const wizardState = useQuickStartWizardStore.getState();
-                expect(wizardState.activeStep).toBe("lead-intake");
-                expect(wizardState.activePreset?.templateId).toBe("lead-import");
+        it("lets users choose persona and goal before showing a summary", () => {
+                render(<QuickStartPage />);
 
-                expect(
-                        wizardQueries.getAllByTestId("lead-intake-step")[0].textContent,
-                ).toMatch(/upload csv/i);
+                const [launchWizardButton] = screen.getAllByRole("button", {
+                        name: /launch guided setup/i,
+                });
+
+                act(() => {
+                        fireEvent.click(launchWizardButton);
+                });
+
+                const wizard = screen.getByRole("dialog", { name: /quickstart wizard/i });
+                const wizardQueries = within(wizard);
+
+                const investorOption = wizardQueries.getByTestId(
+                        "quickstart-persona-option-investor",
+                );
+                act(() => {
+                        fireEvent.click(investorOption);
+                });
+
+                expect(wizardQueries.getByTestId("quickstart-goal-step")).toBeTruthy();
+
+                const pipelineOption = wizardQueries.getByTestId(
+                        "quickstart-goal-option-investor-pipeline",
+                );
+                act(() => {
+                        fireEvent.click(pipelineOption);
+                });
+
+                expect(wizardQueries.getByTestId("quickstart-summary-step")).toBeTruthy();
+                expect(wizard.textContent).toMatch(/pipe hot responses/i);
+
+                const dataState = useQuickStartWizardDataStore.getState();
+                expect(dataState.personaId).toBe("investor");
+                expect(dataState.goalId).toBe("investor-pipeline");
         });
 
         it("resets wizard state when closed", () => {
@@ -146,7 +206,8 @@ describe("QuickStartPage inline wizard", () => {
                 expect(wizardState.activeStep).toBe(QUICK_START_DEFAULT_STEP);
 
                 const wizardDataState = useQuickStartWizardDataStore.getState();
-                expect(wizardDataState.targetMarkets).toHaveLength(0);
+                expect(wizardDataState.personaId).toBeNull();
+                expect(wizardDataState.goalId).toBeNull();
 
                 act(() => {
                         fireEvent.click(importButton);
@@ -163,52 +224,5 @@ describe("QuickStartPage inline wizard", () => {
                 expect(
                         screen.queryByRole("dialog", { name: /quickstart wizard/i }),
                 ).toBeNull();
-        });
-
-        it("persists lead intake data when navigating between steps", () => {
-                render(<QuickStartPage />);
-
-                const [launchWizardButton] = screen.getAllByRole("button", {
-                        name: /launch guided setup/i,
-                });
-
-                act(() => {
-                        fireEvent.click(launchWizardButton);
-                });
-
-                const wizard = screen.getByRole("dialog", { name: /quickstart wizard/i });
-                const wizardQueries = within(wizard);
-                const leadIntakeStep = wizardQueries.getAllByTestId("lead-intake-step")[0];
-                const leadIntakeQueries = within(leadIntakeStep);
-                const [marketInput] = leadIntakeQueries.getAllByTestId("lead-intake-market-input");
-                act(() => {
-                        fireEvent.change(marketInput, { target: { value: "94107" } });
-                        fireEvent.keyDown(marketInput, { key: "Enter" });
-                });
-
-                expect(leadIntakeQueries.getAllByText("94107")[0]).toBeDefined();
-
-                const [basicsStepButton] = wizardQueries.getAllByRole("button", {
-                        name: /campaign basics/i,
-                });
-
-                act(() => {
-                        fireEvent.click(basicsStepButton);
-                });
-
-                expect(wizardQueries.getAllByTestId("campaign-basics-step")[0]).toBeTruthy();
-
-                const [leadIntakeStepButton] = wizardQueries.getAllByRole("button", {
-                        name: /lead intake/i,
-                });
-
-                act(() => {
-                        fireEvent.click(leadIntakeStepButton);
-                });
-
-                const leadIntakeStepReturn = wizardQueries.getAllByTestId("lead-intake-step")[0];
-                const leadIntakeReturnQueries = within(leadIntakeStepReturn);
-                expect(leadIntakeStepReturn).toBeTruthy();
-                expect(leadIntakeReturnQueries.getAllByText("94107")[0]).toBeDefined();
         });
 });

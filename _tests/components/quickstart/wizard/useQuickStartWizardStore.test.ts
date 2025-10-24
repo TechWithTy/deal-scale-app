@@ -35,14 +35,19 @@ describe("useQuickStartWizardStore", () => {
                 const store = useQuickStartWizardStore.getState();
 
                 act(() => {
-                        store.open({ startStep: "campaign-basics", templateId: "campaign-default" });
+                        store.open({
+                                personaId: "agent",
+                                goalId: "agent-sphere",
+                                templateId: "campaign-default",
+                        });
                 });
 
                 const nextState = useQuickStartWizardStore.getState();
                 expect(nextState.isOpen).toBe(true);
-                expect(nextState.activeStep).toBe("campaign-basics");
+                expect(nextState.activeStep).toBe("summary");
                 expect(nextState.activePreset).toEqual({
-                        startStep: "campaign-basics",
+                        personaId: "agent",
+                        goalId: "agent-sphere",
                         templateId: "campaign-default",
                 });
         });
@@ -51,8 +56,8 @@ describe("useQuickStartWizardStore", () => {
                 const store = useQuickStartWizardStore.getState();
 
                 act(() => {
-                        store.open({ startStep: "lead-intake" });
-                        store.goToStep("review");
+                        store.open();
+                        store.goToStep("goal");
                         store.close();
                 });
 
