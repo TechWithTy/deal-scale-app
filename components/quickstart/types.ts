@@ -1,6 +1,11 @@
 import type { LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
 
+import type {
+	QuickStartGoalId,
+	QuickStartPersonaId,
+} from "@/lib/config/quickstart/wizardFlows";
+
 export type QuickStartCardChipTone =
 	| "primary"
 	| "success"
@@ -23,7 +28,18 @@ export interface QuickStartActionConfig {
 }
 
 export interface QuickStartWizardPreset {
-	readonly startStep?: string;
+	/**
+	 * Optional persona to preselect when the wizard opens.
+	 * When paired with a goal id, the wizard jumps directly to the summary step.
+	 */
+	readonly personaId?: QuickStartPersonaId;
+	/**
+	 * Optional goal to prefill for the summary plan. Must match the persona when provided.
+	 */
+	readonly goalId?: QuickStartGoalId;
+	/**
+	 * Optional campaign template to apply to downstream stores when launching from a card.
+	 */
 	readonly templateId?: string;
 }
 

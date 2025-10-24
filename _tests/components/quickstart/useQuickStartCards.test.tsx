@@ -89,8 +89,16 @@ describe("useQuickStartCards", () => {
                         ]),
                 );
                 expect(importCard?.wizardPreset).toEqual(
-                        expect.objectContaining({ startStep: "lead-intake" }),
+                        expect.objectContaining({
+                                personaId: "investor",
+                                goalId: "investor-pipeline",
+                        }),
                 );
+
+                const wizardCard = cards.find((card) => card.key === "wizard");
+                expect(wizardCard).toBeDefined();
+                expect(wizardCard?.actions[0]?.label).toMatch(/launch guided setup/i);
+                expect(typeof wizardCard?.actions[0]?.onClick).toBe("function");
 
                 const campaignCard = cards.find((card) => card.key === "campaign");
                 expect(campaignCard?.featureChips).toEqual(
@@ -154,7 +162,8 @@ describe("useQuickStartCards", () => {
                                                 icon: Plus,
                                                 featureChips: [],
                                                 wizardPreset: {
-                                                        startStep: "review",
+                                                        personaId: "investor",
+                                                        goalId: "investor-pipeline",
                                                         templateId: "template-beta",
                                                 },
                                                 actions: [
@@ -193,7 +202,8 @@ describe("useQuickStartCards", () => {
 
                 expect(cards[1]?.wizardPreset).toEqual(
                         expect.objectContaining({
-                                startStep: "review",
+                                personaId: "investor",
+                                goalId: "investor-pipeline",
                                 templateId: "template-beta",
                         }),
                 );
