@@ -97,6 +97,8 @@ export default function QuickStartPage() {
 		handleCloseSavedSearches,
 		handleSelectSavedSearch,
 		savedSearchModalOpen,
+		handleStartNewSearch,
+		handleOpenSavedSearches,
 	} = useQuickStartSavedSearches();
 
 	const handleSelectList = useCallback(() => {
@@ -174,6 +176,17 @@ export default function QuickStartPage() {
 	const handleOpenWebhookModal = useCallback(
 		(stage: WebhookStage) => openWebhookModal(stage),
 		[openWebhookModal],
+	);
+
+	// Router push factory for card actions
+	const createRouterPush = useCallback(
+		(path: string) => () => router.push(path),
+		[router],
+	);
+
+	const handleBrowserExtension = useCallback(
+		() => toast.info("Browser extension coming soon!"),
+		[],
 	);
 
 	const handleWalkthroughOpen = useCallback(() => setShowHelpModal(true), []);
@@ -341,6 +354,19 @@ export default function QuickStartPage() {
 		() => setShowBulkSuiteModal(false),
 		[],
 	);
+
+	const cards = useQuickStartCards({
+		onImport: handleImportFromSource,
+		onSelectList: handleSelectList,
+		onConfigureConnections: handleConnectionSettings,
+		onCampaignCreate: handleCampaignCreation,
+		onViewTemplates: handleViewTemplates,
+		onOpenWebhookModal: handleOpenWebhookModal,
+		onBrowserExtension: handleBrowserExtension,
+		createRouterPush,
+		onStartNewSearch: handleStartNewSearch,
+		onOpenSavedSearches: handleOpenSavedSearches,
+	});
 
 	return (
 		<div className="container mx-auto px-4 py-8">
