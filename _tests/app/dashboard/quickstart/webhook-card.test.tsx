@@ -7,6 +7,8 @@ import QuickStartPage from "@/app/dashboard/quickstart/page";
 import { useModalStore } from "@/lib/stores/dashboard";
 import { useCampaignCreationStore } from "@/lib/stores/campaignCreation";
 
+(globalThis as Record<string, unknown>).React = React;
+
 vi.mock("@/components/reusables/modals/user/lead/LeadModalMain", () => ({
         __esModule: true,
         default: () => null,
@@ -27,6 +29,13 @@ vi.mock("@/components/leadsSearch/search/WalkthroughModal", () => ({
         default: () => null,
 }));
 
+const routerPushMock = vi.fn();
+
+vi.mock("next/navigation", () => ({
+        __esModule: true,
+        useRouter: () => ({ push: routerPushMock }),
+}));
+
 describe("QuickStartPage webhook setup card", () => {
         beforeEach(() => {
                 act(() => {
@@ -37,6 +46,7 @@ describe("QuickStartPage webhook setup card", () => {
                                 openWebhookModal: useModalStore.getState().openWebhookModal,
                         } as any);
                 });
+                routerPushMock.mockReset();
         });
 
         it("renders a card for webhook and feed setup", () => {
