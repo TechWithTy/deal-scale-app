@@ -1,3 +1,4 @@
+import React from "react";
 import { Database, Download, Home, List, Settings, Target } from "lucide-react";
 
 import {
