@@ -15,7 +15,7 @@ export type QuickStartActionHandlerKey =
 	| "onBrowserExtension"
 	| "onStartNewSearch"
 	| "onOpenSavedSearches"
-	| "onWizardStub";
+	| "onLaunchQuickStartFlow";
 
 export type QuickStartActionDescriptor =
 	| {

@@ -40,7 +40,7 @@ export const primaryQuickStartCards: readonly QuickStartCardDescriptor[] = [
 				id: "wizard-launch",
 				label: "Launch Guided Setup",
 				icon: PlayCircle,
-				handler: "onWizardStub",
+				handler: "onLaunchQuickStartFlow",
 			}),
 		],
 		wizardPreset: {},

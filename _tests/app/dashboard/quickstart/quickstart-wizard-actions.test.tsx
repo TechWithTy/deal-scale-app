@@ -1,5 +1,5 @@
 import React, { act } from "react";
-import { fireEvent, render, screen, within } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import QuickStartPage from "@/app/dashboard/quickstart/page";
@@ -84,6 +84,30 @@ describe("QuickStart wizard deferred actions", () => {
                 pushMock.mockReset();
         });
 
+        it("labels the summary CTA as 'Close wizard' when no follow-up action is queued", () => {
+                render(<QuickStartPage />);
+
+                act(() => {
+                        useQuickStartWizardStore.getState().open({
+                                personaId: "investor",
+                                goalId: "investor-pipeline",
+                                templateId: "lead-import",
+                        });
+                });
+
+                const wizard = screen.getByRole("dialog", { name: /quickstart wizard/i });
+                const wizardQueries = within(wizard);
+
+                const closeButtons = wizardQueries.getAllByRole("button", {
+                        name: /close wizard/i,
+                });
+
+                expect(closeButtons).toHaveLength(2);
+                const summaryButton = closeButtons[1];
+
+                expect(summaryButton.textContent ?? "").toMatch(/close wizard/i);
+        });
+
         it("defers wizard card actions until the plan is completed", () => {
                 render(<QuickStartPage />);
 
@@ -133,5 +157,55 @@ describe("QuickStart wizard deferred actions", () => {
 
                 expect(pushMock).not.toHaveBeenCalled();
                 expect(screen.queryByRole("dialog", { name: /quickstart wizard/i })).toBeNull();
+        });
+
+        it("relaunches the first guided plan step when the wizard is completed", async () => {
+                const fileClickSpy = vi
+                        .spyOn(HTMLInputElement.prototype, "click")
+                        .mockImplementation(() => {});
+
+                render(<QuickStartPage />);
+
+                const [launchGuidedButton] = screen.getAllByRole("button", {
+                        name: /launch guided setup/i,
+                });
+
+                act(() => {
+                        fireEvent.click(launchGuidedButton);
+                });
+
+                const wizard = screen.getByRole("dialog", { name: /quickstart wizard/i });
+                const wizardQueries = within(wizard);
+
+                act(() => {
+                        fireEvent.click(
+                                wizardQueries.getByTestId(
+                                        "quickstart-persona-option-lender",
+                                ),
+                        );
+                });
+
+                act(() => {
+                        fireEvent.click(
+                                wizardQueries.getByTestId(
+                                        "quickstart-goal-option-lender-fund-fast",
+                                ),
+                        );
+                });
+
+                const completeButton = wizardQueries.getByRole("button", {
+                        name: /close & start plan/i,
+                });
+
+                act(() => {
+                        fireEvent.click(completeButton);
+                });
+
+                await waitFor(() => {
+                        expect(screen.queryByRole("dialog", { name: /quickstart wizard/i })).toBeNull();
+                });
+
+                expect(fileClickSpy).toHaveBeenCalled();
+                fileClickSpy.mockRestore();
         });
 });

@@ -24,6 +24,7 @@ interface QuickStartCardViewModelParams {
 		preset: QuickStartWizardPreset | undefined,
 		action: () => void,
 	) => void;
+	readonly onLaunchQuickStartFlow: () => void;
 }
 
 const enhanceCard = (
@@ -80,6 +81,7 @@ export const useQuickStartCardViewModel = (
 		createRouterPush: params.createRouterPush,
 		onStartNewSearch: params.onStartNewSearch,
 		onOpenSavedSearches: params.onOpenSavedSearches,
+		onLaunchQuickStartFlow: params.onLaunchQuickStartFlow,
 	});
 
 	const { bulkCsvFile, bulkCsvHeaders, onLaunchWizard } = params;

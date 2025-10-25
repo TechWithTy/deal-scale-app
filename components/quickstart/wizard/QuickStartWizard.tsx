@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import { shallow } from "zustand/shallow";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -36,8 +37,26 @@ const STEP_ORDER: readonly QuickStartWizardStep[] = [
 ];
 
 const QuickStartWizard = () => {
-	const { isOpen, activeStep, activePreset, goToStep, cancel, complete } =
-		useQuickStartWizardStore();
+	const {
+		isOpen,
+		activeStep,
+		activePreset,
+		pendingAction,
+		goToStep,
+		cancel,
+		complete,
+	} = useQuickStartWizardStore(
+		(state) => ({
+			isOpen: state.isOpen,
+			activeStep: state.activeStep,
+			activePreset: state.activePreset,
+			pendingAction: state.pendingAction,
+			goToStep: state.goToStep,
+			cancel: state.cancel,
+			complete: state.complete,
+		}),
+		shallow,
+	);
 	const { personaId, goalId, selectPersona, selectGoal } =
 		useQuickStartWizardDataStore();
 
@@ -129,9 +148,12 @@ const QuickStartWizard = () => {
 		complete();
 	};
 
+	const hasPendingAction = Boolean(pendingAction);
 	const primaryLabel =
 		activeStep === "summary"
-			? "Close & start plan"
+			? hasPendingAction
+				? "Close & start plan"
+				: "Close wizard"
 			: activeStep === "goal"
 				? "Generate plan"
 				: "Continue";
