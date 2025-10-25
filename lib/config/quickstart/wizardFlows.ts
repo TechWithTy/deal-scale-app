@@ -1,4 +1,10 @@
-export type QuickStartPersonaId = "investor" | "wholesaler" | "agent";
+import type { QuickStartTemplateId } from "./templates";
+
+export type QuickStartPersonaId =
+	| "investor"
+	| "wholesaler"
+	| "lender"
+	| "agent";
 
 export interface QuickStartPersonaDefinition {
 	readonly id: QuickStartPersonaId;
@@ -13,7 +19,8 @@ export type QuickStartGoalId =
 	| "wholesaler-dispositions"
 	| "wholesaler-acquisitions"
 	| "agent-sphere"
-	| "agent-expansion";
+	| "agent-expansion"
+	| "lender-fund-fast";
 
 export interface QuickStartFlowStepDefinition {
 	readonly cardId: string;
@@ -27,6 +34,7 @@ export interface QuickStartGoalDefinition {
 	readonly description: string;
 	readonly outcome: string;
 	readonly flow: readonly QuickStartFlowStepDefinition[];
+	readonly templateId?: QuickStartTemplateId;
 }
 
 const PERSONAS: readonly QuickStartPersonaDefinition[] = [
@@ -45,6 +53,13 @@ const PERSONAS: readonly QuickStartPersonaDefinition[] = [
 			"Prioritize high-intent leads, prep them for disposition, and automate buyer follow-up sequences.",
 	},
 	{
+		id: "lender",
+		title: "Private Lender",
+		headline: "Keep capital deployed and approvals moving",
+		description:
+			"Route borrowers to the right team instantly and automate the follow-up that closes loans faster.",
+	},
+	{
 		id: "agent",
 		title: "Agent / Team",
 		headline: "Multiply your listing opportunities",
@@ -61,6 +76,7 @@ const GOALS: readonly QuickStartGoalDefinition[] = [
 		description:
 			"Bring in a fresh list, launch nurture, and sync results back to your systems.",
 		outcome: "A ready-to-run outreach play that accelerates new acquisitions.",
+		templateId: "lead-import",
 		flow: [
 			{
 				cardId: "import",
@@ -83,6 +99,7 @@ const GOALS: readonly QuickStartGoalDefinition[] = [
 		description:
 			"Model distressed segments, test messaging, and prep for scale.",
 		outcome: "Insights-backed lists and campaigns ready for launch.",
+		templateId: "market-research",
 		flow: [
 			{
 				cardId: "market-deals",
@@ -105,6 +122,7 @@ const GOALS: readonly QuickStartGoalDefinition[] = [
 		description:
 			"Prep marketing assets and notify premium buyers as soon as a deal is signed.",
 		outcome: "Qualified buyers queued with automation-ready messaging.",
+		templateId: "campaign-default",
 		flow: [
 			{
 				cardId: "import",
@@ -127,6 +145,7 @@ const GOALS: readonly QuickStartGoalDefinition[] = [
 		description:
 			"Find distressed opportunities, then capture and nurture sellers.",
 		outcome: "Seller conversations ready for assignment or contract.",
+		templateId: "campaign-default",
 		flow: [
 			{
 				cardId: "market-deals",
@@ -149,6 +168,7 @@ const GOALS: readonly QuickStartGoalDefinition[] = [
 		description:
 			"Segment homeowners, launch smart follow-up, and keep your pipeline warm.",
 		outcome: "Consistent conversations with clients likely to transact soon.",
+		templateId: "campaign-default",
 		flow: [
 			{
 				cardId: "market-deals",
@@ -171,6 +191,7 @@ const GOALS: readonly QuickStartGoalDefinition[] = [
 		description:
 			"Equip your team with tools that feed open house and web traffic directly into DealScale.",
 		outcome: "Automated lead capture feeding campaigns without manual imports.",
+		templateId: "campaign-default",
 		flow: [
 			{
 				cardId: "extension",
@@ -183,6 +204,30 @@ const GOALS: readonly QuickStartGoalDefinition[] = [
 			{
 				cardId: "control-data",
 				note: "Track campaign performance and export reports for your team.",
+			},
+		],
+	},
+	{
+		id: "lender-fund-fast",
+		personaId: "lender",
+		title: "Fund deals faster",
+		description:
+			"Stand up borrower intake flows, automate triage, and alert your capital partners without manual work.",
+		outcome:
+			"Automation routing keeps borrowers moving from intake to funding.",
+		templateId: "automation-routing",
+		flow: [
+			{
+				cardId: "import",
+				note: "Ingest borrower requests or referral partner uploads to seed your queue.",
+			},
+			{
+				cardId: "campaign",
+				note: "Launch nurture cadences that escalate hot borrowers to loan officers automatically.",
+			},
+			{
+				cardId: "webhooks",
+				note: "Sync approvals and stalled deals to downstream systems with event-driven routing.",
 			},
 		],
 	},

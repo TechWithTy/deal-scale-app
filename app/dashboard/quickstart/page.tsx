@@ -16,7 +16,9 @@ import { useQuickStartCardViewModel } from "@/components/quickstart/useQuickStar
 import { useQuickStartSavedSearches } from "@/components/quickstart/useQuickStartSavedSearches";
 import type { QuickStartWizardPreset } from "@/components/quickstart/types";
 import { applyQuickStartTemplatePreset } from "@/lib/config/quickstart/templates";
+import { getGoalDefinition } from "@/lib/config/quickstart/wizardFlows";
 import { useQuickStartWizardStore } from "@/lib/stores/quickstartWizard";
+import { useQuickStartWizardDataStore } from "@/lib/stores/quickstartWizardData";
 import { useCampaignCreationStore } from "@/lib/stores/campaignCreation";
 import { useModalStore } from "@/lib/stores/dashboard";
 import type { WebhookStage } from "@/lib/stores/dashboard";
@@ -64,14 +66,14 @@ export default function QuickStartPage() {
 		savedSearchModalOpen,
 	} = useQuickStartSavedSearches();
 
-	const triggerFileInput = () => {
+	const triggerFileInput = useCallback(() => {
 		fileInputRef.current?.click();
-	};
+	}, []);
 
-	const handleSelectList = () => {
+	const handleSelectList = useCallback(() => {
 		setLeadModalMode("select");
 		setShowLeadModal(true);
-	};
+	}, []);
 
 	const handleLaunchCampaign = useCallback(
 		({ leadListId, leadListName, leadCount }: QuickStartCampaignContext) => {
@@ -97,25 +99,32 @@ export default function QuickStartPage() {
 
 	const handleCloseLeadModal = () => setShowLeadModal(false);
 
-	const handleImportFromSource = () => {
+	const handleImportFromSource = useCallback(() => {
 		triggerFileInput();
-	};
+	}, [triggerFileInput]);
 
-	const handleConfigureConnections = () => {
+	const handleConfigureConnections = useCallback(() => {
 		router.push("/dashboard/integrations");
-	};
+	}, [router]);
 
-	const handleCampaignCreate = () => {
+	const handleCampaignCreate = useCallback(() => {
 		setShowCampaignModal(true);
-	};
+	}, []);
 
-	const handleViewTemplates = () => {
+	const handleViewTemplates = useCallback(() => {
 		router.push("/dashboard/campaigns/templates");
-	};
+	}, [router]);
 
-	const handleOpenWebhook = (stage: WebhookStage) => {
-		openWebhookModal(stage);
-	};
+	const handleOpenWebhook = useCallback(
+		(stage: WebhookStage) => {
+			openWebhookModal(stage);
+		},
+		[openWebhookModal],
+	);
+
+	const handleBrowserExtension = useCallback(() => {
+		router.push("/dashboard/extensions");
+	}, [router]);
 
 	const handleStartTour = () => setIsTourOpen(true);
 	const handleCloseTour = () => setIsTourOpen(false);
@@ -163,6 +172,46 @@ export default function QuickStartPage() {
 		[router],
 	);
 
+	const handleLaunchQuickStartFlow = useCallback(() => {
+		const { goalId } = useQuickStartWizardDataStore.getState();
+		if (!goalId) {
+			return;
+		}
+
+		const goalDefinition = getGoalDefinition(goalId);
+		if (!goalDefinition || goalDefinition.flow.length === 0) {
+			return;
+		}
+
+		const [firstStep] = goalDefinition.flow;
+		const launchers: Record<string, () => void> = {
+			import: handleImportFromSource,
+			campaign: handleCampaignCreate,
+			webhooks: () => handleOpenWebhook("incoming"),
+			"market-deals": handleStartNewSearch,
+			extension: handleBrowserExtension,
+		};
+
+		const launch = launchers[firstStep.cardId];
+
+		if (launch) {
+			launch();
+			return;
+		}
+
+		if (process.env.NODE_ENV !== "production") {
+			console.warn(
+				`[QuickStartPage] Missing launcher for QuickStart flow card "${firstStep.cardId}".`,
+			);
+		}
+	}, [
+		handleImportFromSource,
+		handleCampaignCreate,
+		handleOpenWebhook,
+		handleStartNewSearch,
+		handleBrowserExtension,
+	]);
+
 	const quickStartCards = useQuickStartCardViewModel({
 		bulkCsvFile,
 		bulkCsvHeaders,
@@ -172,11 +221,12 @@ export default function QuickStartPage() {
 		onCampaignCreate: handleCampaignCreate,
 		onViewTemplates: handleViewTemplates,
 		onOpenWebhookModal: handleOpenWebhook,
-		onBrowserExtension: () => router.push("/dashboard/extensions"),
+		onBrowserExtension: handleBrowserExtension,
 		createRouterPush,
 		onStartNewSearch: handleStartNewSearch,
 		onOpenSavedSearches: handleOpenSavedSearches,
 		onLaunchWizard: handleWizardLaunch,
+		onLaunchQuickStartFlow: handleLaunchQuickStartFlow,
 	});
 
 	return (

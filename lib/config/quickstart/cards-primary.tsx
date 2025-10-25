@@ -40,7 +40,7 @@ export const primaryQuickStartCards: readonly QuickStartCardDescriptor[] = [
 				id: "wizard-launch",
 				label: "Launch Guided Setup",
 				icon: PlayCircle,
-				handler: "onWizardStub",
+				handler: "onLaunchQuickStartFlow",
 			}),
 		],
 		wizardPreset: {},
@@ -178,8 +178,9 @@ export const primaryQuickStartCards: readonly QuickStartCardDescriptor[] = [
 			}),
 		],
 		wizardPreset: {
-			personaId: "agent",
-			goalId: "agent-sphere",
+			personaId: "lender",
+			goalId: "lender-fund-fast",
+			templateId: "automation-routing",
 		},
 	},
 ];
