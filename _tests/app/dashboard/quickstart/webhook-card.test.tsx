@@ -1,13 +1,16 @@
 import React from "react";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import { act } from "react-dom/test-utils";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import QuickStartPage from "@/app/dashboard/quickstart/page";
 import { useModalStore } from "@/lib/stores/dashboard";
+import { useQuickStartWizardStore } from "@/lib/stores/quickstartWizard";
+import { useQuickStartWizardDataStore } from "@/lib/stores/quickstartWizardData";
 import { useCampaignCreationStore } from "@/lib/stores/campaignCreation";
 
 (globalThis as Record<string, unknown>).React = React;
+(globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true;
 
 vi.mock("@/components/reusables/modals/user/lead/LeadModalMain", () => ({
         __esModule: true,
@@ -40,6 +43,8 @@ describe("QuickStartPage webhook setup card", () => {
         beforeEach(() => {
                 act(() => {
                         useCampaignCreationStore.getState().reset();
+                        useQuickStartWizardStore.getState().reset();
+                        useQuickStartWizardDataStore.getState().reset();
                         useModalStore.setState({
                                 isWebhookModalOpen: false,
                                 webhookModalDirection: "incoming",
@@ -64,7 +69,7 @@ describe("QuickStartPage webhook setup card", () => {
                 ).toBeDefined();
         });
 
-        it("opens the webhook modal with the requested direction when clicking quick actions", () => {
+        it("defers incoming webhook setup until the plan is confirmed", async () => {
                 const openWebhookModalMock = vi.fn();
 
                 act(() => {
@@ -79,14 +84,22 @@ describe("QuickStartPage webhook setup card", () => {
                         name: /setup incoming/i,
                 });
 
-                fireEvent.click(incomingQuickAction);
-                expect(openWebhookModalMock).toHaveBeenCalledWith("incoming");
+                act(() => {
+                        fireEvent.click(incomingQuickAction);
+                });
+                expect(openWebhookModalMock).not.toHaveBeenCalled();
 
-                const [outgoingQuickAction] = screen.getAllByRole("button", {
-                        name: /setup outgoing/i,
+                let wizard = await screen.findByRole("dialog", { name: /quickstart wizard/i });
+                let wizardQueries = within(wizard);
+
+                const completeButton = wizardQueries.getByRole("button", {
+                        name: /close & start plan/i,
                 });
 
-                fireEvent.click(outgoingQuickAction);
-                expect(openWebhookModalMock).toHaveBeenLastCalledWith("outgoing");
+                act(() => {
+                        fireEvent.click(completeButton);
+                });
+
+                expect(openWebhookModalMock).toHaveBeenCalledWith("incoming");
         });
 });
