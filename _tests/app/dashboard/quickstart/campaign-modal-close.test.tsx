@@ -6,8 +6,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import QuickStartPage from "@/app/dashboard/quickstart/page";
 import { useCampaignCreationStore } from "@/lib/stores/campaignCreation";
 
+(globalThis as Record<string, unknown>).React = React;
+(globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true;
+
 const onOpenChangeRef: {
-	current: ((open: boolean) => void) | null;
+        current: ((open: boolean) => void) | null;
 } = { current: null };
 
 const onCampaignLaunchedRef: {

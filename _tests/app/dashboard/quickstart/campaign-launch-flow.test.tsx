@@ -15,8 +15,9 @@ import { useCampaignRowFocus } from "@/components/campaigns/utils/useCampaignRow
 import { useCampaignStore } from "@/lib/stores/campaigns";
 import { createLaunchCampaign } from "@/tests/dashboard/campaigns/helpers/campaignFactories";
 
+(globalThis as Record<string, unknown>).React = React;
+(globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true;
 const routerPushMock = vi.fn();
-
 const LAUNCHED_CAMPAIGN_ID = "campaign-launch-integration";
 const LAUNCHED_CHANNEL = "call";
 

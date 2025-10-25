@@ -1,5 +1,5 @@
 import { act } from "@testing-library/react";
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
         QUICK_START_DEFAULT_STEP,
@@ -65,5 +65,46 @@ describe("useQuickStartWizardStore", () => {
                 expect(nextState.isOpen).toBe(false);
                 expect(nextState.activeStep).toBe(QUICK_START_DEFAULT_STEP);
                 expect(nextState.activePreset).toBeNull();
+                expect(nextState.pendingAction).toBeNull();
+        });
+
+        it("queues a pending action when launching with an action", () => {
+                const store = useQuickStartWizardStore.getState();
+                const action = vi.fn();
+
+                act(() => {
+                        store.launchWithAction({ personaId: "agent" }, action);
+                });
+
+                const nextState = useQuickStartWizardStore.getState();
+                expect(nextState.isOpen).toBe(true);
+                expect(nextState.pendingAction).toBe(action);
+                expect(action).not.toHaveBeenCalled();
+
+                act(() => {
+                        store.complete();
+                });
+
+                expect(action).toHaveBeenCalledTimes(1);
+
+                const finalState = useQuickStartWizardStore.getState();
+                expect(finalState.isOpen).toBe(false);
+                expect(finalState.pendingAction).toBeNull();
+        });
+
+        it("cancels any pending action when cancel is invoked", () => {
+                const store = useQuickStartWizardStore.getState();
+                const action = vi.fn();
+
+                act(() => {
+                        store.launchWithAction({ personaId: "agent" }, action);
+                        store.cancel();
+                });
+
+                expect(action).not.toHaveBeenCalled();
+
+                const nextState = useQuickStartWizardStore.getState();
+                expect(nextState.isOpen).toBe(false);
+                expect(nextState.pendingAction).toBeNull();
         });
 });
