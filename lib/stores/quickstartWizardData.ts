@@ -1,6 +1,7 @@
 import { create } from "zustand";
 
 import type { QuickStartWizardPreset } from "@/components/quickstart/types";
+import { captureQuickStartEvent } from "@/lib/analytics/quickstart";
 import {
 	getGoalDefinition,
 	getGoalsForPersona,
@@ -23,9 +24,10 @@ const createInitialState = () => ({
 });
 
 export const useQuickStartWizardDataStore = create<QuickStartWizardDataState>(
-	(set) => ({
+	(set, get) => ({
 		...createInitialState(),
-		selectPersona: (personaId) =>
+		selectPersona: (personaId) => {
+			const previousState = get();
 			set((state) => {
 				if (state.goalId) {
 					const definition = getGoalDefinition(state.goalId);
@@ -35,8 +37,18 @@ export const useQuickStartWizardDataStore = create<QuickStartWizardDataState>(
 				}
 
 				return { personaId, goalId: null };
-			}),
-		selectGoal: (goalId) =>
+			});
+
+			const { goalId } = get();
+			captureQuickStartEvent("quickstart_persona_selected", {
+				personaId,
+				goalId,
+				previousPersonaId: previousState.personaId,
+				previousGoalId: previousState.goalId,
+			});
+		},
+		selectGoal: (goalId) => {
+			const previousState = get();
 			set(() => {
 				const definition = getGoalDefinition(goalId);
 				if (!definition) {
@@ -47,7 +59,19 @@ export const useQuickStartWizardDataStore = create<QuickStartWizardDataState>(
 					personaId: definition.personaId,
 					goalId: definition.id,
 				};
-			}),
+			});
+
+			const nextState = get();
+			if (!nextState.goalId) {
+				return;
+			}
+
+			captureQuickStartEvent("quickstart_goal_selected", {
+				personaId: nextState.personaId,
+				goalId: nextState.goalId,
+				previousGoalId: previousState.goalId,
+			});
+		},
 		applyPreset: (preset) =>
 			set(() => {
 				if (!preset) {
