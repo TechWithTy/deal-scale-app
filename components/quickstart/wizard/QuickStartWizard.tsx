@@ -41,11 +41,12 @@ const QuickStartWizard = () => {
 	const { personaId, goalId, selectPersona, selectGoal } =
 		useQuickStartWizardDataStore();
 
-	const template =
-		activePreset?.templateId && getQuickStartTemplate(activePreset.templateId);
 	const personaOptions = quickStartPersonas;
 	const goalOptions = personaId ? getGoalsForPersona(personaId) : [];
 	const selectedGoal = goalId ? getGoalDefinition(goalId) : null;
+	const templateId =
+		activePreset?.templateId ?? selectedGoal?.templateId ?? null;
+	const template = templateId ? getQuickStartTemplate(templateId) : null;
 
 	const cardDescriptorById = useMemo(() => {
 		const entries = quickStartCardDescriptors.map(
@@ -192,7 +193,11 @@ const QuickStartWizard = () => {
 						/>
 					) : null}
 					{activeStep === "summary" ? (
-						<SummaryStep goal={selectedGoal} steps={summarySteps} />
+						<SummaryStep
+							goal={selectedGoal}
+							steps={summarySteps}
+							template={template}
+						/>
 					) : null}
 					<div className="flex flex-col gap-3 border-t pt-4 sm:flex-row sm:items-center sm:justify-between">
 						<div className="text-muted-foreground text-sm">

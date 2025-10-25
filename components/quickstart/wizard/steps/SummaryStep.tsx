@@ -4,6 +4,7 @@ import type {
 	QuickStartGoalDefinition,
 	QuickStartFlowStepDefinition,
 } from "@/lib/config/quickstart/wizardFlows";
+import type { QuickStartTemplateDefinition } from "@/lib/config/quickstart/templates";
 
 interface SummaryStepProps {
 	readonly goal: QuickStartGoalDefinition | null;
@@ -11,9 +12,10 @@ interface SummaryStepProps {
 		readonly title: string;
 		readonly description: string;
 	})[];
+	readonly template: QuickStartTemplateDefinition | null;
 }
 
-const SummaryStep: FC<SummaryStepProps> = ({ goal, steps }) => {
+const SummaryStep: FC<SummaryStepProps> = ({ goal, steps, template }) => {
 	if (!goal) {
 		return (
 			<div className="space-y-4" data-testid="quickstart-summary-step">
@@ -53,6 +55,19 @@ const SummaryStep: FC<SummaryStepProps> = ({ goal, steps }) => {
 					</li>
 				))}
 			</ol>
+			{template ? (
+				<div
+					className="rounded-lg border bg-muted/10 p-4 space-y-2"
+					data-testid="quickstart-summary-template"
+				>
+					<h4 className="font-semibold text-lg">{template.summary.headline}</h4>
+					<ul className="list-disc pl-5 space-y-1 text-muted-foreground text-sm">
+						{template.summary.bullets.map((bullet) => (
+							<li key={bullet}>{bullet}</li>
+						))}
+					</ul>
+				</div>
+			) : null}
 		</div>
 	);
 };
