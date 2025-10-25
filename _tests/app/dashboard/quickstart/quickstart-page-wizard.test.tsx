@@ -120,7 +120,7 @@ describe("QuickStartPage wizard modal", () => {
                 render(<QuickStartPage />);
 
                 const [launchWizardButton] = screen.getAllByRole("button", {
-                        name: /launch guided setup/i,
+                        name: /import from any source/i,
                 });
 
                 act(() => {
@@ -225,4 +225,5 @@ describe("QuickStartPage wizard modal", () => {
                         screen.queryByRole("dialog", { name: /quickstart wizard/i }),
                 ).toBeNull();
         });
+
 });

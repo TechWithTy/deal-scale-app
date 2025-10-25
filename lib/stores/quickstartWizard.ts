@@ -11,8 +11,15 @@ interface QuickStartWizardState {
 	readonly isOpen: boolean;
 	readonly activeStep: QuickStartWizardStep;
 	readonly activePreset: QuickStartWizardPreset | null;
+	readonly pendingAction: (() => void) | null;
 	readonly open: (preset?: QuickStartWizardPreset) => void;
+	readonly launchWithAction: (
+		preset: QuickStartWizardPreset | undefined,
+		action: () => void,
+	) => void;
+	readonly cancel: () => void;
 	readonly close: () => void;
+	readonly complete: () => void;
 	readonly goToStep: (step: QuickStartWizardStep) => void;
 	readonly reset: () => void;
 }
@@ -21,9 +28,10 @@ const defaultState = {
 	isOpen: false,
 	activeStep: QUICK_START_DEFAULT_STEP,
 	activePreset: null,
+	pendingAction: null,
 } satisfies Pick<
 	QuickStartWizardState,
-	"isOpen" | "activeStep" | "activePreset"
+	"isOpen" | "activeStep" | "activePreset" | "pendingAction"
 >;
 
 export const useQuickStartWizardStore = create<QuickStartWizardState>(
@@ -45,9 +53,25 @@ export const useQuickStartWizardStore = create<QuickStartWizardState>(
 				activePreset: preset ?? null,
 			});
 		},
-		close: () => {
+		launchWithAction: (preset, action) => {
+			set({ pendingAction: action });
+			get().open(preset);
+		},
+		cancel: () => {
 			useQuickStartWizardDataStore.getState().reset();
 			set({ ...defaultState });
+		},
+		close: () => {
+			get().cancel();
+		},
+		complete: () => {
+			const pendingAction = get().pendingAction;
+
+			get().cancel();
+
+			if (pendingAction) {
+				pendingAction();
+			}
 		},
 		goToStep: (step) => {
 			if (!get().isOpen) {
