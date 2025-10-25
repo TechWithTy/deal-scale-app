@@ -1,6 +1,7 @@
 import { create } from "zustand";
 
 import type { QuickStartWizardPreset } from "@/components/quickstart/types";
+import { captureQuickStartEvent } from "@/lib/analytics/quickstart";
 import { useQuickStartWizardDataStore } from "./quickstartWizardData";
 
 export type QuickStartWizardStep = "persona" | "goal" | "summary";
@@ -58,6 +59,17 @@ export const useQuickStartWizardStore = create<QuickStartWizardState>(
 			get().open(preset);
 		},
 		cancel: () => {
+			const stateBeforeCancel = get();
+			const dataState = useQuickStartWizardDataStore.getState();
+
+			captureQuickStartEvent("quickstart_wizard_cancelled", {
+				step: stateBeforeCancel.activeStep,
+				personaId: dataState.personaId,
+				goalId: dataState.goalId,
+				templateId: stateBeforeCancel.activePreset?.templateId ?? null,
+				pendingAction: Boolean(stateBeforeCancel.pendingAction),
+			});
+
 			useQuickStartWizardDataStore.getState().reset();
 			set({ ...defaultState });
 		},
@@ -65,9 +77,19 @@ export const useQuickStartWizardStore = create<QuickStartWizardState>(
 			get().cancel();
 		},
 		complete: () => {
-			const pendingAction = get().pendingAction;
+			const stateBeforeComplete = get();
+			const dataState = useQuickStartWizardDataStore.getState();
+			const pendingAction = stateBeforeComplete.pendingAction;
 
-			get().cancel();
+			captureQuickStartEvent("quickstart_plan_completed", {
+				personaId: dataState.personaId,
+				goalId: dataState.goalId,
+				templateId: stateBeforeComplete.activePreset?.templateId ?? null,
+				triggeredAction: pendingAction ? "launchWithAction" : "complete",
+			});
+
+			useQuickStartWizardDataStore.getState().reset();
+			set({ ...defaultState });
 
 			if (pendingAction) {
 				pendingAction();
