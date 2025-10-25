@@ -91,8 +91,12 @@ export const useQuickStartWizardStore = create<QuickStartWizardState>(
 			useQuickStartWizardDataStore.getState().reset();
 			set({ ...defaultState });
 
-			if (pendingAction) {
-				pendingAction();
+			try {
+				if (pendingAction) {
+					pendingAction();
+				}
+			} finally {
+				dataStore.reset();
 			}
 		},
 		goToStep: (step) => {
