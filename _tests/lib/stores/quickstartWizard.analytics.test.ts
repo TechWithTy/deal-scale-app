@@ -103,5 +103,9 @@ describe("QuickStart analytics instrumentation", () => {
                         }),
                 );
                 expect(pending).toHaveBeenCalledTimes(1);
+                expect(useQuickStartWizardDataStore.getState()).toMatchObject({
+                        personaId: null,
+                        goalId: null,
+                });
         });
 });
