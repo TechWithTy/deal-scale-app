@@ -80,6 +80,7 @@ export const useQuickStartWizardStore = create<QuickStartWizardState>(
 			const stateBeforeComplete = get();
 			const dataState = useQuickStartWizardDataStore.getState();
 			const pendingAction = stateBeforeComplete.pendingAction;
+			const resetWizardData = dataState.reset;
 
 			captureQuickStartEvent("quickstart_plan_completed", {
 				personaId: dataState.personaId,
@@ -88,7 +89,6 @@ export const useQuickStartWizardStore = create<QuickStartWizardState>(
 				triggeredAction: pendingAction ? "launchWithAction" : "complete",
 			});
 
-			useQuickStartWizardDataStore.getState().reset();
 			set({ ...defaultState });
 
 			try {
@@ -96,7 +96,7 @@ export const useQuickStartWizardStore = create<QuickStartWizardState>(
 					pendingAction();
 				}
 			} finally {
-				dataStore.reset();
+				resetWizardData();
 			}
 		},
 		goToStep: (step) => {
