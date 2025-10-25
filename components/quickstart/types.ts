@@ -5,6 +5,7 @@ import type {
 	QuickStartGoalId,
 	QuickStartPersonaId,
 } from "@/lib/config/quickstart/wizardFlows";
+import type { QuickStartTemplateId } from "@/lib/config/quickstart/templates";
 
 export type QuickStartCardChipTone =
 	| "primary"
@@ -40,7 +41,7 @@ export interface QuickStartWizardPreset {
 	/**
 	 * Optional campaign template to apply to downstream stores when launching from a card.
 	 */
-	readonly templateId?: string;
+	readonly templateId?: QuickStartTemplateId;
 }
 
 export interface QuickStartCardConfig {

@@ -22,6 +22,7 @@ interface UseQuickStartCardsParams {
 	readonly createRouterPush: (path: string) => () => void;
 	readonly onStartNewSearch: () => void;
 	readonly onOpenSavedSearches: () => void;
+	readonly onLaunchQuickStartFlow: () => void;
 }
 
 const sortDescriptors = (descriptors: readonly QuickStartCardDescriptor[]) =>
@@ -54,6 +55,7 @@ export const useQuickStartCards = ({
 	createRouterPush,
 	onStartNewSearch,
 	onOpenSavedSearches,
+	onLaunchQuickStartFlow,
 }: UseQuickStartCardsParams) =>
 	useMemo<QuickStartCardConfig[]>(() => {
 		const handlerMap: Record<QuickStartActionHandlerKey, () => void> = {
@@ -65,7 +67,7 @@ export const useQuickStartCards = ({
 			onBrowserExtension,
 			onStartNewSearch,
 			onOpenSavedSearches,
-			onWizardStub: () => {},
+			onLaunchQuickStartFlow,
 		};
 
 		const resolveAction = (descriptor: QuickStartActionDescriptor) => {
@@ -122,4 +124,5 @@ export const useQuickStartCards = ({
 		createRouterPush,
 		onStartNewSearch,
 		onOpenSavedSearches,
+		onLaunchQuickStartFlow,
 	]);

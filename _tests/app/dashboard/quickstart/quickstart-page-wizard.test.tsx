@@ -182,6 +182,50 @@ describe("QuickStartPage wizard modal", () => {
                 expect(dataState.goalId).toBe("investor-pipeline");
         });
 
+        it("supports lender personas with an automation-focused goal", () => {
+                render(<QuickStartPage />);
+
+                const [launchWizardButton] = screen.getAllByRole("button", {
+                        name: /launch guided setup/i,
+                });
+
+                act(() => {
+                        fireEvent.click(launchWizardButton);
+                });
+
+                const wizard = screen.getByRole("dialog", { name: /quickstart wizard/i });
+                const wizardQueries = within(wizard);
+
+                const lenderOption = wizardQueries.getByTestId(
+                        "quickstart-persona-option-lender",
+                );
+                act(() => {
+                        fireEvent.click(lenderOption);
+                });
+
+                const goalStep = wizardQueries.getByTestId("quickstart-goal-step");
+                expect(goalStep).toBeTruthy();
+                within(goalStep).getByTestId("quickstart-goal-option-lender-fund-fast");
+
+                act(() => {
+                        fireEvent.click(
+                                within(goalStep).getByTestId(
+                                        "quickstart-goal-option-lender-fund-fast",
+                                ),
+                        );
+                });
+
+                const summary = wizardQueries.getByTestId("quickstart-summary-step");
+                expect(summary.textContent).toMatch(/automation routing keeps borrowers moving/i);
+                expect(
+                        within(summary).getByTestId("quickstart-summary-template"),
+                ).toBeDefined();
+
+                const dataState = useQuickStartWizardDataStore.getState();
+                expect(dataState.personaId).toBe("lender");
+                expect(dataState.goalId).toBe("lender-fund-fast");
+        });
+
         it("resets wizard state when closed", () => {
                 render(<QuickStartPage />);
 
