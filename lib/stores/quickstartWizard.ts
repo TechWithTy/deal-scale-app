@@ -78,16 +78,17 @@ export const useQuickStartWizardStore = create<QuickStartWizardState>(
 		},
 		complete: () => {
 			const stateBeforeComplete = get();
-			const dataStore = useQuickStartWizardDataStore.getState();
+			const dataState = useQuickStartWizardDataStore.getState();
 			const pendingAction = stateBeforeComplete.pendingAction;
 
 			captureQuickStartEvent("quickstart_plan_completed", {
-				personaId: dataStore.personaId,
-				goalId: dataStore.goalId,
+				personaId: dataState.personaId,
+				goalId: dataState.goalId,
 				templateId: stateBeforeComplete.activePreset?.templateId ?? null,
 				triggeredAction: pendingAction ? "launchWithAction" : "complete",
 			});
 
+			useQuickStartWizardDataStore.getState().reset();
 			set({ ...defaultState });
 
 			try {
