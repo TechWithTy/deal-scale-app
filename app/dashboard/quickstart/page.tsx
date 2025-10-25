@@ -44,7 +44,13 @@ export default function QuickStartPage() {
 	const logQuickStartDebug = () => {};
 
 	const openWebhookModal = useModalStore((state) => state.openWebhookModal);
-	const openWizard = useQuickStartWizardStore((state) => state.open);
+	const { open: openWizard, launchWithAction } = useQuickStartWizardStore(
+		(state) => ({
+			open: state.open,
+			launchWithAction: state.launchWithAction,
+		}),
+		shallow,
+	);
 	const campaignStore = useCampaignCreationStore();
 
 	const {
@@ -140,14 +146,14 @@ export default function QuickStartPage() {
 	// Removed legacy modal auto-reset effect block referencing undefined refs
 
 	const handleWizardLaunch = useCallback(
-		(preset?: QuickStartWizardPreset) => {
+		(preset: QuickStartWizardPreset | undefined, action: () => void) => {
 			campaignStore.reset();
 			if (preset?.templateId) {
 				applyQuickStartTemplatePreset(preset.templateId, campaignStore);
 			}
-			openWizard(preset);
+			launchWithAction(preset, action);
 		},
-		[campaignStore, openWizard],
+		[campaignStore, launchWithAction],
 	);
 
 	const createRouterPush = useCallback(

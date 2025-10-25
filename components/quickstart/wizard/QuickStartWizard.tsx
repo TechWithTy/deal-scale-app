@@ -36,7 +36,7 @@ const STEP_ORDER: readonly QuickStartWizardStep[] = [
 ];
 
 const QuickStartWizard = () => {
-	const { isOpen, activeStep, activePreset, goToStep, close } =
+	const { isOpen, activeStep, activePreset, goToStep, cancel, complete } =
 		useQuickStartWizardStore();
 	const { personaId, goalId, selectPersona, selectGoal } =
 		useQuickStartWizardDataStore();
@@ -125,7 +125,7 @@ const QuickStartWizard = () => {
 			return;
 		}
 
-		close();
+		complete();
 	};
 
 	const primaryLabel =
@@ -143,7 +143,7 @@ const QuickStartWizard = () => {
 			open={isOpen}
 			onOpenChange={(open) => {
 				if (!open) {
-					close();
+					cancel();
 				}
 			}}
 		>
@@ -160,7 +160,7 @@ const QuickStartWizard = () => {
 								: "We’ll guide you through the exact cards to launch your workflow."}
 						</DialogDescription>
 					</div>
-					<Button type="button" variant="ghost" onClick={close}>
+					<Button type="button" variant="ghost" onClick={cancel}>
 						Close Wizard
 					</Button>
 				</DialogHeader>

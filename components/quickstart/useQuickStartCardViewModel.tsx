@@ -20,14 +20,20 @@ interface QuickStartCardViewModelParams {
 	readonly createRouterPush: (path: string) => () => void;
 	readonly onStartNewSearch: () => void;
 	readonly onOpenSavedSearches: () => void;
-	readonly onLaunchWizard: (preset?: QuickStartWizardPreset) => void;
+	readonly onLaunchWizard: (
+		preset: QuickStartWizardPreset | undefined,
+		action: () => void,
+	) => void;
 }
 
 const enhanceCard = (
 	card: QuickStartCardConfig,
 	bulkCsvFile: File | null,
 	bulkCsvHeaders: readonly string[],
-	onLaunchWizard: (preset?: QuickStartWizardPreset) => void,
+	onLaunchWizard: (
+		preset: QuickStartWizardPreset | undefined,
+		action: () => void,
+	) => void,
 ): QuickStartCardConfig => {
 	const footer =
 		card.key === "import" && bulkCsvFile ? (
@@ -52,8 +58,7 @@ const enhanceCard = (
 		return {
 			...action,
 			onClick: () => {
-				onLaunchWizard(card.wizardPreset);
-				action.onClick();
+				onLaunchWizard(card.wizardPreset, action.onClick);
 			},
 		};
 	});
