@@ -3,6 +3,7 @@ import { create } from "zustand";
 import type { QuickStartWizardPreset } from "@/components/quickstart/types";
 import { captureQuickStartEvent } from "@/lib/analytics/quickstart";
 import { useQuickStartWizardDataStore } from "./quickstartWizardData";
+import { useQuickStartWizardExperienceStore } from "./quickstartWizardExperience";
 
 export type QuickStartWizardStep = "persona" | "goal" | "summary";
 
@@ -70,6 +71,7 @@ export const useQuickStartWizardStore = create<QuickStartWizardState>(
 				pendingAction: Boolean(stateBeforeCancel.pendingAction),
 			});
 
+			useQuickStartWizardExperienceStore.getState().markWizardSeen();
 			useQuickStartWizardDataStore.getState().reset();
 			set({ ...defaultState });
 		},
@@ -96,6 +98,7 @@ export const useQuickStartWizardStore = create<QuickStartWizardState>(
 					pendingAction();
 				}
 			} finally {
+				useQuickStartWizardExperienceStore.getState().markWizardSeen();
 				resetWizardData();
 			}
 		},
