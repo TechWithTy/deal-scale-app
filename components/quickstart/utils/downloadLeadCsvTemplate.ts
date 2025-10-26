@@ -1,0 +1,71 @@
+import {
+	LEAD_CSV_TEMPLATE_EXAMPLE_ROW,
+	LEAD_CSV_TEMPLATE_HEADERS,
+} from "@/lib/config/leads/csvTemplateConfig";
+import {
+	getGoalDefinition,
+	getPersonaDefinition,
+	type QuickStartGoalId,
+	type QuickStartPersonaId,
+} from "@/lib/config/quickstart/wizardFlows";
+
+export interface DownloadLeadCsvTemplateOptions {
+	readonly personaId?: QuickStartPersonaId | null;
+	readonly goalId?: QuickStartGoalId | null;
+	readonly filenamePrefix?: string;
+}
+
+const quote = (value: string) => `"${value.replace(/"/g, '""')}"`;
+
+const slugify = (value: string) =>
+	value
+		.toLowerCase()
+		.replace(/[^a-z0-9]+/g, "-")
+		.replace(/^-+|-+$/g, "");
+
+export const buildLeadCsvTemplateCsv = () => {
+	const headerRow = LEAD_CSV_TEMPLATE_HEADERS.map(quote).join(",");
+	const exampleRow = LEAD_CSV_TEMPLATE_EXAMPLE_ROW.map(quote).join(",");
+	return `${headerRow}\n${exampleRow}\n`;
+};
+
+export const buildLeadCsvTemplateFilename = (
+	options: DownloadLeadCsvTemplateOptions = {},
+) => {
+	const segments: string[] = [
+		options.filenamePrefix ?? "deal-scale",
+		"sample-leads",
+	];
+
+	if (options.personaId) {
+		const personaTitle = getPersonaDefinition(options.personaId)?.title;
+		if (personaTitle) segments.push(slugify(personaTitle));
+	}
+
+	if (options.goalId) {
+		const goalTitle = getGoalDefinition(options.goalId)?.title;
+		if (goalTitle) segments.push(slugify(goalTitle));
+	}
+
+	return `${segments.filter(Boolean).join("-")}.csv`;
+};
+
+export const downloadLeadCsvTemplate = (
+	options: DownloadLeadCsvTemplateOptions = {},
+) => {
+	const csvContent = buildLeadCsvTemplateCsv();
+	const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8" });
+	const blobUrl = URL.createObjectURL(blob);
+	const anchor = document.createElement("a");
+	anchor.href = blobUrl;
+	anchor.download = buildLeadCsvTemplateFilename(options);
+	anchor.style.display = "none";
+
+	document.body.appendChild(anchor);
+	try {
+		anchor.click();
+	} finally {
+		document.body.removeChild(anchor);
+		URL.revokeObjectURL(blobUrl);
+	}
+};

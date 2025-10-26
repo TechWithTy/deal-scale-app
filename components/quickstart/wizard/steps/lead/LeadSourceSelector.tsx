@@ -1,7 +1,7 @@
 "use client";
 
 import { type ChangeEvent, useRef } from "react";
-import { Database, PlugZap, Search, Upload } from "lucide-react";
+import { Database, Download, PlugZap, Search, Upload } from "lucide-react";
 import { shallow } from "zustand/shallow";
 
 import { Button } from "@/components/ui/button";
@@ -20,6 +20,7 @@ import {
 	type LeadSourceOption,
 	useQuickStartWizardDataStore,
 } from "@/lib/stores/quickstartWizardData";
+import { downloadLeadCsvTemplate } from "@/components/quickstart/utils/downloadLeadCsvTemplate";
 
 const INTEGRATION_OPTIONS = [
 	"DealScale CRM",
@@ -68,6 +69,8 @@ const LeadSourceSelector = () => {
 		toggleIntegrationSource,
 		savedSearchName,
 		setSavedSearchName,
+		personaId,
+		goalId,
 	} = useQuickStartWizardDataStore(
 		(state) => ({
 			leadSource: state.leadSource,
@@ -79,6 +82,8 @@ const LeadSourceSelector = () => {
 			toggleIntegrationSource: state.toggleIntegrationSource,
 			savedSearchName: state.savedSearchName,
 			setSavedSearchName: state.setSavedSearchName,
+			personaId: state.personaId,
+			goalId: state.goalId,
 		}),
 		shallow,
 	);
@@ -160,6 +165,19 @@ const LeadSourceSelector = () => {
 								>
 									<Upload className="mr-2 h-4 w-4" />
 									Upload CSV
+								</Button>
+								<Button
+									type="button"
+									variant="ghost"
+									onClick={() =>
+										downloadLeadCsvTemplate({
+											personaId,
+											goalId,
+										})
+									}
+								>
+									<Download className="mr-2 h-4 w-4" />
+									Download sample CSV
 								</Button>
 								{csvFileName && (
 									<Button

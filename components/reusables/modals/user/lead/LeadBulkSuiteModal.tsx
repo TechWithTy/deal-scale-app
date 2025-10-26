@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ChangeEvent } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Upload } from "lucide-react";
+import { Download, Upload } from "lucide-react";
 import { toast } from "sonner";
 import FieldMappingStep from "../skipTrace/steps/FieldMappingStep";
 import SkipTraceSummaryStep from "./steps/SkipTraceSummaryStep";
@@ -15,6 +15,7 @@ import {
 	parseCsvToLeads,
 } from "@/lib/stores/_utils/csvParser";
 import Papa from "papaparse";
+import { downloadLeadCsvTemplate } from "@/components/quickstart/utils/downloadLeadCsvTemplate";
 
 const INITIAL_COST_DETAILS = {
 	availableCredits: 0,
@@ -390,6 +391,15 @@ export default function LeadBulkSuiteModal({
 								>
 									<Upload className="mr-2 h-4 w-4" />
 									{modalCsvFile ? "Change CSV File" : "Upload CSV File"}
+								</Button>
+								<Button
+									onClick={() => downloadLeadCsvTemplate()}
+									variant="ghost"
+									type="button"
+									className="w-full"
+								>
+									<Download className="mr-2 h-4 w-4" />
+									Download sample CSV
 								</Button>
 								{modalCsvFile && (
 									<div className="text-sm text-muted-foreground">
