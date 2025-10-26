@@ -1,14 +1,33 @@
 import { create } from "zustand";
-import { createJSONStorage, persist } from "zustand/middleware";
+import {
+	createJSONStorage,
+	persist,
+	type StateStorage,
+} from "zustand/middleware";
 
 interface QuickStartWizardExperienceState {
 	readonly hasSeenWizard: boolean;
 	readonly isHydrated: boolean;
 	readonly markWizardSeen: () => void;
+	readonly setHydrated: () => void;
 	readonly reset: () => void;
 }
 
 const defaultState = { hasSeenWizard: false, isHydrated: false } as const;
+
+const createNoopStorage = (): StateStorage => ({
+	getItem: () => Promise.resolve(null),
+	setItem: () => Promise.resolve(),
+	removeItem: () => Promise.resolve(),
+});
+
+const resolveStorage = () => {
+	if (typeof window === "undefined") {
+		return createNoopStorage();
+	}
+
+	return createJSONStorage(() => window.localStorage);
+};
 
 export const useQuickStartWizardExperienceStore =
 	create<QuickStartWizardExperienceState>()(
@@ -16,19 +35,29 @@ export const useQuickStartWizardExperienceStore =
 			(set) => ({
 				...defaultState,
 				markWizardSeen: () => set({ hasSeenWizard: true }),
+				setHydrated: () => set({ isHydrated: true }),
 				reset: () => set({ hasSeenWizard: false }),
 			}),
 			{
 				name: "quickstart-wizard-experience",
-				storage: createJSONStorage(() => localStorage),
+				storage: resolveStorage(),
+				onRehydrateStorage: () => (state) => {
+					state?.setHydrated();
+				},
 			},
 		),
 	);
 
-useQuickStartWizardExperienceStore.persist.onFinishHydration?.(() => {
-	useQuickStartWizardExperienceStore.setState({ isHydrated: true });
-});
+if (typeof window === "undefined") {
+	useQuickStartWizardExperienceStore.getState().setHydrated();
+} else {
+	const persistApi = useQuickStartWizardExperienceStore.persist;
 
-if (useQuickStartWizardExperienceStore.persist.hasHydrated?.()) {
-	useQuickStartWizardExperienceStore.setState({ isHydrated: true });
+	persistApi?.onFinishHydration?.(() => {
+		useQuickStartWizardExperienceStore.getState().setHydrated();
+	});
+
+	if (persistApi?.hasHydrated?.()) {
+		useQuickStartWizardExperienceStore.getState().setHydrated();
+	}
 }
