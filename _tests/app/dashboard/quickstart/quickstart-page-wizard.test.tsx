@@ -1,5 +1,5 @@
 import React, { act } from "react";
-import { fireEvent, render, screen, within } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import QuickStartPage from "@/app/dashboard/quickstart/page";
@@ -7,6 +7,8 @@ import { QUICK_START_DEFAULT_STEP } from "@/lib/stores/quickstartWizard";
 import { useQuickStartWizardDataStore } from "@/lib/stores/quickstartWizardData";
 import { useCampaignCreationStore } from "@/lib/stores/campaignCreation";
 import { useQuickStartWizardStore } from "@/lib/stores/quickstartWizard";
+import { useQuickStartWizardExperienceStore } from "@/lib/stores/quickstartWizardExperience";
+import { useUserProfileStore } from "@/lib/stores/user/userProfile";
 
 (globalThis as Record<string, unknown>).React = React;
 (globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true;
@@ -77,28 +79,58 @@ describe("QuickStartPage wizard modal", () => {
                         useCampaignCreationStore.getState().reset();
                         useQuickStartWizardStore.getState().reset();
                         useQuickStartWizardDataStore.getState().reset();
+                        useQuickStartWizardExperienceStore.getState().reset();
+                        useUserProfileStore.getState().resetUserProfile();
                 });
                 pushMock.mockReset();
+                window.localStorage.clear();
+                act(() => {
+                        useQuickStartWizardExperienceStore.getState().markWizardSeen();
+                });
         });
 
-        it("renders quickstart cards from configuration", () => {
+        it("renders quickstart cards from configuration", async () => {
                 render(<QuickStartPage />);
 
+                act(() => {
+                        useQuickStartWizardStore.getState().reset();
+                        useQuickStartWizardExperienceStore.getState().markWizardSeen();
+                });
+
+                await waitFor(() => {
+                        expect(
+                                screen.queryByRole("dialog", { name: /quickstart wizard/i }),
+                        ).toBeNull();
+                });
+
                 expect(
-                        screen.getByRole("heading", { name: /quick start/i, level: 1 }),
+                        await screen.findByRole("heading", { name: /quick start/i, level: 1 }),
                 ).toBeDefined();
-                expect(
-                        screen.getAllByRole("button", { name: /import from any source/i })[0],
-                ).toBeDefined();
-                expect(
-                        screen.getAllByRole("button", { name: /launch guided setup/i })[0],
-                ).toBeDefined();
+                const importButtons = await screen.findAllByRole("button", {
+                        name: /import from any source/i,
+                });
+                expect(importButtons[0]).toBeDefined();
+                const guidedButtons = await screen.findAllByRole("button", {
+                        name: /launch guided setup/i,
+                });
+                expect(guidedButtons[0]).toBeDefined();
         });
 
-        it("opens the wizard on the persona step when the guided card is selected", () => {
+        it("opens the wizard on the persona step when the guided card is selected", async () => {
                 render(<QuickStartPage />);
 
-                const [launchWizardButton] = screen.getAllByRole("button", {
+                act(() => {
+                        useQuickStartWizardStore.getState().reset();
+                        useQuickStartWizardExperienceStore.getState().markWizardSeen();
+                });
+
+                await waitFor(() => {
+                        expect(
+                                screen.queryByRole("dialog", { name: /quickstart wizard/i }),
+                        ).toBeNull();
+                });
+
+                const [launchWizardButton] = await screen.findAllByRole("button", {
                         name: /launch guided setup/i,
                 });
 
@@ -116,10 +148,21 @@ describe("QuickStartPage wizard modal", () => {
                 expect(wizardState.activeStep).toBe("persona");
         });
 
-        it("applies presets and generates a summary plan when launched from a card", () => {
+        it("applies presets and generates a summary plan when launched from a card", async () => {
                 render(<QuickStartPage />);
 
-                const [launchWizardButton] = screen.getAllByRole("button", {
+                act(() => {
+                        useQuickStartWizardStore.getState().reset();
+                        useQuickStartWizardExperienceStore.getState().markWizardSeen();
+                });
+
+                await waitFor(() => {
+                        expect(
+                                screen.queryByRole("dialog", { name: /quickstart wizard/i }),
+                        ).toBeNull();
+                });
+
+                const [launchWizardButton] = await screen.findAllByRole("button", {
                         name: /import from any source/i,
                 });
 
@@ -144,10 +187,21 @@ describe("QuickStartPage wizard modal", () => {
                 expect(campaignState.campaignName).toContain("Lead Import");
         });
 
-        it("lets users choose persona and goal before showing a summary", () => {
+        it("lets users choose persona and goal before showing a summary", async () => {
                 render(<QuickStartPage />);
 
-                const [launchWizardButton] = screen.getAllByRole("button", {
+                act(() => {
+                        useQuickStartWizardStore.getState().reset();
+                        useQuickStartWizardExperienceStore.getState().markWizardSeen();
+                });
+
+                await waitFor(() => {
+                        expect(
+                                screen.queryByRole("dialog", { name: /quickstart wizard/i }),
+                        ).toBeNull();
+                });
+
+                const [launchWizardButton] = await screen.findAllByRole("button", {
                         name: /launch guided setup/i,
                 });
 
@@ -182,10 +236,21 @@ describe("QuickStartPage wizard modal", () => {
                 expect(dataState.goalId).toBe("investor-pipeline");
         });
 
-        it("supports lender personas with an automation-focused goal", () => {
+        it("supports lender personas with an automation-focused goal", async () => {
                 render(<QuickStartPage />);
 
-                const [launchWizardButton] = screen.getAllByRole("button", {
+                act(() => {
+                        useQuickStartWizardStore.getState().reset();
+                        useQuickStartWizardExperienceStore.getState().markWizardSeen();
+                });
+
+                await waitFor(() => {
+                        expect(
+                                screen.queryByRole("dialog", { name: /quickstart wizard/i }),
+                        ).toBeNull();
+                });
+
+                const [launchWizardButton] = await screen.findAllByRole("button", {
                         name: /launch guided setup/i,
                 });
 
@@ -226,10 +291,59 @@ describe("QuickStartPage wizard modal", () => {
                 expect(dataState.goalId).toBe("lender-fund-fast");
         });
 
-        it("resets wizard state when closed", () => {
+        it("auto-launches the wizard for first-time visitors", async () => {
+                act(() => {
+                        useQuickStartWizardExperienceStore.getState().reset();
+                });
+
                 render(<QuickStartPage />);
 
-                const [importButton] = screen.getAllByRole("button", {
+                await waitFor(() => {
+                        expect(useQuickStartWizardStore.getState().isOpen).toBe(true);
+                });
+        });
+
+        it("persists dismissal so the wizard does not relaunch", async () => {
+                act(() => {
+                        useQuickStartWizardExperienceStore.getState().reset();
+                });
+
+                const { unmount } = render(<QuickStartPage />);
+
+                const closeButton = screen.getByRole("button", { name: /close wizard/i });
+
+                act(() => {
+                        fireEvent.click(closeButton);
+                });
+
+                await waitFor(() => {
+                        expect(useQuickStartWizardExperienceStore.getState().hasSeenWizard).toBe(true);
+                });
+
+                unmount();
+
+                render(<QuickStartPage />);
+
+                await waitFor(() => {
+                        expect(useQuickStartWizardStore.getState().isOpen).toBe(false);
+                });
+        });
+
+        it("resets wizard state when closed", async () => {
+                render(<QuickStartPage />);
+
+                act(() => {
+                        useQuickStartWizardStore.getState().reset();
+                        useQuickStartWizardExperienceStore.getState().markWizardSeen();
+                });
+
+                await waitFor(() => {
+                        expect(
+                                screen.queryByRole("dialog", { name: /quickstart wizard/i }),
+                        ).toBeNull();
+                });
+
+                const [importButton] = await screen.findAllByRole("button", {
                         name: /import from any source/i,
                 });
 

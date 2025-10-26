@@ -19,6 +19,7 @@ import { applyQuickStartTemplatePreset } from "@/lib/config/quickstart/templates
 import { getGoalDefinition } from "@/lib/config/quickstart/wizardFlows";
 import { useQuickStartWizardStore } from "@/lib/stores/quickstartWizard";
 import { useQuickStartWizardDataStore } from "@/lib/stores/quickstartWizardData";
+import { useQuickStartWizardExperienceStore } from "@/lib/stores/quickstartWizardExperience";
 import { useCampaignCreationStore } from "@/lib/stores/campaignCreation";
 import { useModalStore } from "@/lib/stores/dashboard";
 import type { WebhookStage } from "@/lib/stores/dashboard";
@@ -46,13 +47,26 @@ export default function QuickStartPage() {
 	const logQuickStartDebug = () => {};
 
 	const openWebhookModal = useModalStore((state) => state.openWebhookModal);
-	const { open: openWizard, launchWithAction } = useQuickStartWizardStore(
+	const {
+		open: openWizard,
+		launchWithAction,
+		isOpen: isWizardOpen,
+	} = useQuickStartWizardStore(
 		(state) => ({
 			open: state.open,
 			launchWithAction: state.launchWithAction,
+			isOpen: state.isOpen,
 		}),
 		shallow,
 	);
+	const { hasSeenWizard, isHydrated: isExperienceHydrated } =
+		useQuickStartWizardExperienceStore(
+			(state) => ({
+				hasSeenWizard: state.hasSeenWizard,
+				isHydrated: state.isHydrated,
+			}),
+			shallow,
+		);
 	const campaignStore = useCampaignCreationStore();
 
 	const {
@@ -151,6 +165,16 @@ export default function QuickStartPage() {
 		onHeadersParsed: setBulkCsvHeaders,
 		onShowModal: () => setShowBulkSuiteModal(true),
 	});
+
+	useEffect(() => {
+		if (!isExperienceHydrated) {
+			return;
+		}
+
+		if (!hasSeenWizard && !isWizardOpen) {
+			openWizard();
+		}
+	}, [hasSeenWizard, isExperienceHydrated, isWizardOpen, openWizard]);
 
 	// Removed legacy modal auto-reset effect block referencing undefined refs
 
