@@ -8,6 +8,8 @@ import {
 	type QuickStartGoalId,
 	type QuickStartPersonaId,
 } from "@/lib/config/quickstart/wizardFlows";
+import { useUserProfileStore } from "@/lib/stores/user/userProfile";
+import type { QuickStartDefaults } from "@/types/userProfile";
 
 interface QuickStartWizardDataState {
 	readonly personaId: QuickStartPersonaId | null;
@@ -18,10 +20,44 @@ interface QuickStartWizardDataState {
 	readonly reset: () => void;
 }
 
-const createInitialState = () => ({
-	personaId: null as QuickStartPersonaId | null,
-	goalId: null as QuickStartGoalId | null,
-});
+const deriveStateFromDefaults = (
+	defaults: QuickStartDefaults | null | undefined,
+): Pick<QuickStartWizardDataState, "personaId" | "goalId"> => {
+	if (!defaults) {
+		return {
+			personaId: null as QuickStartPersonaId | null,
+			goalId: null as QuickStartGoalId | null,
+		};
+	}
+
+	if (defaults.goalId) {
+		const definition = getGoalDefinition(defaults.goalId);
+		if (definition) {
+			return {
+				personaId: definition.personaId,
+				goalId: definition.id,
+			};
+		}
+	}
+
+	if (defaults.personaId) {
+		const goals = getGoalsForPersona(defaults.personaId);
+		return {
+			personaId: defaults.personaId,
+			goalId: goals.length === 1 ? (goals[0]?.id ?? null) : null,
+		};
+	}
+
+	return {
+		personaId: null,
+		goalId: null,
+	};
+};
+
+const createInitialState = () =>
+	deriveStateFromDefaults(
+		useUserProfileStore.getState().userProfile?.quickStartDefaults,
+	);
 
 export const useQuickStartWizardDataStore = create<QuickStartWizardDataState>(
 	(set, get) => ({
@@ -100,4 +136,26 @@ export const useQuickStartWizardDataStore = create<QuickStartWizardDataState>(
 			}),
 		reset: () => set(createInitialState()),
 	}),
+);
+
+useUserProfileStore.subscribe(
+	(state) => state.userProfile?.quickStartDefaults,
+	(defaults) => {
+		useQuickStartWizardDataStore.setState((current) => {
+			if (current.personaId || current.goalId) {
+				return {};
+			}
+
+			const nextState = deriveStateFromDefaults(defaults);
+
+			if (
+				current.personaId === nextState.personaId &&
+				current.goalId === nextState.goalId
+			) {
+				return {};
+			}
+
+			return nextState;
+		});
+	},
 );
