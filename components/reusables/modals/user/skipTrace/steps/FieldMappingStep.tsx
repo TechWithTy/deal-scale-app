@@ -8,14 +8,14 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/_utils";
+import {
+	LEAD_CSV_TEMPLATE_FIELDS,
+	REQUIRED_LEAD_CSV_FIELDS,
+	type LeadCsvTemplateFieldConfig,
+} from "@/lib/config/leads/csvTemplateConfig";
 import { useEffect, type FC } from "react";
-import type { LeadTypeGlobal } from "@/types/_dashboard/leads";
 
-export type FieldConfig = {
-	name: string;
-	label: string;
-	optional?: boolean;
-};
+export type FieldConfig = LeadCsvTemplateFieldConfig;
 
 interface FieldMappingStepProps {
 	headers: string[];
@@ -24,61 +24,11 @@ interface FieldMappingStepProps {
 	errors: Record<string, { message?: string }>;
 }
 
-const generateFieldConfigs = (): FieldConfig[] => {
-	return [
-		// Core required fields
-		{ name: "firstNameField", label: "First Name" },
-		{ name: "lastNameField", label: "Last Name" },
-		{ name: "streetAddressField", label: "Street Address" },
-		{ name: "cityField", label: "City" },
-		{ name: "stateField", label: "State" },
-		{ name: "zipCodeField", label: "Zip Code" },
+export const FIELD_MAPPING_CONFIGS: readonly FieldConfig[] =
+	LEAD_CSV_TEMPLATE_FIELDS;
 
-		// Phone fields
-		{ name: "phone1Field", label: "Phone 1", optional: true },
-		{ name: "phone2Field", label: "Phone 2", optional: true },
-
-		// Email fields
-		{ name: "emailField", label: "Primary Email", optional: true },
-		{ name: "possibleEmailsField", label: "Possible Emails", optional: true },
-
-		// Social media fields
-		{ name: "facebookField", label: "Facebook", optional: true },
-		{ name: "linkedinField", label: "LinkedIn", optional: true },
-		{ name: "instagramField", label: "Instagram", optional: true },
-		{ name: "twitterField", label: "Twitter", optional: true },
-		{ name: "tiktokField", label: "TikTok", optional: true },
-		{ name: "youtubeField", label: "YouTube", optional: true },
-
-		// Compliance fields (required when corresponding status is set)
-		{ name: "dncStatusField", label: "DNC Status" },
-		{ name: "dncSourceField", label: "DNC Source (Required if DNC)" },
-		{ name: "tcpaOptedInField", label: "TCPA Opted In" },
-		{ name: "tcpaSourceField", label: "TCPA Source (Required if Opted In)" },
-
-		{ name: "socialSummary", label: "Social Summary", optional: true },
-
-		// Property information
-		{ name: "bedroomsField", label: "Bedrooms", optional: true },
-		{
-			name: "communicationPreferencesField",
-			label: "Communication Preferences",
-			optional: true,
-		},
-		{ name: "isIphoneField", label: "Is iPhone", optional: true },
-		// Professional information
-		{ name: "companyField", label: "Company", optional: true },
-		{ name: "domainField", label: "Domain Name", optional: true },
-		{ name: "jobTitleField", label: "Job Title", optional: true },
-		{ name: "anniversaryField", label: "Anniversary", optional: true },
-	];
-};
-
-export const fieldConfigs = generateFieldConfigs();
-
-export const REQUIRED_FIELD_MAPPING_KEYS = fieldConfigs
-	.filter((config) => !config.optional)
-	.map((config) => config.name);
+export const REQUIRED_FIELD_MAPPING_KEYS: readonly string[] =
+	REQUIRED_LEAD_CSV_FIELDS;
 
 const FieldMappingStep: FC<
 	FieldMappingStepProps & { onCanProceedChange?: (canProceed: boolean) => void }
@@ -103,7 +53,7 @@ const FieldMappingStep: FC<
 		idx,
 	}));
 
-	const labelLookup = fieldConfigs.reduce<Record<string, string>>(
+	const labelLookup = FIELD_MAPPING_CONFIGS.reduce<Record<string, string>>(
 		(acc, config) => {
 			acc[config.name] = config.label;
 			return acc;
@@ -139,7 +89,7 @@ const FieldMappingStep: FC<
 
 	return (
 		<div className="grid gap-6 md:grid-cols-2">
-			{fieldConfigs.map(({ name, label, optional }) => {
+			{FIELD_MAPPING_CONFIGS.map(({ name, label, optional }) => {
 				const selectId = `field-mapping-select-${name}`;
 				const availableHeaderOptions = getAvailableHeaderOptions(name);
 				return (
@@ -198,5 +148,3 @@ const FieldMappingStep: FC<
 };
 
 export default FieldMappingStep;
-
-export { fieldConfigs as FIELD_MAPPING_CONFIGS };

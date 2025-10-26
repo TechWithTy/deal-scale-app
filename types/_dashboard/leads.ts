@@ -36,7 +36,7 @@ export type ContactInfo = {
 };
 
 // LeadTypeGlobal - Single source of truth for lead data structure
-// SYNC REQUIREMENT: Keep FieldMappingStep.tsx fieldConfigs in sync with this type
+// SYNC REQUIREMENT: Keep lib/config/leads/csvTemplateConfig.ts in sync with this type
 // Required fields: firstName, lastName, streetAddress, city, state, zipCode, dncStatus, tcpaOptedIn
 // Conditional fields: dncSource (required if dncList is true), tcpaSource (required if tcpaOptedIn is true)
 // All other fields are optional for CSV mapping

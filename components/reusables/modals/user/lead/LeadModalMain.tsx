@@ -13,7 +13,7 @@ import FieldMappingStep, {
 } from "../skipTrace/steps/FieldMappingStep";
 import SkipTraceSummaryStep from "./steps/SkipTraceSummaryStep";
 import { Button } from "@/components/ui/button";
-import { Upload } from "lucide-react";
+import { Download, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLeadListStore } from "@/lib/stores/leadList";
@@ -23,6 +23,7 @@ import {
 } from "@/lib/stores/_utils/csvParser";
 import Papa from "papaparse";
 import { areRequiredFieldsMapped, autoMapCsvHeaders } from "./utils/csvAutoMap";
+import { downloadLeadCsvTemplate } from "@/components/quickstart/utils/downloadLeadCsvTemplate";
 
 const INITIAL_COST_DETAILS = {
 	availableCredits: 0,
@@ -764,6 +765,15 @@ function LeadMainModal({
 								>
 									<Upload className="w-4 h-4 mr-2" />
 									{modalCsvFile ? "Change CSV File" : "Upload CSV File"}
+								</Button>
+								<Button
+									variant="ghost"
+									size="lg"
+									onClick={() => downloadLeadCsvTemplate()}
+									className="w-full max-w-sm"
+								>
+									<Download className="w-4 h-4 mr-2" />
+									Download Sample CSV
 								</Button>
 
 								{modalCsvFile && (
