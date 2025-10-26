@@ -9,9 +9,14 @@ import { useCampaignCreationStore } from "@/lib/stores/campaignCreation";
 import { useQuickStartWizardStore } from "@/lib/stores/quickstartWizard";
 import { useQuickStartWizardExperienceStore } from "@/lib/stores/quickstartWizardExperience";
 import { useUserProfileStore } from "@/lib/stores/user/userProfile";
+import LeadSourceSelector from "@/components/quickstart/wizard/steps/lead/LeadSourceSelector";
 
 (globalThis as Record<string, unknown>).React = React;
 (globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true;
+
+const { downloadTemplateMock } = vi.hoisted(() => ({
+        downloadTemplateMock: vi.fn(),
+}));
 
 vi.mock("next/link", () => ({
         __esModule: true,
@@ -71,6 +76,11 @@ vi.mock("@/components/quickstart/useQuickStartSavedSearches", () => ({
                 handleOpenSavedSearches: vi.fn(),
                 savedSearchModalOpen: false,
         }),
+}));
+
+vi.mock("@/components/quickstart/utils/downloadLeadCsvTemplate", () => ({
+        __esModule: true,
+        downloadLeadCsvTemplate: downloadTemplateMock,
 }));
 
 describe("QuickStartPage wizard modal", () => {
@@ -382,6 +392,43 @@ describe("QuickStartPage wizard modal", () => {
                 expect(
                         screen.queryByRole("dialog", { name: /quickstart wizard/i }),
                 ).toBeNull();
+        });
+
+        it("surfaces the sample CSV download for lead imports", () => {
+                downloadTemplateMock.mockReset();
+
+                act(() => {
+                        useQuickStartWizardDataStore.setState(
+                                () =>
+                                        ({
+                                                leadSource: "csv-upload",
+                                                csvFileName: null,
+                                                csvRecordEstimate: null,
+                                                selectedIntegrations: [],
+                                                savedSearchName: "",
+                                                personaId: "investor",
+                                                goalId: "investor-pipeline",
+                                        }) as Partial<ReturnType<typeof useQuickStartWizardDataStore.getState>>,
+                        );
+                });
+
+                render(<LeadSourceSelector />);
+
+                const button = screen.getByRole("button", { name: /download sample csv/i });
+                expect(button).toBeDefined();
+
+                fireEvent.click(button);
+
+                expect(downloadTemplateMock).toHaveBeenCalledWith(
+                        expect.objectContaining({
+                                personaId: "investor",
+                                goalId: "investor-pipeline",
+                        }),
+                );
+
+                act(() => {
+                        useQuickStartWizardDataStore.getState().reset();
+                });
         });
 
 });
