@@ -197,6 +197,37 @@ describe("QuickStartPage wizard modal", () => {
                 expect(campaignState.campaignName).toContain("Lead Import");
         });
 
+        it("reapplies the selected template before launching quickstart actions", async () => {
+                render(<QuickStartPage />);
+
+                act(() => {
+                        useQuickStartWizardStore.getState().reset();
+                        useQuickStartWizardExperienceStore.getState().markWizardSeen();
+                        useCampaignCreationStore.getState().reset();
+                });
+
+                const [launchButton] = await screen.findAllByRole("button", {
+                        name: /launch guided setup/i,
+                });
+
+                act(() => {
+                        fireEvent.click(launchButton);
+                });
+
+                act(() => {
+                        useQuickStartWizardDataStore
+                                .getState()
+                                .selectGoal("investor-pipeline");
+                });
+
+                act(() => {
+                        useQuickStartWizardStore.getState().complete();
+                });
+
+                const campaignState = useCampaignCreationStore.getState();
+                expect(campaignState.campaignName).toBe("Lead Import Launch");
+        });
+
         it("lets users choose persona and goal before showing a summary", async () => {
                 render(<QuickStartPage />);
 
