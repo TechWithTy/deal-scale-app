@@ -244,6 +244,9 @@ describe("QuickStartPage wizard modal", () => {
                 const dataState = useQuickStartWizardDataStore.getState();
                 expect(dataState.personaId).toBe("investor");
                 expect(dataState.goalId).toBe("investor-pipeline");
+
+                const campaignState = useCampaignCreationStore.getState();
+                expect(campaignState.campaignName).toContain("Lead Import");
         });
 
         it("supports lender personas with an automation-focused goal", async () => {
