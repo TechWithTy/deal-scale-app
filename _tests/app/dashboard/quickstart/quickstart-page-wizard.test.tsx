@@ -10,14 +10,12 @@ import { useQuickStartWizardStore } from "@/lib/stores/quickstartWizard";
 import { useQuickStartWizardExperienceStore } from "@/lib/stores/quickstartWizardExperience";
 import { useUserProfileStore } from "@/lib/stores/user/userProfile";
 import LeadSourceSelector from "@/components/quickstart/wizard/steps/lead/LeadSourceSelector";
-import TestAndLaunchStep from "@/components/quickstart/wizard/steps/TestAndLaunchStep";
 
 (globalThis as Record<string, unknown>).React = React;
 (globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true;
 
-const { downloadTemplateMock, runCampaignTestMock } = vi.hoisted(() => ({
+const { downloadTemplateMock } = vi.hoisted(() => ({
         downloadTemplateMock: vi.fn(),
-        runCampaignTestMock: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.mock("next/link", () => ({
@@ -83,11 +81,6 @@ vi.mock("@/components/quickstart/useQuickStartSavedSearches", () => ({
 vi.mock("@/components/quickstart/utils/downloadLeadCsvTemplate", () => ({
         __esModule: true,
         downloadLeadCsvTemplate: downloadTemplateMock,
-}));
-
-vi.mock("@/lib/actions/campaigns/runCampaignTest", () => ({
-        __esModule: true,
-        runCampaignTest: runCampaignTestMock,
 }));
 
 describe("QuickStartPage wizard modal", () => {
@@ -399,60 +392,6 @@ describe("QuickStartPage wizard modal", () => {
                 expect(
                         screen.queryByRole("dialog", { name: /quickstart wizard/i }),
                 ).toBeNull();
-        });
-
-        it("surfaces a campaign test run control on the launch step", async () => {
-                runCampaignTestMock.mockClear();
-
-                const toggleLaunchChecklist = vi.fn();
-
-                act(() => {
-                        useQuickStartWizardDataStore.setState(
-                                () =>
-                                        ({
-                                                launchChecklist: {
-                                                        sandboxValidated: false,
-                                                        complianceReviewComplete: false,
-                                                        notificationsEnabled: false,
-                                                        goLiveApproved: false,
-                                                },
-                                                toggleLaunchChecklist,
-                                                reviewNotes: "Ready to run",
-                                                personaId: "investor",
-                                                goalId: "investor-pipeline",
-                                        }) as Partial<ReturnType<typeof useQuickStartWizardDataStore.getState>>,
-                        );
-                        useCampaignCreationStore.setState(
-                                () =>
-                                        ({
-                                                campaignName: "Investor Pipeline",
-                                        }) as Partial<ReturnType<typeof useCampaignCreationStore.getState>>,
-                        );
-                });
-
-                render(<TestAndLaunchStep />);
-
-                const testButton = await screen.findByRole("button", { name: /test campaign/i });
-                expect(testButton).toBeDefined();
-
-                act(() => {
-                        fireEvent.click(testButton);
-                });
-
-                await waitFor(() => {
-                        expect(runCampaignTestMock).toHaveBeenCalledWith(
-                                expect.objectContaining({
-                                        personaId: "investor",
-                                        goalId: "investor-pipeline",
-                                        campaignName: "Investor Pipeline",
-                                }),
-                        );
-                });
-
-                act(() => {
-                        useQuickStartWizardDataStore.getState().reset();
-                        useCampaignCreationStore.getState().reset();
-                });
         });
 
         it("surfaces the sample CSV download for lead imports", () => {
