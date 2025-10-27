@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { shallow } from "zustand/shallow";
 
 import { Button } from "@/components/ui/button";
@@ -15,7 +15,10 @@ import PersonaStep from "@/components/quickstart/wizard/steps/PersonaStep";
 import GoalStep from "@/components/quickstart/wizard/steps/GoalStep";
 import SummaryStep from "@/components/quickstart/wizard/steps/SummaryStep";
 import { quickStartCardDescriptors } from "@/lib/config/quickstart";
-import { getQuickStartTemplate } from "@/lib/config/quickstart/templates";
+import {
+	applyQuickStartTemplatePreset,
+	getQuickStartTemplate,
+} from "@/lib/config/quickstart/templates";
 import {
 	getGoalDefinition,
 	getGoalsForPersona,
@@ -29,6 +32,7 @@ import {
 	useQuickStartWizardStore,
 } from "@/lib/stores/quickstartWizard";
 import { useQuickStartWizardDataStore } from "@/lib/stores/quickstartWizardData";
+import { useCampaignCreationStore } from "@/lib/stores/campaignCreation";
 
 const STEP_ORDER: readonly QuickStartWizardStep[] = [
 	"persona",
@@ -66,6 +70,28 @@ const QuickStartWizard = () => {
 	const templateId =
 		activePreset?.templateId ?? selectedGoal?.templateId ?? null;
 	const template = templateId ? getQuickStartTemplate(templateId) : null;
+	const lastAppliedTemplateId = useRef<typeof templateId>(null);
+
+	useEffect(() => {
+		if (!isOpen) {
+			lastAppliedTemplateId.current = null;
+			return;
+		}
+
+		if (!templateId) {
+			return;
+		}
+
+		if (lastAppliedTemplateId.current === templateId) {
+			return;
+		}
+
+		applyQuickStartTemplatePreset(
+			templateId,
+			useCampaignCreationStore.getState(),
+		);
+		lastAppliedTemplateId.current = templateId;
+	}, [isOpen, templateId]);
 
 	const cardDescriptorById = useMemo(() => {
 		const entries = quickStartCardDescriptors.map(
