@@ -23,6 +23,7 @@ import {
 } from "@/lib/stores/_utils/csvParser";
 import Papa from "papaparse";
 import { areRequiredFieldsMapped, autoMapCsvHeaders } from "./utils/csvAutoMap";
+import { deriveRecommendedEnrichmentOptions } from "./utils/enrichmentRecommendations";
 import { downloadLeadCsvTemplate } from "@/components/quickstart/utils/downloadLeadCsvTemplate";
 
 const INITIAL_COST_DETAILS = {
@@ -253,12 +254,15 @@ function LeadMainModal({
 			setSelectedHeadersState((prev) => {
 				const autoMapped = autoMapCsvHeaders(externalCsvHeaders, prev);
 				setCanProceedFromMapping(areRequiredFieldsMapped(autoMapped));
+				setSelectedEnrichmentOptions(
+					deriveRecommendedEnrichmentOptions(autoMapped),
+				);
 				return autoMapped;
 			});
-			setSelectedEnrichmentOptions([]);
 		} else {
 			setSelectedHeadersState({});
 			setCanProceedFromMapping(false);
+			setSelectedEnrichmentOptions([]);
 		}
 		if (csvFile) {
 			csvFile
@@ -373,9 +377,11 @@ function LeadMainModal({
 			setSelectedHeadersState((prev) => {
 				const autoMapped = autoMapCsvHeaders(headers, prev);
 				setCanProceedFromMapping(areRequiredFieldsMapped(autoMapped));
+				setSelectedEnrichmentOptions(
+					deriveRecommendedEnrichmentOptions(autoMapped),
+				);
 				return autoMapped;
 			});
-			setSelectedEnrichmentOptions([]);
 			setCsvContent(csvText);
 			deriveRowCount(csvText);
 			toast.success(

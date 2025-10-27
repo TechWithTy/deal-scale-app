@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import FieldMappingStep from "../skipTrace/steps/FieldMappingStep";
 import SkipTraceSummaryStep from "./steps/SkipTraceSummaryStep";
 import { areRequiredFieldsMapped, autoMapCsvHeaders } from "./utils/csvAutoMap";
+import { deriveRecommendedEnrichmentOptions } from "./utils/enrichmentRecommendations";
 import { useLeadListStore } from "@/lib/stores/leadList";
 import {
 	calculateLeadStatistics,
@@ -112,12 +113,15 @@ export default function LeadBulkSuiteModal({
 			if (initialCsvHeaders?.length) {
 				const autoMapped = autoMapCsvHeaders(initialCsvHeaders, prev);
 				setCanProceedFromMapping(areRequiredFieldsMapped(autoMapped));
+				setSelectedEnrichmentOptions(
+					deriveRecommendedEnrichmentOptions(autoMapped),
+				);
 				return autoMapped;
 			}
 			setCanProceedFromMapping(false);
+			setSelectedEnrichmentOptions([]);
 			return {};
 		});
-		setSelectedEnrichmentOptions([]);
 		setCsvContent("");
 		setCsvRowCount(0);
 		setCostDetails(INITIAL_COST_DETAILS);
@@ -187,9 +191,11 @@ export default function LeadBulkSuiteModal({
 			setSelectedHeaders((prev) => {
 				const autoMapped = autoMapCsvHeaders(headers, prev);
 				setCanProceedFromMapping(areRequiredFieldsMapped(autoMapped));
+				setSelectedEnrichmentOptions(
+					deriveRecommendedEnrichmentOptions(autoMapped),
+				);
 				return autoMapped;
 			});
-			setSelectedEnrichmentOptions([]);
 			setCsvContent(csvText);
 			deriveRowCount(csvText);
 			toast.success(
