@@ -1,7 +1,7 @@
 import {
-	FIELD_MAPPING_CONFIGS,
-	REQUIRED_FIELD_MAPPING_KEYS,
-} from "../../skipTrace/steps/FieldMappingStep";
+	LEAD_CSV_TEMPLATE_FIELDS,
+	REQUIRED_LEAD_CSV_FIELDS,
+} from "@/lib/config/leads/csvTemplateConfig";
 
 const normalizeHeaderValue = (value: string) =>
 	value.toLowerCase().replace(/[^a-z0-9]/g, "");
@@ -101,17 +101,17 @@ const FIELD_AUTOMAP_SYNONYMS: Record<string, string[]> = {
 	],
 };
 
-const REQUIRED_FIELD_SET = new Set(REQUIRED_FIELD_MAPPING_KEYS);
+const REQUIRED_FIELD_SET = new Set(REQUIRED_LEAD_CSV_FIELDS);
 
 const FIELD_NAME_ORDER = [
-	...REQUIRED_FIELD_MAPPING_KEYS,
-	...FIELD_MAPPING_CONFIGS.map((config) => config.name).filter(
+	...REQUIRED_LEAD_CSV_FIELDS,
+	...LEAD_CSV_TEMPLATE_FIELDS.map((config) => config.name).filter(
 		(fieldName) => !REQUIRED_FIELD_SET.has(fieldName),
 	),
 ];
 
 const FIELD_MATCHER_LOOKUP: Record<string, string[]> =
-	FIELD_MAPPING_CONFIGS.reduce(
+	LEAD_CSV_TEMPLATE_FIELDS.reduce(
 		(acc, config) => {
 			const configuredSynonyms = FIELD_AUTOMAP_SYNONYMS[config.name] ?? [];
 			const uniqueSynonyms = new Set<string>([
@@ -192,4 +192,4 @@ export const autoMapCsvHeaders = (
 
 export const areRequiredFieldsMapped = (
 	mapping: Record<string, string | undefined>,
-) => REQUIRED_FIELD_MAPPING_KEYS.every((key) => Boolean(mapping[key]));
+) => REQUIRED_LEAD_CSV_FIELDS.every((key) => Boolean(mapping[key]));
