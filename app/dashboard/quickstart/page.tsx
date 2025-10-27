@@ -207,6 +207,12 @@ export default function QuickStartPage() {
 			return;
 		}
 
+		if (goalDefinition.templateId) {
+			const campaignState = useCampaignCreationStore.getState();
+			campaignState.reset();
+			applyQuickStartTemplatePreset(goalDefinition.templateId, campaignState);
+		}
+
 		const [firstStep] = goalDefinition.flow;
 		const launchers: Record<string, () => void> = {
 			import: handleImportFromSource,
