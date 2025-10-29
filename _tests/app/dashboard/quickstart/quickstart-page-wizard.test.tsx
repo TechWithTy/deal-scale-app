@@ -14,8 +14,10 @@ import LeadSourceSelector from "@/components/quickstart/wizard/steps/lead/LeadSo
 (globalThis as Record<string, unknown>).React = React;
 (globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true;
 
-const { downloadTemplateMock } = vi.hoisted(() => ({
+const { downloadTemplateMock, handlersRecorder, appliedTemplateIds } = vi.hoisted(() => ({
         downloadTemplateMock: vi.fn(),
+        handlersRecorder: { onCampaignCreate: null as (() => void) | null },
+        appliedTemplateIds: [] as string[],
 }));
 
 vi.mock("next/link", () => ({
@@ -39,9 +41,19 @@ vi.mock("@/components/leadsSearch/search/WalkthroughModal", () => ({
         default: () => null,
 }));
 
+let lastCampaignModalToggle: ((open: boolean) => void) | null = null;
+const campaignModalMock = vi.fn();
+
 vi.mock("@/components/reusables/modals/user/campaign/CampaignModalMain", () => ({
         __esModule: true,
-        default: () => null,
+        default: (props: {
+                readonly onOpenChange: (open: boolean) => void;
+                readonly isOpen: boolean;
+        }) => {
+                lastCampaignModalToggle = props.onOpenChange;
+                campaignModalMock(props);
+                return null;
+        },
 }));
 
 vi.mock("@/components/reusables/modals/user/lead/LeadBulkSuiteModal", () => ({
@@ -83,6 +95,43 @@ vi.mock("@/components/quickstart/utils/downloadLeadCsvTemplate", () => ({
         downloadLeadCsvTemplate: downloadTemplateMock,
 }));
 
+vi.mock("@/lib/config/quickstart/templates", async () => {
+        const actual = await vi.importActual<
+                typeof import("@/lib/config/quickstart/templates")
+        >("@/lib/config/quickstart/templates");
+
+        return {
+                __esModule: true,
+                ...actual,
+                applyQuickStartTemplatePreset: (
+                        templateId: Parameters<
+                                typeof actual.applyQuickStartTemplatePreset
+                        >[0],
+                        store: Parameters<typeof actual.applyQuickStartTemplatePreset>[1],
+                ) => {
+                        appliedTemplateIds.push(templateId);
+                        return actual.applyQuickStartTemplatePreset(templateId, store);
+                },
+        };
+});
+
+vi.mock("@/components/quickstart/useQuickStartCardViewModel", async () => {
+        const actual = await vi.importActual<
+                typeof import("@/components/quickstart/useQuickStartCardViewModel")
+        >("@/components/quickstart/useQuickStartCardViewModel");
+
+        return {
+                __esModule: true,
+                ...actual,
+                useQuickStartCardViewModel: (
+                        params: Parameters<typeof actual.useQuickStartCardViewModel>[0],
+                ) => {
+                        handlersRecorder.onCampaignCreate = params.onCampaignCreate;
+                        return actual.useQuickStartCardViewModel(params);
+                },
+        };
+});
+
 describe("QuickStartPage wizard modal", () => {
         beforeEach(() => {
                 act(() => {
@@ -97,6 +146,10 @@ describe("QuickStartPage wizard modal", () => {
                 act(() => {
                         useQuickStartWizardExperienceStore.getState().markWizardSeen();
                 });
+                lastCampaignModalToggle = null;
+                campaignModalMock.mockReset();
+                handlersRecorder.onCampaignCreate = null;
+                appliedTemplateIds.length = 0;
         });
 
         it("renders quickstart cards from configuration", async () => {
@@ -225,6 +278,73 @@ describe("QuickStartPage wizard modal", () => {
                 });
 
                 const campaignState = useCampaignCreationStore.getState();
+                expect(campaignState.campaignName).toBe("Lead Import Launch");
+        });
+
+        it("restores template defaults when reopening the campaign modal", async () => {
+                render(<QuickStartPage />);
+
+                act(() => {
+                        useQuickStartWizardStore.getState().reset();
+                        useQuickStartWizardExperienceStore.getState().markWizardSeen();
+                        useCampaignCreationStore.getState().reset();
+                });
+
+                const [launchButton] = await screen.findAllByRole("button", {
+                        name: /launch guided setup/i,
+                });
+
+                act(() => {
+                        fireEvent.click(launchButton);
+                });
+
+                act(() => {
+                        useQuickStartWizardDataStore
+                                .getState()
+                                .selectGoal("investor-pipeline");
+                });
+
+                act(() => {
+                        useQuickStartWizardStore.getState().complete();
+                });
+
+                let campaignState = useCampaignCreationStore.getState();
+                expect(campaignState.campaignName).toBe("Lead Import Launch");
+
+                const [startCampaignButton] = await screen.findAllByRole("button", {
+                        name: /start campaign/i,
+                });
+                expect(startCampaignButton).toBeDefined();
+
+                act(() => {
+                        handlersRecorder.onCampaignCreate?.();
+                });
+
+                campaignState = useCampaignCreationStore.getState();
+                expect(campaignState.campaignName).toBe("Lead Import Launch");
+
+                expect(lastCampaignModalToggle).toBeTypeOf("function");
+
+                act(() => {
+                        lastCampaignModalToggle?.(false);
+                });
+
+                campaignState = useCampaignCreationStore.getState();
+                expect(campaignState.campaignName).toBe("");
+
+                act(() => {
+                        handlersRecorder.onCampaignCreate?.();
+                });
+
+                await waitFor(() => {
+                        const state = useCampaignCreationStore.getState();
+                        expect(state.campaignName).toBe("Lead Import Launch");
+                });
+                campaignState = useCampaignCreationStore.getState();
+                expect(appliedTemplateIds.slice(-2)).toEqual([
+                        "lead-import",
+                        "lead-import",
+                ]);
                 expect(campaignState.campaignName).toBe("Lead Import Launch");
         });
 
