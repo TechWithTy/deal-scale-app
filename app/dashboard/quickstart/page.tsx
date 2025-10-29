@@ -15,7 +15,11 @@ import { useBulkCsvUpload } from "@/components/quickstart/useBulkCsvUpload";
 import { useQuickStartCardViewModel } from "@/components/quickstart/useQuickStartCardViewModel";
 import { useQuickStartSavedSearches } from "@/components/quickstart/useQuickStartSavedSearches";
 import type { QuickStartWizardPreset } from "@/components/quickstart/types";
-import { applyQuickStartTemplatePreset } from "@/lib/config/quickstart/templates";
+import {
+	applyQuickStartTemplatePreset,
+	getQuickStartTemplate,
+	type QuickStartTemplateId,
+} from "@/lib/config/quickstart/templates";
 import { getGoalDefinition } from "@/lib/config/quickstart/wizardFlows";
 import { useQuickStartWizardStore } from "@/lib/stores/quickstartWizard";
 import { useQuickStartWizardDataStore } from "@/lib/stores/quickstartWizardData";
@@ -24,6 +28,8 @@ import { useCampaignCreationStore } from "@/lib/stores/campaignCreation";
 import { useModalStore } from "@/lib/stores/dashboard";
 import type { WebhookStage } from "@/lib/stores/dashboard";
 import { shallow } from "zustand/shallow";
+
+let lastAppliedTemplateIdGlobal: QuickStartTemplateId | null = null;
 
 export default function QuickStartPage() {
 	const router = useRouter();
@@ -40,6 +46,19 @@ export default function QuickStartPage() {
 	const [isTourOpen, setIsTourOpen] = useState(false);
 
 	const fileInputRef = useRef<HTMLInputElement | null>(null);
+	const lastAppliedTemplateIdRef = useRef<QuickStartTemplateId | null>(
+		lastAppliedTemplateIdGlobal,
+	);
+	const [lastTemplateId, setLastTemplateIdState] =
+		useState<QuickStartTemplateId | null>(lastAppliedTemplateIdRef.current);
+	const updateLastTemplateId = useCallback(
+		(value: QuickStartTemplateId | null) => {
+			lastAppliedTemplateIdGlobal = value;
+			lastAppliedTemplateIdRef.current = value;
+			setLastTemplateIdState(value);
+		},
+		[],
+	);
 	const [bulkCsvFile, setBulkCsvFile] = useState<File | null>(null);
 	const [bulkCsvHeaders, setBulkCsvHeaders] = useState<string[]>([]);
 
@@ -122,8 +141,61 @@ export default function QuickStartPage() {
 	}, [router]);
 
 	const handleCampaignCreate = useCallback(() => {
+		const templateId = lastTemplateId;
+		const hasLeadListContext = campaignModalContext !== null;
+
+		if (templateId && !hasLeadListContext) {
+			const campaignState = useCampaignCreationStore.getState();
+			campaignState.reset();
+			applyQuickStartTemplatePreset(templateId, campaignState);
+			const template = getQuickStartTemplate(templateId);
+			if (template) {
+				useCampaignCreationStore.setState({
+					campaignName: template.campaignName,
+					primaryChannel: template.primaryChannel,
+					selectedWorkflowId:
+						template.workflowId ?? campaignState.selectedWorkflowId,
+					selectedAgentId:
+						typeof template.agentId !== "undefined"
+							? template.agentId
+							: campaignState.selectedAgentId,
+				});
+			}
+		}
+
 		setShowCampaignModal(true);
-	}, []);
+	}, [campaignModalContext, lastTemplateId]);
+
+	useEffect(() => {
+		if (!showCampaignModal || campaignModalContext) {
+			return;
+		}
+
+		const templateId = lastTemplateId;
+		if (!templateId) {
+			return;
+		}
+
+		const campaignState = useCampaignCreationStore.getState();
+		if (campaignState.campaignName) {
+			return;
+		}
+
+		applyQuickStartTemplatePreset(templateId, campaignState);
+		const template = getQuickStartTemplate(templateId);
+		if (template) {
+			useCampaignCreationStore.setState({
+				campaignName: template.campaignName,
+				primaryChannel: template.primaryChannel,
+				selectedWorkflowId:
+					template.workflowId ?? campaignState.selectedWorkflowId,
+				selectedAgentId:
+					typeof template.agentId !== "undefined"
+						? template.agentId
+						: campaignState.selectedAgentId,
+			});
+		}
+	}, [campaignModalContext, lastTemplateId, showCampaignModal]);
 
 	const handleViewTemplates = useCallback(() => {
 		router.push("/dashboard/campaigns/templates");
@@ -183,10 +255,13 @@ export default function QuickStartPage() {
 			campaignStore.reset();
 			if (preset?.templateId) {
 				applyQuickStartTemplatePreset(preset.templateId, campaignStore);
+				updateLastTemplateId(preset.templateId);
+			} else {
+				updateLastTemplateId(null);
 			}
 			launchWithAction(preset, action);
 		},
-		[campaignStore, launchWithAction],
+		[campaignStore, launchWithAction, updateLastTemplateId],
 	);
 
 	const createRouterPush = useCallback(
@@ -211,6 +286,7 @@ export default function QuickStartPage() {
 			const campaignState = useCampaignCreationStore.getState();
 			campaignState.reset();
 			applyQuickStartTemplatePreset(goalDefinition.templateId, campaignState);
+			updateLastTemplateId(goalDefinition.templateId);
 		}
 
 		const [firstStep] = goalDefinition.flow;
@@ -240,6 +316,7 @@ export default function QuickStartPage() {
 		handleOpenWebhook,
 		handleStartNewSearch,
 		handleBrowserExtension,
+		updateLastTemplateId,
 	]);
 
 	const quickStartCards = useQuickStartCardViewModel({
