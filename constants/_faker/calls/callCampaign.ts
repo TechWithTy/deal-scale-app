@@ -1,4 +1,10 @@
-import { Faker, faker as globalFaker } from "@faker-js/faker";
+import {
+        Faker,
+        base,
+        en,
+        faker as globalFaker,
+        generateMersenne53Randomizer,
+} from "@faker-js/faker";
 
 import { endedReasonValues } from "@/types/vapiAi/api/calls/_enums";
 import type { CallType } from "@/types/vapiAi/api/calls/_enums";
@@ -12,25 +18,25 @@ import {
 } from "../../../types/_dashboard/campaign";
 import { NEXT_PUBLIC_APP_TESTING_MODE } from "../../data";
 
-const seededFaker = new Faker({ locale: globalFaker.rawDefinitions });
-
 const CALL_CAMPAIGN_FAKER_SEED = 1337;
 
-const faker = seededFaker;
+const getRandomizer = (randomizer?: Faker): Faker => randomizer ?? globalFaker;
 
 // Helper function to generate a phone number in the +1-XXX-XXX-XXXX format
-const generatePhoneNumber = (): string => {
-	const areaCode = faker.number.int({ min: 100, max: 999 });
-	const prefix = faker.number.int({ min: 100, max: 999 });
-	const lineNumber = faker.number.int({ min: 1000, max: 9999 });
-	return `+1-${areaCode}-${prefix}-${lineNumber}`;
+const generatePhoneNumber = (randomizer?: Faker): string => {
+        const source = getRandomizer(randomizer);
+        const areaCode = source.number.int({ min: 100, max: 999 });
+        const prefix = source.number.int({ min: 100, max: 999 });
+        const lineNumber = source.number.int({ min: 1000, max: 9999 });
+        return `+1-${areaCode}-${prefix}-${lineNumber}`;
 };
 
 // Helper function to create fake call response
-const generateGetCallResponse = (): GetCallResponse => {
-	const callStatuses: CallStatus[] = [
-		"queued",
-		"ringing",
+const generateGetCallResponse = (randomizer?: Faker): GetCallResponse => {
+        const source = getRandomizer(randomizer);
+        const callStatuses: CallStatus[] = [
+                "queued",
+                "ringing",
 		"in-progress",
 		"forwarding",
 		"ended",
@@ -41,147 +47,153 @@ const generateGetCallResponse = (): GetCallResponse => {
 		"webCall",
 	];
 
-	return {
-		id: faker.string.uuid(),
-		orgId: faker.string.uuid(),
-		type: faker.helpers.arrayElement(callTypes),
-		phoneCallProvider: faker.helpers.arrayElement(["twilio", "vonage", "vapi"]),
-		phoneCallTransport: faker.helpers.arrayElement(["sip", "pstn"]),
-		status: faker.helpers.arrayElement(callStatuses),
-		endedReason: faker.helpers.maybe(
-			() => faker.helpers.arrayElement(endedReasonValues),
-			{
-				probability: 0.3,
-			},
-		),
-		messages: [], // Assuming no messages for simplicity
-		createdAt: faker.date.past().toISOString(),
-		updatedAt: faker.date.recent().toISOString(),
-		startedAt: faker.date.recent().toISOString(),
-		endedAt: faker.date.recent().toISOString(),
-		cost: faker.number.int({ min: 10, max: 100 }),
-		costBreakdown: {
-			transport: faker.number.int({ min: 1, max: 10 }),
-			stt: faker.number.int({ min: 1, max: 10 }),
-			llm: faker.number.int({ min: 1, max: 10 }),
-			tts: faker.number.int({ min: 1, max: 10 }),
-			vapi: faker.number.int({ min: 1, max: 10 }),
-			total: faker.number.int({ min: 50, max: 200 }),
-			llmPromptTokens: faker.number.int({ min: 100, max: 1000 }),
-			llmCompletionTokens: faker.number.int({ min: 100, max: 1000 }),
-			ttsCharacters: faker.number.int({ min: 100, max: 1000 }),
-		},
-		transcript: faker.lorem.sentence(),
-		recordingUrl: faker.internet.url(),
-		stereoRecordingUrl: faker.internet.url(),
-		artifact: {
-			videoRecordingEnabled: faker.datatype.boolean(),
-			recordingS3PathPrefix: faker.system.filePath(),
-		},
-		analysis: {
-			summary: faker.lorem.sentence(),
-			structuredData: {},
-			successEvaluation: faker.lorem.sentence(),
-		},
-		assistantId: faker.string.uuid(),
-		assistant: undefined, // Assuming assistant info is not provided
-		// Add the required monitor property
-		monitor: {
-			listenUrl: faker.internet.url(),
-			controlUrl: faker.internet.url(),
-		},
-	};
+        return {
+                id: source.string.uuid(),
+                orgId: source.string.uuid(),
+                type: source.helpers.arrayElement(callTypes),
+                phoneCallProvider: source.helpers.arrayElement(["twilio", "vonage", "vapi"]),
+                phoneCallTransport: source.helpers.arrayElement(["sip", "pstn"]),
+                status: source.helpers.arrayElement(callStatuses),
+                endedReason: source.helpers.maybe(
+                        () => source.helpers.arrayElement(endedReasonValues),
+                        {
+                                probability: 0.3,
+                        },
+                ),
+                messages: [], // Assuming no messages for simplicity
+                createdAt: source.date.past().toISOString(),
+                updatedAt: source.date.recent().toISOString(),
+                startedAt: source.date.recent().toISOString(),
+                endedAt: source.date.recent().toISOString(),
+                cost: source.number.int({ min: 10, max: 100 }),
+                costBreakdown: {
+                        transport: source.number.int({ min: 1, max: 10 }),
+                        stt: source.number.int({ min: 1, max: 10 }),
+                        llm: source.number.int({ min: 1, max: 10 }),
+                        tts: source.number.int({ min: 1, max: 10 }),
+                        vapi: source.number.int({ min: 1, max: 10 }),
+                        total: source.number.int({ min: 50, max: 200 }),
+                        llmPromptTokens: source.number.int({ min: 100, max: 1000 }),
+                        llmCompletionTokens: source.number.int({ min: 100, max: 1000 }),
+                        ttsCharacters: source.number.int({ min: 100, max: 1000 }),
+                },
+                transcript: source.lorem.sentence(),
+                recordingUrl: source.internet.url(),
+                stereoRecordingUrl: source.internet.url(),
+                artifact: {
+                        videoRecordingEnabled: source.datatype.boolean(),
+                        recordingS3PathPrefix: source.system.filePath(),
+                },
+                analysis: {
+                        summary: source.lorem.sentence(),
+                        structuredData: {},
+                        successEvaluation: source.lorem.sentence(),
+                },
+                assistantId: source.string.uuid(),
+                assistant: undefined, // Assuming assistant info is not provided
+                // Add the required monitor property
+                monitor: {
+                        listenUrl: source.internet.url(),
+                        controlUrl: source.internet.url(),
+                },
+        };
 };
 
 // Helper function to create CallInfo object
-const generateCallInfo = (campaignId: string): CallInfo => {
-	return {
-		callResponse: generateGetCallResponse(),
-		contactId: faker.string.uuid(), // Generate a unique contact ID
-		campaignId: campaignId, // Use the same campaign ID for all calls within a campaign
-	};
+const generateCallInfo = (campaignId: string, randomizer?: Faker): CallInfo => {
+        const source = getRandomizer(randomizer);
+        return {
+                callResponse: generateGetCallResponse(source),
+                contactId: source.string.uuid(), // Generate a unique contact ID
+                campaignId: campaignId, // Use the same campaign ID for all calls within a campaign
+        };
 };
 
 // Helper function to create CallCampaign data
-const generateCallCampaign = (): CallCampaign => {
-	const campaignId = faker.string.uuid(); // Unique campaign ID for this campaign
+const generateCallCampaign = (randomizer?: Faker): CallCampaign => {
+        const source = getRandomizer(randomizer);
+        const campaignId = source.string.uuid(); // Unique campaign ID for this campaign
 
-	const callTypes: CallCampaign["callType"][] = ["inbound", "outbound"];
+        const callTypes: CallCampaign["callType"][] = ["inbound", "outbound"];
 
-	// Decide whether this campaign uses an AI avatar agent; if not, create a human agent with a role
-	const aiAvatarAgent = faker.helpers.maybe(() => faker.person.firstName(), {
-		probability: 0.2,
-	});
-	const humanName = !aiAvatarAgent ? faker.person.fullName() : undefined;
-	const humanRole = !aiAvatarAgent
-		? faker.number.int({ min: 1, max: 100 }) <= 70
-			? "Closer"
-			: "Custom"
-		: undefined;
+        // Decide whether this campaign uses an AI avatar agent; if not, create a human agent with a role
+        const aiAvatarAgent = source.helpers.maybe(() => source.person.firstName(), {
+                probability: 0.2,
+        });
+        const humanName = !aiAvatarAgent ? source.person.fullName() : undefined;
+        const humanRole = !aiAvatarAgent
+                ? source.number.int({ min: 1, max: 100 }) <= 70
+                        ? "Closer"
+                        : "Custom"
+                : undefined;
 
-	return {
-		id: campaignId,
-		name: `${faker.company.name()}`,
-		goal: faker.lorem.sentence(),
-		status: faker.helpers.arrayElement(campaignStatusesGB),
-		startDate: faker.date.past().toISOString(),
-		endDate: faker.helpers.maybe(() => faker.date.future().toISOString(), {
-			probability: 0.7,
-		}),
-		endedReason: [faker.helpers.arrayElement(endedReasonValues)], // Fixed: endedReason should be an array
+        return {
+                id: campaignId,
+                name: `${source.company.name()}`,
+                goal: source.lorem.sentence(),
+                status: source.helpers.arrayElement(campaignStatusesGB),
+                startDate: source.date.past().toISOString(),
+                endDate: source.helpers.maybe(() => source.date.future().toISOString(), {
+                        probability: 0.7,
+                }),
+                // Fixed: endedReason should be an array
+                endedReason: [source.helpers.arrayElement(endedReasonValues)],
 
-		aiVoice: faker.helpers.maybe(() => faker.person.firstName(), {
-			probability: 0.3,
-		}),
-		aiScript: faker.lorem.paragraph(),
-		// Friendly script name and status for table chips
-		scriptTitle: faker.helpers.arrayElement([
-			"Property Pitch V2",
-			"Foreclosure Outreach",
-			"Expired Listings Intro",
-			"Absentee Owner Touch",
-			"General Seller Lead",
-		]),
-		scriptName: undefined,
-		script: undefined,
-		scriptStatus: faker.helpers.weightedArrayElement([
-			{ weight: 5, value: "active" },
-			{ weight: 3, value: "draft" },
-			{ weight: 2, value: "archived" },
-		]),
-		aiAvatarAgent,
-		// Human agent fields (when no AI agent is present)
-		agentName: humanName,
-		agentTitle: humanName,
-		agent: humanName,
-		agentRole: humanRole,
-		role: humanRole,
-		humanRole: humanRole,
-		callInformation: Array.from({ length: 10 }, () =>
-			generateCallInfo(campaignId),
-		), // Use CallInfo objects
-		callerNumber: generatePhoneNumber(),
-		receiverNumber: generatePhoneNumber(),
-		duration: faker.number.int({ min: 30, max: 600 }), // Call duration in seconds
-		callType: faker.helpers.arrayElement(callTypes),
-		timestamp: faker.date.recent(),
-		calls: faker.number.int({ min: 1, max: 100 }),
-		inQueue: faker.number.int({ min: 0, max: 10 }),
-		leads: faker.number.int({ min: 0, max: 10 }),
-		voicemail: faker.number.int({ min: 0, max: 10 }),
-		hungUp: faker.number.int({ min: 0, max: 10 }),
-		dead: faker.number.int({ min: 0, max: 5 }),
-		wrongNumber: faker.number.int({ min: 0, max: 5 }),
-		inactiveNumbers: faker.number.int({ min: 0, max: 5 }),
-		// Per-source DNC breakdown for UI display
-		...(() => {
-			const total = faker.number.int({ min: 0, max: 5 });
-			let remaining = total;
-			const pick = (max: number) => {
-				const v = faker.number.int({ min: 0, max: Math.max(0, max) });
-				remaining -= v;
-				return v;
-			};
+                aiVoice: source.helpers.maybe(() => source.person.firstName(), {
+                        probability: 0.3,
+                }),
+                aiScript: source.lorem.paragraph(),
+                // Friendly script name and status for table chips
+                scriptTitle: source.helpers.arrayElement([
+                        "Property Pitch V2",
+                        "Foreclosure Outreach",
+                        "Expired Listings Intro",
+                        "Absentee Owner Touch",
+                        "General Seller Lead",
+                ]),
+                scriptName: undefined,
+                script: undefined,
+                scriptStatus: source.helpers.weightedArrayElement([
+                        { weight: 5, value: "active" },
+                        { weight: 3, value: "draft" },
+                        { weight: 2, value: "archived" },
+                ]),
+                aiAvatarAgent,
+                // Human agent fields (when no AI agent is present)
+                agentName: humanName,
+                agentTitle: humanName,
+                agent: humanName,
+                agentRole: humanRole,
+                role: humanRole,
+                humanRole: humanRole,
+                callInformation: Array.from({ length: 10 }, () =>
+                        generateCallInfo(campaignId, source),
+                ), // Use CallInfo objects
+                callerNumber: generatePhoneNumber(source),
+                receiverNumber: generatePhoneNumber(source),
+                duration: source.number.int({ min: 30, max: 600 }), // Call duration in seconds
+                callType: source.helpers.arrayElement(callTypes),
+                timestamp: source.date.recent(),
+                calls: source.number.int({ min: 1, max: 100 }),
+                inQueue: source.number.int({ min: 0, max: 10 }),
+                leads: source.number.int({ min: 0, max: 10 }),
+                voicemail: source.number.int({ min: 0, max: 10 }),
+                hungUp: source.number.int({ min: 0, max: 10 }),
+                dead: source.number.int({ min: 0, max: 5 }),
+                wrongNumber: source.number.int({ min: 0, max: 5 }),
+                inactiveNumbers: source.number.int({ min: 0, max: 5 }),
+                // Per-source DNC breakdown for UI display
+                ...(() => {
+                        const total = source.number.int({ min: 0, max: 5 });
+                        let remaining = total;
+                        const pick = (max: number) => {
+                                const v = source.number.int({
+                                        min: 0,
+                                        max: Math.max(0, max),
+                                });
+                                remaining -= v;
+                                return v;
+                        };
 			const text = pick(remaining);
 			const email = pick(remaining);
 			const dm = pick(remaining);
@@ -195,34 +207,35 @@ const generateCallCampaign = (): CallCampaign => {
 				dncBreakdown: { text, email, call, dm, manual, scrub },
 			};
 		})(),
-		scriptID: faker.string.uuid(),
-		funnelID: faker.string.uuid(),
-		workflowID: faker.string.uuid(),
-		// New dialing configuration & webhook mock data
-		totalDialAttempts: faker.number.int({ min: 1, max: 8 }),
-		maxDailyAttempts: faker.number.int({ min: 1, max: 4 }),
-		minMinutesBetweenCalls: faker.number.int({ min: 5, max: 240 }),
-		countVoicemailAsAnswered: faker.datatype.boolean(),
-		postCallWebhookUrl: faker.helpers.maybe(
-			() => `${faker.internet.url({ appendSlash: false })}/webhooks/post-call`,
-			{ probability: 0.7 },
-		),
-		transfer: faker.helpers.maybe(
-			() => ({
-				type: faker.helpers.arrayElement([
-					"chat_agent",
-					"voice_inbound",
-					"voice_outbound",
-					"text",
-					"social_media",
-					"appraisal",
-					"live_person",
-					"live_person_calendar",
-				] as const),
-				agentId: `agent_${faker.number.int({ min: 100, max: 999 })}`,
-			}),
-			{ probability: 0.8 },
-		),
+                scriptID: source.string.uuid(),
+                funnelID: source.string.uuid(),
+                workflowID: source.string.uuid(),
+                // New dialing configuration & webhook mock data
+                totalDialAttempts: source.number.int({ min: 1, max: 8 }),
+                maxDailyAttempts: source.number.int({ min: 1, max: 4 }),
+                minMinutesBetweenCalls: source.number.int({ min: 5, max: 240 }),
+                countVoicemailAsAnswered: source.datatype.boolean(),
+                postCallWebhookUrl: source.helpers.maybe(
+                        () =>
+                                `${source.internet.url({ appendSlash: false })}/webhooks/post-call`,
+                        { probability: 0.7 },
+                ),
+                transfer: source.helpers.maybe(
+                        () => ({
+                                type: source.helpers.arrayElement([
+                                        "chat_agent",
+                                        "voice_inbound",
+                                        "voice_outbound",
+                                        "text",
+                                        "social_media",
+                                        "appraisal",
+                                        "live_person",
+                                        "live_person_calendar",
+                                ] as const),
+                                agentId: `agent_${source.number.int({ min: 100, max: 999 })}`,
+                        }),
+                        { probability: 0.8 },
+                ),
 		// Build a breakdown of transfers by category for richer UI
 		// and ensure the total transfers equals the sum of breakdown values
 		...(() => {
@@ -235,14 +248,14 @@ const generateCallCampaign = (): CallCampaign => {
 				"appraisal",
 				"live_person",
 				"live_person_calendar",
-			] as const;
-			const breakdown: Partial<Record<TransferType, number>> = {};
-			let total = 0;
-			for (const c of cats) {
-				const n = faker.number.int({ min: 0, max: 8 });
-				if (n > 0) breakdown[c] = n;
-				total += n;
-			}
+                        ] as const;
+                        const breakdown: Partial<Record<TransferType, number>> = {};
+                        let total = 0;
+                        for (const c of cats) {
+                                const n = source.number.int({ min: 0, max: 8 });
+                                if (n > 0) breakdown[c] = n;
+                                total += n;
+                        }
 			return {
 				transferBreakdown: breakdown,
 				transfers: total,
@@ -252,25 +265,22 @@ const generateCallCampaign = (): CallCampaign => {
 };
 
 // Generate 100 entries of CallCampaign data
-export const generateCallCampaignData = (): CallCampaign[] => {
-	return Array.from({ length: 100 }, generateCallCampaign);
+export const generateCallCampaignData = (randomizer?: Faker): CallCampaign[] => {
+        const source = getRandomizer(randomizer);
+        return Array.from({ length: 100 }, () => generateCallCampaign(source));
 };
 
 const deterministicFallbackCampaigns = (() => {
-	const previousDefaultRefDate = faker.defaultRefDate;
-
-	faker.seed(CALL_CAMPAIGN_FAKER_SEED);
-	faker.setDefaultRefDate(new Date("2024-01-01T00:00:00.000Z"));
-
-	const campaigns = generateCallCampaignData();
-
-	faker.setDefaultRefDate(previousDefaultRefDate);
-
-	return campaigns;
+        const seeded = new Faker({
+                locale: [en, base],
+                randomizer: generateMersenne53Randomizer(),
+        });
+        seeded.seed(CALL_CAMPAIGN_FAKER_SEED);
+        return generateCallCampaignData(seeded);
 })();
 
 export const fallbackCallCampaignData = deterministicFallbackCampaigns;
 
 // Example of generating 100 entries
 export const mockCallCampaignData: CallCampaign[] | false =
-	NEXT_PUBLIC_APP_TESTING_MODE && deterministicFallbackCampaigns;
+        NEXT_PUBLIC_APP_TESTING_MODE && deterministicFallbackCampaigns;
