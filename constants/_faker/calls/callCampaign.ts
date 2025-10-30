@@ -12,6 +12,12 @@ import {
 } from "../../../types/_dashboard/campaign";
 import { NEXT_PUBLIC_APP_TESTING_MODE } from "../../data";
 
+const CALL_CAMPAIGN_FAKER_SEED = 1337;
+
+if (NEXT_PUBLIC_APP_TESTING_MODE) {
+        faker.seed(CALL_CAMPAIGN_FAKER_SEED);
+}
+
 // Helper function to generate a phone number in the +1-XXX-XXX-XXXX format
 const generatePhoneNumber = (): string => {
 	const areaCode = faker.number.int({ min: 100, max: 999 });
