@@ -17,6 +17,10 @@ import {
 	campaignStatusesGB,
 } from "../../../types/_dashboard/campaign";
 import { NEXT_PUBLIC_APP_TESTING_MODE } from "../../data";
+import {
+        CALL_CAMPAIGN_FAKER_SEED,
+        generateCallCampaignData,
+} from "./internal/callCampaignGenerator";
 
 const CALL_CAMPAIGN_FAKER_SEED = 1337;
 
