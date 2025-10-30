@@ -20,10 +20,7 @@ describe("call campaign mock data", () => {
                 expect(first).toHaveLength(100);
                 expect(second).toHaveLength(100);
 
-                const firstIds = first.slice(0, 10).map((campaign) => campaign.id);
-                const secondIds = second.slice(0, 10).map((campaign) => campaign.id);
-
-                expect(secondIds).toStrictEqual(firstIds);
+                expect(second).toStrictEqual(first);
         });
 
         test("mockCallCampaignData remains stable across module reloads", async () => {
