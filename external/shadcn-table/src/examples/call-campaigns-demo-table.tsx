@@ -22,8 +22,8 @@ import {
 
 import type { CallCampaign } from "../../../../types/_dashboard/campaign";
 import {
-	generateCallCampaignData,
-	mockCallCampaignData,
+        fallbackCallCampaignData,
+        mockCallCampaignData,
 } from "../../../../constants/_faker/calls/callCampaign";
 import CampaignModalMain from "./campaigns/modal/CampaignModalMain";
 import { useCampaignRowFocus } from "@/components/campaigns/utils/useCampaignRowFocus";
@@ -45,12 +45,13 @@ export default function CallCampaignsDemoTable({
         onCampaignSelect,
         initialCampaigns,
 }: CallCampaignsDemoTableProps) {
-        const fallbackCampaigns = React.useMemo(
-                () =>
+        const fallbackCampaigns = React.useMemo(() => {
+                const seeded =
                         (mockCallCampaignData as CallCampaign[] | false) ||
-                        generateCallCampaignData(),
-                [],
-        );
+                        fallbackCallCampaignData;
+
+                return seeded.map((campaign) => ({ ...campaign }));
+        }, []);
 
         const mergeCampaigns = React.useCallback(
                 (incoming?: CallCampaign[]) => {
