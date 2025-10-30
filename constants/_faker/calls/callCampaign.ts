@@ -7,9 +7,9 @@ import {
 } from "@faker-js/faker";
 
 import { endedReasonValues } from "@/types/vapiAi/api/calls/_enums";
+import type { CallType } from "@/types/vapiAi/api/calls/_enums";
 import type { CallStatus } from "@/types/vapiAi/api/calls/create";
 import type { GetCallResponse } from "@/types/vapiAi/api/calls/get";
-import type { CallType } from "@/types/vapiAi/api/calls/_enums";
 import {
 	type CallCampaign,
 	type CallInfo,
