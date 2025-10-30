@@ -23,9 +23,14 @@ export function SummaryCard({
         setDateChip,
 }: Props) {
         const uiRows = table.getFilteredRowModel().rows.map((r) => r.original);
-        const startDateColumn = table
-                .getAllColumns()
-                .find((column) => column.id === "startDate");
+        const startDateColumn = React.useMemo(() => {
+                const columns =
+                        typeof table.getAllLeafColumns === "function"
+                                ? table.getAllLeafColumns()
+                                : table.getAllColumns();
+
+                return columns.find((column) => column.id === "startDate");
+        }, [table]);
         type Totals = {
                 calls: number;
                 leads: number;
@@ -82,7 +87,7 @@ export function SummaryCard({
                                         >
                                                 30d
                                         </Button>
-                                        {startDateColumn?.getCanFilter() ? (
+                                        {startDateColumn ? (
                                                 <DataTableDateFilter
                                                         column={startDateColumn}
                                                         title="Range"

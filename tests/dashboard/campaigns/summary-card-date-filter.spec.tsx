@@ -1,6 +1,6 @@
 import React from "react";
 import { render, screen } from "@testing-library/react";
-import type { Table } from "@tanstack/react-table";
+import type { Column, Table } from "@tanstack/react-table";
 import { describe, expect, test, vi } from "vitest";
 
 import type { CallCampaign } from "@/types/_dashboard/campaign";
@@ -27,13 +27,28 @@ const { SummaryCard } = await import(
         "external/shadcn-table/src/examples/Phone/call/components/SummaryCard"
 );
 
-function createTable(rows: CallCampaign[], onGetColumn: () => never) {
+function createTable({
+        rows,
+        columns = [],
+        onGetColumn,
+}: {
+        rows: CallCampaign[];
+        columns?: Column<CallCampaign, unknown>[];
+        onGetColumn?: (id: string) => never;
+}) {
         return {
                 getFilteredRowModel: () => ({
                         rows: rows.map((original) => ({ original })),
                 }),
-                getColumn: onGetColumn,
-                getAllColumns: () => [],
+                getColumn:
+                        onGetColumn ??
+                        ((id: string) =>
+                                columns.find((column) => column.id === id) as Column<
+                                        CallCampaign,
+                                        unknown
+                                >),
+                getAllColumns: () => columns,
+                getAllLeafColumns: () => columns,
         } as unknown as Table<CallCampaign>;
 }
 
@@ -43,8 +58,8 @@ describe("SummaryCard", () => {
                         throw new Error("startDate should not be requested");
                 });
 
-                const table = createTable(
-                        [
+                const table = createTable({
+                        rows: [
                                 {
                                         id: "1",
                                         name: "Sample Campaign",
@@ -54,8 +69,9 @@ describe("SummaryCard", () => {
                                         inQueue: 5,
                                 } as CallCampaign,
                         ],
-                        getColumn,
-                );
+                        onGetColumn: getColumn,
+                        columns: [],
+                });
 
                 expect(() =>
                         render(
@@ -73,5 +89,41 @@ describe("SummaryCard", () => {
                 expect(getColumn).not.toHaveBeenCalled();
                 expect(screen.getByText("Rows")).toBeDefined();
                 expect(screen.queryByTestId("date-filter")).toBeNull();
+        });
+
+        test("renders date filter when startDate column is present", () => {
+                const setFilterValue = vi.fn();
+                const startDateColumn = {
+                        id: "startDate",
+                        getFilterValue: vi.fn(() => undefined),
+                        setFilterValue,
+                } as unknown as Column<CallCampaign, unknown>;
+
+                const table = createTable({
+                        rows: [
+                                {
+                                        id: "99",
+                                        name: "Another Campaign",
+                                        status: "queued",
+                                        calls: 3,
+                                        leads: 1,
+                                        inQueue: 0,
+                                } as CallCampaign,
+                        ],
+                        columns: [startDateColumn],
+                });
+
+                render(
+                        <SummaryCard
+                                table={table}
+                                campaignType="Calls"
+                                dateChip="today"
+                                setDateChip={() => {
+                                        /* noop */
+                                }}
+                        />,
+                );
+
+                expect(screen.getByTestId("date-filter")).toBeDefined();
         });
 });
