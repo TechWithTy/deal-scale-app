@@ -14,10 +14,6 @@ import { NEXT_PUBLIC_APP_TESTING_MODE } from "../../data";
 
 const CALL_CAMPAIGN_FAKER_SEED = 1337;
 
-if (NEXT_PUBLIC_APP_TESTING_MODE) {
-        faker.seed(CALL_CAMPAIGN_FAKER_SEED);
-}
-
 // Helper function to generate a phone number in the +1-XXX-XXX-XXXX format
 const generatePhoneNumber = (): string => {
 	const areaCode = faker.number.int({ min: 100, max: 999 });
@@ -253,9 +249,18 @@ const generateCallCampaign = (): CallCampaign => {
 
 // Generate 100 entries of CallCampaign data
 export const generateCallCampaignData = (): CallCampaign[] => {
-	return Array.from({ length: 100 }, generateCallCampaign);
+        return Array.from({ length: 100 }, generateCallCampaign);
 };
+
+const deterministicFallbackCampaigns = (() => {
+        faker.seed(CALL_CAMPAIGN_FAKER_SEED);
+        const campaigns = generateCallCampaignData();
+        faker.seed();
+        return campaigns;
+})();
+
+export const fallbackCallCampaignData = deterministicFallbackCampaigns;
 
 // Example of generating 100 entries
 export const mockCallCampaignData: CallCampaign[] | false =
-	NEXT_PUBLIC_APP_TESTING_MODE && generateCallCampaignData();
+        NEXT_PUBLIC_APP_TESTING_MODE && deterministicFallbackCampaigns;
