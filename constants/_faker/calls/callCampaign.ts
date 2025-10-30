@@ -1,9 +1,9 @@
-import { faker } from "@faker-js/faker";
+import { Faker, faker as globalFaker } from "@faker-js/faker";
 
 import { endedReasonValues } from "@/types/vapiAi/api/calls/_enums";
+import type { CallType } from "@/types/vapiAi/api/calls/_enums";
 import type { CallStatus } from "@/types/vapiAi/api/calls/create";
 import type { GetCallResponse } from "@/types/vapiAi/api/calls/get";
-import type { CallType } from "@/types/vapiAi/api/calls/_enums";
 import {
 	type CallCampaign,
 	type CallInfo,
@@ -12,7 +12,11 @@ import {
 } from "../../../types/_dashboard/campaign";
 import { NEXT_PUBLIC_APP_TESTING_MODE } from "../../data";
 
+const seededFaker = new Faker({ locale: globalFaker.rawDefinitions });
+
 const CALL_CAMPAIGN_FAKER_SEED = 1337;
+
+const faker = seededFaker;
 
 // Helper function to generate a phone number in the +1-XXX-XXX-XXXX format
 const generatePhoneNumber = (): string => {
@@ -249,18 +253,24 @@ const generateCallCampaign = (): CallCampaign => {
 
 // Generate 100 entries of CallCampaign data
 export const generateCallCampaignData = (): CallCampaign[] => {
-        return Array.from({ length: 100 }, generateCallCampaign);
+	return Array.from({ length: 100 }, generateCallCampaign);
 };
 
 const deterministicFallbackCampaigns = (() => {
-        faker.seed(CALL_CAMPAIGN_FAKER_SEED);
-        const campaigns = generateCallCampaignData();
-        faker.seed();
-        return campaigns;
+	const previousDefaultRefDate = faker.defaultRefDate;
+
+	faker.seed(CALL_CAMPAIGN_FAKER_SEED);
+	faker.setDefaultRefDate(new Date("2024-01-01T00:00:00.000Z"));
+
+	const campaigns = generateCallCampaignData();
+
+	faker.setDefaultRefDate(previousDefaultRefDate);
+
+	return campaigns;
 })();
 
 export const fallbackCallCampaignData = deterministicFallbackCampaigns;
 
 // Example of generating 100 entries
 export const mockCallCampaignData: CallCampaign[] | false =
-        NEXT_PUBLIC_APP_TESTING_MODE && deterministicFallbackCampaigns;
+	NEXT_PUBLIC_APP_TESTING_MODE && deterministicFallbackCampaigns;
