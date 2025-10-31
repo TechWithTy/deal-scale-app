@@ -110,16 +110,32 @@ export default function QuickStartPage() {
 
 	const handleLaunchCampaign = useCallback(
 		({ leadListId, leadListName, leadCount }: QuickStartCampaignContext) => {
+			// Reset the campaign store first
 			campaignStore.reset();
+
+			// If a Quick Start template was selected earlier, apply its preset.
+			// Then override the name to keep the lead-list based naming.
+			if (lastTemplateId) {
+				applyQuickStartTemplatePreset(lastTemplateId, campaignStore);
+				// Fallback: if template didn't specify an agent, assign the first available one
+				const live = useCampaignCreationStore.getState();
+				if (!live.selectedAgentId && live.availableAgents?.length) {
+					campaignStore.setSelectedAgentId(live.availableAgents[0].id);
+				}
+			}
+
+			// Hydrate lead list context and preferred name derived from the list
 			campaignStore.setAreaMode("leadList");
 			campaignStore.setSelectedLeadListId(leadListId);
 			campaignStore.setLeadCount(leadCount);
 			campaignStore.setCampaignName(`${leadListName} Campaign`);
+
+			// Open campaign modal with the captured context
 			setCampaignModalContext({ leadListId, leadListName, leadCount });
 			setShowCampaignModal(true);
 			setShowLeadModal(false);
 		},
-		[campaignStore],
+		[campaignStore, lastTemplateId],
 	);
 
 	const handleSuiteLaunchComplete = useCallback(
@@ -392,6 +408,14 @@ export default function QuickStartPage() {
 				onStartTour={handleStartTour}
 				onCloseTour={handleCloseTour}
 				campaignSteps={campaignSteps}
+				defaultChannel={(() => {
+					if (!lastTemplateId) return undefined;
+					const t = getQuickStartTemplate(lastTemplateId);
+					if (!t) return undefined;
+					return t.primaryChannel === "call" || t.primaryChannel === "text"
+						? t.primaryChannel
+						: undefined;
+				})()}
 			/>
 
 			<QuickStartSupportCard />

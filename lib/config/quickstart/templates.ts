@@ -18,6 +18,13 @@ export interface QuickStartTemplateDefinition {
 	readonly primaryChannel: NonNullable<CampaignCreationState["primaryChannel"]>;
 	readonly workflowId?: string;
 	readonly agentId?: string | null;
+	readonly salesScriptId?: string;
+	readonly daysToRun?: number; // default campaign length in days
+	readonly countVoicemailAsAnswered?: boolean;
+	readonly voicemailDrops?: boolean;
+	readonly campaignGoal?: string;
+	readonly voicemailMessageId?: string; // preferred voicemail message preset
+	readonly voicemailVoiceId?: string; // preferred voicemail voice preset
 	readonly summary: QuickStartTemplateSummary;
 }
 
@@ -29,12 +36,20 @@ const TEMPLATE_DEFINITIONS: Record<
 		id: "lead-import",
 		label: "Lead Import Jumpstart",
 		campaignName: "Lead Import Launch",
-		primaryChannel: "email",
+		primaryChannel: "text",
 		workflowId: "wf1",
+		salesScriptId: "ss1",
+		daysToRun: 7,
+		countVoicemailAsAnswered: false,
+		voicemailDrops: true,
+		campaignGoal: "Warm inbound via SMS to qualify leads after import.",
+		voicemailMessageId: "vm_professional",
+		voicemailVoiceId: "voice_emma",
 		summary: {
-			headline: "Default outreach is ready the moment you close the wizard.",
+			headline:
+				"Default SMS outreach is ready the moment you close the wizard.",
 			bullets: [
-				"Primary channel: Email",
+				"Primary channel: Text",
 				"Workflow: Lead Import Launch",
 				"Automation rules: Duplicate guard • Warm lead follow-up",
 				"Webhook subscriptions: CRM sync",
@@ -48,6 +63,14 @@ const TEMPLATE_DEFINITIONS: Record<
 		primaryChannel: "call",
 		workflowId: "wf2",
 		agentId: "1",
+		salesScriptId: "ss2",
+		daysToRun: 7,
+		countVoicemailAsAnswered: true,
+		voicemailDrops: true,
+		campaignGoal:
+			"Call to qualify and book appointments with interested sellers.",
+		voicemailMessageId: "vm_urgent",
+		voicemailVoiceId: "voice_paul",
 		summary: {
 			headline: "Preset cadences combine phone and SMS for rapid follow-up.",
 			bullets: [
@@ -63,12 +86,20 @@ const TEMPLATE_DEFINITIONS: Record<
 		id: "market-research",
 		label: "Market Discovery",
 		campaignName: "Market Discovery Playbook",
-		primaryChannel: "social",
+		primaryChannel: "text",
 		workflowId: "wf3",
+		salesScriptId: "ss3",
+		daysToRun: 7,
+		countVoicemailAsAnswered: false,
+		voicemailDrops: false,
+		campaignGoal: "Collect market signals via SMS to identify hot zips.",
+		voicemailMessageId: "vm_friendly",
+		voicemailVoiceId: "voice_emma",
 		summary: {
-			headline: "Insights sync automatically to your research workspace.",
+			headline:
+				"Insights sync automatically to your research workspace via SMS.",
 			bullets: [
-				"Primary channel: Social",
+				"Primary channel: Text",
 				"Workflow: Market Discovery Playbook",
 				"Automation rules: Save top performers",
 				"Webhook subscriptions: Saved search alerts",
@@ -79,14 +110,21 @@ const TEMPLATE_DEFINITIONS: Record<
 		id: "automation-routing",
 		label: "Borrower Automation Routing",
 		campaignName: "Borrower Intake Automation",
-		primaryChannel: "email",
+		primaryChannel: "text",
 		workflowId: "wf-lender-automation",
 		agentId: "42",
+		salesScriptId: "ss2",
+		daysToRun: 7,
+		countVoicemailAsAnswered: false,
+		voicemailDrops: false,
+		campaignGoal: "Qualify borrowers via SMS and route hot opportunities.",
+		voicemailMessageId: "vm_professional",
+		voicemailVoiceId: "voice_matthew",
 		summary: {
 			headline:
-				"Automation defaults coordinate borrower intake and funding teams.",
+				"Automation defaults coordinate borrower intake and funding teams via SMS.",
 			bullets: [
-				"Primary channel: Email",
+				"Primary channel: Text",
 				"Workflow: Aggressive: 3-day blitz",
 				"Assigned agent: Jane Smith",
 				"Automation rules: Hot borrower follow-up • Stalled deal escalation",
@@ -116,5 +154,39 @@ export const applyQuickStartTemplatePreset = (
 
 	if (typeof template.agentId !== "undefined") {
 		store.setSelectedAgentId(template.agentId);
+	}
+
+	// Sales script
+	if (template.salesScriptId) {
+		store.setSelectedSalesScriptId(template.salesScriptId);
+	}
+
+	// Voicemail preferences
+	if (typeof template.countVoicemailAsAnswered === "boolean") {
+		store.setCountVoicemailAsAnswered(template.countVoicemailAsAnswered);
+	}
+	if (typeof template.voicemailDrops === "boolean") {
+		store.setDoVoicemailDrops(template.voicemailDrops);
+	}
+	if (template.voicemailMessageId) {
+		// @ts-ignore - field present in store
+		store.setPreferredVoicemailMessageId(template.voicemailMessageId);
+	}
+	if (template.voicemailVoiceId) {
+		// @ts-ignore - field present in store
+		store.setPreferredVoicemailVoiceId(template.voicemailVoiceId);
+	}
+
+	// Timing defaults
+	const days = template.daysToRun ?? 7;
+	store.setDaysSelected(days);
+	const start = new Date();
+	store.setStartDate(start);
+	const end = new Date(start.getTime() + days * 24 * 60 * 60 * 1000);
+	store.setEndDate(end);
+
+	// Campaign goal prefill
+	if (template.campaignGoal) {
+		store.setCampaignGoal(template.campaignGoal);
 	}
 };

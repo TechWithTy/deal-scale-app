@@ -7,7 +7,7 @@ import {
 	PopoverTrigger,
 } from "../../../../components/ui/popover";
 import Holidays from "date-holidays";
-import { useCampaignCreationStore } from "../../../../lib/stores/campaignCreation";
+import { useCampaignCreationStore } from "@/lib/stores/campaignCreation";
 import { Input } from "@/components/ui/input";
 import {
 	DropdownMenu,
@@ -17,6 +17,7 @@ import {
 } from "../../../../components/ui/dropdown-menu";
 import { Play, Pause, ChevronDown } from "lucide-react";
 import type { FC } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Label } from "@/components/ui/label";
 
 interface TimingPreferencesStepProps {
@@ -47,22 +48,125 @@ const TimingPreferencesStep: FC<TimingPreferencesStepProps> = ({
 		setMinDailyAttempts,
 		maxDailyAttempts,
 		setMaxDailyAttempts,
-		countVoicemailAsAnswered,
-		setCountVoicemailAsAnswered,
-	} = useCampaignCreationStore();
+    countVoicemailAsAnswered,
+    setCountVoicemailAsAnswered,
+    preferredVoicemailMessageId,
+    setPreferredVoicemailMessageId,
+    preferredVoicemailVoiceId,
+    setPreferredVoicemailVoiceId,
+  } = useCampaignCreationStore();
 
 	// Initialize holidays for default country (US). Adjust if you add UI for country selection.
-	const hd = new Holidays("US");
+  const hd = new Holidays("US");
 
-	const isWeekend = (d: Date) => {
-		const day = d.getDay();
-		return day === 0 || day === 6;
-	};
+  const isWeekend = (d: Date) => {
+      const day = d.getDay();
+      return day === 0 || day === 6;
+  };
 
 	const minAttemptsError = minDailyAttempts < 1;
 	const maxAttemptsError = maxDailyAttempts < minDailyAttempts;
 
-	const isHoliday = (d: Date) => Boolean(hd.isHoliday(d));
+  const isHoliday = (d: Date) => Boolean(hd.isHoliday(d));
+
+  // Ensure end date is always hydrated from store preset
+  const daysSelected = useCampaignCreationStore((s) => s.daysSelected);
+  useEffect(() => {
+    if (!startDate) return;
+    if (!endDate || (endDate as Date) < startDate) {
+      const end = new Date(startDate.getTime() + (daysSelected || 7) * 24 * 60 * 60 * 1000);
+      setEndDate(end);
+    }
+  }, [startDate, endDate, daysSelected, setEndDate]);
+
+  // Derive friendly labels for voice and message
+  const voiceLabel = useMemo(() => {
+    const map: Record<string, string> = {
+      voice_emma: "Emma (Natural)",
+      voice_paul: "Paul (Warm)",
+      voice_matthew: "Matthew (Clear)",
+    };
+    return preferredVoicemailVoiceId ? map[preferredVoicemailVoiceId] ?? "Select a voice" : "Select a voice";
+  }, [preferredVoicemailVoiceId]);
+
+  const messageLabel = useMemo(() => {
+    const map: Record<string, string> = {
+      vm_professional: "Professional Business Message",
+      vm_friendly: "Friendly Personal Message",
+      vm_urgent: "Urgent Callback Message",
+      vm_custom: "Custom Message (Upload Audio)",
+    };
+    return preferredVoicemailMessageId ? map[preferredVoicemailMessageId] ?? "Select a voicemail message" : "Select a voicemail message";
+  }, [preferredVoicemailMessageId]);
+
+  // Single audio preview controller for voice and message previews
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [playingKey, setPlayingKey] = useState<string | null>(null);
+
+  const getAudioUrl = (kind: "voice" | "message", id: string): string | null => {
+    const voiceMap: Record<string, string> = {
+      voice_emma: "/audio/voices/voice_emma.mp3",
+      voice_paul: "/audio/voices/voice_paul.mp3",
+      voice_matthew: "/audio/voices/voice_matthew.mp3",
+    };
+    const msgMap: Record<string, string> = {
+      vm_professional: "/audio/messages/vm_professional.mp3",
+      vm_friendly: "/audio/messages/vm_friendly.mp3",
+      vm_urgent: "/audio/messages/vm_urgent.mp3",
+      vm_custom: "/audio/messages/vm_custom.mp3",
+    };
+    return kind === "voice" ? voiceMap[id] ?? null : msgMap[id] ?? null;
+  };
+
+  const stopAudio = () => {
+    try {
+      audioRef.current?.pause();
+      if (audioRef.current) audioRef.current.currentTime = 0;
+    } catch {}
+    audioRef.current = null;
+  };
+
+  const handleTogglePlay = (
+    e: React.MouseEvent,
+    kind: "voice" | "message",
+    id: string,
+    label: string,
+  ) => {
+    e.stopPropagation();
+    const key = `${kind}:${id}`;
+    if (playingKey === key) {
+      stopAudio();
+      setPlayingKey(null);
+      return;
+    }
+    stopAudio();
+    const url = getAudioUrl(kind, id);
+    if (!url) {
+      // eslint-disable-next-line no-console
+      console.warn("No preview available for", { kind, id, label });
+      setPlayingKey(null);
+      return;
+    }
+    try {
+      const audio = new Audio(url);
+      audioRef.current = audio;
+      void audio.play().catch((err) => {
+        // eslint-disable-next-line no-console
+        console.warn("Audio preview failed", { kind, id, error: err });
+        setPlayingKey(null);
+      });
+      setPlayingKey(key);
+      audio.onended = () => {
+        setPlayingKey((curr) => (curr === key ? null : curr));
+      };
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.warn("Audio init failed", { kind, id, error: err });
+      setPlayingKey(null);
+    }
+  };
+
+  useEffect(() => () => stopAudio(), []);
 
 	const handleStartSelect = (d?: Date) => {
 		if (!d) return;
@@ -176,95 +280,174 @@ const TimingPreferencesStep: FC<TimingPreferencesStepProps> = ({
 						)}
 					</div>
 				</div>
-				<div className="space-y-3">
-					<Label>Preferred Voicemail Messages</Label>
-					<div className="space-y-2">
-						<DropdownMenu>
-							<DropdownMenuTrigger asChild>
-								<Button variant="outline" className="w-full justify-between">
-									<span>Select a voicemail message</span>
-									<ChevronDown className="h-4 w-4 opacity-50" />
-								</Button>
-							</DropdownMenuTrigger>
-							<DropdownMenuContent className="w-full min-w-[300px]">
-								<DropdownMenuItem
-									onSelect={() => console.log("Selected: Professional Business Message")}
-								>
-									<div className="flex items-center justify-between w-full">
-										<span>Professional Business Message</span>
-										<Button
-											type="button"
-											variant="ghost"
-											size="sm"
-											className="h-6 w-6 p-0"
-											onClick={(e) => {
-												e.stopPropagation();
-												console.log("Play Professional Business Message");
-											}}
-										>
-											<Play className="h-3 w-3" />
-										</Button>
-									</div>
-								</DropdownMenuItem>
-								<DropdownMenuItem
-									onSelect={() => console.log("Selected: Friendly Personal Message")}
-								>
-									<div className="flex items-center justify-between w-full">
-										<span>Friendly Personal Message</span>
-										<Button
-											type="button"
-											variant="ghost"
-											size="sm"
-											className="h-6 w-6 p-0"
-											onClick={(e) => {
-												e.stopPropagation();
-												console.log("Play Friendly Personal Message");
-											}}
-										>
-											<Play className="h-3 w-3" />
-										</Button>
-									</div>
-								</DropdownMenuItem>
-								<DropdownMenuItem
-									onSelect={() => console.log("Selected: Urgent Callback Message")}
-								>
-									<div className="flex items-center justify-between w-full">
-										<span>Urgent Callback Message</span>
-										<Button
-											type="button"
-											variant="ghost"
-											size="sm"
-											className="h-6 w-6 p-0"
-											onClick={(e) => {
-												e.stopPropagation();
-												console.log("Play Urgent Callback Message");
-											}}
-										>
-											<Play className="h-3 w-3" />
-										</Button>
-									</div>
-								</DropdownMenuItem>
-								<DropdownMenuItem
-									onSelect={() => console.log("Selected: Custom Message")}
-								>
-									<div className="flex items-center justify-between w-full">
-										<span>Custom Message (Upload Audio)</span>
-										<Button
-											type="button"
-											variant="ghost"
-											size="sm"
-											className="h-6 w-6 p-0"
-											onClick={(e) => {
-												e.stopPropagation();
-												console.log("Play Custom Message");
-											}}
-										>
-											<Play className="h-3 w-3" />
-										</Button>
-									</div>
-								</DropdownMenuItem>
-							</DropdownMenuContent>
-						</DropdownMenu>
+            <div className="space-y-3">
+                <Label>Voice</Label>
+                <div className="space-y-2">
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="outline" className="w-full justify-between">
+                                <span>{voiceLabel}</span>
+                                <ChevronDown className="h-4 w-4 opacity-50" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent className="w-full min-w-[300px]">
+                            <DropdownMenuItem onSelect={() => setPreferredVoicemailVoiceId("voice_emma")}>
+                                <div className="flex items-center justify-between w-full">
+                                    <span>Emma (Natural)</span>
+                                    <div className="flex items-center gap-1">
+                                        <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="sm"
+                                            className="h-6 w-6 p-0"
+                                            onClick={(e) => handleTogglePlay(e, "voice", "voice_emma", "Emma (Natural)")}
+                                        >
+                                            {playingKey === "voice:voice_emma" ? (
+                                              <Pause className="h-3 w-3" />
+                                            ) : (
+                                              <Play className="h-3 w-3" />
+                                            )}
+                                        </Button>
+                                    </div>
+                                </div>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onSelect={() => setPreferredVoicemailVoiceId("voice_paul")}>
+                                <div className="flex items-center justify-between w-full">
+                                    <span>Paul (Warm)</span>
+                                    <div className="flex items-center gap-1">
+                                        <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="sm"
+                                            className="h-6 w-6 p-0"
+                                            onClick={(e) => handleTogglePlay(e, "voice", "voice_paul", "Paul (Warm)")}
+                                        >
+                                            {playingKey === "voice:voice_paul" ? (
+                                              <Pause className="h-3 w-3" />
+                                            ) : (
+                                              <Play className="h-3 w-3" />
+                                            )}
+                                        </Button>
+                                    </div>
+                                </div>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onSelect={() => setPreferredVoicemailVoiceId("voice_matthew")}>
+                                <div className="flex items-center justify-between w-full">
+                                    <span>Matthew (Clear)</span>
+                                    <div className="flex items-center gap-1">
+                                        <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="sm"
+                                            className="h-6 w-6 p-0"
+                                            onClick={(e) => handleTogglePlay(e, "voice", "voice_matthew", "Matthew (Clear)")}
+                                        >
+                                            {playingKey === "voice:voice_matthew" ? (
+                                              <Pause className="h-3 w-3" />
+                                            ) : (
+                                              <Play className="h-3 w-3" />
+                                            )}
+                                        </Button>
+                                    </div>
+                                </div>
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                    <p className="text-muted-foreground text-xs">Overrides any agent voice.</p>
+                </div>
+
+                <Label className="mt-4 block">Preferred Voicemail Message</Label>
+                <div className="space-y-2">
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="outline" className="w-full justify-between">
+                                <span>{messageLabel}</span>
+                                <ChevronDown className="h-4 w-4 opacity-50" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent className="w-full min-w-[300px]">
+                            <DropdownMenuItem onSelect={() => setPreferredVoicemailMessageId("vm_professional")}>
+                                <div className="flex items-center justify-between w-full">
+                                    <span>Professional Business Message</span>
+                                    <div className="flex items-center gap-1">
+                                        <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="sm"
+                                            className="h-6 w-6 p-0"
+                                            onClick={(e) => handleTogglePlay(e, "message", "vm_professional", "Professional Business Message")}
+                                        >
+                                            {playingKey === "message:vm_professional" ? (
+                                              <Pause className="h-3 w-3" />
+                                            ) : (
+                                              <Play className="h-3 w-3" />
+                                            )}
+                                        </Button>
+                                    </div>
+                                </div>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onSelect={() => setPreferredVoicemailMessageId("vm_friendly")}>
+                                <div className="flex items-center justify-between w-full">
+                                    <span>Friendly Personal Message</span>
+                                    <div className="flex items-center gap-1">
+                                        <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="sm"
+                                            className="h-6 w-6 p-0"
+                                            onClick={(e) => handleTogglePlay(e, "message", "vm_friendly", "Friendly Personal Message")}
+                                        >
+                                            {playingKey === "message:vm_friendly" ? (
+                                              <Pause className="h-3 w-3" />
+                                            ) : (
+                                              <Play className="h-3 w-3" />
+                                            )}
+                                        </Button>
+                                    </div>
+                                </div>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onSelect={() => setPreferredVoicemailMessageId("vm_urgent")}>
+                                <div className="flex items-center justify-between w-full">
+                                    <span>Urgent Callback Message</span>
+                                    <div className="flex items-center gap-1">
+                                        <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="sm"
+                                            className="h-6 w-6 p-0"
+                                            onClick={(e) => handleTogglePlay(e, "message", "vm_urgent", "Urgent Callback Message")}
+                                        >
+                                            {playingKey === "message:vm_urgent" ? (
+                                              <Pause className="h-3 w-3" />
+                                            ) : (
+                                              <Play className="h-3 w-3" />
+                                            )}
+                                        </Button>
+                                    </div>
+                                </div>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onSelect={() => setPreferredVoicemailMessageId("vm_custom")}>
+                                <div className="flex items-center justify-between w-full">
+                                    <span>Custom Message (Upload Audio)</span>
+                                    <div className="flex items-center gap-1">
+                                        <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="sm"
+                                            className="h-6 w-6 p-0"
+                                            onClick={(e) => handleTogglePlay(e, "message", "vm_custom", "Custom Message")}
+                                        >
+                                            {playingKey === "message:vm_custom" ? (
+                                              <Pause className="h-3 w-3" />
+                                            ) : (
+                                              <Play className="h-3 w-3" />
+                                            )}
+                                        </Button>
+                                    </div>
+                                </div>
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
 						<p className="text-muted-foreground text-xs">
 							Choose a pre-recorded voicemail message or upload your own audio file.
 						</p>
