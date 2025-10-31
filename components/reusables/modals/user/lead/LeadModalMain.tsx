@@ -461,8 +461,13 @@ function LeadMainModal({
 			duration: Number.POSITIVE_INFINITY, // Keep loading until explicitly dismissed
 			onDismiss: () => {
 				// Clean up state when toast is manually dismissed
-				launchToastIdRef.current = null;
-				setIsLaunchingSuite(false);
+				// Use setTimeout to avoid state updates during render
+				setTimeout(() => {
+					if (launchToastIdRef.current === launchToastId) {
+						launchToastIdRef.current = null;
+					}
+					setIsLaunchingSuite(false);
+				}, 0);
 			},
 		});
 		launchToastIdRef.current = launchToastId;
