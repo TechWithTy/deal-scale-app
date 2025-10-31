@@ -95,6 +95,18 @@ export interface CampaignCreationState {
     preferredVoicemailVoiceId: string;
     setPreferredVoicemailVoiceId: (id: string) => void;
 
+	// Text/SMS settings
+	textSignature: string;
+	setTextSignature: (sig: string) => void;
+	smsCanSendImages: boolean;
+	setSmsCanSendImages: (v: boolean) => void;
+	smsCanSendVideos: boolean;
+	setSmsCanSendVideos: (v: boolean) => void;
+	smsCanSendLinks: boolean;
+	setSmsCanSendLinks: (v: boolean) => void;
+	smsMediaSource: "ai" | "stock" | "hybrid";
+	setSmsMediaSource: (v: "ai" | "stock" | "hybrid") => void;
+
 	// TCPA and Voicemail preferences
 	tcpaNotOptedIn: boolean;
 	setTcpaNotOptedIn: (v: boolean) => void;
@@ -213,6 +225,18 @@ export const useCampaignCreationStore = createWithEqualityFn<CampaignCreationSta
     setPreferredVoicemailVoiceId: (preferredVoicemailVoiceId: string) =>
         set({ preferredVoicemailVoiceId }),
 
+	// Text/SMS settings
+	textSignature: "",
+	setTextSignature: (textSignature: string) => set({ textSignature }),
+	smsCanSendImages: true,
+	setSmsCanSendImages: (smsCanSendImages: boolean) => set({ smsCanSendImages }),
+	smsCanSendVideos: true,
+	setSmsCanSendVideos: (smsCanSendVideos: boolean) => set({ smsCanSendVideos }),
+	smsCanSendLinks: true,
+	setSmsCanSendLinks: (smsCanSendLinks: boolean) => set({ smsCanSendLinks }),
+	smsMediaSource: "hybrid",
+	setSmsMediaSource: (smsMediaSource: "ai" | "stock" | "hybrid") => set({ smsMediaSource }),
+
 		// TCPA and Voicemail preferences
 		tcpaNotOptedIn: false,
 		setTcpaNotOptedIn: (tcpaNotOptedIn: boolean) => set({ tcpaNotOptedIn }),
@@ -308,6 +332,11 @@ export const useCampaignCreationStore = createWithEqualityFn<CampaignCreationSta
                 getTimezoneFromLeadLocation: true,
                 preferredVoicemailMessageId: "",
                 preferredVoicemailVoiceId: "",
+                textSignature: "",
+                smsCanSendImages: true,
+                smsCanSendVideos: true,
+                smsCanSendLinks: true,
+                smsMediaSource: "hybrid",
             }),
 	}),
 );

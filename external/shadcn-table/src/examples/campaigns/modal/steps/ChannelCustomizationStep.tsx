@@ -7,11 +7,11 @@ import * as z from "zod";
 import { useCampaignCreationStore } from "@/lib/stores/campaignCreation";
 import {
 	Form,
+	FormControl,
 	FormField,
 	FormItem,
-	FormControl,
-	FormMessage,
 	FormLabel,
+	FormMessage,
 } from "../../../../components/ui/form";
 import { Label } from "../../../../components/ui/label";
 import PhoneNumberInput from "./channelCustomization/PhoneNumberInput";
@@ -26,6 +26,7 @@ import {
 	SelectValue,
 } from "../../../../components/ui/select";
 import { Button } from "../../../../components/ui/button";
+import { Input } from "../../../../components/ui/input";
 import { Textarea } from "../../../../components/ui/textarea";
 import { Checkbox } from "../../../../components/ui/checkbox";
 import {
@@ -34,7 +35,7 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from "../../../../components/ui/dropdown-menu";
-import { Play, Pause, ChevronDown } from "lucide-react";
+import { ChevronDown, Pause, Play } from "lucide-react";
 import AllRecipientDropdown from "../../../../../../ai-avatar-dropdown/AllRecipientDropdown";
 
 // * Step 2: Channel Customization
@@ -297,6 +298,20 @@ const ChannelCustomizationStep: FC<ChannelCustomizationStepProps> = ({
 	// Audio preview control
 	const audioRef = useRef<HTMLAudioElement | null>(null);
 	const [playingKey, setPlayingKey] = useState<string | null>(null);
+
+	// Text/SMS settings from store
+	const {
+		textSignature,
+		setTextSignature,
+		smsCanSendImages,
+		setSmsCanSendImages,
+		smsCanSendVideos,
+		setSmsCanSendVideos,
+		smsCanSendLinks,
+		setSmsCanSendLinks,
+		smsMediaSource,
+		setSmsMediaSource,
+	} = useCampaignCreationStore();
 
 	const getAudioUrl = (
 		kind: "voice" | "message",
@@ -637,9 +652,8 @@ const ChannelCustomizationStep: FC<ChannelCustomizationStepProps> = ({
 													Messaging Service SID
 												</FormLabel>
 												<FormControl>
-													<input
+													<Input
 														id="twilio-messaging-service-sid"
-														className="w-full rounded-md border bg-background px-3 py-2"
 														placeholder="MGXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
 														disabled={!poolingEnabled}
 														{...field}
@@ -662,11 +676,10 @@ const ChannelCustomizationStep: FC<ChannelCustomizationStepProps> = ({
 													Per-number daily limit
 												</FormLabel>
 												<FormControl>
-													<input
+													<Input
 														id="per-number-daily-limit"
 														type="number"
 														min={1}
-														className="w-full rounded-md border bg-background px-3 py-2"
 														value={field.value ?? 75}
 														onChange={(e) =>
 															field.onChange(Number(e.target.value))
@@ -743,449 +756,416 @@ const ChannelCustomizationStep: FC<ChannelCustomizationStepProps> = ({
 						</div>
 					)}
 
-					{/* Voice and Voicemail Preferences */}
-					<div className="space-y-6">
-						<div className="space-y-3">
-							<Label>Voice</Label>
-							<div className="space-y-2">
-								<DropdownMenu>
-									<DropdownMenuTrigger asChild>
-										<Button
-											variant="outline"
-											className="w-full justify-between"
-										>
-											<span>{voiceLabel}</span>
-											<ChevronDown className="h-4 w-4 opacity-50" />
-										</Button>
-									</DropdownMenuTrigger>
-									<DropdownMenuContent className="w-full min-w-[300px]">
-										<DropdownMenuItem
-											onSelect={() =>
-												setPreferredVoicemailVoiceId("voice_emma")
-											}
-										>
-											<div className="flex w-full items-center justify-between">
-												<span>Emma (Natural)</span>
-												<div className="flex items-center gap-1">
-													<Button
-														type="button"
-														variant="ghost"
-														size="sm"
-														className="h-6 w-6 p-0"
-														onClick={(e) =>
-															handleTogglePlay(
-																e,
-																"voice",
-																"voice_emma",
-																"Emma (Natural)",
-															)
-														}
-													>
-														{playingKey === "voice:voice_emma" ? (
-															<Pause className="h-3 w-3" />
-														) : (
-															<Play className="h-3 w-3" />
-														)}
-													</Button>
-												</div>
-											</div>
-										</DropdownMenuItem>
-										<DropdownMenuItem
-											onSelect={() =>
-												setPreferredVoicemailVoiceId("voice_paul")
-											}
-										>
-											<div className="flex w-full items-center justify-between">
-												<span>Paul (Warm)</span>
-												<div className="flex items-center gap-1">
-													<Button
-														type="button"
-														variant="ghost"
-														size="sm"
-														className="h-6 w-6 p-0"
-														onClick={(e) =>
-															handleTogglePlay(
-																e,
-																"voice",
-																"voice_paul",
-																"Paul (Warm)",
-															)
-														}
-													>
-														{playingKey === "voice:voice_paul" ? (
-															<Pause className="h-3 w-3" />
-														) : (
-															<Play className="h-3 w-3" />
-														)}
-													</Button>
-												</div>
-											</div>
-										</DropdownMenuItem>
-										<DropdownMenuItem
-											onSelect={() =>
-												setPreferredVoicemailVoiceId("voice_matthew")
-											}
-										>
-											<div className="flex w-full items-center justify-between">
-												<span>Matthew (Clear)</span>
-												<div className="flex items-center gap-1">
-													<Button
-														type="button"
-														variant="ghost"
-														size="sm"
-														className="h-6 w-6 p-0"
-														onClick={(e) =>
-															handleTogglePlay(
-																e,
-																"voice",
-																"voice_matthew",
-																"Matthew (Clear)",
-															)
-														}
-													>
-														{playingKey === "voice:voice_matthew" ? (
-															<Pause className="h-3 w-3" />
-														) : (
-															<Play className="h-3 w-3" />
-														)}
-													</Button>
-												</div>
-											</div>
-										</DropdownMenuItem>
-									</DropdownMenuContent>
-								</DropdownMenu>
-								<p className="text-muted-foreground text-xs">
-									Overrides any agent voice.
-								</p>
+					{/* Text Messaging Settings (separate card) */}
+					{watchedPrimaryChannel === "text" && (
+						<div className="mt-4 space-y-4 rounded-md border p-3">
+							<div>
+								<FormLabel>Text Signature</FormLabel>
+								<FormControl>
+									<Input
+										placeholder="-- Your Name"
+										value={textSignature}
+										onChange={(e) => setTextSignature(e.target.value)}
+									/>
+								</FormControl>
 							</div>
-						</div>
-
-						<div className="space-y-4">
-							<div className="space-y-2">
-								<Label className="block">Preferred Voicemail Message</Label>
-								<DropdownMenu>
-									<DropdownMenuTrigger asChild>
-										<Button
-											variant="outline"
-											className="w-full justify-between"
-										>
-											<span>{messageLabel}</span>
-											<ChevronDown className="h-4 w-4 opacity-50" />
-										</Button>
-									</DropdownMenuTrigger>
-									<DropdownMenuContent className="w-full min-w-[300px]">
-										<DropdownMenuItem
-											onSelect={() =>
-												setPreferredVoicemailMessageId("vm_professional")
-											}
-										>
-											<div className="flex w-full items-center justify-between">
-												<span>Professional Business Message</span>
-												<div className="flex items-center gap-1">
-													<Button
-														type="button"
-														variant="ghost"
-														size="sm"
-														className="h-6 w-6 p-0"
-														onClick={(e) =>
-															handleTogglePlay(
-																e,
-																"message",
-																"vm_professional",
-																"Professional Business Message",
-															)
-														}
-													>
-														{playingKey === "message:vm_professional" ? (
-															<Pause className="h-3 w-3" />
-														) : (
-															<Play className="h-3 w-3" />
-														)}
-													</Button>
-												</div>
-											</div>
-										</DropdownMenuItem>
-										<DropdownMenuItem
-											onSelect={() =>
-												setPreferredVoicemailMessageId("vm_friendly")
-											}
-										>
-											<div className="flex w-full items-center justify-between">
-												<span>Friendly Personal Message</span>
-												<div className="flex items-center gap-1">
-													<Button
-														type="button"
-														variant="ghost"
-														size="sm"
-														className="h-6 w-6 p-0"
-														onClick={(e) =>
-															handleTogglePlay(
-																e,
-																"message",
-																"vm_friendly",
-																"Friendly Personal Message",
-															)
-														}
-													>
-														{playingKey === "message:vm_friendly" ? (
-															<Pause className="h-3 w-3" />
-														) : (
-															<Play className="h-3 w-3" />
-														)}
-													</Button>
-												</div>
-											</div>
-										</DropdownMenuItem>
-										<DropdownMenuItem
-											onSelect={() =>
-												setPreferredVoicemailMessageId("vm_urgent")
-											}
-										>
-											<div className="flex w-full items-center justify-between">
-												<span>Urgent Callback Message</span>
-												<div className="flex items-center gap-1">
-													<Button
-														type="button"
-														variant="ghost"
-														size="sm"
-														className="h-6 w-6 p-0"
-														onClick={(e) =>
-															handleTogglePlay(
-																e,
-																"message",
-																"vm_urgent",
-																"Urgent Callback Message",
-															)
-														}
-													>
-														{playingKey === "message:vm_urgent" ? (
-															<Pause className="h-3 w-3" />
-														) : (
-															<Play className="h-3 w-3" />
-														)}
-													</Button>
-												</div>
-											</div>
-										</DropdownMenuItem>
-										<DropdownMenuItem
-											onSelect={() =>
-												setPreferredVoicemailMessageId("vm_custom")
-											}
-										>
-											<div className="flex w-full items-center justify-between">
-												<span>Custom Message (Upload Audio)</span>
-												<div className="flex items-center gap-1">
-													<Button
-														type="button"
-														variant="ghost"
-														size="sm"
-														className="h-6 w-6 p-0"
-														onClick={(e) =>
-															handleTogglePlay(
-																e,
-																"message",
-																"vm_custom",
-																"Custom Message",
-															)
-														}
-													>
-														{playingKey === "message:vm_custom" ? (
-															<Pause className="h-3 w-3" />
-														) : (
-															<Play className="h-3 w-3" />
-														)}
-													</Button>
-												</div>
-											</div>
-										</DropdownMenuItem>
-									</DropdownMenuContent>
-								</DropdownMenu>
-								<p className="text-muted-foreground text-xs">
-									Choose a pre-recorded voicemail message or upload your own
-									audio file.
-								</p>
+							<div>
+								<FormLabel>Media Source</FormLabel>
+								<div className="mt-1">
+									<Select
+										value={smsMediaSource}
+										onValueChange={(v) =>
+											setSmsMediaSource(v as "ai" | "stock" | "hybrid")
+										}
+									>
+										<SelectTrigger>
+											<SelectValue placeholder="Choose source" />
+										</SelectTrigger>
+										<SelectContent>
+											<SelectItem value="ai">AI-generated media</SelectItem>
+											<SelectItem value="stock">Stock assets</SelectItem>
+											<SelectItem value="hybrid">Hybrid</SelectItem>
+										</SelectContent>
+									</Select>
+								</div>
 							</div>
-						</div>
-
-						{/* Transfer toggle and agent selection */}
-						<div className="space-y-3">
-							<FormField
-								control={form.control}
-								name="transferEnabled"
-								render={({ field }) => (
-									<FormItem className="flex items-center gap-3">
-										<Checkbox
-											id="transfer-enabled"
-											checked={field.value}
-											onCheckedChange={(v) => field.onChange(Boolean(v))}
-										/>
-										<FormLabel className="!m-0" htmlFor="transfer-enabled">
-											Enable Transfer to Agent
+							<div>
+								<FormLabel>Media Permissions</FormLabel>
+								<div className="mt-2 grid grid-cols-1 gap-x-4 gap-y-2 md:grid-cols-3">
+									<FormItem className="flex flex-row items-center space-x-2 space-y-0">
+										<FormControl>
+											<Checkbox
+												id="sms-can-send-images"
+												checked={smsCanSendImages}
+												onCheckedChange={(v) => setSmsCanSendImages(Boolean(v))}
+											/>
+										</FormControl>
+										<FormLabel
+											htmlFor="sms-can-send-images"
+											className="font-normal"
+										>
+											Can send images
 										</FormLabel>
 									</FormItem>
-								)}
-							/>
-
-							{form.watch("transferEnabled") && (
-								<>
-									<FormField
-										control={form.control}
-										name="transferType"
-										render={({ field }) => (
-											<FormItem>
-												<FormLabel>Transfer Type</FormLabel>
-												<FormControl>
-													<Select
-														onValueChange={field.onChange}
-														defaultValue={field.value}
-													>
-														<SelectTrigger>
-															<SelectValue placeholder="Select transfer type" />
-														</SelectTrigger>
-														<SelectContent>
-															<SelectItem value="inbound_call">
-																Inbound Call
-															</SelectItem>
-															<SelectItem value="outbound_call">
-																Outbound Call
-															</SelectItem>
-															<SelectItem value="social">Social</SelectItem>
-															<SelectItem value="text">Text</SelectItem>
-															<SelectItem value="chat_live_person">
-																Chat (Live Person)
-															</SelectItem>
-															<SelectItem value="appraisal">
-																Appraisal
-															</SelectItem>
-															<SelectItem value="live_avatar">
-																Live Avatar
-															</SelectItem>
-														</SelectContent>
-													</Select>
-												</FormControl>
-												<FormMessage />
-											</FormItem>
-										)}
-									/>
-									<FormField
-										control={form.control}
-										name="transferAgentId"
-										render={({ field }) => (
-											<FormItem>
-												<FormLabel>
-													{isLivePerson
-														? "Select Employee/Subuser"
-														: "Select Agent"}
-												</FormLabel>
-												<FormControl>
-													<AllRecipientDropdown
-														value={field.value}
-														onChange={(val) => {
-															field.onChange(val);
-															setSelectedAgentId(val);
-														}}
-														availablePeople={availableAgents}
-														transferType={watchedTransferType}
-														placeholderAgent="Select an agent"
-														placeholderEmployee="Select an employee or subuser"
-													/>
-												</FormControl>
-												<FormMessage />
-											</FormItem>
-										)}
-									/>
-
-									{/* Transfer Guidelines */}
-									<FormField
-										control={form.control}
-										name="transferGuidelines"
-										render={({ field }) => (
-											<FormItem>
-												<FormLabel>Transfer Guidelines</FormLabel>
-												<FormControl>
-													<Textarea
-														placeholder="Provide brief guidelines for the live agent (context, do/don'ts, handoff notes)"
-														{...field}
-													/>
-												</FormControl>
-												<FormMessage />
-											</FormItem>
-										)}
-									/>
-
-									{/* Transfer Prompt / Message */}
-									<FormField
-										control={form.control}
-										name="transferPrompt"
-										render={({ field }) => (
-											<FormItem>
-												<FormLabel>Transfer Prompt / Message</FormLabel>
-												<FormControl>
-													<Textarea
-														placeholder="What should be sent or spoken to initiate/announce the transfer?"
-														{...field}
-													/>
-												</FormControl>
-												<FormMessage />
-											</FormItem>
-										)}
-									/>
-								</>
-							)}
-						</div>
-
-						{primaryChannel === "social" && (
-							<FormField
-								control={form.control}
-								name="socialPlatform"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>Social Platform</FormLabel>
+									<FormItem className="flex flex-row items-center space-x-2 space-y-0">
 										<FormControl>
-											<Select
-												onValueChange={field.onChange}
-												defaultValue={field.value}
-											>
-												<SelectTrigger>
-													<SelectValue placeholder="Select a platform" />
-												</SelectTrigger>
-												<SelectContent>
-													<SelectItem value="facebook">Facebook</SelectItem>
-													<SelectItem value="linkedin">LinkedIn</SelectItem>
-												</SelectContent>
-											</Select>
+											<Checkbox
+												id="sms-can-send-videos"
+												checked={smsCanSendVideos}
+												onCheckedChange={(v) => setSmsCanSendVideos(Boolean(v))}
+											/>
 										</FormControl>
-										<FormMessage />
+										<FormLabel
+											htmlFor="sms-can-send-videos"
+											className="font-normal"
+										>
+											Can send videos
+										</FormLabel>
 									</FormItem>
-								)}
-							/>
-						)}
+									<FormItem className="flex flex-row items-center space-x-2 space-y-0">
+										<FormControl>
+											<Checkbox
+												id="sms-can-send-links"
+												checked={smsCanSendLinks}
+												onCheckedChange={(v) => setSmsCanSendLinks(Boolean(v))}
+											/>
+										</FormControl>
+										<FormLabel
+											htmlFor="sms-can-send-links"
+											className="font-normal"
+										>
+											Can send links
+										</FormLabel>
+									</FormItem>
+								</div>
+								<p className="mt-2 text-muted-foreground text-xs">
+									These limits affect message composition and compliance; media
+									may count as multiple segments.
+								</p>
+							</div>
+						</div>
+					)}
 
-						{isDirectMailChannel && (
+					{watchedPrimaryChannel === "call" && (
+						<>
+							{/* Voice and Voicemail Preferences */}
+							<div className="space-y-6">
+								<div className="space-y-3">
+									<Label>Voice</Label>
+									<div className="space-y-2">
+										<DropdownMenu>
+											<DropdownMenuTrigger asChild>
+												<Button
+													variant="outline"
+													className="w-full justify-between"
+												>
+													<span>{voiceLabel}</span>
+													<ChevronDown className="h-4 w-4 opacity-50" />
+												</Button>
+											</DropdownMenuTrigger>
+											<DropdownMenuContent className="w-full min-w-[300px]">
+												<DropdownMenuItem
+													onSelect={() =>
+														setPreferredVoicemailVoiceId("voice_emma")
+													}
+												>
+													<div className="flex w-full items-center justify-between">
+														<span>Emma (Natural)</span>
+														<div className="flex items-center gap-1">
+															<Button
+																type="button"
+																variant="ghost"
+																size="sm"
+																className="h-6 w-6 p-0"
+																onClick={(e) =>
+																	handleTogglePlay(
+																		e,
+																		"voice",
+																		"voice_emma",
+																		"Emma (Natural)",
+																	)
+																}
+															>
+																{playingKey === "voice:voice_emma" ? (
+																	<Pause className="h-3 w-3" />
+																) : (
+																	<Play className="h-3 w-3" />
+																)}
+															</Button>
+														</div>
+													</div>
+												</DropdownMenuItem>
+												<DropdownMenuItem
+													onSelect={() =>
+														setPreferredVoicemailVoiceId("voice_paul")
+													}
+												>
+													<div className="flex w-full items-center justify-between">
+														<span>Paul (Warm)</span>
+														<div className="flex items-center gap-1">
+															<Button
+																type="button"
+																variant="ghost"
+																size="sm"
+																className="h-6 w-6 p-0"
+																onClick={(e) =>
+																	handleTogglePlay(
+																		e,
+																		"voice",
+																		"voice_paul",
+																		"Paul (Warm)",
+																	)
+																}
+															>
+																{playingKey === "voice:voice_paul" ? (
+																	<Pause className="h-3 w-3" />
+																) : (
+																	<Play className="h-3 w-3" />
+																)}
+															</Button>
+														</div>
+													</div>
+												</DropdownMenuItem>
+												<DropdownMenuItem
+													onSelect={() =>
+														setPreferredVoicemailVoiceId("voice_matthew")
+													}
+												>
+													<div className="flex w-full items-center justify-between">
+														<span>Matthew (Clear)</span>
+														<div className="flex items-center gap-1">
+															<Button
+																type="button"
+																variant="ghost"
+																size="sm"
+																className="h-6 w-6 p-0"
+																onClick={(e) =>
+																	handleTogglePlay(
+																		e,
+																		"voice",
+																		"voice_matthew",
+																		"Matthew (Clear)",
+																	)
+																}
+															>
+																{playingKey === "voice:voice_matthew" ? (
+																	<Pause className="h-3 w-3" />
+																) : (
+																	<Play className="h-3 w-3" />
+																)}
+															</Button>
+														</div>
+													</div>
+												</DropdownMenuItem>
+											</DropdownMenuContent>
+										</DropdownMenu>
+										<p className="text-muted-foreground text-xs">
+											Overrides any agent voice.
+										</p>
+									</div>
+								</div>
+
+								<div className="space-y-4">
+									<div className="space-y-2">
+										<Label className="block">Preferred Voicemail Message</Label>
+										<DropdownMenu>
+											<DropdownMenuTrigger asChild>
+												<Button
+													variant="outline"
+													className="w-full justify-between"
+												>
+													<span>{messageLabel}</span>
+													<ChevronDown className="h-4 w-4 opacity-50" />
+												</Button>
+											</DropdownMenuTrigger>
+											<DropdownMenuContent className="w-full min-w-[300px]">
+												<DropdownMenuItem
+													onSelect={() =>
+														setPreferredVoicemailMessageId("vm_professional")
+													}
+												>
+													<div className="flex w-full items-center justify-between">
+														<span>Professional Business Message</span>
+														<div className="flex items-center gap-1">
+															<Button
+																type="button"
+																variant="ghost"
+																size="sm"
+																className="h-6 w-6 p-0"
+																onClick={(e) =>
+																	handleTogglePlay(
+																		e,
+																		"message",
+																		"vm_professional",
+																		"Professional Business Message",
+																	)
+																}
+															>
+																{playingKey === "message:vm_professional" ? (
+																	<Pause className="h-3 w-3" />
+																) : (
+																	<Play className="h-3 w-3" />
+																)}
+															</Button>
+														</div>
+													</div>
+												</DropdownMenuItem>
+												<DropdownMenuItem
+													onSelect={() =>
+														setPreferredVoicemailMessageId("vm_friendly")
+													}
+												>
+													<div className="flex w-full items-center justify-between">
+														<span>Friendly Personal Message</span>
+														<div className="flex items-center gap-1">
+															<Button
+																type="button"
+																variant="ghost"
+																size="sm"
+																className="h-6 w-6 p-0"
+																onClick={(e) =>
+																	handleTogglePlay(
+																		e,
+																		"message",
+																		"vm_friendly",
+																		"Friendly Personal Message",
+																	)
+																}
+															>
+																{playingKey === "message:vm_friendly" ? (
+																	<Pause className="h-3 w-3" />
+																) : (
+																	<Play className="h-3 w-3" />
+																)}
+															</Button>
+														</div>
+													</div>
+												</DropdownMenuItem>
+												<DropdownMenuItem
+													onSelect={() =>
+														setPreferredVoicemailMessageId("vm_urgent")
+													}
+												>
+													<div className="flex w-full items-center justify-between">
+														<span>Urgent Callback Message</span>
+														<div className="flex items-center gap-1">
+															<Button
+																type="button"
+																variant="ghost"
+																size="sm"
+																className="h-6 w-6 p-0"
+																onClick={(e) =>
+																	handleTogglePlay(
+																		e,
+																		"message",
+																		"vm_urgent",
+																		"Urgent Callback Message",
+																	)
+																}
+															>
+																{playingKey === "message:vm_urgent" ? (
+																	<Pause className="h-3 w-3" />
+																) : (
+																	<Play className="h-3 w-3" />
+																)}
+															</Button>
+														</div>
+													</div>
+												</DropdownMenuItem>
+												<DropdownMenuItem
+													onSelect={() =>
+														setPreferredVoicemailMessageId("vm_custom")
+													}
+												>
+													<div className="flex w-full items-center justify-between">
+														<span>Custom Message (Upload Audio)</span>
+														<div className="flex items-center gap-1">
+															<Button
+																type="button"
+																variant="ghost"
+																size="sm"
+																className="h-6 w-6 p-0"
+																onClick={(e) =>
+																	handleTogglePlay(
+																		e,
+																		"message",
+																		"vm_custom",
+																		"Custom Message",
+																	)
+																}
+															>
+																{playingKey === "message:vm_custom" ? (
+																	<Pause className="h-3 w-3" />
+																) : (
+																	<Play className="h-3 w-3" />
+																)}
+															</Button>
+														</div>
+													</div>
+												</DropdownMenuItem>
+											</DropdownMenuContent>
+										</DropdownMenu>
+										<p className="text-muted-foreground text-xs">
+											Choose a pre-recorded voicemail message or upload your own
+											audio file.
+										</p>
+									</div>
+								</div>
+							</div>
+						</>
+					)}
+
+					{/* Transfer toggle and agent selection */}
+					<div className="space-y-3">
+						<FormField
+							control={form.control}
+							name="transferEnabled"
+							render={({ field }) => (
+								<FormItem className="flex items-center gap-3">
+									<Checkbox
+										id="transfer-enabled"
+										checked={field.value}
+										onCheckedChange={(v) => field.onChange(Boolean(v))}
+									/>
+									<FormLabel className="!m-0" htmlFor="transfer-enabled">
+										Enable Transfer to Agent
+									</FormLabel>
+								</FormItem>
+							)}
+						/>
+
+						{form.watch("transferEnabled") && (
 							<>
 								<FormField
 									control={form.control}
-									name="directMailType"
+									name="transferType"
 									render={({ field }) => (
 										<FormItem>
-											<FormLabel>Direct Mail Type</FormLabel>
+											<FormLabel>Transfer Type</FormLabel>
 											<FormControl>
 												<Select
 													onValueChange={field.onChange}
 													defaultValue={field.value}
 												>
 													<SelectTrigger>
-														<SelectValue placeholder="Select type" />
+														<SelectValue placeholder="Select transfer type" />
 													</SelectTrigger>
 													<SelectContent>
-														<SelectItem value="postcard">Postcard</SelectItem>
-														<SelectItem value="letter_front">
-															Letter (Front only)
+														<SelectItem value="inbound_call">
+															Inbound Call
 														</SelectItem>
-														<SelectItem value="letter_front_back">
-															Letter (Front & Back)
+														<SelectItem value="outbound_call">
+															Outbound Call
 														</SelectItem>
-														<SelectItem value="snap_pack">Snap Pack</SelectItem>
+														<SelectItem value="social">Social</SelectItem>
+														<SelectItem value="text">Text</SelectItem>
+														<SelectItem value="chat_live_person">
+															Chat (Live Person)
+														</SelectItem>
+														<SelectItem value="appraisal">Appraisal</SelectItem>
+														<SelectItem value="live_avatar">
+															Live Avatar
+														</SelectItem>
 													</SelectContent>
 												</Select>
 											</FormControl>
@@ -1193,186 +1173,306 @@ const ChannelCustomizationStep: FC<ChannelCustomizationStepProps> = ({
 										</FormItem>
 									)}
 								/>
+								<FormField
+									control={form.control}
+									name="transferAgentId"
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel>
+												{isLivePerson
+													? "Select Employee/Subuser"
+													: "Select Agent"}
+											</FormLabel>
+											<FormControl>
+												<AllRecipientDropdown
+													value={field.value}
+													onChange={(val) => {
+														field.onChange(val);
+														setSelectedAgentId(val);
+													}}
+													availablePeople={availableAgents}
+													transferType={watchedTransferType}
+													placeholderAgent="Select an agent"
+													placeholderEmployee="Select an employee or subuser"
+												/>
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
 
-								<div className="space-y-3">
-									<FormLabel>Templates</FormLabel>
-									{fields.map((item, index) => (
-										<div
-											key={item.id}
-											className="grid grid-cols-1 gap-3 md:grid-cols-12"
-										>
-											<div className="md:col-span-5">
-												<FormField
-													control={form.control}
-													name={`templates.${index}.templateId` as const}
-													render={({ field }) => (
-														<FormItem>
-															<FormControl>
-																<Select
-																	onValueChange={field.onChange}
-																	defaultValue={field.value}
-																>
-																	<SelectTrigger>
-																		<SelectValue placeholder="Select a template" />
-																	</SelectTrigger>
-																	<SelectContent>
-																		<SelectItem value="tpl_basic">
-																			Basic Template
-																		</SelectItem>
-																		<SelectItem value="tpl_pro">
-																			Professional Template
-																		</SelectItem>
-																		<SelectItem value="tpl_modern">
-																			Modern Template
-																		</SelectItem>
-																	</SelectContent>
-																</Select>
-															</FormControl>
-															<FormMessage />
-														</FormItem>
-													)}
+								{/* Transfer Guidelines */}
+								<FormField
+									control={form.control}
+									name="transferGuidelines"
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel>Transfer Guidelines</FormLabel>
+											<FormControl>
+												<Textarea
+													placeholder="Provide brief guidelines for the live agent (context, do/don'ts, handoff notes)"
+													{...field}
 												/>
-											</div>
-											<div className="md:col-span-6">
-												<FormField
-													control={form.control}
-													name={`templates.${index}.description` as const}
-													render={({ field }) => (
-														<FormItem>
-															<FormControl>
-																<Textarea
-																	placeholder="Description (optional)"
-																	{...field}
-																/>
-															</FormControl>
-															<FormMessage />
-														</FormItem>
-													)}
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+
+								{/* Transfer Prompt / Message */}
+								<FormField
+									control={form.control}
+									name="transferPrompt"
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel>Transfer Prompt / Message</FormLabel>
+											<FormControl>
+												<Textarea
+													placeholder="What should be sent or spoken to initiate/announce the transfer?"
+													{...field}
 												/>
-											</div>
-											<div className="flex items-start md:col-span-1">
-												<Button
-													type="button"
-													variant="ghost"
-													onClick={() => remove(index)}
-												>
-													Remove
-												</Button>
-											</div>
-										</div>
-									))}
-									<div className="flex items-center justify-between">
-										<div className="text-muted-foreground text-xs">
-											{watchedDirectMailType === "letter_front_back" ||
-											watchedDirectMailType === "snap_pack"
-												? "Requires at least 2 templates (front and back)."
-												: "Requires at least 1 template."}
-										</div>
-										<Button
-											type="button"
-											variant="outline"
-											onClick={() =>
-												append({ templateId: "", description: "" })
-											}
-										>
-											Add more
-										</Button>
-									</div>
-								</div>
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
 							</>
 						)}
+					</div>
 
+					{primaryChannel === "social" && (
 						<FormField
 							control={form.control}
-							name="areaMode"
+							name="socialPlatform"
 							render={({ field }) => (
-								<FormItem className="space-y-3">
+								<FormItem>
+									<FormLabel>Social Platform</FormLabel>
 									<FormControl>
-										<AreaModeSelector
+										<Select
 											onValueChange={field.onChange}
-											value={field.value}
+											defaultValue={field.value}
+										>
+											<SelectTrigger>
+												<SelectValue placeholder="Select a platform" />
+											</SelectTrigger>
+											<SelectContent>
+												<SelectItem value="facebook">Facebook</SelectItem>
+												<SelectItem value="linkedin">LinkedIn</SelectItem>
+											</SelectContent>
+										</Select>
+									</FormControl>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
+					)}
+
+					{isDirectMailChannel && (
+						<>
+							<FormField
+								control={form.control}
+								name="directMailType"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>Direct Mail Type</FormLabel>
+										<FormControl>
+											<Select
+												onValueChange={field.onChange}
+												defaultValue={field.value}
+											>
+												<SelectTrigger>
+													<SelectValue placeholder="Select type" />
+												</SelectTrigger>
+												<SelectContent>
+													<SelectItem value="postcard">Postcard</SelectItem>
+													<SelectItem value="letter_front">
+														Letter (Front only)
+													</SelectItem>
+													<SelectItem value="letter_front_back">
+														Letter (Front & Back)
+													</SelectItem>
+													<SelectItem value="snap_pack">Snap Pack</SelectItem>
+												</SelectContent>
+											</Select>
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+
+							<div className="space-y-3">
+								<FormLabel>Templates</FormLabel>
+								{fields.map((item, index) => (
+									<div
+										key={item.id}
+										className="grid grid-cols-1 gap-3 md:grid-cols-12"
+									>
+										<div className="md:col-span-5">
+											<FormField
+												control={form.control}
+												name={`templates.${index}.templateId` as const}
+												render={({ field }) => (
+													<FormItem>
+														<FormControl>
+															<Select
+																onValueChange={field.onChange}
+																defaultValue={field.value}
+															>
+																<SelectTrigger>
+																	<SelectValue placeholder="Select a template" />
+																</SelectTrigger>
+																<SelectContent>
+																	<SelectItem value="tpl_basic">
+																		Basic Template
+																	</SelectItem>
+																	<SelectItem value="tpl_pro">
+																		Professional Template
+																	</SelectItem>
+																	<SelectItem value="tpl_modern">
+																		Modern Template
+																	</SelectItem>
+																</SelectContent>
+															</Select>
+														</FormControl>
+														<FormMessage />
+													</FormItem>
+												)}
+											/>
+										</div>
+										<div className="md:col-span-6">
+											<FormField
+												control={form.control}
+												name={`templates.${index}.description` as const}
+												render={({ field }) => (
+													<FormItem>
+														<FormControl>
+															<Textarea
+																placeholder="Description (optional)"
+																{...field}
+															/>
+														</FormControl>
+														<FormMessage />
+													</FormItem>
+												)}
+											/>
+										</div>
+										<div className="flex items-start md:col-span-1">
+											<Button
+												type="button"
+												variant="ghost"
+												onClick={() => remove(index)}
+											>
+												Remove
+											</Button>
+										</div>
+									</div>
+								))}
+								<div className="flex items-center justify-between">
+									<div className="text-muted-foreground text-xs">
+										{watchedDirectMailType === "letter_front_back" ||
+										watchedDirectMailType === "snap_pack"
+											? "Requires at least 2 templates (front and back)."
+											: "Requires at least 1 template."}
+									</div>
+									<Button
+										type="button"
+										variant="outline"
+										onClick={() => append({ templateId: "", description: "" })}
+									>
+										Add more
+									</Button>
+								</div>
+							</div>
+						</>
+					)}
+
+					<FormField
+						control={form.control}
+						name="areaMode"
+						render={({ field }) => (
+							<FormItem className="space-y-3">
+								<FormControl>
+									<AreaModeSelector
+										onValueChange={field.onChange}
+										value={field.value}
+									/>
+								</FormControl>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
+
+					{watchedAreaMode === "zip" && (
+						<FormField
+							control={form.control}
+							name="zipCode"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel>Zip Code</FormLabel>
+									<FormControl>
+										<Input
+											placeholder="Enter US zip code (e.g., 12345 or 12345-6789)"
+											{...field}
 										/>
 									</FormControl>
 									<FormMessage />
 								</FormItem>
 							)}
 						/>
+					)}
 
-						{watchedAreaMode === "zip" && (
-							<FormField
-								control={form.control}
-								name="zipCode"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>Zip Code</FormLabel>
-										<FormControl>
-											<input
-												className="w-full rounded-md border bg-background px-3 py-2"
-												placeholder="Enter US zip code (e.g., 12345 or 12345-6789)"
-												{...field}
-											/>
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-						)}
-
-						{watchedAreaMode === "leadList" && (
-							<FormField
-								control={form.control}
-								name="selectedLeadListId"
-								render={({ field }) => (
-									<FormItem>
-										<FormControl>
-											<LeadListSelector
-												value={
-													abTestingEnabled
-														? selectedLeadListAId || ""
-														: field.value || ""
+					{watchedAreaMode === "leadList" && (
+						<FormField
+							control={form.control}
+							name="selectedLeadListId"
+							render={({ field }) => (
+								<FormItem>
+									<FormControl>
+										<LeadListSelector
+											value={
+												abTestingEnabled
+													? selectedLeadListAId || ""
+													: field.value || ""
+											}
+											onChange={(
+												selectedValue: string,
+												recordCount: number,
+											) => {
+												if (abTestingEnabled) {
+													setSelectedLeadListAId(selectedValue);
+													setLeadCountA(recordCount);
+													setLeadCount(recordCount + leadCountB);
+													// keep single-field form in sync with A for validation/back-compat
+													field.onChange(selectedValue);
+													setSelectedLeadListId(selectedValue);
+												} else {
+													field.onChange(selectedValue);
+													setSelectedLeadListId(selectedValue);
+													setLeadCount(recordCount);
 												}
-												onChange={(
-													selectedValue: string,
-													recordCount: number,
-												) => {
-													if (abTestingEnabled) {
-														setSelectedLeadListAId(selectedValue);
-														setLeadCountA(recordCount);
-														setLeadCount(recordCount + leadCountB);
-														// keep single-field form in sync with A for validation/back-compat
-														field.onChange(selectedValue);
-														setSelectedLeadListId(selectedValue);
-													} else {
-														field.onChange(selectedValue);
-														setSelectedLeadListId(selectedValue);
-														setLeadCount(recordCount);
-													}
-												}}
-												abTestingEnabled={abTestingEnabled}
-												valueB={
-													abTestingEnabled
-														? selectedLeadListBId || ""
-														: undefined
-												}
-												onChangeB={
-													abTestingEnabled
-														? (selectedValue: string, recordCount: number) => {
-																setSelectedLeadListBId(selectedValue);
-																setLeadCountB(recordCount);
-																setLeadCount(leadCountA + recordCount);
-															}
-														: undefined
-												}
-											/>
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-						)}
-					</div>
-					<CampaignNavigation onBack={onBack} onNext={onNext} />
+											}}
+											abTestingEnabled={abTestingEnabled}
+											valueB={
+												abTestingEnabled ? selectedLeadListBId || "" : undefined
+											}
+											onChangeB={
+												abTestingEnabled
+													? (selectedValue: string, recordCount: number) => {
+															setSelectedLeadListBId(selectedValue);
+															setLeadCountB(recordCount);
+															setLeadCount(leadCountA + recordCount);
+														}
+													: undefined
+											}
+										/>
+									</FormControl>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
+					)}
 				</div>
+				<CampaignNavigation onBack={onBack} onNext={onNext} />
 			</div>
 		</Form>
 	);
