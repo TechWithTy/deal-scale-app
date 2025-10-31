@@ -144,7 +144,42 @@ export default function CampaignSettingsDebug({
 							<div>
 								Direct Mail Type: {formatValue(formData.directMailType)}
 							</div>
-							<div>Templates: {formatValue(formData.templates)}</div>
+							{/* Templates quick view: read from form state, friendly labels */}
+							{Array.isArray(formData.templates) && (
+								<div>
+									{(() => {
+										const labelMap: Record<string, string> = {
+											tpl_basic: "Basic Template",
+											tpl_pro: "Professional Template",
+											tpl_modern: "Modern Template",
+										};
+										const required =
+											formData.directMailType === "letter_front_back" ||
+											formData.directMailType === "snap_pack"
+												? 2
+												: 1;
+
+										const selected = formData.templates?.length ?? 0;
+										return (
+											<div className="space-y-1">
+												<div>
+													Templates: {selected} selected (requires at least{" "}
+													{required})
+												</div>
+												{formData.templates.map((tpl, idx) => (
+													<div
+														key={`${tpl.templateId}-${idx}`}
+														className="ml-3"
+													>
+														{labelMap[tpl.templateId] || tpl.templateId}
+														{tpl.description ? ` — ${tpl.description}` : ""}
+													</div>
+												))}
+											</div>
+										);
+									})()}
+								</div>
+							)}
 							<div>
 								Transfer Enabled: {formatValue(formData.transferEnabled)}
 							</div>
