@@ -363,6 +363,33 @@ export const WebhookModal: React.FC = () => {
 						</p>
 					</div>
 
+					{/* CRM Integration Buttons Section */}
+					<div className="mt-6 space-y-3 border-b border-border pb-4">
+						<div className="space-y-2">
+							<h4 className="text-sm font-medium text-foreground">
+								CRM Integration Guides
+							</h4>
+							<p className="text-xs text-muted-foreground">
+								Watch video tutorials to integrate with your CRM without
+								resetup.
+							</p>
+						</div>
+						<div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+							{CRM_INTEGRATIONS.map((crm) => (
+								<Button
+									key={crm.id}
+									variant="outline"
+									size="sm"
+									onClick={() => handleCrmIntegrationClick(crm)}
+									type="button"
+									className="flex flex-col items-center gap-1 h-auto py-3 px-2"
+								>
+									<span className="text-xs font-medium">{crm.name}</span>
+								</Button>
+							))}
+						</div>
+					</div>
+
 					<Tabs
 						value={webhookStage}
 						onValueChange={(value) => setWebhookStage(value as WebhookStage)}
@@ -510,33 +537,6 @@ export const WebhookModal: React.FC = () => {
 						activeStage={webhookStage}
 						historyByStage={webhookHistoryByStage}
 					/>
-
-					{/* CRM Integration Buttons Section */}
-					<div className="mt-6 space-y-3 border-t border-border pt-4">
-						<div className="space-y-2">
-							<h4 className="text-sm font-medium text-foreground">
-								CRM Integration Guides
-							</h4>
-							<p className="text-xs text-muted-foreground">
-								Watch video tutorials to integrate with your CRM without
-								resetup.
-							</p>
-						</div>
-						<div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-							{CRM_INTEGRATIONS.map((crm) => (
-								<Button
-									key={crm.id}
-									variant="outline"
-									size="sm"
-									onClick={() => handleCrmIntegrationClick(crm)}
-									type="button"
-									className="flex flex-col items-center gap-1 h-auto py-3 px-2"
-								>
-									<span className="text-xs font-medium">{crm.name}</span>
-								</Button>
-							))}
-						</div>
-					</div>
 
 					<WebhookModalActions
 						onCancel={handleWebhookModalClose}
