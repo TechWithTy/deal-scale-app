@@ -52,6 +52,32 @@ describe("call campaign mock data", () => {
                 vi.unstubAllEnvs();
         });
 
+        test("fallbackCallCampaignData is deterministic across system time shifts", async () => {
+                vi.useFakeTimers({ shouldAdvanceTime: false });
+
+                try {
+                        vi.resetModules();
+                        vi.unstubAllEnvs();
+                        vi.setSystemTime(new Date("2050-01-01T00:00:00.000Z"));
+
+                        const futureModule = await import(MODULE_PATH);
+                        const futureData = futureModule.fallbackCallCampaignData;
+
+                        vi.resetModules();
+                        vi.unstubAllEnvs();
+                        vi.setSystemTime(new Date("1990-01-01T00:00:00.000Z"));
+
+                        const pastModule = await import(MODULE_PATH);
+                        const pastData = pastModule.fallbackCallCampaignData;
+
+                        expect(pastData).toHaveLength(futureData.length);
+                        expect(pastData).toStrictEqual(futureData);
+                } finally {
+                        vi.useRealTimers();
+                        vi.unstubAllEnvs();
+                }
+        });
+
         test("importing call campaign mocks does not reseed the shared faker instance", async () => {
                 vi.resetModules();
                 vi.unstubAllEnvs();
