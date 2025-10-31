@@ -104,6 +104,9 @@ export interface CampaignCreationState {
 	setSmsCanSendVideos: (v: boolean) => void;
 	smsCanSendLinks: boolean;
 	setSmsCanSendLinks: (v: boolean) => void;
+	/** If true, append the selected agent name to the signature */
+	smsAppendAgentName: boolean;
+	setSmsAppendAgentName: (v: boolean) => void;
 	smsMediaSource: "ai" | "stock" | "hybrid";
 	setSmsMediaSource: (v: "ai" | "stock" | "hybrid") => void;
 
@@ -234,6 +237,8 @@ export const useCampaignCreationStore = createWithEqualityFn<CampaignCreationSta
 	setSmsCanSendVideos: (smsCanSendVideos: boolean) => set({ smsCanSendVideos }),
 	smsCanSendLinks: true,
 	setSmsCanSendLinks: (smsCanSendLinks: boolean) => set({ smsCanSendLinks }),
+	smsAppendAgentName: true,
+	setSmsAppendAgentName: (smsAppendAgentName: boolean) => set({ smsAppendAgentName }),
 	smsMediaSource: "hybrid",
 	setSmsMediaSource: (smsMediaSource: "ai" | "stock" | "hybrid") => set({ smsMediaSource }),
 
@@ -336,6 +341,7 @@ export const useCampaignCreationStore = createWithEqualityFn<CampaignCreationSta
                 smsCanSendImages: true,
                 smsCanSendVideos: true,
                 smsCanSendLinks: true,
+                smsAppendAgentName: true,
                 smsMediaSource: "hybrid",
             }),
 	}),

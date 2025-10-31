@@ -4,7 +4,10 @@ import { useFieldArray, useForm, type UseFormReturn } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 
-import { useCampaignCreationStore } from "@/lib/stores/campaignCreation";
+import {
+	type Agent,
+	useCampaignCreationStore,
+} from "@/lib/stores/campaignCreation";
 import {
 	Form,
 	FormControl,
@@ -311,7 +314,40 @@ const ChannelCustomizationStep: FC<ChannelCustomizationStepProps> = ({
 		setSmsCanSendLinks,
 		smsMediaSource,
 		setSmsMediaSource,
+		smsAppendAgentName,
+		setSmsAppendAgentName,
+		selectedAgentId,
 	} = useCampaignCreationStore();
+
+	// Prefill signature for Text channel based on company name
+	// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
+	useEffect(() => {
+		if (watchedPrimaryChannel === "text") {
+			if (!textSignature || textSignature.trim().length === 0) {
+				try {
+					// eslint-disable-next-line @typescript-eslint/no-var-requires
+					const profile =
+						require("@/constants/_faker/profile/userProfile").mockUserProfile;
+					const company = profile?.companyInfo?.companyName || "Your Company";
+					setTextSignature(`-- ${company}`);
+				} catch {
+					setTextSignature("--");
+				}
+			}
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [watchedPrimaryChannel]);
+
+	const agentName = (() => {
+		try {
+			const found = (availableAgents || []).find(
+				(a: Agent) => a.id === selectedAgentId,
+			);
+			return found?.name || "Your Agent";
+		} catch {
+			return "Your Agent";
+		}
+	})();
 
 	const getAudioUrl = (
 		kind: "voice" | "message",
@@ -769,6 +805,20 @@ const ChannelCustomizationStep: FC<ChannelCustomizationStepProps> = ({
 									/>
 								</FormControl>
 							</div>
+							<div className="flex items-center gap-2">
+								<Checkbox
+									id="append-agent-name"
+									checked={smsAppendAgentName}
+									onCheckedChange={(v) => setSmsAppendAgentName(Boolean(v))}
+								/>
+								<Label className="!m-0" htmlFor="append-agent-name">
+									Auto-append agent name
+								</Label>
+							</div>
+							<p className="text-muted-foreground text-xs">
+								Final signature: {(textSignature || "").trim() || "--"}
+								{smsAppendAgentName ? ` ${agentName}` : ""}
+							</p>
 							<div>
 								<FormLabel>Media Source</FormLabel>
 								<div className="mt-1">

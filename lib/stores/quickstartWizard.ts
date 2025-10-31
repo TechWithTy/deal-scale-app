@@ -1,4 +1,4 @@
-import { create } from "zustand";
+import { createWithEqualityFn } from "zustand/traditional";
 
 import type { QuickStartWizardPreset } from "@/components/quickstart/types";
 import { captureQuickStartEvent } from "@/lib/analytics/quickstart";
@@ -36,82 +36,84 @@ const defaultState = {
 	"isOpen" | "activeStep" | "activePreset" | "pendingAction"
 >;
 
-export const useQuickStartWizardStore = create<QuickStartWizardState>(
-	(set, get) => ({
-		...defaultState,
-		open: (preset) => {
-			useQuickStartWizardDataStore.getState().applyPreset(preset);
+export const useQuickStartWizardStore =
+	createWithEqualityFn<QuickStartWizardState>(
+		(set, get) => ({
+			...defaultState,
+			open: (preset) => {
+				useQuickStartWizardDataStore.getState().applyPreset(preset);
 
-			const { personaId, goalId } = useQuickStartWizardDataStore.getState();
-			const nextStep: QuickStartWizardStep = goalId
-				? "summary"
-				: personaId
-					? "goal"
-					: QUICK_START_DEFAULT_STEP;
+				const { personaId, goalId } = useQuickStartWizardDataStore.getState();
+				const nextStep: QuickStartWizardStep = goalId
+					? "summary"
+					: personaId
+						? "goal"
+						: QUICK_START_DEFAULT_STEP;
 
-			set({
-				isOpen: true,
-				activeStep: nextStep,
-				activePreset: preset ?? null,
-			});
-		},
-		launchWithAction: (preset, action) => {
-			set({ pendingAction: action });
-			get().open(preset);
-		},
-		cancel: () => {
-			const stateBeforeCancel = get();
-			const dataState = useQuickStartWizardDataStore.getState();
+				set({
+					isOpen: true,
+					activeStep: nextStep,
+					activePreset: preset ?? null,
+				});
+			},
+			launchWithAction: (preset, action) => {
+				set({ pendingAction: action });
+				get().open(preset);
+			},
+			cancel: () => {
+				const stateBeforeCancel = get();
+				const dataState = useQuickStartWizardDataStore.getState();
 
-			captureQuickStartEvent("quickstart_wizard_cancelled", {
-				step: stateBeforeCancel.activeStep,
-				personaId: dataState.personaId,
-				goalId: dataState.goalId,
-				templateId: stateBeforeCancel.activePreset?.templateId ?? null,
-				pendingAction: Boolean(stateBeforeCancel.pendingAction),
-			});
+				captureQuickStartEvent("quickstart_wizard_cancelled", {
+					step: stateBeforeCancel.activeStep,
+					personaId: dataState.personaId,
+					goalId: dataState.goalId,
+					templateId: stateBeforeCancel.activePreset?.templateId ?? null,
+					pendingAction: Boolean(stateBeforeCancel.pendingAction),
+				});
 
-			useQuickStartWizardExperienceStore.getState().markWizardSeen();
-			useQuickStartWizardDataStore.getState().reset();
-			set({ ...defaultState });
-		},
-		close: () => {
-			get().cancel();
-		},
-		complete: () => {
-			const stateBeforeComplete = get();
-			const dataState = useQuickStartWizardDataStore.getState();
-			const pendingAction = stateBeforeComplete.pendingAction;
-			const resetWizardData = dataState.reset;
-
-			captureQuickStartEvent("quickstart_plan_completed", {
-				personaId: dataState.personaId,
-				goalId: dataState.goalId,
-				templateId: stateBeforeComplete.activePreset?.templateId ?? null,
-				triggeredAction: pendingAction ? "launchWithAction" : "complete",
-			});
-
-			set({ ...defaultState });
-
-			try {
-				if (pendingAction) {
-					pendingAction();
-				}
-			} finally {
 				useQuickStartWizardExperienceStore.getState().markWizardSeen();
-				resetWizardData();
-			}
-		},
-		goToStep: (step) => {
-			if (!get().isOpen) {
-				return;
-			}
+				useQuickStartWizardDataStore.getState().reset();
+				set({ ...defaultState });
+			},
+			close: () => {
+				get().cancel();
+			},
+			complete: () => {
+				const stateBeforeComplete = get();
+				const dataState = useQuickStartWizardDataStore.getState();
+				const pendingAction = stateBeforeComplete.pendingAction;
+				const resetWizardData = dataState.reset;
 
-			set({ activeStep: step });
-		},
-		reset: () => {
-			useQuickStartWizardDataStore.getState().reset();
-			set({ ...defaultState });
-		},
-	}),
-);
+				captureQuickStartEvent("quickstart_plan_completed", {
+					personaId: dataState.personaId,
+					goalId: dataState.goalId,
+					templateId: stateBeforeComplete.activePreset?.templateId ?? null,
+					triggeredAction: pendingAction ? "launchWithAction" : "complete",
+				});
+
+				set({ ...defaultState });
+
+				try {
+					if (pendingAction) {
+						pendingAction();
+					}
+				} finally {
+					useQuickStartWizardExperienceStore.getState().markWizardSeen();
+					resetWizardData();
+				}
+			},
+			goToStep: (step) => {
+				if (!get().isOpen) {
+					return;
+				}
+
+				set({ activeStep: step });
+			},
+			reset: () => {
+				useQuickStartWizardDataStore.getState().reset();
+				set({ ...defaultState });
+			},
+		}),
+		Object.is,
+	);

@@ -1,4 +1,4 @@
-import { create } from "zustand";
+import { createWithEqualityFn } from "zustand/traditional";
 import {
 	createJSONStorage,
 	persist,
@@ -30,7 +30,7 @@ const resolveStorage = () => {
 };
 
 export const useQuickStartWizardExperienceStore =
-	create<QuickStartWizardExperienceState>()(
+	createWithEqualityFn<QuickStartWizardExperienceState>()(
 		persist(
 			(set) => ({
 				...defaultState,
@@ -46,6 +46,7 @@ export const useQuickStartWizardExperienceStore =
 				},
 			},
 		),
+		Object.is,
 	);
 
 if (typeof window === "undefined") {

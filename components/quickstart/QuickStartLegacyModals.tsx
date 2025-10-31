@@ -41,6 +41,10 @@ interface QuickStartLegacyModalsProps {
 	readonly onCloseTour: () => void;
 	readonly campaignSteps: readonly unknown[];
 	readonly defaultChannel?: "call" | "text" | "social" | "directmail";
+	readonly onCampaignLaunched?: (payload: {
+		campaignId: string;
+		channelType: string;
+	}) => void;
 }
 
 const QuickStartLegacyModals: FC<QuickStartLegacyModalsProps> = ({
@@ -69,6 +73,7 @@ const QuickStartLegacyModals: FC<QuickStartLegacyModalsProps> = ({
 	onCloseTour,
 	campaignSteps,
 	defaultChannel,
+	onCampaignLaunched,
 }) => (
 	<>
 		<LeadModalMain
@@ -94,6 +99,7 @@ const QuickStartLegacyModals: FC<QuickStartLegacyModalsProps> = ({
 			initialLeadCount={campaignModalContext?.leadCount ?? 0}
 			initialStep={0}
 			defaultChannel={defaultChannel}
+			onCampaignLaunched={onCampaignLaunched}
 		/>
 
 		<SavedSearchModal

@@ -352,6 +352,11 @@ export default function QuickStartPage() {
 		onLaunchQuickStartFlow: handleLaunchQuickStartFlow,
 	});
 
+	const handlePostLaunch = useCallback(() => {
+		// After launching a campaign, open webhooks modal first
+		openWebhookModal("incoming");
+	}, [openWebhookModal]);
+
 	return (
 		<div className="container mx-auto px-4 py-8">
 			<div className="relative mb-8 text-center">
@@ -416,6 +421,7 @@ export default function QuickStartPage() {
 						? t.primaryChannel
 						: undefined;
 				})()}
+				onCampaignLaunched={() => handlePostLaunch()}
 			/>
 
 			<QuickStartSupportCard />

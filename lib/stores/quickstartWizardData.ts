@@ -1,4 +1,4 @@
-import { create } from "zustand";
+import { createWithEqualityFn } from "zustand/traditional";
 
 import type { QuickStartWizardPreset } from "@/components/quickstart/types";
 import { captureQuickStartEvent } from "@/lib/analytics/quickstart";
@@ -59,84 +59,86 @@ const createInitialState = () =>
 		useUserProfileStore.getState().userProfile?.quickStartDefaults,
 	);
 
-export const useQuickStartWizardDataStore = create<QuickStartWizardDataState>(
-	(set, get) => ({
-		...createInitialState(),
-		selectPersona: (personaId) => {
-			const previousState = get();
-			set((state) => {
-				if (state.goalId) {
-					const definition = getGoalDefinition(state.goalId);
-					if (definition?.personaId === personaId) {
-						return { personaId, goalId: definition.id };
+export const useQuickStartWizardDataStore =
+	createWithEqualityFn<QuickStartWizardDataState>(
+		(set, get) => ({
+			...createInitialState(),
+			selectPersona: (personaId) => {
+				const previousState = get();
+				set((state) => {
+					if (state.goalId) {
+						const definition = getGoalDefinition(state.goalId);
+						if (definition?.personaId === personaId) {
+							return { personaId, goalId: definition.id };
+						}
 					}
+
+					return { personaId, goalId: null };
+				});
+
+				const { goalId } = get();
+				captureQuickStartEvent("quickstart_persona_selected", {
+					personaId,
+					goalId,
+					previousPersonaId: previousState.personaId,
+					previousGoalId: previousState.goalId,
+				});
+			},
+			selectGoal: (goalId) => {
+				const previousState = get();
+				set(() => {
+					const definition = getGoalDefinition(goalId);
+					if (!definition) {
+						return {};
+					}
+
+					return {
+						personaId: definition.personaId,
+						goalId: definition.id,
+					};
+				});
+
+				const nextState = get();
+				if (!nextState.goalId) {
+					return;
 				}
 
-				return { personaId, goalId: null };
-			});
+				captureQuickStartEvent("quickstart_goal_selected", {
+					personaId: nextState.personaId,
+					goalId: nextState.goalId,
+					previousGoalId: previousState.goalId,
+				});
+			},
+			applyPreset: (preset) =>
+				set(() => {
+					if (!preset) {
+						return createInitialState();
+					}
 
-			const { goalId } = get();
-			captureQuickStartEvent("quickstart_persona_selected", {
-				personaId,
-				goalId,
-				previousPersonaId: previousState.personaId,
-				previousGoalId: previousState.goalId,
-			});
-		},
-		selectGoal: (goalId) => {
-			const previousState = get();
-			set(() => {
-				const definition = getGoalDefinition(goalId);
-				if (!definition) {
-					return {};
-				}
+					if (preset.goalId) {
+						const definition = getGoalDefinition(preset.goalId);
+						if (definition) {
+							return {
+								personaId: definition.personaId,
+								goalId: definition.id,
+							};
+						}
+					}
 
-				return {
-					personaId: definition.personaId,
-					goalId: definition.id,
-				};
-			});
-
-			const nextState = get();
-			if (!nextState.goalId) {
-				return;
-			}
-
-			captureQuickStartEvent("quickstart_goal_selected", {
-				personaId: nextState.personaId,
-				goalId: nextState.goalId,
-				previousGoalId: previousState.goalId,
-			});
-		},
-		applyPreset: (preset) =>
-			set(() => {
-				if (!preset) {
-					return createInitialState();
-				}
-
-				if (preset.goalId) {
-					const definition = getGoalDefinition(preset.goalId);
-					if (definition) {
+					if (preset.personaId) {
+						const goals = getGoalsForPersona(preset.personaId);
 						return {
-							personaId: definition.personaId,
-							goalId: definition.id,
+							personaId: preset.personaId,
+							goalId: goals.length === 1 ? (goals[0]?.id ?? null) : null,
 						};
 					}
-				}
 
-				if (preset.personaId) {
-					const goals = getGoalsForPersona(preset.personaId);
-					return {
-						personaId: preset.personaId,
-						goalId: goals.length === 1 ? (goals[0]?.id ?? null) : null,
-					};
-				}
-
-				return createInitialState();
-			}),
-		reset: () => set(createInitialState()),
-	}),
-);
+					return createInitialState();
+				}),
+			reset: () => set(createInitialState()),
+		}),
+		Object.is,
+	);
 
 useUserProfileStore.subscribe(
 	(state) => state.userProfile?.quickStartDefaults,

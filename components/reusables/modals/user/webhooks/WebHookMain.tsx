@@ -271,8 +271,8 @@ export const WebhookModal: React.FC = () => {
 					);
 				}
 			} finally {
-				// Navigate after toasts are queued to avoid synchronous updates
-				router.push("/dashboard/lead-list");
+				// After saving webhooks, go to Campaigns
+				router.push("/dashboard/campaigns");
 			}
 		}, 0);
 	};
