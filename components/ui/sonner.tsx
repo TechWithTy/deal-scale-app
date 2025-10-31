@@ -9,20 +9,21 @@ type ToasterProps = React.ComponentProps<typeof Sonner>;
 const Toaster = ({ ...props }: ToasterProps) => {
 	const { theme = "system" } = useTheme();
 	const memoTheme = theme as ToasterProps["theme"];
-	const memoClassName = "toaster group z-[9999]";
+	// Use higher z-index, ensure pointer events work, and proper corner positioning
+	const memoClassName = "toaster group z-[10000] [&>ol]:pointer-events-auto";
 	const memoToastOptions = React.useMemo<ToasterProps["toastOptions"]>(
 		() => ({
 			classNames: {
 				toast:
-					"group toast border border-border bg-card text-foreground shadow-lg transition-all [&>[data-content]]:text-sm data-[type=success]:border-primary data-[type=success]:bg-primary data-[type=success]:text-primary-foreground data-[type=error]:border-destructive data-[type=error]:bg-destructive data-[type=error]:text-destructive-foreground data-[type=warning]:border-accent data-[type=warning]:bg-accent data-[type=warning]:text-accent-foreground data-[type=info]:border-secondary data-[type=info]:bg-secondary data-[type=info]:text-secondary-foreground",
+					"group toast pointer-events-auto relative border border-border bg-card text-foreground shadow-lg transition-all [&>[data-content]]:text-sm [&_button]:pointer-events-auto [&_button]:cursor-pointer data-[type=success]:border-primary data-[type=success]:bg-primary data-[type=success]:text-primary-foreground data-[type=error]:border-destructive data-[type=error]:bg-destructive data-[type=error]:text-destructive-foreground data-[type=warning]:border-accent data-[type=warning]:bg-accent data-[type=warning]:text-accent-foreground data-[type=info]:border-secondary data-[type=info]:bg-secondary data-[type=info]:text-secondary-foreground",
 				title: "group-[.toast]:font-semibold group-[.toast]:text-inherit",
 				description: "group-[.toast]:text-sm group-[.toast]:text-inherit/90",
 				actionButton:
-					"group-[.toast]:bg-primary group-[.toast]:text-primary-foreground group-[.toast]:hover:bg-primary/90",
+					"group-[.toast]:bg-primary group-[.toast]:text-primary-foreground group-[.toast]:hover:bg-primary/90 group-[.toast]:pointer-events-auto group-[.toast]:cursor-pointer",
 				cancelButton:
-					"group-[.toast]:bg-muted group-[.toast]:text-muted-foreground group-[.toast]:hover:bg-muted/80",
+					"group-[.toast]:bg-muted group-[.toast]:text-muted-foreground group-[.toast]:hover:bg-muted/80 group-[.toast]:pointer-events-auto group-[.toast]:cursor-pointer",
 				closeButton:
-					"group-[.toast]:text-inherit/70 group-[.toast]:hover:text-inherit",
+					"group-[.toast]:text-inherit/70 group-[.toast]:hover:text-inherit group-[.toast]:pointer-events-auto group-[.toast]:cursor-pointer group-[.toast]:relative group-[.toast]:z-[10001]",
 				icon: "group-[.toast]:text-inherit",
 			},
 		}),
@@ -36,6 +37,9 @@ const Toaster = ({ ...props }: ToasterProps) => {
 			position="bottom-right"
 			className={memoClassName}
 			toastOptions={memoToastOptions}
+			style={{
+				zIndex: 10000,
+			}}
 			{...props}
 		/>
 	);

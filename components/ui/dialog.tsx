@@ -24,6 +24,149 @@ const DialogOverlay = React.forwardRef<
 			"fixed inset-0 z-50 bg-background/80 data-[state=closed]:animate-out data-[state=open]:animate-in data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
 			className,
 		)}
+		onMouseDown={(e) => {
+			// Check if click target is within a toast - if so, don't let overlay handle it
+			const target = e.target as HTMLElement;
+			// Check using composedPath for shadow DOM compatibility
+			const composedPath = e.composedPath() as HTMLElement[];
+
+			// Check if any element in the event path is a toast
+			for (const element of composedPath) {
+				if (
+					element &&
+					element !== document.body &&
+					element.nodeType === Node.ELEMENT_NODE
+				) {
+					const isToast =
+						(element.hasAttribute &&
+							element.hasAttribute("data-sonner-toast")) ||
+						(element.closest &&
+							element.closest("[data-sonner-toast]") !== null) ||
+						(element.closest &&
+							element.closest('[class*="toaster"]') !== null) ||
+						(element.closest && element.closest('[id^="sonner-"]') !== null) ||
+						(element.closest && element.closest('[class*="sonner"]') !== null);
+
+					if (isToast) {
+						e.stopPropagation();
+						e.preventDefault();
+						return;
+					}
+
+					// Check by z-index
+					try {
+						const zIndex = window.getComputedStyle(element).zIndex;
+						if (zIndex && parseInt(zIndex, 10) >= 10000) {
+							e.stopPropagation();
+							e.preventDefault();
+							return;
+						}
+					} catch {
+						// Ignore errors accessing computed styles
+					}
+				}
+			}
+
+			// Fallback: check target and parents
+			let element: HTMLElement | null = target;
+			while (element && element !== document.body) {
+				const isToast =
+					element.hasAttribute("data-sonner-toast") ||
+					element.closest("[data-sonner-toast]") !== null ||
+					element.closest('[class*="toaster"]') !== null ||
+					element.closest('[id^="sonner-"]') !== null ||
+					element.closest('[class*="sonner"]') !== null;
+
+				if (isToast) {
+					e.stopPropagation();
+					e.preventDefault();
+					return;
+				}
+
+				try {
+					const zIndex = window.getComputedStyle(element).zIndex;
+					if (zIndex && parseInt(zIndex, 10) >= 10000) {
+						e.stopPropagation();
+						e.preventDefault();
+						return;
+					}
+				} catch {
+					// Ignore errors
+				}
+				element = element.parentElement;
+			}
+		}}
+		onClick={(e) => {
+			// Same check for onClick - stop propagation to prevent modal close
+			const target = e.target as HTMLElement;
+			const composedPath = e.composedPath() as HTMLElement[];
+
+			// Check if any element in the event path is a toast
+			for (const element of composedPath) {
+				if (
+					element &&
+					element !== document.body &&
+					element.nodeType === Node.ELEMENT_NODE
+				) {
+					const isToast =
+						(element.hasAttribute &&
+							element.hasAttribute("data-sonner-toast")) ||
+						(element.closest &&
+							element.closest("[data-sonner-toast]") !== null) ||
+						(element.closest &&
+							element.closest('[class*="toaster"]') !== null) ||
+						(element.closest && element.closest('[id^="sonner-"]') !== null) ||
+						(element.closest && element.closest('[class*="sonner"]') !== null);
+
+					if (isToast) {
+						e.stopPropagation();
+						e.preventDefault();
+						return;
+					}
+
+					// Check by z-index
+					try {
+						const zIndex = window.getComputedStyle(element).zIndex;
+						if (zIndex && parseInt(zIndex, 10) >= 10000) {
+							e.stopPropagation();
+							e.preventDefault();
+							return;
+						}
+					} catch {
+						// Ignore errors
+					}
+				}
+			}
+
+			// Fallback: check target and parents
+			let element: HTMLElement | null = target;
+			while (element && element !== document.body) {
+				const isToast =
+					element.hasAttribute("data-sonner-toast") ||
+					element.closest("[data-sonner-toast]") !== null ||
+					element.closest('[class*="toaster"]') !== null ||
+					element.closest('[id^="sonner-"]') !== null ||
+					element.closest('[class*="sonner"]') !== null;
+
+				if (isToast) {
+					e.stopPropagation();
+					e.preventDefault();
+					return;
+				}
+
+				try {
+					const zIndex = window.getComputedStyle(element).zIndex;
+					if (zIndex && parseInt(zIndex, 10) >= 10000) {
+						e.stopPropagation();
+						e.preventDefault();
+						return;
+					}
+				} catch {
+					// Ignore errors
+				}
+				element = element.parentElement;
+			}
+		}}
 		{...props}
 	/>
 ));
@@ -38,9 +181,84 @@ const DialogContent = React.forwardRef<
 		<DialogPrimitive.Content
 			ref={ref}
 			className={cn(
-				"fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg -translate-x-1/2 -translate-y-1/2 gap-4 border !border-border !bg-card !text-card-foreground !h-auto !max-h-[90vh] !min-h-0 !overflow-auto p-6 shadow-lg duration-200 data-[state=closed]:animate-out data-[state=open]:animate-in data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 sm:rounded-lg md:w-full",
+				"fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg -translate-x-1/2 -translate-y-1/2 gap-4 border !border-border !bg-card !text-card-foreground !h-auto !max-h-[90vh] !min-h-0 !overflow-auto p-6 shadow-lg duration-200 data-[state=closed]:animate-out data-[state=open]:animate-in data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 sm:rounded-lg md:w-full pointer-events-auto",
 				className,
 			)}
+			onInteractOutside={(e) => {
+				// Don't close modal if clicking on toast
+				const target = e.target as HTMLElement;
+				const composedPath = e.composedPath() as HTMLElement[];
+
+				// Check if any element in the event path is a toast
+				for (const element of composedPath) {
+					if (
+						element &&
+						element !== document.body &&
+						element.nodeType === Node.ELEMENT_NODE
+					) {
+						// Check for toast attributes/classes
+						const isToast =
+							(element.hasAttribute &&
+								element.hasAttribute("data-sonner-toast")) ||
+							(element.closest &&
+								element.closest("[data-sonner-toast]") !== null) ||
+							(element.closest &&
+								element.closest('[class*="toaster"]') !== null) ||
+							(element.closest &&
+								element.closest('[id^="sonner-"]') !== null) ||
+							(element.closest &&
+								element.closest('[class*="sonner"]') !== null);
+
+						if (isToast) {
+							e.preventDefault();
+							return;
+						}
+
+						// Check by z-index
+						try {
+							const zIndex = window.getComputedStyle(element).zIndex;
+							if (zIndex && parseInt(zIndex, 10) >= 10000) {
+								e.preventDefault();
+								return;
+							}
+						} catch {
+							// Ignore errors accessing computed styles
+						}
+					}
+				}
+
+				// Fallback: check the target itself and parents
+				let element: HTMLElement | null = target;
+				while (element && element !== document.body) {
+					const isToast =
+						element.hasAttribute("data-sonner-toast") ||
+						element.closest("[data-sonner-toast]") !== null ||
+						element.closest('[class*="toaster"]') !== null ||
+						element.closest('[id^="sonner-"]') !== null ||
+						element.closest('[class*="sonner"]') !== null;
+
+					if (isToast) {
+						e.preventDefault();
+						return;
+					}
+
+					try {
+						const zIndex = window.getComputedStyle(element).zIndex;
+						if (zIndex && parseInt(zIndex, 10) >= 10000) {
+							e.preventDefault();
+							return;
+						}
+					} catch {
+						// Ignore errors
+					}
+					element = element.parentElement;
+				}
+
+				// Allow default behavior for non-toast clicks
+				if (props.onInteractOutside) {
+					props.onInteractOutside(e);
+				}
+			}}
 			{...props}
 		>
 			{children}

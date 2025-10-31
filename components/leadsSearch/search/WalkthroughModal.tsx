@@ -57,27 +57,56 @@ const WalkThroughModal: FC<WalkThroughModalProps> = ({
 	const [videoLoading, setVideoLoading] = React.useState(true);
 	const embedInfo = getEmbedInfo(videoUrl);
 
+	// Handle body scroll lock - only lock if modal is open
+	React.useEffect(() => {
+		if (isOpen) {
+			// Count existing modals with body scroll lock
+			const existingModals = document.body.style.overflow === "hidden" ? 1 : 0;
+			// Only add another lock if this is the topmost modal
+			if (existingModals === 0) {
+				document.body.style.overflow = "hidden";
+			}
+		}
+		return () => {
+			// Only unlock if we're the one that locked it
+			// Other modals may still be open
+			if (isOpen) {
+				// Check if there are other modals before unlocking
+				const hasOtherModals =
+					document.querySelectorAll('[role="dialog"][aria-modal="true"]')
+						.length > 1;
+				if (!hasOtherModals) {
+					document.body.style.overflow = "";
+				}
+			}
+		};
+	}, [isOpen]);
+
 	if (!isOpen) return null; // Do not render the modal if isOpen is false
 
 	// Function to close the modal when clicking outside
+	// Stop propagation to prevent closing underlying modals
 	const handleOutsideClick = (e: React.MouseEvent<HTMLDivElement>) => {
 		if (e.target === e.currentTarget) {
+			e.stopPropagation(); // Prevent event from bubbling to underlying modal
 			onClose();
 		}
 	};
 
 	// Function to handle keyboard events for accessibility
+	// Only close this modal, not underlying ones
 	const handleKeyDown = (e: React.KeyboardEvent) => {
 		if (e.key === "Escape") {
+			e.stopPropagation(); // Prevent Escape from closing underlying modals
 			onClose();
 		}
 	};
 
 	return (
 		<>
-			{/* Modal */}
+			{/* Modal - Higher z-index for stacking on top of other modals */}
 			<div
-				className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm"
+				className="fixed inset-0 z-[60] flex items-center justify-center bg-background/80 backdrop-blur-sm"
 				onClick={handleOutsideClick}
 				onKeyDown={handleKeyDown}
 				tabIndex={-1}
@@ -161,7 +190,10 @@ const WalkThroughModal: FC<WalkThroughModalProps> = ({
 					<button
 						type="button"
 						className="w-full rounded-lg bg-primary px-4 py-2 font-semibold text-primary-foreground hover:bg-primary/90"
-						onClick={onClose}
+						onClick={(e) => {
+							e.stopPropagation();
+							onClose();
+						}}
 					>
 						Got it
 					</button>
@@ -181,7 +213,10 @@ const WalkThroughModal: FC<WalkThroughModalProps> = ({
 					<button
 						type="button"
 						className="mt-4 text-muted-foreground text-sm hover:underline"
-						onClick={onClose} // Close modal since demo is already visible
+						onClick={(e) => {
+							e.stopPropagation();
+							onClose();
+						}}
 					>
 						Close Demo
 					</button>

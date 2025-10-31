@@ -280,7 +280,15 @@ export default function LeadBulkSuiteModal({
 		}
 
 		setIsLaunchingSuite(true);
-		const launchToastId = toast.loading("Launching enrichment suite...");
+		const launchToastId = toast.loading("Launching enrichment suite...", {
+			duration: Number.POSITIVE_INFINITY, // Keep loading until explicitly dismissed
+			onDismiss: () => {
+				// Clean up state when toast is manually dismissed
+				launchToastIdRef.current = null;
+				setIsLaunchingSuite(false);
+			},
+		});
+		launchToastIdRef.current = launchToastId;
 
 		try {
 			const leads = parseCsvToLeads(csvContent, selectedHeaders);

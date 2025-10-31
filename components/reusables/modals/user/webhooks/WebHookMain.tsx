@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import type React from "react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import WalkThroughModal from "@/components/leadsSearch/search/WalkthroughModal";
 import WebhookFeedPreview, { type FeedItemType } from "./WebhookFeedPreview";
 import WebhookHistory from "./WebhookHistory";
 import type { WebhookEntryType } from "./WebhookHistory";
@@ -156,6 +157,40 @@ const Modal = ({
 	);
 };
 
+// CRM integration configuration with YouTube video URLs
+const CRM_INTEGRATIONS = [
+	{
+		id: "ghl",
+		name: "Go High Level",
+		videoUrl: "https://www.youtube.com/watch?v=example-ghl",
+		title: "Integrate with Go High Level",
+		subtitle:
+			"Learn how to connect DealScale with Go High Level without resetup.",
+	},
+	{
+		id: "lofty",
+		name: "Lofty",
+		videoUrl: "https://www.youtube.com/watch?v=example-lofty",
+		title: "Integrate with Lofty",
+		subtitle: "Learn how to connect DealScale with Lofty without resetup.",
+	},
+	{
+		id: "salesforce",
+		name: "Salesforce",
+		videoUrl: "https://www.youtube.com/watch?v=example-salesforce",
+		title: "Integrate with Salesforce",
+		subtitle: "Learn how to connect DealScale with Salesforce without resetup.",
+	},
+	{
+		id: "fub",
+		name: "Follow Up Boss",
+		videoUrl: "https://www.youtube.com/watch?v=example-fub",
+		title: "Integrate with Follow Up Boss",
+		subtitle:
+			"Learn how to connect DealScale with Follow Up Boss without resetup.",
+	},
+] as const;
+
 export const WebhookModal: React.FC = () => {
 	const {
 		isWebhookModalOpen,
@@ -180,6 +215,43 @@ export const WebhookModal: React.FC = () => {
 	const [outgoingWebhookUrl, setOutgoingWebhookUrl] = useState(
 		defaultOutgoingEndpoint,
 	);
+
+	// State for CRM walkthrough modal
+	const [showCrmWalkthrough, setShowCrmWalkthrough] = useState(false);
+	const [crmWalkthroughUrl, setCrmWalkthroughUrl] = useState("");
+	const [crmWalkthroughTitle, setCrmWalkthroughTitle] = useState("");
+	const [crmWalkthroughSubtitle, setCrmWalkthroughSubtitle] = useState("");
+
+	// Handle CRM integration button click
+	const handleCrmIntegrationClick = (
+		crm: (typeof CRM_INTEGRATIONS)[number],
+	) => {
+		setCrmWalkthroughUrl(crm.videoUrl);
+		setCrmWalkthroughTitle(crm.title);
+		setCrmWalkthroughSubtitle(crm.subtitle);
+		setShowCrmWalkthrough(true);
+	};
+
+	// Close CRM walkthrough and ensure webhook modal remains open
+	const handleCloseCrmWalkthrough = () => {
+		setShowCrmWalkthrough(false);
+		// Clear state after a brief delay to allow modal close animation
+		setTimeout(() => {
+			setCrmWalkthroughUrl("");
+			setCrmWalkthroughTitle("");
+			setCrmWalkthroughSubtitle("");
+		}, 200);
+	};
+
+	// Prevent webhook modal from closing when CRM walkthrough is open
+	const handleWebhookModalClose = () => {
+		// If CRM walkthrough is open, close it first
+		if (showCrmWalkthrough) {
+			handleCloseCrmWalkthrough();
+			return;
+		}
+		closeWebhookModal();
+	};
 
 	const payloadTemplates: Record<WebhookStage, string> = {
 		incoming: `{
@@ -278,168 +350,210 @@ export const WebhookModal: React.FC = () => {
 	};
 
 	return (
-		<Modal isOpen={isWebhookModalOpen} onClose={closeWebhookModal}>
-			<>
-				<div className="mt-4 space-y-4">
-					<h3 className="text-lg font-medium text-foreground">
-						Webhook &amp; Feed Integrations
-					</h3>
-					<p className="text-sm text-muted-foreground">
-						Configure inbound CRM webhooks and outbound DealScale notifications
-						from a single modal.
-					</p>
-				</div>
-
-				<Tabs
-					value={webhookStage}
-					onValueChange={(value) => setWebhookStage(value as WebhookStage)}
-				>
-					<TabsList className="grid w-full grid-cols-3">
-						<TabsTrigger value="incoming">Incoming</TabsTrigger>
-						<TabsTrigger value="outgoing">Outgoing</TabsTrigger>
-						<TabsTrigger value="feeds">Feeds</TabsTrigger>
-					</TabsList>
-
-					{/* Incoming */}
-					<TabsContent value="incoming">
-						<WebhookUrlInput
-							label="Incoming endpoint"
-							description="Share this read-only endpoint with your CRM or form provider to push events into DealScale."
-							webhookUrl={incomingWebhookUrl}
-							setWebhookUrl={setIncomingWebhookUrl}
-							placeholder={defaultIncomingEndpoint}
-							readOnly
-						/>
-						<WebhookPayloadSection
-							label="Sample CRM payload"
-							description="Validate that incoming requests include the required fields before going live."
-							webhookPayload={payloadTemplates.incoming}
-							onCopy={() => void copyPayloadFor("incoming")}
-						/>
-						<div className="mt-4 rounded-md border border-dashed bg-muted/40 p-4 text-sm">
-							<div className="flex items-start justify-between gap-2">
-								<div>
-									<p className="font-medium text-foreground">Signing secret</p>
-									<p className="text-xs text-muted-foreground">
-										DealScale validates the <code>X-DealScale-Signature</code>{" "}
-										header using this key.
-									</p>
-								</div>
-								<Button
-									variant="secondary"
-									size="sm"
-									onClick={() => void copySecretFor("incoming")}
-									type="button"
-								>
-									Copy
-								</Button>
-							</div>
-							<code className="mt-3 block truncate font-mono text-xs text-muted-foreground">
-								{signingSecrets.incoming}
-							</code>
-						</div>
-					</TabsContent>
-
-					{/* Outgoing */}
-					<TabsContent value="outgoing">
-						<WebhookUrlInput
-							label="Destination URL"
-							description="DealScale will POST outbound events to this URL, complete with signatures and retry logic."
-							webhookUrl={outgoingWebhookUrl}
-							setWebhookUrl={setOutgoingWebhookUrl}
-							placeholder={defaultOutgoingEndpoint}
-						/>
-						<WebhookPayloadSection
-							label="Sample DealScale payload"
-							description="Use this schema to map DealScale events to your CRM or automation platform."
-							webhookPayload={payloadTemplates.outgoing}
-							onCopy={() => void copyPayloadFor("outgoing")}
-						/>
-						<div className="mt-4 rounded-md border border-dashed bg-muted/40 p-4 text-sm">
-							<div className="flex items-start justify-between gap-2">
-								<div>
-									<p className="font-medium text-foreground">Signing secret</p>
-									<p className="text-xs text-muted-foreground">
-										Share this key with your CRM to verify outbound requests and
-										power optional RSS-style activity feeds.
-									</p>
-								</div>
-								<Button
-									variant="secondary"
-									size="sm"
-									onClick={() => void copySecretFor("outgoing")}
-									type="button"
-								>
-									Copy
-								</Button>
-							</div>
-							<code className="mt-3 block truncate font-mono text-xs text-muted-foreground">
-								{signingSecrets.outgoing}
-							</code>
-						</div>
-						<p className="mt-3 text-xs text-muted-foreground">
-							Tip: enable the RSS management toggle inside Integrations →
-							Webhooks to broadcast the same events as a secure feed for
-							downstream analytics.
+		<>
+			<Modal isOpen={isWebhookModalOpen} onClose={handleWebhookModalClose}>
+				<>
+					<div className="mt-4 space-y-4">
+						<h3 className="text-lg font-medium text-foreground">
+							Webhook &amp; Feed Integrations
+						</h3>
+						<p className="text-sm text-muted-foreground">
+							Configure inbound CRM webhooks and outbound DealScale
+							notifications from a single modal.
 						</p>
-					</TabsContent>
+					</div>
 
-					{/* Feeds */}
-					<TabsContent value="feeds">
-						<WebhookUrlInput
-							label="Activity feed URL"
-							description="Share this read-only endpoint with stakeholders or BI tools to subscribe to webhook events as RSS/XML."
-							webhookUrl={defaultFeedEndpoint}
-							readOnly
-							setWebhookUrl={() => undefined}
-						/>
-						<WebhookPayloadSection
-							label="Sample feed item"
-							description="Every webhook delivery generates an RSS entry with the payload summary, signature, and destination response."
-							webhookPayload={payloadTemplates.feeds}
-							onCopy={() => void copyPayloadFor("feeds")}
-						/>
-						<WebhookFeedPreview feedItems={webhookFeedItems} />
-						<div className="mt-4 rounded-md border border-dashed bg-muted/40 p-4 text-sm">
-							<div className="flex items-start justify-between gap-2">
-								<div>
-									<p className="font-medium text-foreground">Feed token</p>
-									<p className="text-xs text-muted-foreground">
-										Use this token to authenticate RSS requests or append it as{" "}
-										<code className="mx-1">?token=</code> in the feed URL.
-									</p>
+					<Tabs
+						value={webhookStage}
+						onValueChange={(value) => setWebhookStage(value as WebhookStage)}
+					>
+						<TabsList className="grid w-full grid-cols-3">
+							<TabsTrigger value="incoming">Incoming</TabsTrigger>
+							<TabsTrigger value="outgoing">Outgoing</TabsTrigger>
+							<TabsTrigger value="feeds">Feeds</TabsTrigger>
+						</TabsList>
+
+						{/* Incoming */}
+						<TabsContent value="incoming">
+							<WebhookUrlInput
+								label="Incoming endpoint"
+								description="Share this read-only endpoint with your CRM or form provider to push events into DealScale."
+								webhookUrl={incomingWebhookUrl}
+								setWebhookUrl={setIncomingWebhookUrl}
+								placeholder={defaultIncomingEndpoint}
+								readOnly
+							/>
+							<WebhookPayloadSection
+								label="Sample CRM payload"
+								description="Validate that incoming requests include the required fields before going live."
+								webhookPayload={payloadTemplates.incoming}
+								onCopy={() => void copyPayloadFor("incoming")}
+							/>
+							<div className="mt-4 rounded-md border border-dashed bg-muted/40 p-4 text-sm">
+								<div className="flex items-start justify-between gap-2">
+									<div>
+										<p className="font-medium text-foreground">
+											Signing secret
+										</p>
+										<p className="text-xs text-muted-foreground">
+											DealScale validates the <code>X-DealScale-Signature</code>{" "}
+											header using this key.
+										</p>
+									</div>
+									<Button
+										variant="secondary"
+										size="sm"
+										onClick={() => void copySecretFor("incoming")}
+										type="button"
+									>
+										Copy
+									</Button>
 								</div>
-								<Button
-									variant="secondary"
-									size="sm"
-									onClick={() => void copySecretFor("feeds")}
-									type="button"
-								>
-									Copy
-								</Button>
+								<code className="mt-3 block truncate font-mono text-xs text-muted-foreground">
+									{signingSecrets.incoming}
+								</code>
 							</div>
-							<code className="mt-3 block truncate font-mono text-xs text-muted-foreground">
-								{signingSecrets.feeds}
-							</code>
+						</TabsContent>
+
+						{/* Outgoing */}
+						<TabsContent value="outgoing">
+							<WebhookUrlInput
+								label="Destination URL"
+								description="DealScale will POST outbound events to this URL, complete with signatures and retry logic."
+								webhookUrl={outgoingWebhookUrl}
+								setWebhookUrl={setOutgoingWebhookUrl}
+								placeholder={defaultOutgoingEndpoint}
+							/>
+							<WebhookPayloadSection
+								label="Sample DealScale payload"
+								description="Use this schema to map DealScale events to your CRM or automation platform."
+								webhookPayload={payloadTemplates.outgoing}
+								onCopy={() => void copyPayloadFor("outgoing")}
+							/>
+							<div className="mt-4 rounded-md border border-dashed bg-muted/40 p-4 text-sm">
+								<div className="flex items-start justify-between gap-2">
+									<div>
+										<p className="font-medium text-foreground">
+											Signing secret
+										</p>
+										<p className="text-xs text-muted-foreground">
+											Share this key with your CRM to verify outbound requests
+											and power optional RSS-style activity feeds.
+										</p>
+									</div>
+									<Button
+										variant="secondary"
+										size="sm"
+										onClick={() => void copySecretFor("outgoing")}
+										type="button"
+									>
+										Copy
+									</Button>
+								</div>
+								<code className="mt-3 block truncate font-mono text-xs text-muted-foreground">
+									{signingSecrets.outgoing}
+								</code>
+							</div>
+							<p className="mt-3 text-xs text-muted-foreground">
+								Tip: enable the RSS management toggle inside Integrations →
+								Webhooks to broadcast the same events as a secure feed for
+								downstream analytics.
+							</p>
+						</TabsContent>
+
+						{/* Feeds */}
+						<TabsContent value="feeds">
+							<WebhookUrlInput
+								label="Activity feed URL"
+								description="Share this read-only endpoint with stakeholders or BI tools to subscribe to webhook events as RSS/XML."
+								webhookUrl={defaultFeedEndpoint}
+								readOnly
+								setWebhookUrl={() => undefined}
+							/>
+							<WebhookPayloadSection
+								label="Sample feed item"
+								description="Every webhook delivery generates an RSS entry with the payload summary, signature, and destination response."
+								webhookPayload={payloadTemplates.feeds}
+								onCopy={() => void copyPayloadFor("feeds")}
+							/>
+							<WebhookFeedPreview feedItems={webhookFeedItems} />
+							<div className="mt-4 rounded-md border border-dashed bg-muted/40 p-4 text-sm">
+								<div className="flex items-start justify-between gap-2">
+									<div>
+										<p className="font-medium text-foreground">Feed token</p>
+										<p className="text-xs text-muted-foreground">
+											Use this token to authenticate RSS requests or append it
+											as <code className="mx-1">?token=</code> in the feed URL.
+										</p>
+									</div>
+									<Button
+										variant="secondary"
+										size="sm"
+										onClick={() => void copySecretFor("feeds")}
+										type="button"
+									>
+										Copy
+									</Button>
+								</div>
+								<code className="mt-3 block truncate font-mono text-xs text-muted-foreground">
+									{signingSecrets.feeds}
+								</code>
+							</div>
+							<p className="mt-3 text-xs text-muted-foreground">
+								Followers can consume the RSS stream or use the token to request
+								a JSON feed for embedded dashboards.
+							</p>
+						</TabsContent>
+					</Tabs>
+
+					<WebhookHistory
+						activeStage={webhookStage}
+						historyByStage={webhookHistoryByStage}
+					/>
+
+					{/* CRM Integration Buttons Section */}
+					<div className="mt-6 space-y-3 border-t border-border pt-4">
+						<div className="space-y-2">
+							<h4 className="text-sm font-medium text-foreground">
+								CRM Integration Guides
+							</h4>
+							<p className="text-xs text-muted-foreground">
+								Watch video tutorials to integrate with your CRM without
+								resetup.
+							</p>
 						</div>
-						<p className="mt-3 text-xs text-muted-foreground">
-							Followers can consume the RSS stream or use the token to request a
-							JSON feed for embedded dashboards.
-						</p>
-					</TabsContent>
-				</Tabs>
+						<div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+							{CRM_INTEGRATIONS.map((crm) => (
+								<Button
+									key={crm.id}
+									variant="outline"
+									size="sm"
+									onClick={() => handleCrmIntegrationClick(crm)}
+									type="button"
+									className="flex flex-col items-center gap-1 h-auto py-3 px-2"
+								>
+									<span className="text-xs font-medium">{crm.name}</span>
+								</Button>
+							))}
+						</div>
+					</div>
 
-				<WebhookHistory
-					activeStage={webhookStage}
-					historyByStage={webhookHistoryByStage}
-				/>
+					<WebhookModalActions
+						onCancel={handleWebhookModalClose}
+						onTest={handleTestWebhook}
+						onSave={handleSaveWebhook}
+					/>
+				</>
+			</Modal>
 
-				<WebhookModalActions
-					onCancel={closeWebhookModal}
-					onTest={handleTestWebhook}
-					onSave={handleSaveWebhook}
-				/>
-			</>
-		</Modal>
+			{/* CRM Walkthrough Modal - Stacked on top */}
+			<WalkThroughModal
+				isOpen={showCrmWalkthrough && isWebhookModalOpen}
+				onClose={handleCloseCrmWalkthrough}
+				videoUrl={crmWalkthroughUrl}
+				title={crmWalkthroughTitle}
+				subtitle={crmWalkthroughSubtitle}
+			/>
+		</>
 	);
 };
