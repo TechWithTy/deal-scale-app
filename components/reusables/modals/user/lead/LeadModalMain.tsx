@@ -459,6 +459,11 @@ function LeadMainModal({
 		console.log("⏳ Setting launching state");
 		const launchToastId = toast.loading("Launching enrichment suite...", {
 			duration: Number.POSITIVE_INFINITY, // Keep loading until explicitly dismissed
+			onDismiss: () => {
+				// Clean up state when toast is manually dismissed
+				launchToastIdRef.current = null;
+				setIsLaunchingSuite(false);
+			},
 		});
 		launchToastIdRef.current = launchToastId;
 
