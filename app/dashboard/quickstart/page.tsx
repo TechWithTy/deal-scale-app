@@ -231,13 +231,20 @@ export default function QuickStartPage() {
 	const handleStartTour = () => setIsTourOpen(true);
 	const handleCloseTour = () => setIsTourOpen(false);
 
-	const handleCampaignModalToggle = (open: boolean) => {
-		setShowCampaignModal(open);
-		if (!open) {
-			setCampaignModalContext(null);
-			campaignStore.reset();
-		}
-	};
+	const handleCampaignModalToggle = useCallback(
+		(open: boolean) => {
+			setShowCampaignModal(open);
+			if (!open) {
+				setCampaignModalContext(null);
+				// Defer store reset to prevent infinite loops during modal close
+				// The reset triggers massive store updates that cause re-renders
+				setTimeout(() => {
+					campaignStore.reset();
+				}, 100);
+			}
+		},
+		[campaignStore],
+	);
 
 	const handleCloseBulkModal = () => {
 		setShowBulkSuiteModal(false);

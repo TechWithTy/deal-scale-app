@@ -60,6 +60,7 @@ interface FinalizeCampaignStepProps {
 			type?: string;
 		}>;
 	}) => void;
+	isModalOpen?: boolean;
 }
 
 const FinalizeCampaignStep: FC<FinalizeCampaignStepProps> = ({
@@ -69,7 +70,16 @@ const FinalizeCampaignStep: FC<FinalizeCampaignStepProps> = ({
 	onCreateAbTest,
 	onTestCampaign,
 	onEvaluate,
+	isModalOpen = true,
 }) => {
+	const isMountedRef = React.useRef(true);
+
+	React.useEffect(() => {
+		isMountedRef.current = true;
+		return () => {
+			isMountedRef.current = false;
+		};
+	}, []);
 	// Debug logging for FinalizeCampaignStep
 	console.log("FinalizeCampaignStep Debug:", {
 		estimatedCredits,
@@ -124,7 +134,11 @@ const FinalizeCampaignStep: FC<FinalizeCampaignStepProps> = ({
 		form.register("selectedSalesScriptId");
 	}, [form]);
 
+	// Sync form values with store - only when modal is open
 	useEffect(() => {
+		// Don't sync if modal is closed or component is unmounted
+		if (!isModalOpen || !isMountedRef.current) return;
+
 		const normalizedCampaignName = campaignName ?? "";
 		if (form.getValues("campaignName") !== normalizedCampaignName) {
 			form.setValue("campaignName", normalizedCampaignName, {
@@ -154,7 +168,13 @@ const FinalizeCampaignStep: FC<FinalizeCampaignStepProps> = ({
 				});
 			}
 		}
-	}, [campaignName, selectedWorkflowId, selectedSalesScriptId, form]);
+	}, [
+		campaignName,
+		selectedWorkflowId,
+		selectedSalesScriptId,
+		form,
+		isModalOpen,
+	]);
 
 	const watchedCampaignName = form.watch("campaignName");
 	const watchedCampaignGoal = form.watch("campaignGoal");
@@ -162,7 +182,11 @@ const FinalizeCampaignStep: FC<FinalizeCampaignStepProps> = ({
 	const watchedWorkflowId = form.watch("selectedWorkflowId");
 	const watchedSalesScriptId = form.watch("selectedSalesScriptId");
 
+	// Sync watched form values to store - only when modal is open
 	useEffect(() => {
+		// Don't sync if modal is closed or component is unmounted
+		if (!isModalOpen || !isMountedRef.current) return;
+
 		const normalizedCampaignName = watchedCampaignName ?? "";
 		if (campaignName !== normalizedCampaignName) {
 			setCampaignName(normalizedCampaignName);
@@ -203,6 +227,7 @@ const FinalizeCampaignStep: FC<FinalizeCampaignStepProps> = ({
 		setSelectedAgentId,
 		setSelectedWorkflowId,
 		setSelectedSalesScriptId,
+		isModalOpen,
 	]);
 
 	const watchedValues = form.watch();
