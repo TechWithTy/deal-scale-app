@@ -73,6 +73,7 @@ export default function LeadBulkSuiteModal({
 	const [isLaunchingSuite, setIsLaunchingSuite] = useState(false);
 	const [costDetails, setCostDetails] = useState(INITIAL_COST_DETAILS);
 	const [errors, setErrors] = useState<Record<string, string>>({});
+	const parsedToastShownRef = useRef<boolean>(false);
 
 	const hasEnoughCredits = costDetails.hasEnoughCredits;
 
@@ -127,6 +128,7 @@ export default function LeadBulkSuiteModal({
 		setCostDetails(INITIAL_COST_DETAILS);
 		setErrors({});
 		setStep(initialCsvHeaders?.length ? 1 : 0);
+		parsedToastShownRef.current = false;
 	}, [initialCsvFile, initialCsvHeaders]);
 
 	useEffect(() => {
@@ -204,6 +206,7 @@ export default function LeadBulkSuiteModal({
 					.join(", ")}${headers.length > 3 ? "..." : ""}`,
 			);
 			setStep(1);
+			parsedToastShownRef.current = false;
 		};
 		reader.onerror = () => toast.error("Error reading CSV file");
 		reader.readAsText(file);
@@ -476,3 +479,18 @@ export default function LeadBulkSuiteModal({
 		</Dialog>
 	);
 }
+// When mapping is done and summary step is visible, parse CSV to compute true parsed lead count
+// and show a confirmation toast once. This uses parser rules (skips empty rows) for accuracy.
+useEffect(() => {
+	if (step !== 2) return;
+	if (!csvContent) return;
+	if (parsedToastShownRef.current) return;
+	try {
+		const leads = parseCsvToLeads(csvContent, selectedHeaders);
+		setCsvRowCount(leads.length);
+		toast.success(`Parsed ${leads.length.toLocaleString()} leads from CSV`);
+	} catch {
+		// ignore; handled on launch
+	}
+	parsedToastShownRef.current = true;
+}, [step, csvContent, selectedHeaders]);
