@@ -417,11 +417,15 @@ const SortableItem = React.forwardRef<HTMLDivElement, SortableItemProps>(
 			isDragging,
 		} = useSortable({ id: value, disabled });
 
-		const composedRef = useComposedRefs(forwardedRef, (node) => {
-			if (disabled) return;
-			setNodeRef(node);
-			if (asHandle) setActivatorNodeRef(node);
-		});
+    const assignNodeRefs = React.useCallback(
+        (node: HTMLDivElement | null) => {
+            if (disabled) return;
+            setNodeRef(node);
+            if (asHandle) setActivatorNodeRef(node);
+        },
+        [disabled, asHandle, setNodeRef, setActivatorNodeRef],
+    );
+    const composedRef = useComposedRefs(forwardedRef, assignNodeRefs);
 
 		const composedStyle = React.useMemo<React.CSSProperties>(() => {
 			return {
@@ -492,10 +496,14 @@ const SortableItemHandle = React.forwardRef<
 
 	const isDisabled = disabled ?? itemContext.disabled;
 
-	const composedRef = useComposedRefs(forwardedRef, (node) => {
-		if (!isDisabled) return;
-		itemContext.setActivatorNodeRef(node);
-	});
+    const assignHandleRef = React.useCallback(
+        (node: HTMLButtonElement | null) => {
+            if (!isDisabled) return;
+            itemContext.setActivatorNodeRef(node);
+        },
+        [isDisabled, itemContext],
+    );
+    const composedRef = useComposedRefs(forwardedRef, assignHandleRef);
 
 	const HandlePrimitive = asChild ? Slot : "button";
 
