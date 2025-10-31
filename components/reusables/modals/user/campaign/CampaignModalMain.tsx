@@ -218,6 +218,8 @@ const CampaignModalMain: FC<CampaignModalMainProps> = ({
 	const liveIsOpenRef = useRef<boolean>(false);
 	const [evalRunId, setEvalRunId] = useState<string | null>(null);
 	const [evalReportOpen, setEvalReportOpen] = useState(false);
+	const isMountedRef = useRef(true);
+	const isOpenRef = useRef(isOpen);
 
 	const customizationForm = useForm<z.input<typeof FormSchema>>({
 		resolver: zodResolver(TransferConditionalSchema),
@@ -232,6 +234,10 @@ const CampaignModalMain: FC<CampaignModalMainProps> = ({
 	// Ensure leadCount reflects actual selected list size when available
 	const leadLists = useLeadListStore((s) => s.leadLists);
 	useEffect(() => {
+		// Don't run when modal is closed or closing
+		if (!isOpen || closingStateRef.current.closing || !isMountedRef.current)
+			return;
+
 		if (areaMode !== "leadList") return;
 		const id = selectedLeadListId || selectedLeadListAId;
 		if (!id) return;
@@ -260,6 +266,7 @@ const CampaignModalMain: FC<CampaignModalMainProps> = ({
 		selectedLeadListAId,
 		leadLists,
 		setLeadCount,
+		isOpen,
 	]);
 
 	useEffect(
@@ -275,9 +282,23 @@ const CampaignModalMain: FC<CampaignModalMainProps> = ({
 		[],
 	);
 
+	// Update refs for isOpen to avoid stale closures
 	useEffect(() => {
 		liveIsOpenRef.current = isOpen;
+		isOpenRef.current = isOpen;
 	}, [isOpen]);
+
+	// Cleanup on unmount
+	useEffect(() => {
+		isMountedRef.current = true;
+		return () => {
+			isMountedRef.current = false;
+			if (closingReleaseTimeoutRef.current !== null) {
+				window.clearTimeout(closingReleaseTimeoutRef.current);
+				closingReleaseTimeoutRef.current = null;
+			}
+		};
+	}, []);
 
 	useEffect(() => {
 		renderDebugCounterRef.current += 1;
@@ -381,6 +402,7 @@ const CampaignModalMain: FC<CampaignModalMainProps> = ({
 		}
 	}, []);
 
+	// Handle modal open/close state transitions
 	useEffect(() => {
 		if (isOpen) {
 			if (
@@ -399,6 +421,9 @@ const CampaignModalMain: FC<CampaignModalMainProps> = ({
 			});
 			return;
 		}
+
+		// Only process close if not already closing or if mounted
+		if (!isMountedRef.current) return;
 
 		if (!closingStateRef.current.closing) {
 			closingStateRef.current.closing = true;
@@ -419,12 +444,14 @@ const CampaignModalMain: FC<CampaignModalMainProps> = ({
 			}
 
 			closingReleaseTimeoutRef.current = window.setTimeout(() => {
-				closingStateRef.current.closing = false;
-				closingStateRef.current.renderCount = 0;
-				launchGuardRef.current = false;
-				campaignDebugLog("modal-close-finalized", {
-					step: stepRef.current,
-				});
+				if (isMountedRef.current) {
+					closingStateRef.current.closing = false;
+					closingStateRef.current.renderCount = 0;
+					launchGuardRef.current = false;
+					campaignDebugLog("modal-close-finalized", {
+						step: stepRef.current,
+					});
+				}
 				closingReleaseTimeoutRef.current = null;
 			}, 200);
 		}
@@ -576,9 +603,7 @@ const CampaignModalMain: FC<CampaignModalMainProps> = ({
 	useEffect(() => {
 		if (!isOpen) {
 			hasInitializedRef.current = false;
-			if (previousIsOpenRef.current) {
-				customizationForm.reset(DEFAULT_CUSTOMIZATION_VALUES);
-			}
+			// Form reset is handled in separate effect with deferred execution
 			previousIsOpenRef.current = isOpen;
 			return;
 		}
@@ -653,21 +678,27 @@ const CampaignModalMain: FC<CampaignModalMainProps> = ({
 	]);
 
 	const closeModal = useCallback(() => {
-		if (closingStateRef.current.closing) {
+		if (closingStateRef.current.closing || !isOpenRef.current) {
 			campaignWarnLog("duplicate-close-ignored", {
 				step: stepRef.current,
-				isOpen,
+				isOpen: isOpenRef.current,
 			});
 			return;
 		}
 		closingStateRef.current.closing = true;
 		closingStateRef.current.renderCount = 0;
+		isOpenRef.current = false;
 		campaignDebugLog("close-requested", {
 			step: stepRef.current,
-			isOpen,
+			isOpen: isOpenRef.current,
 		});
-		onOpenChange(false);
-	}, [isOpen, onOpenChange]);
+		// Defer to prevent render-time state updates
+		setTimeout(() => {
+			if (isMountedRef.current) {
+				onOpenChange(false);
+			}
+		}, 0);
+	}, [onOpenChange]);
 
 	const nextStep = async () => {
 		if (step === 1) {
@@ -1113,14 +1144,54 @@ const CampaignModalMain: FC<CampaignModalMainProps> = ({
 		[],
 	);
 
+	// Reset form when modal closes (with deferred execution to prevent loops)
 	useEffect(() => {
-		if (!isOpen) {
-			customizationForm.reset(DEFAULT_CUSTOMIZATION_VALUES);
+		if (!isOpen && isMountedRef.current) {
+			// Defer form reset to prevent immediate re-renders
+			const timeoutId = setTimeout(() => {
+				if (isMountedRef.current && !isOpenRef.current) {
+					customizationForm.reset(DEFAULT_CUSTOMIZATION_VALUES);
+				}
+			}, 0);
+
+			return () => clearTimeout(timeoutId);
 		}
-	}, [isOpen, customizationForm]);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [isOpen]);
+
+	const handleDialogOpenChange = useCallback(
+		(newOpen: boolean) => {
+			// Prevent duplicate state updates
+			if (newOpen === isOpenRef.current) return;
+
+			// Update ref immediately
+			isOpenRef.current = newOpen;
+			liveIsOpenRef.current = newOpen;
+
+			if (!newOpen) {
+				// Mark as closing to prevent duplicate close operations
+				if (!closingStateRef.current.closing) {
+					closingStateRef.current.closing = true;
+					closingStateRef.current.renderCount = 0;
+				}
+				// Defer the actual close to prevent render-time updates
+				setTimeout(() => {
+					if (isMountedRef.current) {
+						onOpenChange(false);
+					}
+				}, 0);
+			} else {
+				// Opening - reset closing state
+				closingStateRef.current.closing = false;
+				closingStateRef.current.renderCount = 0;
+				onOpenChange(true);
+			}
+		},
+		[onOpenChange],
+	);
 
 	return (
-		<Dialog open={isOpen} onOpenChange={onOpenChange}>
+		<Dialog open={isOpen} onOpenChange={handleDialogOpenChange}>
 			<DialogContent className="-translate-x-1/2 -translate-y-1/2 fixed top-1/2 left-1/2 z-50 flex h-[85vh] max-h-[85vh] min-h-0 w-full max-w-xl flex-col gap-0 overflow-hidden rounded-xl border bg-background p-0 text-foreground shadow-lg outline-none">
 				<div className="min-h-0 flex-1 overflow-y-auto bg-card px-6 pr-7 pb-6 text-card-foreground">
 					{step === 0 && (
@@ -1148,6 +1219,7 @@ const CampaignModalMain: FC<CampaignModalMainProps> = ({
 							onLaunch={launchCampaign}
 							onCreateAbTest={handleCreateAbTest}
 							onEvaluate={handleEvaluate}
+							isModalOpen={isOpen}
 							estimatedCredits={Math.max(
 								estimatedCredits,
 								leadCount > 0 ? 100 : 0,

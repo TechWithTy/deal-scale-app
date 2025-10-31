@@ -82,3 +82,48 @@
     - Proper interval cleanup: stored in ref, cleared in all code paths (close, unmount, error).
   - **Modal Structure**: Converted from Popover to Dialog for better scrolling behavior and proper modal lifecycle management.
   - **Data Source**: Initially used mock data generation instead of API fetching to avoid API key requirements during development.
+
+**Campaign Modal Main Fixes (2025-01)**
+- Fixed infinite loop when closing Campaign Modal (`components/reusables/modals/user/campaign/CampaignModalMain.tsx`):
+  - **Root Cause**: Multiple effects responding to `isOpen` changes caused cascading re-renders. Form reset on close triggered additional state updates. Dialog's `onOpenChange` could be called multiple times without guards. Effects running during close could trigger state updates that caused re-renders.
+  - **Edge Cases**:
+    - Form reset effect included `customizationForm` in dependencies (form object reference could change).
+    - Lead count effect could run during close and trigger state updates.
+    - Multiple effects responding to `isOpen` changes simultaneously.
+    - `closeModal` callback depended on `isOpen`, causing it to be recreated on every render.
+    - No guard on Dialog's `onOpenChange` to prevent duplicate calls.
+  - **Solution**:
+    - Added `isMountedRef` and `isOpenRef` to track component and modal state without causing re-renders.
+    - Wrapped Dialog's `onOpenChange` with `handleDialogOpenChange` that checks current state before updating.
+    - Deferred form reset with `setTimeout(..., 0)` to batch state updates and prevent immediate re-renders.
+    - Removed `customizationForm` from form reset effect dependencies (using eslint-disable comment).
+    - Added guards in lead count effect to skip execution when modal is closed or closing.
+    - Updated `closeModal` to use refs instead of `isOpen` prop, removing it from dependencies.
+    - Added `isMountedRef` checks in all timeout callbacks to prevent state updates after unmount.
+    - Deferred `onOpenChange` calls in both `closeModal` and `handleDialogOpenChange` using `setTimeout(..., 0)`.
+    - Added early returns in effects when modal is closed or component is unmounted.
+
+**Quick Start Page & FinalizeCampaignStep Fixes (2025-01)**
+- **Additional Root Cause Discovered**: When closing the Campaign Modal from Quick Start, `handleCampaignModalToggle` was calling `campaignStore.reset()` synchronously. This reset triggers massive state updates (resets 50+ store fields) which cause all subscribed components to re-render, including `FinalizeCampaignStep` which is still mounted during the modal close animation. The two form sync effects in `FinalizeCampaignStep` were running even when the modal was closed, attempting to sync form values with the store while the store was being reset, creating an infinite update loop.
+  - **Edge Cases**:
+    - `FinalizeCampaignStep` has two bidirectional sync effects:
+      1. Store → Form: Syncs `campaignName`, `selectedWorkflowId`, `selectedSalesScriptId` from store to form (lines 127-157)
+      2. Form → Store: Syncs watched form values back to store (lines 165-206)
+    - During modal close, the store reset happens while `FinalizeCampaignStep` is still mounted (React doesn't unmount until after close animation).
+    - Store reset sets all fields to default values, triggering the Store → Form effect.
+    - Form → Store effect sees changed form values and writes back to store.
+    - Store updates trigger re-renders, causing the cycle to repeat.
+    - Quick Start's `handleCampaignModalToggle` wasn't memoized, potentially causing prop changes.
+  - **Solution**:
+    - **Quick Start Page** (`app/dashboard/quickstart/page.tsx`):
+      - Memoized `handleCampaignModalToggle` with `useCallback` to prevent unnecessary prop changes.
+      - Deferred `campaignStore.reset()` with `setTimeout(..., 100)` to allow modal close animation to complete and component unmount before triggering massive store updates.
+      - Added comment explaining why the deferral is necessary.
+    - **FinalizeCampaignStep** (`components/reusables/modals/user/campaign/steps/FinalizeCampaignStep.tsx`):
+      - Added `isModalOpen?: boolean` prop (defaults to `true` for backward compatibility).
+      - Added `isMountedRef` to track component mount state.
+      - Added guards in both sync effects to skip execution when `!isModalOpen || !isMountedRef.current`.
+      - Added `isModalOpen` to both effect dependency arrays.
+    - **CampaignModalMain** (`components/reusables/modals/user/campaign/CampaignModalMain.tsx`):
+      - Passed `isModalOpen={isOpen}` prop to `FinalizeCampaignStep` so it knows when the parent modal is closed.
+  - **Key Insight**: Child component effects can continue running during parent modal close animations. Store resets trigger massive updates that can cause infinite loops if child effects don't guard against closed state. Always defer store resets and guard child effects with modal state.
