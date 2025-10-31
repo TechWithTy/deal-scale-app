@@ -9,7 +9,7 @@ import AiUsageModal from "@/components/reusables/modals/user/usage";
 import { UpgradeModal } from "@/components/reusables/modals/user/usage/UpgradeModal";
 import { WebhookModal } from "@/components/reusables/modals/user/webhooks/WebHookMain";
 import { InviteEmployeeModal } from "@/components/tables/employee-tables/utils/addEmployee";
-import { Toaster } from "@/components/ui/sonner";
+import dynamic from "next/dynamic";
 import {
 	MockUserProfile,
 	mockUserProfile,
@@ -72,7 +72,10 @@ export default async function DashboardLayout({
 			<UpgradeModal trial={false} />
 			<SkipTraceDialog />
 
-			<Toaster />
+			{/** Mount toaster on client after hydration to avoid dev overlay warnings */}
+			{dynamic(() => import("@/components/ui/ClientToaster"), { ssr: false })(
+				{},
+			)}
 		</div>
 	);
 }

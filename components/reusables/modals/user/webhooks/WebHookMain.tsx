@@ -254,22 +254,27 @@ export const WebhookModal: React.FC = () => {
 	};
 
 	const handleSaveWebhook = () => {
-		// Close modal and show toast immediately
+		// Close modal first to avoid state updates during render
 		closeWebhookModal();
 
-		if (webhookStage === "incoming") {
-			toast("Incoming webhook endpoint confirmed.");
-		} else if (webhookStage === "outgoing") {
-			const urlToPersist = outgoingWebhookUrl;
-			toast(`Outgoing webhook saved for ${urlToPersist || "your CRM"}.`);
-		} else {
-			toast(
-				"Feed preferences saved. Subscribers now receive real-time updates.",
-			);
-		}
-
-		// Navigate immediately - modal should be closed by now
-		router.push("/dashboard/lead-list");
+		// Defer side-effects (toast + navigation) to the next tick
+		setTimeout(() => {
+			try {
+				if (webhookStage === "incoming") {
+					toast("Incoming webhook endpoint confirmed.");
+				} else if (webhookStage === "outgoing") {
+					const urlToPersist = outgoingWebhookUrl;
+					toast(`Outgoing webhook saved for ${urlToPersist || "your CRM"}.`);
+				} else {
+					toast(
+						"Feed preferences saved. Subscribers now receive real-time updates.",
+					);
+				}
+			} finally {
+				// Navigate after toasts are queued to avoid synchronous updates
+				router.push("/dashboard/lead-list");
+			}
+		}, 0);
 	};
 
 	return (

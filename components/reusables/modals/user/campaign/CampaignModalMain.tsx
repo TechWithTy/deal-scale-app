@@ -891,10 +891,25 @@ const CampaignModalMain: FC<CampaignModalMainProps> = ({
 			});
 
 			if (!onCampaignLaunched) {
-				router.push(fullUrl);
-				campaignDebugLog("launch-router-push", {
-					destination: fullUrl,
-				});
+				setTimeout(() => {
+					try {
+						const current =
+							typeof window !== "undefined"
+								? window.location.pathname + (window.location.search || "")
+								: "";
+						if (current !== fullUrl) {
+							router.push(fullUrl);
+							campaignDebugLog("launch-router-push", {
+								destination: fullUrl,
+							});
+						} else {
+							campaignDebugLog("launch-router-push-skipped", {
+								reason: "same-url",
+								destination: fullUrl,
+							});
+						}
+					} catch {}
+				}, 0);
 			}
 
 			campaignDebugLog("launch-success", {
