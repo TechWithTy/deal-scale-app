@@ -25,11 +25,22 @@ export function useCampaignRowFocus<TData>(
 	const [status, setStatus] = React.useState<FocusStatus>("idle");
 
 	React.useEffect(() => {
+		const currentSelection = (table as any).getState?.().rowSelection as
+			| Record<string, boolean>
+			| undefined;
+
 		if (!campaignId) {
-			try {
-				table.setRowSelection?.({});
-			} catch (error) {
-				console.warn("Failed to reset row selection for campaign focus", error);
+			const hasAnySelected =
+				currentSelection && Object.values(currentSelection).some(Boolean);
+			if (hasAnySelected) {
+				try {
+					table.setRowSelection?.({});
+				} catch (error) {
+					console.warn(
+						"Failed to reset row selection for campaign focus",
+						error,
+					);
+				}
 			}
 			setFocusedRowId(null);
 			setStatus("idle");
@@ -46,10 +57,25 @@ export function useCampaignRowFocus<TData>(
 		}
 
 		setFocusedRowId(campaignId);
-		try {
-			table.setRowSelection?.({ [targetRow.id]: true });
-		} catch (error) {
-			console.warn("Failed to update row selection for campaign focus", error);
+		const desiredSelection: Record<string, boolean> = {
+			[targetRow.id]: true,
+		};
+		const isSameSelection = (() => {
+			const curr = currentSelection ?? {};
+			const currKeys = Object.keys(curr);
+			const desiredKeys = Object.keys(desiredSelection);
+			if (currKeys.length !== desiredKeys.length) return false;
+			return desiredKeys.every((k) => curr[k] === desiredSelection[k]);
+		})();
+		if (!isSameSelection) {
+			try {
+				table.setRowSelection?.(desiredSelection);
+			} catch (error) {
+				console.warn(
+					"Failed to update row selection for campaign focus",
+					error,
+				);
+			}
 		}
 
 		onRowFocused?.(targetRow);

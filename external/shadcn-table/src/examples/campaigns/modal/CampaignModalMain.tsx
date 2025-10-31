@@ -103,11 +103,13 @@ export default function CampaignModalMain({
 	const mutatedDays =
 		days > 0 ? Math.round(days * (reachOnWeekend ? 1.35 : 1)) : 0;
 
-	// biome-ignore lint/correctness/useExhaustiveDependencies: sync derived state
-	useEffect(() => {
-		setDaysSelected(mutatedDays);
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [mutatedDays, reachOnWeekend]);
+    // Sync derived day count only when changed to avoid render loops
+    useEffect(() => {
+        if (daysSelected !== mutatedDays) {
+            setDaysSelected(mutatedDays);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [mutatedDays, reachOnWeekend, daysSelected]);
 
 	const estimatedCredits =
 		leadCount > 0 && mutatedDays > 0 ? Math.round(leadCount * mutatedDays) : 0;
@@ -182,13 +184,15 @@ export default function CampaignModalMain({
 
 		setStep(initialStep);
 
-		if (defaultChannel) {
-			const mapped: "email" | "call" | "text" | "social" =
-				defaultChannel === "directmail" ? "email" : defaultChannel;
-			(setPrimaryChannel as (c: "email" | "call" | "text" | "social") => void)(
-				mapped,
-			);
-		}
+        if (defaultChannel) {
+            const mapped: "email" | "call" | "text" | "social" =
+                defaultChannel === "directmail" ? "email" : defaultChannel;
+            if (primaryChannel !== mapped) {
+                (setPrimaryChannel as (c: "email" | "call" | "text" | "social") => void)(
+                    mapped,
+                );
+            }
+        }
 
 		if (initialLeadListId) {
 			const {
