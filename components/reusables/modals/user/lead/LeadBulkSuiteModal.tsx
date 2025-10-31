@@ -74,6 +74,7 @@ export default function LeadBulkSuiteModal({
 	const [costDetails, setCostDetails] = useState(INITIAL_COST_DETAILS);
 	const [errors, setErrors] = useState<Record<string, string>>({});
 	const parsedToastShownRef = useRef<boolean>(false);
+	const launchToastIdRef = useRef<string | number | null>(null);
 
 	const hasEnoughCredits = costDetails.hasEnoughCredits;
 

@@ -71,11 +71,6 @@ export default async function DashboardLayout({
 			<WebhookModal />
 			<UpgradeModal trial={false} />
 			<SkipTraceDialog />
-
-			{/** Mount toaster on client after hydration to avoid dev overlay warnings */}
-			{dynamic(() => import("@/components/ui/ClientToaster"), { ssr: false })(
-				{},
-			)}
 		</div>
 	);
 }

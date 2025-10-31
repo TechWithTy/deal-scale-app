@@ -92,20 +92,26 @@ const FinalizeCampaignStep: FC<FinalizeCampaignStepProps> = ({
 			});
 		}
 
-		const normalizedWorkflowId = selectedWorkflowId ?? undefined;
-		if (form.getValues("selectedWorkflowId") !== normalizedWorkflowId) {
-			form.setValue("selectedWorkflowId", normalizedWorkflowId, {
-				shouldDirty: false,
-				shouldValidate: false,
-			});
+		// Only sync workflowId if it's a valid string (schema requires string)
+		if (selectedWorkflowId && typeof selectedWorkflowId === "string") {
+			const currentValue = form.getValues("selectedWorkflowId");
+			if (currentValue !== selectedWorkflowId) {
+				form.setValue("selectedWorkflowId", selectedWorkflowId, {
+					shouldDirty: false,
+					shouldValidate: false,
+				});
+			}
 		}
 
-		const normalizedSalesScriptId = selectedSalesScriptId ?? undefined;
-		if (form.getValues("selectedSalesScriptId") !== normalizedSalesScriptId) {
-			form.setValue("selectedSalesScriptId", normalizedSalesScriptId, {
-				shouldDirty: false,
-				shouldValidate: false,
-			});
+		// Only sync salesScriptId if it's a valid string (schema requires string)
+		if (selectedSalesScriptId && typeof selectedSalesScriptId === "string") {
+			const currentValue = form.getValues("selectedSalesScriptId");
+			if (currentValue !== selectedSalesScriptId) {
+				form.setValue("selectedSalesScriptId", selectedSalesScriptId, {
+					shouldDirty: false,
+					shouldValidate: false,
+				});
+			}
 		}
 	}, [campaignName, selectedWorkflowId, selectedSalesScriptId, form]);
 
