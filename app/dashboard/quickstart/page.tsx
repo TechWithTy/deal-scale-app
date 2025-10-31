@@ -353,8 +353,11 @@ export default function QuickStartPage() {
 	});
 
 	const handlePostLaunch = useCallback(() => {
-		// After launching a campaign, open webhooks modal first
-		openWebhookModal("incoming");
+		// After launching a campaign, defer opening webhooks modal
+		// to avoid render-time state updates during modal close
+		setTimeout(() => {
+			openWebhookModal("incoming");
+		}, 0);
 	}, [openWebhookModal]);
 
 	return (

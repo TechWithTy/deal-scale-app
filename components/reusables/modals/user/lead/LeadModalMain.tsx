@@ -81,6 +81,7 @@ function LeadMainModal({
 	const [isLaunchingSuite, setIsLaunchingSuite] = useState(false);
 	const [costDetails, setCostDetails] = useState(INITIAL_COST_DETAILS);
 	const [csvContent, setCsvContent] = useState<string>("");
+	const launchToastIdRef = useRef<string | number | null>(null);
 
 	// Get the lead list store
 	const addLeadList = useLeadListStore((state) => state.addLeadList);
@@ -291,6 +292,11 @@ function LeadMainModal({
 			setIsLaunchingSuite(false);
 			setCsvContent("");
 			resetCostDetails();
+			// Dismiss any active launch toast when modal closes
+			if (launchToastIdRef.current !== null) {
+				toast.dismiss(launchToastIdRef.current);
+				launchToastIdRef.current = null;
+			}
 		}
 	}, [isOpen, resetCostDetails]);
 
@@ -443,9 +449,18 @@ function LeadMainModal({
 			return;
 		}
 
+		// Clean up any existing toast before creating a new one
+		if (launchToastIdRef.current !== null) {
+			toast.dismiss(launchToastIdRef.current);
+			launchToastIdRef.current = null;
+		}
+
 		setIsLaunchingSuite(true);
 		console.log("⏳ Setting launching state");
-		const launchToastId = toast.loading("Launching enrichment suite...");
+		const launchToastId = toast.loading("Launching enrichment suite...", {
+			duration: Infinity, // Keep loading until explicitly dismissed
+		});
+		launchToastIdRef.current = launchToastId;
 
 		if (csvContent && newListName.trim()) {
 			console.log("📄 Processing CSV content, length:", csvContent.length);
@@ -491,6 +506,7 @@ function LeadMainModal({
 
 					onClose();
 					setIsLaunchingSuite(false);
+					launchToastIdRef.current = null;
 					setTimeout(() => {
 						toast.dismiss(launchToastId);
 						toast.success(
@@ -504,6 +520,7 @@ function LeadMainModal({
 
 				setTimeout(() => {
 					setIsLaunchingSuite(false);
+					launchToastIdRef.current = null;
 					toast.dismiss(launchToastId);
 					toast.success(
 						`Skip trace suite launched for ${
@@ -515,6 +532,7 @@ function LeadMainModal({
 			} catch (error) {
 				console.error("❌ Error launching suite:", error);
 				setIsLaunchingSuite(false);
+				launchToastIdRef.current = null;
 				setTimeout(() => {
 					toast.dismiss(launchToastId);
 					toast.error("Failed to launch enrichment suite. Please try again.");
@@ -524,6 +542,7 @@ function LeadMainModal({
 			console.log("❌ Missing CSV content or list name");
 			setTimeout(() => {
 				setIsLaunchingSuite(false);
+				launchToastIdRef.current = null;
 				toast.dismiss(launchToastId);
 				toast.success(
 					`Skip trace suite launched for ${

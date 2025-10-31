@@ -32,6 +32,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
 	return (
 		<Sonner
 			theme={memoTheme}
+			closeButton
 			position="bottom-right"
 			className={memoClassName}
 			toastOptions={memoToastOptions}
