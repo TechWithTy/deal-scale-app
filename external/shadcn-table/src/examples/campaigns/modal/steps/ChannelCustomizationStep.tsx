@@ -1,6 +1,6 @@
 import type { FC } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useFieldArray, useForm } from "react-hook-form";
+import { useFieldArray, useForm, type UseFormReturn } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 
@@ -38,7 +38,6 @@ import { Play, Pause, ChevronDown } from "lucide-react";
 import AllRecipientDropdown from "../../../../../../ai-avatar-dropdown/AllRecipientDropdown";
 
 // * Step 2: Channel Customization
-import type { UseFormReturn } from "react-hook-form";
 
 interface ChannelCustomizationStepProps {
 	onNext: () => void;
@@ -103,6 +102,7 @@ export const FormSchema = z
 			.trim()
 			.optional()
 			.refine((val) => !val || /^MG[a-zA-Z0-9]{32}$/.test(val), {
+				message: "Invalid Messaging Service SID format.",
 			}),
 		senderPoolNumbersCsv: z.string().default(""), // CSV of E.164 numbers
 		smartEncodingEnabled: z.boolean().default(true),
@@ -126,7 +126,7 @@ export const FormSchema = z
 		skipName: z.boolean().default(false),
 		addressVerified: z.boolean().default(false),
 		phoneVerified: z.boolean().default(false),
-	emailAddress: z.union([z.string().email(), z.literal("")]).optional(),
+		emailAddress: z.union([z.string().email(), z.literal("")]).optional(),
 		emailVerified: z.boolean().default(false),
 		possiblePhones: z.string().optional(),
 		possibleEmails: z.string().optional(),
@@ -278,7 +278,7 @@ const ChannelCustomizationStep: FC<ChannelCustomizationStepProps> = ({
 			voice_matthew: "Matthew (Clear)",
 		};
 		return preferredVoicemailVoiceId
-			? map[preferredVoicemailVoiceId] ?? "Select a voice"
+			? (map[preferredVoicemailVoiceId] ?? "Select a voice")
 			: "Select a voice";
 	}, [preferredVoicemailVoiceId]);
 
@@ -290,7 +290,7 @@ const ChannelCustomizationStep: FC<ChannelCustomizationStepProps> = ({
 			vm_custom: "Custom Message (Upload Audio)",
 		};
 		return preferredVoicemailMessageId
-			? map[preferredVoicemailMessageId] ?? "Select a voicemail message"
+			? (map[preferredVoicemailMessageId] ?? "Select a voicemail message")
 			: "Select a voicemail message";
 	}, [preferredVoicemailMessageId]);
 
@@ -298,7 +298,10 @@ const ChannelCustomizationStep: FC<ChannelCustomizationStepProps> = ({
 	const audioRef = useRef<HTMLAudioElement | null>(null);
 	const [playingKey, setPlayingKey] = useState<string | null>(null);
 
-	const getAudioUrl = (kind: "voice" | "message", id: string): string | null => {
+	const getAudioUrl = (
+		kind: "voice" | "message",
+		id: string,
+	): string | null => {
 		const voiceMap: Record<string, string> = {
 			voice_emma: "/audio/voices/voice_emma.mp3",
 			voice_paul: "/audio/voices/voice_paul.mp3",
@@ -310,7 +313,7 @@ const ChannelCustomizationStep: FC<ChannelCustomizationStepProps> = ({
 			vm_urgent: "/audio/messages/vm_urgent.mp3",
 			vm_custom: "/audio/messages/vm_custom.mp3",
 		};
-		return kind === "voice" ? voiceMap[id] ?? null : msgMap[id] ?? null;
+		return kind === "voice" ? (voiceMap[id] ?? null) : (msgMap[id] ?? null);
 	};
 
 	const stopAudio = () => {
@@ -361,6 +364,7 @@ const ChannelCustomizationStep: FC<ChannelCustomizationStepProps> = ({
 		}
 	};
 
+	// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
 	useEffect(() => () => stopAudio(), []);
 
 	const { fields, append, remove } = useFieldArray({
@@ -489,8 +493,7 @@ const ChannelCustomizationStep: FC<ChannelCustomizationStepProps> = ({
 		watchedTransferType === "appraisal";
 
 	// Normalize direct mail channel check to store representation ('email')
-	const isDirectMailChannel =
-		primaryChannel != null && (primaryChannel as unknown as string) === "email";
+	const isDirectMailChannel = String(primaryChannel ?? "") === "email";
 
 	return (
 		<Form {...form}>
@@ -747,45 +750,113 @@ const ChannelCustomizationStep: FC<ChannelCustomizationStepProps> = ({
 							<div className="space-y-2">
 								<DropdownMenu>
 									<DropdownMenuTrigger asChild>
-										<Button variant="outline" className="w-full justify-between">
+										<Button
+											variant="outline"
+											className="w-full justify-between"
+										>
 											<span>{voiceLabel}</span>
 											<ChevronDown className="h-4 w-4 opacity-50" />
 										</Button>
 									</DropdownMenuTrigger>
 									<DropdownMenuContent className="w-full min-w-[300px]">
-										<DropdownMenuItem onSelect={() => setPreferredVoicemailVoiceId("voice_emma")}>
+										<DropdownMenuItem
+											onSelect={() =>
+												setPreferredVoicemailVoiceId("voice_emma")
+											}
+										>
 											<div className="flex w-full items-center justify-between">
 												<span>Emma (Natural)</span>
 												<div className="flex items-center gap-1">
-													<Button type="button" variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={(e) => handleTogglePlay(e, "voice", "voice_emma", "Emma (Natural)")}>
-														{playingKey === "voice:voice_emma" ? <Pause className="h-3 w-3" /> : <Play className="h-3 w-3" />}
+													<Button
+														type="button"
+														variant="ghost"
+														size="sm"
+														className="h-6 w-6 p-0"
+														onClick={(e) =>
+															handleTogglePlay(
+																e,
+																"voice",
+																"voice_emma",
+																"Emma (Natural)",
+															)
+														}
+													>
+														{playingKey === "voice:voice_emma" ? (
+															<Pause className="h-3 w-3" />
+														) : (
+															<Play className="h-3 w-3" />
+														)}
 													</Button>
 												</div>
 											</div>
 										</DropdownMenuItem>
-										<DropdownMenuItem onSelect={() => setPreferredVoicemailVoiceId("voice_paul")}>
+										<DropdownMenuItem
+											onSelect={() =>
+												setPreferredVoicemailVoiceId("voice_paul")
+											}
+										>
 											<div className="flex w-full items-center justify-between">
 												<span>Paul (Warm)</span>
 												<div className="flex items-center gap-1">
-													<Button type="button" variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={(e) => handleTogglePlay(e, "voice", "voice_paul", "Paul (Warm)")}>
-														{playingKey === "voice:voice_paul" ? <Pause className="h-3 w-3" /> : <Play className="h-3 w-3" />}
+													<Button
+														type="button"
+														variant="ghost"
+														size="sm"
+														className="h-6 w-6 p-0"
+														onClick={(e) =>
+															handleTogglePlay(
+																e,
+																"voice",
+																"voice_paul",
+																"Paul (Warm)",
+															)
+														}
+													>
+														{playingKey === "voice:voice_paul" ? (
+															<Pause className="h-3 w-3" />
+														) : (
+															<Play className="h-3 w-3" />
+														)}
 													</Button>
 												</div>
 											</div>
 										</DropdownMenuItem>
-										<DropdownMenuItem onSelect={() => setPreferredVoicemailVoiceId("voice_matthew")}>
+										<DropdownMenuItem
+											onSelect={() =>
+												setPreferredVoicemailVoiceId("voice_matthew")
+											}
+										>
 											<div className="flex w-full items-center justify-between">
 												<span>Matthew (Clear)</span>
 												<div className="flex items-center gap-1">
-													<Button type="button" variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={(e) => handleTogglePlay(e, "voice", "voice_matthew", "Matthew (Clear)")}>
-														{playingKey === "voice:voice_matthew" ? <Pause className="h-3 w-3" /> : <Play className="h-3 w-3" />}
+													<Button
+														type="button"
+														variant="ghost"
+														size="sm"
+														className="h-6 w-6 p-0"
+														onClick={(e) =>
+															handleTogglePlay(
+																e,
+																"voice",
+																"voice_matthew",
+																"Matthew (Clear)",
+															)
+														}
+													>
+														{playingKey === "voice:voice_matthew" ? (
+															<Pause className="h-3 w-3" />
+														) : (
+															<Play className="h-3 w-3" />
+														)}
 													</Button>
 												</div>
 											</div>
 										</DropdownMenuItem>
 									</DropdownMenuContent>
 								</DropdownMenu>
-								<p className="text-muted-foreground text-xs">Overrides any agent voice.</p>
+								<p className="text-muted-foreground text-xs">
+									Overrides any agent voice.
+								</p>
 							</div>
 						</div>
 
@@ -794,235 +865,293 @@ const ChannelCustomizationStep: FC<ChannelCustomizationStepProps> = ({
 								<Label className="block">Preferred Voicemail Message</Label>
 								<DropdownMenu>
 									<DropdownMenuTrigger asChild>
-										<Button variant="outline" className="w-full justify-between">
+										<Button
+											variant="outline"
+											className="w-full justify-between"
+										>
 											<span>{messageLabel}</span>
 											<ChevronDown className="h-4 w-4 opacity-50" />
 										</Button>
 									</DropdownMenuTrigger>
 									<DropdownMenuContent className="w-full min-w-[300px]">
-										<DropdownMenuItem onSelect={() => setPreferredVoicemailMessageId("vm_professional") }>
+										<DropdownMenuItem
+											onSelect={() =>
+												setPreferredVoicemailMessageId("vm_professional")
+											}
+										>
 											<div className="flex w-full items-center justify-between">
 												<span>Professional Business Message</span>
 												<div className="flex items-center gap-1">
-													<Button type="button" variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={(e) => handleTogglePlay(e, "message", "vm_professional", "Professional Business Message")}>
-														{playingKey === "message:vm_professional" ? <Pause className="h-3 w-3" /> : <Play className="h-3 w-3" />}
+													<Button
+														type="button"
+														variant="ghost"
+														size="sm"
+														className="h-6 w-6 p-0"
+														onClick={(e) =>
+															handleTogglePlay(
+																e,
+																"message",
+																"vm_professional",
+																"Professional Business Message",
+															)
+														}
+													>
+														{playingKey === "message:vm_professional" ? (
+															<Pause className="h-3 w-3" />
+														) : (
+															<Play className="h-3 w-3" />
+														)}
 													</Button>
 												</div>
 											</div>
 										</DropdownMenuItem>
-										<DropdownMenuItem onSelect={() => setPreferredVoicemailMessageId("vm_friendly") }>
+										<DropdownMenuItem
+											onSelect={() =>
+												setPreferredVoicemailMessageId("vm_friendly")
+											}
+										>
 											<div className="flex w-full items-center justify-between">
 												<span>Friendly Personal Message</span>
 												<div className="flex items-center gap-1">
-													<Button type="button" variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={(e) => handleTogglePlay(e, "message", "vm_friendly", "Friendly Personal Message")}>
-														{playingKey === "message:vm_friendly" ? <Pause className="h-3 w-3" /> : <Play className="h-3 w-3" />}
+													<Button
+														type="button"
+														variant="ghost"
+														size="sm"
+														className="h-6 w-6 p-0"
+														onClick={(e) =>
+															handleTogglePlay(
+																e,
+																"message",
+																"vm_friendly",
+																"Friendly Personal Message",
+															)
+														}
+													>
+														{playingKey === "message:vm_friendly" ? (
+															<Pause className="h-3 w-3" />
+														) : (
+															<Play className="h-3 w-3" />
+														)}
 													</Button>
 												</div>
 											</div>
 										</DropdownMenuItem>
-										<DropdownMenuItem onSelect={() => setPreferredVoicemailMessageId("vm_urgent") }>
+										<DropdownMenuItem
+											onSelect={() =>
+												setPreferredVoicemailMessageId("vm_urgent")
+											}
+										>
 											<div className="flex w-full items-center justify-between">
 												<span>Urgent Callback Message</span>
 												<div className="flex items-center gap-1">
-													<Button type="button" variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={(e) => handleTogglePlay(e, "message", "vm_urgent", "Urgent Callback Message")}>
-														{playingKey === "message:vm_urgent" ? <Pause className="h-3 w-3" /> : <Play className="h-3 w-3" />}
+													<Button
+														type="button"
+														variant="ghost"
+														size="sm"
+														className="h-6 w-6 p-0"
+														onClick={(e) =>
+															handleTogglePlay(
+																e,
+																"message",
+																"vm_urgent",
+																"Urgent Callback Message",
+															)
+														}
+													>
+														{playingKey === "message:vm_urgent" ? (
+															<Pause className="h-3 w-3" />
+														) : (
+															<Play className="h-3 w-3" />
+														)}
 													</Button>
 												</div>
 											</div>
 										</DropdownMenuItem>
-										<DropdownMenuItem onSelect={() => setPreferredVoicemailMessageId("vm_custom") }>
+										<DropdownMenuItem
+											onSelect={() =>
+												setPreferredVoicemailMessageId("vm_custom")
+											}
+										>
 											<div className="flex w-full items-center justify-between">
 												<span>Custom Message (Upload Audio)</span>
 												<div className="flex items-center gap-1">
-													<Button type="button" variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={(e) => handleTogglePlay(e, "message", "vm_custom", "Custom Message") }>
-														{playingKey === "message:vm_custom" ? <Pause className="h-3 w-3" /> : <Play className="h-3 w-3" />}
+													<Button
+														type="button"
+														variant="ghost"
+														size="sm"
+														className="h-6 w-6 p-0"
+														onClick={(e) =>
+															handleTogglePlay(
+																e,
+																"message",
+																"vm_custom",
+																"Custom Message",
+															)
+														}
+													>
+														{playingKey === "message:vm_custom" ? (
+															<Pause className="h-3 w-3" />
+														) : (
+															<Play className="h-3 w-3" />
+														)}
 													</Button>
 												</div>
 											</div>
 										</DropdownMenuItem>
 									</DropdownMenuContent>
 								</DropdownMenu>
-								<p className="text-muted-foreground text-xs">Choose a pre-recorded voicemail message or upload your own audio file.</p>
+								<p className="text-muted-foreground text-xs">
+									Choose a pre-recorded voicemail message or upload your own
+									audio file.
+								</p>
 							</div>
 						</div>
 
-					{/* Transfer toggle and agent selection */}
-					<div className="space-y-3">
-						<FormField
-							control={form.control}
-							name="transferEnabled"
-							render={({ field }) => (
-								<FormItem className="flex items-center gap-3">
-									<Checkbox
-										id="transfer-enabled"
-										checked={field.value}
-										onCheckedChange={(v) => field.onChange(Boolean(v))}
-									/>
-									<FormLabel className="!m-0" htmlFor="transfer-enabled">
-										Enable Transfer to Agent
-									</FormLabel>
-								</FormItem>
-							)}
-						/>
-
-						{form.watch("transferEnabled") && (
-							<>
-								<FormField
-									control={form.control}
-									name="transferType"
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel>Transfer Type</FormLabel>
-											<FormControl>
-												<Select
-													onValueChange={field.onChange}
-													defaultValue={field.value}
-												>
-													<SelectTrigger>
-														<SelectValue placeholder="Select transfer type" />
-													</SelectTrigger>
-													<SelectContent>
-														<SelectItem value="inbound_call">
-															Inbound Call
-														</SelectItem>
-														<SelectItem value="outbound_call">
-															Outbound Call
-														</SelectItem>
-														<SelectItem value="social">Social</SelectItem>
-														<SelectItem value="text">Text</SelectItem>
-														<SelectItem value="chat_live_person">
-															Chat (Live Person)
-														</SelectItem>
-														<SelectItem value="appraisal">Appraisal</SelectItem>
-														<SelectItem value="live_avatar">
-															Live Avatar
-														</SelectItem>
-													</SelectContent>
-												</Select>
-											</FormControl>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
-								<FormField
-									control={form.control}
-									name="transferAgentId"
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel>
-												{isLivePerson
-													? "Select Employee/Subuser"
-													: "Select Agent"}
-											</FormLabel>
-											<FormControl>
-												<AllRecipientDropdown
-													value={field.value}
-													onChange={(val) => {
-														field.onChange(val);
-														setSelectedAgentId(val);
-													}}
-													availablePeople={availableAgents}
-													transferType={watchedTransferType}
-													placeholderAgent="Select an agent"
-													placeholderEmployee="Select an employee or subuser"
-												/>
-											</FormControl>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
-
-								{/* Transfer Guidelines */}
-								<FormField
-									control={form.control}
-									name="transferGuidelines"
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel>Transfer Guidelines</FormLabel>
-											<FormControl>
-												<Textarea
-													placeholder="Provide brief guidelines for the live agent (context, do/don'ts, handoff notes)"
-													{...field}
-												/>
-											</FormControl>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
-
-								{/* Transfer Prompt / Message */}
-								<FormField
-									control={form.control}
-									name="transferPrompt"
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel>Transfer Prompt / Message</FormLabel>
-											<FormControl>
-												<Textarea
-													placeholder="What should be sent or spoken to initiate/announce the transfer?"
-													{...field}
-												/>
-											</FormControl>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
-							</>
-						)}
-					</div>
-
-					{primaryChannel === "social" && (
-						<FormField
-							control={form.control}
-							name="socialPlatform"
-							render={({ field }) => (
-								<FormItem>
-									<FormLabel>Social Platform</FormLabel>
-									<FormControl>
-										<Select
-											onValueChange={field.onChange}
-											defaultValue={field.value}
-										>
-											<SelectTrigger>
-												<SelectValue placeholder="Select a platform" />
-											</SelectTrigger>
-											<SelectContent>
-												<SelectItem value="facebook">Facebook</SelectItem>
-												<SelectItem value="linkedin">LinkedIn</SelectItem>
-											</SelectContent>
-										</Select>
-									</FormControl>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
-					)}
-
-					{isDirectMailChannel && (
-						<>
+						{/* Transfer toggle and agent selection */}
+						<div className="space-y-3">
 							<FormField
 								control={form.control}
-								name="directMailType"
+								name="transferEnabled"
+								render={({ field }) => (
+									<FormItem className="flex items-center gap-3">
+										<Checkbox
+											id="transfer-enabled"
+											checked={field.value}
+											onCheckedChange={(v) => field.onChange(Boolean(v))}
+										/>
+										<FormLabel className="!m-0" htmlFor="transfer-enabled">
+											Enable Transfer to Agent
+										</FormLabel>
+									</FormItem>
+								)}
+							/>
+
+							{form.watch("transferEnabled") && (
+								<>
+									<FormField
+										control={form.control}
+										name="transferType"
+										render={({ field }) => (
+											<FormItem>
+												<FormLabel>Transfer Type</FormLabel>
+												<FormControl>
+													<Select
+														onValueChange={field.onChange}
+														defaultValue={field.value}
+													>
+														<SelectTrigger>
+															<SelectValue placeholder="Select transfer type" />
+														</SelectTrigger>
+														<SelectContent>
+															<SelectItem value="inbound_call">
+																Inbound Call
+															</SelectItem>
+															<SelectItem value="outbound_call">
+																Outbound Call
+															</SelectItem>
+															<SelectItem value="social">Social</SelectItem>
+															<SelectItem value="text">Text</SelectItem>
+															<SelectItem value="chat_live_person">
+																Chat (Live Person)
+															</SelectItem>
+															<SelectItem value="appraisal">
+																Appraisal
+															</SelectItem>
+															<SelectItem value="live_avatar">
+																Live Avatar
+															</SelectItem>
+														</SelectContent>
+													</Select>
+												</FormControl>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+									<FormField
+										control={form.control}
+										name="transferAgentId"
+										render={({ field }) => (
+											<FormItem>
+												<FormLabel>
+													{isLivePerson
+														? "Select Employee/Subuser"
+														: "Select Agent"}
+												</FormLabel>
+												<FormControl>
+													<AllRecipientDropdown
+														value={field.value}
+														onChange={(val) => {
+															field.onChange(val);
+															setSelectedAgentId(val);
+														}}
+														availablePeople={availableAgents}
+														transferType={watchedTransferType}
+														placeholderAgent="Select an agent"
+														placeholderEmployee="Select an employee or subuser"
+													/>
+												</FormControl>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+
+									{/* Transfer Guidelines */}
+									<FormField
+										control={form.control}
+										name="transferGuidelines"
+										render={({ field }) => (
+											<FormItem>
+												<FormLabel>Transfer Guidelines</FormLabel>
+												<FormControl>
+													<Textarea
+														placeholder="Provide brief guidelines for the live agent (context, do/don'ts, handoff notes)"
+														{...field}
+													/>
+												</FormControl>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+
+									{/* Transfer Prompt / Message */}
+									<FormField
+										control={form.control}
+										name="transferPrompt"
+										render={({ field }) => (
+											<FormItem>
+												<FormLabel>Transfer Prompt / Message</FormLabel>
+												<FormControl>
+													<Textarea
+														placeholder="What should be sent or spoken to initiate/announce the transfer?"
+														{...field}
+													/>
+												</FormControl>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+								</>
+							)}
+						</div>
+
+						{primaryChannel === "social" && (
+							<FormField
+								control={form.control}
+								name="socialPlatform"
 								render={({ field }) => (
 									<FormItem>
-										<FormLabel>Direct Mail Type</FormLabel>
+										<FormLabel>Social Platform</FormLabel>
 										<FormControl>
 											<Select
 												onValueChange={field.onChange}
 												defaultValue={field.value}
 											>
 												<SelectTrigger>
-													<SelectValue placeholder="Select type" />
+													<SelectValue placeholder="Select a platform" />
 												</SelectTrigger>
 												<SelectContent>
-													<SelectItem value="postcard">Postcard</SelectItem>
-													<SelectItem value="letter_front">
-														Letter (Front only)
-													</SelectItem>
-													<SelectItem value="letter_front_back">
-														Letter (Front & Back)
-													</SelectItem>
-													<SelectItem value="snap_pack">Snap Pack</SelectItem>
+													<SelectItem value="facebook">Facebook</SelectItem>
+													<SelectItem value="linkedin">LinkedIn</SelectItem>
 												</SelectContent>
 											</Select>
 										</FormControl>
@@ -1030,181 +1159,220 @@ const ChannelCustomizationStep: FC<ChannelCustomizationStepProps> = ({
 									</FormItem>
 								)}
 							/>
-
-							<div className="space-y-3">
-								<FormLabel>Templates</FormLabel>
-								{fields.map((item, index) => (
-									<div
-										key={item.id}
-										className="grid grid-cols-1 gap-3 md:grid-cols-12"
-									>
-										<div className="md:col-span-5">
-											<FormField
-												control={form.control}
-												name={`templates.${index}.templateId` as const}
-												render={({ field }) => (
-													<FormItem>
-														<FormControl>
-															<Select
-																onValueChange={field.onChange}
-																defaultValue={field.value}
-															>
-																<SelectTrigger>
-																	<SelectValue placeholder="Select a template" />
-																</SelectTrigger>
-																<SelectContent>
-																	<SelectItem value="tpl_basic">
-																		Basic Template
-																	</SelectItem>
-																	<SelectItem value="tpl_pro">
-																		Professional Template
-																	</SelectItem>
-																	<SelectItem value="tpl_modern">
-																		Modern Template
-																	</SelectItem>
-																</SelectContent>
-															</Select>
-														</FormControl>
-														<FormMessage />
-													</FormItem>
-												)}
-											/>
-										</div>
-										<div className="md:col-span-6">
-											<FormField
-												control={form.control}
-												name={`templates.${index}.description` as const}
-												render={({ field }) => (
-													<FormItem>
-														<FormControl>
-															<Textarea
-																placeholder="Description (optional)"
-																{...field}
-															/>
-														</FormControl>
-														<FormMessage />
-													</FormItem>
-												)}
-											/>
-										</div>
-										<div className="flex items-start md:col-span-1">
-											<Button
-												type="button"
-												variant="ghost"
-												onClick={() => remove(index)}
-											>
-												Remove
-											</Button>
-										</div>
-									</div>
-								))}
-								<div className="flex items-center justify-between">
-									<div className="text-muted-foreground text-xs">
-										{watchedDirectMailType === "letter_front_back" ||
-										watchedDirectMailType === "snap_pack"
-											? "Requires at least 2 templates (front and back)."
-											: "Requires at least 1 template."}
-									</div>
-									<Button
-										type="button"
-										variant="outline"
-										onClick={() => append({ templateId: "", description: "" })}
-									>
-										Add more
-									</Button>
-								</div>
-							</div>
-						</>
-					)}
-
-					<FormField
-						control={form.control}
-						name="areaMode"
-						render={({ field }) => (
-							<FormItem className="space-y-3">
-								<FormControl>
-									<AreaModeSelector
-										onValueChange={field.onChange}
-										value={field.value}
-									/>
-								</FormControl>
-								<FormMessage />
-							</FormItem>
 						)}
-					/>
 
-					{watchedAreaMode === "zip" && (
+						{isDirectMailChannel && (
+							<>
+								<FormField
+									control={form.control}
+									name="directMailType"
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel>Direct Mail Type</FormLabel>
+											<FormControl>
+												<Select
+													onValueChange={field.onChange}
+													defaultValue={field.value}
+												>
+													<SelectTrigger>
+														<SelectValue placeholder="Select type" />
+													</SelectTrigger>
+													<SelectContent>
+														<SelectItem value="postcard">Postcard</SelectItem>
+														<SelectItem value="letter_front">
+															Letter (Front only)
+														</SelectItem>
+														<SelectItem value="letter_front_back">
+															Letter (Front & Back)
+														</SelectItem>
+														<SelectItem value="snap_pack">Snap Pack</SelectItem>
+													</SelectContent>
+												</Select>
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+
+								<div className="space-y-3">
+									<FormLabel>Templates</FormLabel>
+									{fields.map((item, index) => (
+										<div
+											key={item.id}
+											className="grid grid-cols-1 gap-3 md:grid-cols-12"
+										>
+											<div className="md:col-span-5">
+												<FormField
+													control={form.control}
+													name={`templates.${index}.templateId` as const}
+													render={({ field }) => (
+														<FormItem>
+															<FormControl>
+																<Select
+																	onValueChange={field.onChange}
+																	defaultValue={field.value}
+																>
+																	<SelectTrigger>
+																		<SelectValue placeholder="Select a template" />
+																	</SelectTrigger>
+																	<SelectContent>
+																		<SelectItem value="tpl_basic">
+																			Basic Template
+																		</SelectItem>
+																		<SelectItem value="tpl_pro">
+																			Professional Template
+																		</SelectItem>
+																		<SelectItem value="tpl_modern">
+																			Modern Template
+																		</SelectItem>
+																	</SelectContent>
+																</Select>
+															</FormControl>
+															<FormMessage />
+														</FormItem>
+													)}
+												/>
+											</div>
+											<div className="md:col-span-6">
+												<FormField
+													control={form.control}
+													name={`templates.${index}.description` as const}
+													render={({ field }) => (
+														<FormItem>
+															<FormControl>
+																<Textarea
+																	placeholder="Description (optional)"
+																	{...field}
+																/>
+															</FormControl>
+															<FormMessage />
+														</FormItem>
+													)}
+												/>
+											</div>
+											<div className="flex items-start md:col-span-1">
+												<Button
+													type="button"
+													variant="ghost"
+													onClick={() => remove(index)}
+												>
+													Remove
+												</Button>
+											</div>
+										</div>
+									))}
+									<div className="flex items-center justify-between">
+										<div className="text-muted-foreground text-xs">
+											{watchedDirectMailType === "letter_front_back" ||
+											watchedDirectMailType === "snap_pack"
+												? "Requires at least 2 templates (front and back)."
+												: "Requires at least 1 template."}
+										</div>
+										<Button
+											type="button"
+											variant="outline"
+											onClick={() =>
+												append({ templateId: "", description: "" })
+											}
+										>
+											Add more
+										</Button>
+									</div>
+								</div>
+							</>
+						)}
+
 						<FormField
 							control={form.control}
-							name="zipCode"
+							name="areaMode"
 							render={({ field }) => (
-								<FormItem>
-									<FormLabel>Zip Code</FormLabel>
+								<FormItem className="space-y-3">
 									<FormControl>
-										<input
-											className="w-full rounded-md border bg-background px-3 py-2"
-											placeholder="Enter US zip code (e.g., 12345 or 12345-6789)"
-											{...field}
+										<AreaModeSelector
+											onValueChange={field.onChange}
+											value={field.value}
 										/>
 									</FormControl>
 									<FormMessage />
 								</FormItem>
 							)}
 						/>
-					)}
 
-					{watchedAreaMode === "leadList" && (
-						<FormField
-							control={form.control}
-							name="selectedLeadListId"
-							render={({ field }) => (
-								<FormItem>
-									<FormControl>
-										<LeadListSelector
-											value={
-												abTestingEnabled
-													? selectedLeadListAId || ""
-													: field.value || ""
-											}
-											onChange={(
-												selectedValue: string,
-												recordCount: number,
-											) => {
-												if (abTestingEnabled) {
-													setSelectedLeadListAId(selectedValue);
-													setLeadCountA(recordCount);
-													setLeadCount(recordCount + leadCountB);
-													// keep single-field form in sync with A for validation/back-compat
-													field.onChange(selectedValue);
-													setSelectedLeadListId(selectedValue);
-												} else {
-													field.onChange(selectedValue);
-													setSelectedLeadListId(selectedValue);
-													setLeadCount(recordCount);
+						{watchedAreaMode === "zip" && (
+							<FormField
+								control={form.control}
+								name="zipCode"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>Zip Code</FormLabel>
+										<FormControl>
+											<input
+												className="w-full rounded-md border bg-background px-3 py-2"
+												placeholder="Enter US zip code (e.g., 12345 or 12345-6789)"
+												{...field}
+											/>
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+						)}
+
+						{watchedAreaMode === "leadList" && (
+							<FormField
+								control={form.control}
+								name="selectedLeadListId"
+								render={({ field }) => (
+									<FormItem>
+										<FormControl>
+											<LeadListSelector
+												value={
+													abTestingEnabled
+														? selectedLeadListAId || ""
+														: field.value || ""
 												}
-											}}
-											abTestingEnabled={abTestingEnabled}
-											valueB={
-												abTestingEnabled ? selectedLeadListBId || "" : undefined
-											}
-											onChangeB={
-												abTestingEnabled
-													? (selectedValue: string, recordCount: number) => {
-															setSelectedLeadListBId(selectedValue);
-															setLeadCountB(recordCount);
-															setLeadCount(leadCountA + recordCount);
-														}
-													: undefined
-											}
-										/>
-									</FormControl>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
-					)}
+												onChange={(
+													selectedValue: string,
+													recordCount: number,
+												) => {
+													if (abTestingEnabled) {
+														setSelectedLeadListAId(selectedValue);
+														setLeadCountA(recordCount);
+														setLeadCount(recordCount + leadCountB);
+														// keep single-field form in sync with A for validation/back-compat
+														field.onChange(selectedValue);
+														setSelectedLeadListId(selectedValue);
+													} else {
+														field.onChange(selectedValue);
+														setSelectedLeadListId(selectedValue);
+														setLeadCount(recordCount);
+													}
+												}}
+												abTestingEnabled={abTestingEnabled}
+												valueB={
+													abTestingEnabled
+														? selectedLeadListBId || ""
+														: undefined
+												}
+												onChangeB={
+													abTestingEnabled
+														? (selectedValue: string, recordCount: number) => {
+																setSelectedLeadListBId(selectedValue);
+																setLeadCountB(recordCount);
+																setLeadCount(leadCountA + recordCount);
+															}
+														: undefined
+												}
+											/>
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+						)}
+					</div>
+					<CampaignNavigation onBack={onBack} onNext={onNext} />
 				</div>
-				<CampaignNavigation onBack={onBack} onNext={onNext} />
 			</div>
 		</Form>
 	);
