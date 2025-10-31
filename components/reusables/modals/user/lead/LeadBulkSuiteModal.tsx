@@ -1,22 +1,22 @@
 "use client";
 
+import { downloadLeadCsvTemplate } from "@/components/quickstart/utils/downloadLeadCsvTemplate";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import {
+	calculateLeadStatistics,
+	parseCsvToLeads,
+} from "@/lib/stores/_utils/csvParser";
+import { useLeadListStore } from "@/lib/stores/leadList";
+import { Download, Upload } from "lucide-react";
+import Papa from "papaparse";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ChangeEvent } from "react";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Download, Upload } from "lucide-react";
 import { toast } from "sonner";
 import FieldMappingStep from "../skipTrace/steps/FieldMappingStep";
 import SkipTraceSummaryStep from "./steps/SkipTraceSummaryStep";
 import { areRequiredFieldsMapped, autoMapCsvHeaders } from "./utils/csvAutoMap";
 import { deriveRecommendedEnrichmentOptions } from "./utils/enrichmentRecommendations";
-import { useLeadListStore } from "@/lib/stores/leadList";
-import {
-	calculateLeadStatistics,
-	parseCsvToLeads,
-} from "@/lib/stores/_utils/csvParser";
-import Papa from "papaparse";
-import { downloadLeadCsvTemplate } from "@/components/quickstart/utils/downloadLeadCsvTemplate";
 
 const INITIAL_COST_DETAILS = {
 	availableCredits: 0,
@@ -34,7 +34,7 @@ interface BulkSuiteModalProps {
 		leadListId: string;
 		leadListName: string;
 		leadCount: number;
-	}) => boolean | void;
+	}) => boolean | undefined;
 }
 
 const deriveDefaultListName = (file?: File | null) => {
@@ -352,7 +352,10 @@ export default function LeadBulkSuiteModal({
 				setErrors((prev) => ({ ...prev, listName: "List name is required" }));
 				return;
 			}
-			setErrors((prev) => ({ ...prev, listName: undefined }));
+			setErrors((prev) => {
+				const { listName: _, ...rest } = prev;
+				return rest;
+			});
 			setStep(1);
 			return;
 		}
@@ -381,17 +384,17 @@ export default function LeadBulkSuiteModal({
 					{step === 0 && (
 						<div className="space-y-4">
 							<div className="space-y-2">
-								<h2 className="text-lg font-semibold text-foreground">
+								<h2 className="font-semibold text-foreground text-lg">
 									Name Your Lead List
 								</h2>
-								<p className="text-sm text-muted-foreground">
+								<p className="text-muted-foreground text-sm">
 									Upload your CSV and give the list a recognizable name before
 									mapping fields.
 								</p>
 							</div>
 							<div className="space-y-2">
 								<label
-									className="text-sm font-medium text-foreground"
+									className="font-medium text-foreground text-sm"
 									htmlFor="bulk-list-name"
 								>
 									List Name
@@ -401,11 +404,11 @@ export default function LeadBulkSuiteModal({
 									type="text"
 									value={listName}
 									onChange={(event) => setListName(event.target.value)}
-									className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground shadow-sm focus:outline-none focus:ring-2 focus:ring-ring"
+									className="w-full rounded-md border border-border bg-background px-3 py-2 text-foreground text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-ring"
 									placeholder="e.g., August Outreach List"
 								/>
 								{errors.listName && (
-									<p className="text-sm text-destructive">{errors.listName}</p>
+									<p className="text-destructive text-sm">{errors.listName}</p>
 								)}
 							</div>
 							<div className="space-y-2">
@@ -428,7 +431,7 @@ export default function LeadBulkSuiteModal({
 									Download sample CSV
 								</Button>
 								{modalCsvFile && (
-									<div className="text-sm text-muted-foreground">
+									<div className="text-muted-foreground text-sm">
 										<p className="font-medium">{modalCsvFile.name}</p>
 										<p>{csvHeaders.length} columns detected</p>
 									</div>
@@ -470,13 +473,28 @@ export default function LeadBulkSuiteModal({
 					)}
 
 					<div className="mt-6 flex items-center justify-between">
-						<Button
-							onClick={step === 0 ? onClose : goBack}
-							variant="outline"
-							type="button"
-						>
-							Back
-						</Button>
+						<div className="flex items-center gap-2">
+							<Button
+								onClick={step === 0 ? onClose : goBack}
+								variant="outline"
+								type="button"
+							>
+								Back
+							</Button>
+							{step === 1 && (
+								<Button
+									type="button"
+									variant="default"
+									size="default"
+									onClick={() => downloadLeadCsvTemplate()}
+									disabled={isLaunchingSuite}
+									className="gap-2"
+								>
+									<Download className="h-4 w-4" />
+									Download Example CSV
+								</Button>
+							)}
+						</div>
 						<Button
 							onClick={() => {
 								if (step === 2) {
