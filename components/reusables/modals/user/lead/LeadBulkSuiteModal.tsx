@@ -212,6 +212,22 @@ export default function LeadBulkSuiteModal({
 		reader.readAsText(file);
 	};
 
+	// When mapping is done and summary step is visible, parse CSV to compute true parsed lead count
+	// and show a confirmation toast once. This uses parser rules (skips empty rows) for accuracy.
+	useEffect(() => {
+		if (step !== 2) return;
+		if (!csvContent) return;
+		if (parsedToastShownRef.current) return;
+		try {
+			const leads = parseCsvToLeads(csvContent, selectedHeaders);
+			setCsvRowCount(leads.length);
+			toast.success(`Parsed ${leads.length.toLocaleString()} leads from CSV`);
+		} catch {
+			// ignore; handled on launch
+		}
+		parsedToastShownRef.current = true;
+	}, [step, csvContent, selectedHeaders]);
+
 	const handleHeaderSelect = (fieldName: string, value: string) => {
 		setSelectedHeaders((prev) => {
 			const next = { ...prev, [fieldName]: value || undefined };
@@ -479,18 +495,3 @@ export default function LeadBulkSuiteModal({
 		</Dialog>
 	);
 }
-// When mapping is done and summary step is visible, parse CSV to compute true parsed lead count
-// and show a confirmation toast once. This uses parser rules (skips empty rows) for accuracy.
-useEffect(() => {
-	if (step !== 2) return;
-	if (!csvContent) return;
-	if (parsedToastShownRef.current) return;
-	try {
-		const leads = parseCsvToLeads(csvContent, selectedHeaders);
-		setCsvRowCount(leads.length);
-		toast.success(`Parsed ${leads.length.toLocaleString()} leads from CSV`);
-	} catch {
-		// ignore; handled on launch
-	}
-	parsedToastShownRef.current = true;
-}, [step, csvContent, selectedHeaders]);

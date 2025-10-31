@@ -27,7 +27,7 @@ import ChannelCustomizationStep, {
 	type FormSchema,
 } from "../../../../../external/shadcn-table/src/examples/campaigns/modal/steps/ChannelCustomizationStep";
 import ChannelSelectionStep from "../../../../../external/shadcn-table/src/examples/campaigns/modal/steps/ChannelSelectionStep";
-import { TimingPreferencesStep } from "../../../../../external/shadcn-table/src/examples/campaigns/modal/steps/TimingPreferencesStep";
+import { TimingPreferencesStep } from "../../../../../external/shadcn-table/src/examples/campaigns/modal/steps/TimingPreferencesStep.tsx";
 import CampaignSettingsDebug from "./CampaignSettingsDebug";
 import FinalizeCampaignStep from "./steps/FinalizeCampaignStep";
 import { shallow } from "zustand/shallow";
