@@ -230,6 +230,16 @@ export default function CampaignSettingsDebug({
 					</>
 				)}
 
+				{/* Text Messaging Settings (from store) */}
+				<div className="font-medium text-primary">Text Messaging:</div>
+				<div className="ml-2 space-y-1">
+					<div>Text Signature: {formatValue(store.textSignature)}</div>
+					<div>Media Source: {formatValue((store as any).smsMediaSource)}</div>
+					<div>Can Send Images: {formatValue(store.smsCanSendImages)}</div>
+					<div>Can Send Videos: {formatValue(store.smsCanSendVideos)}</div>
+					<div>Can Send Links: {formatValue(store.smsCanSendLinks)}</div>
+				</div>
+
 				{/* Timing Preferences */}
 				<div className="font-medium text-primary">Timing Preferences:</div>
 				<div className="ml-2 space-y-1">

@@ -859,6 +859,17 @@ const CampaignModalMain: FC<CampaignModalMainProps> = ({
 				type: campaignType,
 				campaignId,
 			});
+
+			// Optional: include SMS capability flags and signature for debugging/navigation
+			try {
+				const s = useCampaignCreationStore.getState();
+				if (s.textSignature) params.set("textSignature", s.textSignature);
+				params.set("smsImages", String(s.smsCanSendImages));
+				params.set("smsVideos", String(s.smsCanSendVideos));
+				params.set("smsLinks", String(s.smsCanSendLinks));
+				if ((s as any).smsMediaSource)
+					params.set("smsMediaSource", String((s as any).smsMediaSource));
+			} catch {}
 			const paramsString = params.toString();
 			const fullUrl = `/dashboard/campaigns?${paramsString}`;
 			campaignDebugLog("launch-navigation-target", {

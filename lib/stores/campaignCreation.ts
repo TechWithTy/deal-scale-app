@@ -91,6 +91,19 @@ export interface CampaignCreationState {
 	preferredVoicemailVoiceId: string; // e.g., voice_emma, voice_paul
 	setPreferredVoicemailVoiceId: (id: string) => void;
 
+	// Text/SMS settings
+	textSignature: string;
+	setTextSignature: (sig: string) => void;
+	smsCanSendImages: boolean;
+	setSmsCanSendImages: (v: boolean) => void;
+	smsCanSendVideos: boolean;
+	setSmsCanSendVideos: (v: boolean) => void;
+	smsCanSendLinks: boolean;
+	setSmsCanSendLinks: (v: boolean) => void;
+	/** Preferred media sourcing for text messaging */
+	smsMediaSource: "ai" | "stock" | "hybrid";
+	setSmsMediaSource: (v: "ai" | "stock" | "hybrid") => void;
+
 	// Step 2: Area & Lead List
 	areaMode: "zip" | "leadList";
 	setAreaMode: (mode: "zip" | "leadList") => void;
@@ -224,6 +237,18 @@ export const useCampaignCreationStore =
 			preferredVoicemailVoiceId: "",
 			setPreferredVoicemailVoiceId: (preferredVoicemailVoiceId) =>
 				set({ preferredVoicemailVoiceId }),
+
+			// Text/SMS settings
+			textSignature: "",
+			setTextSignature: (textSignature) => set({ textSignature }),
+			smsCanSendImages: true,
+			setSmsCanSendImages: (smsCanSendImages) => set({ smsCanSendImages }),
+			smsCanSendVideos: true,
+			setSmsCanSendVideos: (smsCanSendVideos) => set({ smsCanSendVideos }),
+			smsCanSendLinks: true,
+			setSmsCanSendLinks: (smsCanSendLinks) => set({ smsCanSendLinks }),
+			smsMediaSource: "hybrid",
+			setSmsMediaSource: (smsMediaSource) => set({ smsMediaSource }),
 
 			// Step 2: Area & Lead List
 			areaMode: "leadList",
@@ -419,6 +444,11 @@ export const useCampaignCreationStore =
 					campaignGoal: "",
 					preferredVoicemailMessageId: "",
 					preferredVoicemailVoiceId: "",
+					textSignature: "",
+					smsCanSendImages: true,
+					smsCanSendVideos: true,
+					smsCanSendLinks: true,
+					smsMediaSource: "hybrid",
 
 					// Step 2
 					areaMode: "leadList",
