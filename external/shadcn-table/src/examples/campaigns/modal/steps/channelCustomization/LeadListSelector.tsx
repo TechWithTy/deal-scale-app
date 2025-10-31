@@ -14,7 +14,7 @@ import {
 	FormControl,
 	FormMessage,
 } from "../../../../../components/ui/form";
-import { useLeadListStore } from "../../../../../lib/stores/leadList";
+import { useLeadListStore } from "@/lib/stores/leadList";
 import { useCampaignCreationStore } from "../../../../../lib/stores/campaignCreation";
 import { LEAD_LISTS_MOCK } from "../../../../../constants/leadLists.mock";
 
@@ -116,11 +116,11 @@ const LeadListSelector: FC<LeadListSelectorProps> = ({
 					className="max-h-72 overflow-y-auto overscroll-contain"
 					onWheel={(e) => e.stopPropagation()}
 				>
-					{options.map((list) => (
-						<SelectItem key={list.id} value={list.id}>
-							{list.listName}
-						</SelectItem>
-					))}
+						{options.map((list) => (
+							<SelectItem key={list.id} value={list.id}>
+								{`${list.listName} (${(list.records ?? 0).toLocaleString()})`}
+							</SelectItem>
+						))}
 				</SelectContent>
 			</Select>
 
@@ -146,11 +146,11 @@ const LeadListSelector: FC<LeadListSelectorProps> = ({
 							className="max-h-72 overflow-y-auto overscroll-contain"
 							onWheel={(e) => e.stopPropagation()}
 						>
-							{options.map((list) => (
-								<SelectItem key={list.id} value={list.id}>
-									{list.listName}
-								</SelectItem>
-							))}
+											{options.map((list) => (
+												<SelectItem key={list.id} value={list.id}>
+													{`${list.listName} (${(list.records ?? 0).toLocaleString()})`}
+												</SelectItem>
+											))}
 						</SelectContent>
 					</Select>
 				</div>

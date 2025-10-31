@@ -1,4 +1,4 @@
-import { create } from "zustand";
+import { createWithEqualityFn } from "zustand/traditional";
 
 // Types for agent selection
 export interface Agent {
@@ -139,7 +139,7 @@ export interface CampaignCreationState {
 	reset: () => void;
 }
 
-export const useCampaignCreationStore = create<CampaignCreationState>(
+export const useCampaignCreationStore = createWithEqualityFn<CampaignCreationState>(
 	(set, get) => ({
 		// Step 1: Channel Selection
 		primaryChannel: null,

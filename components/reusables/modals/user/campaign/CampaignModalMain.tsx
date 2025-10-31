@@ -34,6 +34,7 @@ import { shallow } from "zustand/shallow";
 import type { CallCampaign } from "@/types/_dashboard/campaign";
 import type { EmailCampaign } from "@/types/goHighLevel/email";
 import type { DirectMailCampaign } from "external/shadcn-table/src/examples/DirectMail/utils/mock";
+import { useLeadListStore } from "@/lib/stores/leadList";
 interface CampaignModalMainProps {
 	isOpen: boolean;
 	onOpenChange: (open: boolean) => void;
@@ -223,6 +224,39 @@ const CampaignModalMain: FC<CampaignModalMainProps> = ({
 				selectedLeadListId || DEFAULT_CUSTOMIZATION_VALUES.selectedLeadListId,
 		},
 	});
+
+	// Ensure leadCount reflects actual selected list size when available
+	const leadLists = useLeadListStore((s) => s.leadLists);
+	useEffect(() => {
+		if (areaMode !== "leadList") return;
+		const id = selectedLeadListId || selectedLeadListAId;
+		if (!id) return;
+		const list = leadLists.find((l) => l.id === id);
+		if (!list) return;
+		const records =
+			typeof list.records === "number"
+				? list.records
+				: Array.isArray((list as any).leads)
+					? ((list as any).leads as unknown[]).length
+					: 0;
+		if (Number.isFinite(records) && records >= 0) {
+			setLeadCount(records);
+		}
+		// Also mirror into the form field so A/B logic sees a consistent value
+		if (!customizationForm.getValues("selectedLeadListId")) {
+			customizationForm.setValue("selectedLeadListId", id, {
+				shouldValidate: false,
+				shouldDirty: false,
+			});
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [
+		areaMode,
+		selectedLeadListId,
+		selectedLeadListAId,
+		leadLists,
+		setLeadCount,
+	]);
 
 	useEffect(
 		() => () => {
