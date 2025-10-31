@@ -1,5 +1,5 @@
-import React, { act } from "react";
-import { render, screen, within } from "@testing-library/react";
+import React from "react";
+import { act, render, screen, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it } from "vitest";
 
 import QuickStartWizard from "@/components/quickstart/wizard/QuickStartWizard";
@@ -11,57 +11,57 @@ import { useQuickStartWizardDataStore } from "@/lib/stores/quickstartWizardData"
 (globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true;
 
 const resetStores = () => {
-        act(() => {
-                useQuickStartWizardStore.getState().reset();
-                useQuickStartWizardDataStore.getState().reset();
-        });
+	act(() => {
+		useQuickStartWizardStore.getState().reset();
+		useQuickStartWizardDataStore.getState().reset();
+	});
 };
 
 describe("QuickStart wizard summary previews", () => {
-        beforeEach(() => {
-                resetStores();
-        });
+	beforeEach(() => {
+		resetStores();
+	});
 
-        it("shows the template defaults preview for the lender automation play", async () => {
-                render(<QuickStartWizard />);
+	it("shows the template defaults preview for the lender automation play", async () => {
+		render(<QuickStartWizard />);
 
-                act(() => {
-                        useQuickStartWizardStore.getState().open({
-                                personaId: "lender",
-                                goalId: "lender-fund-fast",
-                                templateId: "automation-routing",
-                        });
-                });
+		act(() => {
+			useQuickStartWizardStore.getState().open({
+				personaId: "lender",
+				goalId: "lender-fund-fast",
+				templateId: "automation-routing",
+			});
+		});
 
-                const storeState = useQuickStartWizardStore.getState();
-                expect(storeState.activePreset?.templateId).toBe("automation-routing");
-                expect(getQuickStartTemplate("automation-routing")).toBeDefined();
+		const storeState = useQuickStartWizardStore.getState();
+		expect(storeState.activePreset?.templateId).toBe("automation-routing");
+		expect(getQuickStartTemplate("automation-routing")).toBeDefined();
 
-                const summary = await screen.findByTestId("quickstart-summary-step");
-                within(summary).getByRole("heading", { name: /fund deals faster/i });
-                within(summary).getByText(
-                        /Automation routing keeps borrowers moving from intake to funding\./i,
-                );
-                const templatePreview = await within(summary).findByTestId(
-                        "quickstart-summary-template",
-                );
-                within(templatePreview).getByText(
-                        /Automation defaults coordinate borrower intake/i,
-                );
+		const summary = await screen.findByTestId("quickstart-summary-step");
+		within(summary).getByRole("heading", { name: /fund deals faster/i });
+		within(summary).getByText(
+			/Automation routing keeps borrowers moving from intake to funding\./i,
+		);
+		const templatePreview = await within(summary).findByTestId(
+			"quickstart-summary-template",
+		);
+		within(templatePreview).getByText(
+			/Automation defaults coordinate borrower intake/i,
+		);
 
-                const bulletItems = within(templatePreview).getAllByRole("listitem");
-                const bulletText = bulletItems.map((item) => item.textContent ?? "");
+		const bulletItems = within(templatePreview).getAllByRole("listitem");
+		const bulletText = bulletItems.map((item) => item.textContent ?? "");
 
-                expect(bulletText).toEqual(
-                        expect.arrayContaining([
-                                expect.stringMatching(/Primary channel: Email/i),
-                                expect.stringMatching(/Workflow: Aggressive: 3-day blitz/i),
-                                expect.stringMatching(/Assigned agent: Jane Smith/i),
-                                expect.stringMatching(
-                                        /Automation rules: Hot borrower follow-up • Stalled deal escalation/i,
-                                ),
-                                expect.stringMatching(/Webhook subscriptions: Borrower intake/i),
-                        ]),
-                );
-        });
+		expect(bulletText).toEqual(
+			expect.arrayContaining([
+				expect.stringMatching(/Primary channel: Email/i),
+				expect.stringMatching(/Workflow: Aggressive: 3-day blitz/i),
+				expect.stringMatching(/Assigned agent: Jane Smith/i),
+				expect.stringMatching(
+					/Automation rules: Hot borrower follow-up • Stalled deal escalation/i,
+				),
+				expect.stringMatching(/Webhook subscriptions: Borrower intake/i),
+			]),
+		);
+	});
 });

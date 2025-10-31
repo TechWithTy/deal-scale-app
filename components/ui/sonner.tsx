@@ -23,9 +23,11 @@ const Toaster = ({ ...props }: ToasterProps) => {
 				cancelButton:
 					"group-[.toast]:bg-muted group-[.toast]:text-muted-foreground group-[.toast]:hover:bg-muted/80 group-[.toast]:pointer-events-auto group-[.toast]:cursor-pointer",
 				closeButton:
-					"group-[.toast]:text-inherit/70 group-[.toast]:hover:text-inherit group-[.toast]:pointer-events-auto group-[.toast]:cursor-pointer group-[.toast]:relative group-[.toast]:z-[10001]",
+					"group-[.toast]:text-inherit/70 group-[.toast]:hover:text-inherit group-[.toast]:pointer-events-auto group-[.toast]:cursor-pointer group-[.toast]:relative group-[.toast]:z-[10001] group-[.toast]:!pointer-events-auto group-[.toast]:!cursor-pointer",
 				icon: "group-[.toast]:text-inherit",
 			},
+			// Ensure all toasts are dismissible, including those with infinite duration
+			dismissible: true,
 		}),
 		[],
 	);
