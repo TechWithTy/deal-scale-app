@@ -81,6 +81,16 @@ export interface CampaignCreationState {
 	availableSalesScripts: SalesScriptOption[];
 	setAvailableSalesScripts: (scripts: SalesScriptOption[]) => void;
 
+	// Campaign Goal (Finalize step prefill)
+	campaignGoal: string;
+	setCampaignGoal: (goal: string) => void;
+
+	// Voicemail selection (UI + presets)
+	preferredVoicemailMessageId: string; // e.g., vm_professional, vm_friendly
+	setPreferredVoicemailMessageId: (id: string) => void;
+	preferredVoicemailVoiceId: string; // e.g., voice_emma, voice_paul
+	setPreferredVoicemailVoiceId: (id: string) => void;
+
 	// Step 2: Area & Lead List
 	areaMode: "zip" | "leadList";
 	setAreaMode: (mode: "zip" | "leadList") => void;
@@ -202,6 +212,18 @@ export const useCampaignCreationStore =
 			availableSalesScripts: MOCK_SALES_SCRIPTS,
 			setAvailableSalesScripts: (availableSalesScripts) =>
 				set({ availableSalesScripts }),
+
+			// Campaign Goal default/draft
+			campaignGoal: "",
+			setCampaignGoal: (campaignGoal) => set({ campaignGoal }),
+
+			// Voicemail selection
+			preferredVoicemailMessageId: "",
+			setPreferredVoicemailMessageId: (preferredVoicemailMessageId) =>
+				set({ preferredVoicemailMessageId }),
+			preferredVoicemailVoiceId: "",
+			setPreferredVoicemailVoiceId: (preferredVoicemailVoiceId) =>
+				set({ preferredVoicemailVoiceId }),
 
 			// Step 2: Area & Lead List
 			areaMode: "leadList",
@@ -394,6 +416,9 @@ export const useCampaignCreationStore =
 
 					selectedSalesScriptId: null,
 					availableSalesScripts: MOCK_SALES_SCRIPTS,
+					campaignGoal: "",
+					preferredVoicemailMessageId: "",
+					preferredVoicemailVoiceId: "",
 
 					// Step 2
 					areaMode: "leadList",

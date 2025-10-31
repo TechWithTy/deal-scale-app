@@ -86,8 +86,14 @@ export interface CampaignCreationState {
 	setReachOnWeekend: (v: boolean) => void;
 	reachOnHolidays: boolean;
 	setReachOnHolidays: (v: boolean) => void;
-	countVoicemailAsAnswered: boolean;
-	setCountVoicemailAsAnswered: (v: boolean) => void;
+    countVoicemailAsAnswered: boolean;
+    setCountVoicemailAsAnswered: (v: boolean) => void;
+
+    // Voicemail selection (UI + presets)
+    preferredVoicemailMessageId: string;
+    setPreferredVoicemailMessageId: (id: string) => void;
+    preferredVoicemailVoiceId: string;
+    setPreferredVoicemailVoiceId: (id: string) => void;
 
 	// TCPA and Voicemail preferences
 	tcpaNotOptedIn: boolean;
@@ -196,8 +202,16 @@ export const useCampaignCreationStore = create<CampaignCreationState>(
 		reachOnHolidays: false,
 		setReachOnHolidays: (reachOnHolidays: boolean) => set({ reachOnHolidays }),
 		countVoicemailAsAnswered: false,
-		setCountVoicemailAsAnswered: (countVoicemailAsAnswered: boolean) =>
-			set({ countVoicemailAsAnswered }),
+    setCountVoicemailAsAnswered: (countVoicemailAsAnswered: boolean) =>
+        set({ countVoicemailAsAnswered }),
+
+    // Voicemail selection
+    preferredVoicemailMessageId: "",
+    setPreferredVoicemailMessageId: (preferredVoicemailMessageId: string) =>
+        set({ preferredVoicemailMessageId }),
+    preferredVoicemailVoiceId: "",
+    setPreferredVoicemailVoiceId: (preferredVoicemailVoiceId: string) =>
+        set({ preferredVoicemailVoiceId }),
 
 		// TCPA and Voicemail preferences
 		tcpaNotOptedIn: false,
@@ -253,11 +267,11 @@ export const useCampaignCreationStore = create<CampaignCreationState>(
 			set({ numberSelectionStrategy }),
 
 		// Reset function
-		reset: () =>
-			set({
-				// Step 1
-				primaryChannel: null,
-				campaignName: "",
+        reset: () =>
+            set({
+                // Step 1
+                primaryChannel: null,
+                campaignName: "",
 
 				// Agent Selection
 				selectedAgentId: null,
@@ -273,24 +287,27 @@ export const useCampaignCreationStore = create<CampaignCreationState>(
 				leadCount: 0,
 				includeWeekends: false,
 
-				// Step 3
-				daysSelected: 7,
-				startDate: new Date(),
-				availableSenderNumbers: [
-					"+15551230001",
-					"+15551230002",
-					"+15551230003",
-					"+15551230004",
-				],
-				selectedSenderNumbers: [],
-				numberSelectionStrategy: "round_robin",
-				reachOnHolidays: false,
-				minDailyAttempts: 1,
-				maxDailyAttempts: 3,
-				countVoicemailAsAnswered: false,
-				tcpaNotOptedIn: false,
-				doVoicemailDrops: false,
-				getTimezoneFromLeadLocation: true,
-			}),
+                // Step 3
+                daysSelected: 7,
+                startDate: new Date(),
+                endDate: null,
+                availableSenderNumbers: [
+                    "+15551230001",
+                    "+15551230002",
+                    "+15551230003",
+                    "+15551230004",
+                ],
+                selectedSenderNumbers: [],
+                numberSelectionStrategy: "round_robin",
+                reachOnHolidays: false,
+                minDailyAttempts: 1,
+                maxDailyAttempts: 3,
+                countVoicemailAsAnswered: false,
+                tcpaNotOptedIn: false,
+                doVoicemailDrops: false,
+                getTimezoneFromLeadLocation: true,
+                preferredVoicemailMessageId: "",
+                preferredVoicemailVoiceId: "",
+            }),
 	}),
 );

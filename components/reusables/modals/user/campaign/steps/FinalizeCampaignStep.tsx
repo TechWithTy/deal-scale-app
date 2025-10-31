@@ -52,6 +52,8 @@ const FinalizeCampaignStep: FC<FinalizeCampaignStepProps> = ({
 	const {
 		campaignName,
 		setCampaignName,
+		campaignGoal,
+		setCampaignGoal,
 		selectedAgentId,
 		setSelectedAgentId,
 		availableAgents,
@@ -71,7 +73,7 @@ const FinalizeCampaignStep: FC<FinalizeCampaignStepProps> = ({
 				selectedAgentId: selectedAgentId || undefined,
 				selectedWorkflowId: selectedWorkflowId || undefined,
 				selectedSalesScriptId: selectedSalesScriptId || undefined,
-				campaignGoal: "",
+				campaignGoal: campaignGoal || "",
 			},
 			mode: "onChange",
 		});
@@ -108,6 +110,7 @@ const FinalizeCampaignStep: FC<FinalizeCampaignStepProps> = ({
 	}, [campaignName, selectedWorkflowId, selectedSalesScriptId, form]);
 
 	const watchedCampaignName = form.watch("campaignName");
+	const watchedCampaignGoal = form.watch("campaignGoal");
 	const watchedAgentId = form.watch("selectedAgentId");
 	const watchedWorkflowId = form.watch("selectedWorkflowId");
 	const watchedSalesScriptId = form.watch("selectedSalesScriptId");
@@ -116,6 +119,11 @@ const FinalizeCampaignStep: FC<FinalizeCampaignStepProps> = ({
 		const normalizedCampaignName = watchedCampaignName ?? "";
 		if (campaignName !== normalizedCampaignName) {
 			setCampaignName(normalizedCampaignName);
+		}
+
+		const normalizedCampaignGoal = watchedCampaignGoal ?? "";
+		if (campaignGoal !== normalizedCampaignGoal) {
+			setCampaignGoal(normalizedCampaignGoal);
 		}
 
 		const normalizedAgentId = watchedAgentId ?? null;
@@ -135,13 +143,16 @@ const FinalizeCampaignStep: FC<FinalizeCampaignStepProps> = ({
 	}, [
 		watchedCampaignName,
 		watchedAgentId,
+		watchedCampaignGoal,
 		watchedWorkflowId,
 		watchedSalesScriptId,
 		campaignName,
+		campaignGoal,
 		selectedAgentId,
 		selectedWorkflowId,
 		selectedSalesScriptId,
 		setCampaignName,
+		setCampaignGoal,
 		setSelectedAgentId,
 		setSelectedWorkflowId,
 		setSelectedSalesScriptId,
@@ -187,6 +198,9 @@ const FinalizeCampaignStep: FC<FinalizeCampaignStepProps> = ({
 	const handleLaunch = (data: FinalizeCampaignForm) => {
 		if (campaignName !== data.campaignName) {
 			setCampaignName(data.campaignName);
+		}
+		if ((campaignGoal || "") !== (data.campaignGoal || "")) {
+			setCampaignGoal(data.campaignGoal || "");
 		}
 		if (selectedAgentId !== data.selectedAgentId) {
 			setSelectedAgentId(data.selectedAgentId ?? null);

@@ -218,6 +218,14 @@ export default function CampaignSettingsDebug({
 					<div>TCPA Not Opted In: {formatValue(store.tcpaNotOptedIn)}</div>
 					<div>Do Voicemail Drops: {formatValue(store.doVoicemailDrops)}</div>
 					<div>
+						Voice (overrides agent):{" "}
+						{formatValue((store as any).preferredVoicemailVoiceId)}
+					</div>
+					<div>
+						Preferred Voicemail Message:{" "}
+						{formatValue((store as any).preferredVoicemailMessageId)}
+					</div>
+					<div>
 						Get Timezone from Lead:{" "}
 						{formatValue(store.getTimezoneFromLeadLocation)}
 					</div>
