@@ -1,5 +1,5 @@
 import type { FC } from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -13,6 +13,7 @@ import {
 	FormMessage,
 	FormLabel,
 } from "../../../../components/ui/form";
+import { Label } from "../../../../components/ui/label";
 import PhoneNumberInput from "./channelCustomization/PhoneNumberInput";
 import AreaModeSelector from "./channelCustomization/AreaModeSelector";
 import LeadListSelector from "./channelCustomization/LeadListSelector";
@@ -27,6 +28,13 @@ import {
 import { Button } from "../../../../components/ui/button";
 import { Textarea } from "../../../../components/ui/textarea";
 import { Checkbox } from "../../../../components/ui/checkbox";
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuTrigger,
+} from "../../../../components/ui/dropdown-menu";
+import { Play, Pause, ChevronDown } from "lucide-react";
 import AllRecipientDropdown from "../../../../../../ai-avatar-dropdown/AllRecipientDropdown";
 
 // * Step 2: Channel Customization
@@ -241,6 +249,12 @@ const ChannelCustomizationStep: FC<ChannelCustomizationStepProps> = ({
 		numberSelectionStrategy,
 		setNumberSelectionStrategy,
 		setAvailableSenderNumbers,
+
+		// Voice and voicemail preferences
+		preferredVoicemailVoiceId,
+		setPreferredVoicemailVoiceId,
+		preferredVoicemailMessageId,
+		setPreferredVoicemailMessageId,
 	} = useCampaignCreationStore();
 
 	const watchedAreaMode = form.watch("areaMode");
@@ -255,6 +269,99 @@ const ChannelCustomizationStep: FC<ChannelCustomizationStepProps> = ({
 	const [poolingExpanded, setPoolingExpanded] = useState(false);
 	const [loadingNumbers, setLoadingNumbers] = useState(false);
 	const [numbersError, setNumbersError] = useState<string | null>(null);
+
+	// Derived labels for voice and voicemail message
+	const voiceLabel = useMemo(() => {
+		const map: Record<string, string> = {
+			voice_emma: "Emma (Natural)",
+			voice_paul: "Paul (Warm)",
+			voice_matthew: "Matthew (Clear)",
+		};
+		return preferredVoicemailVoiceId
+			? map[preferredVoicemailVoiceId] ?? "Select a voice"
+			: "Select a voice";
+	}, [preferredVoicemailVoiceId]);
+
+	const messageLabel = useMemo(() => {
+		const map: Record<string, string> = {
+			vm_professional: "Professional Business Message",
+			vm_friendly: "Friendly Personal Message",
+			vm_urgent: "Urgent Callback Message",
+			vm_custom: "Custom Message (Upload Audio)",
+		};
+		return preferredVoicemailMessageId
+			? map[preferredVoicemailMessageId] ?? "Select a voicemail message"
+			: "Select a voicemail message";
+	}, [preferredVoicemailMessageId]);
+
+	// Audio preview control
+	const audioRef = useRef<HTMLAudioElement | null>(null);
+	const [playingKey, setPlayingKey] = useState<string | null>(null);
+
+	const getAudioUrl = (kind: "voice" | "message", id: string): string | null => {
+		const voiceMap: Record<string, string> = {
+			voice_emma: "/audio/voices/voice_emma.mp3",
+			voice_paul: "/audio/voices/voice_paul.mp3",
+			voice_matthew: "/audio/voices/voice_matthew.mp3",
+		};
+		const msgMap: Record<string, string> = {
+			vm_professional: "/audio/messages/vm_professional.mp3",
+			vm_friendly: "/audio/messages/vm_friendly.mp3",
+			vm_urgent: "/audio/messages/vm_urgent.mp3",
+			vm_custom: "/audio/messages/vm_custom.mp3",
+		};
+		return kind === "voice" ? voiceMap[id] ?? null : msgMap[id] ?? null;
+	};
+
+	const stopAudio = () => {
+		try {
+			audioRef.current?.pause();
+			if (audioRef.current) audioRef.current.currentTime = 0;
+		} catch {}
+		audioRef.current = null;
+	};
+
+	const handleTogglePlay = (
+		e: React.MouseEvent,
+		kind: "voice" | "message",
+		id: string,
+		label: string,
+	) => {
+		e.stopPropagation();
+		const key = `${kind}:${id}`;
+		if (playingKey === key) {
+			stopAudio();
+			setPlayingKey(null);
+			return;
+		}
+		stopAudio();
+		const url = getAudioUrl(kind, id);
+		if (!url) {
+			// eslint-disable-next-line no-console
+			console.warn("No preview available for", { kind, id, label });
+			setPlayingKey(null);
+			return;
+		}
+		try {
+			const audio = new Audio(url);
+			audioRef.current = audio;
+			void audio.play().catch((err) => {
+				// eslint-disable-next-line no-console
+				console.warn("Audio preview failed", { kind, id, error: err });
+				setPlayingKey(null);
+			});
+			setPlayingKey(key);
+			audio.onended = () => {
+				setPlayingKey((curr) => (curr === key ? null : curr));
+			};
+		} catch (err) {
+			// eslint-disable-next-line no-console
+			console.warn("Audio init failed", { kind, id, error: err });
+			setPlayingKey(null);
+		}
+	};
+
+	useEffect(() => () => stopAudio(), []);
 
 	const { fields, append, remove } = useFieldArray({
 		control: form.control,
@@ -632,6 +739,112 @@ const ChannelCustomizationStep: FC<ChannelCustomizationStepProps> = ({
 							)}
 						</div>
 					)}
+
+					{/* Voice and Voicemail Preferences */}
+					<div className="space-y-6">
+						<div className="space-y-3">
+							<Label>Voice</Label>
+							<div className="space-y-2">
+								<DropdownMenu>
+									<DropdownMenuTrigger asChild>
+										<Button variant="outline" className="w-full justify-between">
+											<span>{voiceLabel}</span>
+											<ChevronDown className="h-4 w-4 opacity-50" />
+										</Button>
+									</DropdownMenuTrigger>
+									<DropdownMenuContent className="w-full min-w-[300px]">
+										<DropdownMenuItem onSelect={() => setPreferredVoicemailVoiceId("voice_emma")}>
+											<div className="flex w-full items-center justify-between">
+												<span>Emma (Natural)</span>
+												<div className="flex items-center gap-1">
+													<Button type="button" variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={(e) => handleTogglePlay(e, "voice", "voice_emma", "Emma (Natural)")}>
+														{playingKey === "voice:voice_emma" ? <Pause className="h-3 w-3" /> : <Play className="h-3 w-3" />}
+													</Button>
+												</div>
+											</div>
+										</DropdownMenuItem>
+										<DropdownMenuItem onSelect={() => setPreferredVoicemailVoiceId("voice_paul")}>
+											<div className="flex w-full items-center justify-between">
+												<span>Paul (Warm)</span>
+												<div className="flex items-center gap-1">
+													<Button type="button" variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={(e) => handleTogglePlay(e, "voice", "voice_paul", "Paul (Warm)")}>
+														{playingKey === "voice:voice_paul" ? <Pause className="h-3 w-3" /> : <Play className="h-3 w-3" />}
+													</Button>
+												</div>
+											</div>
+										</DropdownMenuItem>
+										<DropdownMenuItem onSelect={() => setPreferredVoicemailVoiceId("voice_matthew")}>
+											<div className="flex w-full items-center justify-between">
+												<span>Matthew (Clear)</span>
+												<div className="flex items-center gap-1">
+													<Button type="button" variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={(e) => handleTogglePlay(e, "voice", "voice_matthew", "Matthew (Clear)")}>
+														{playingKey === "voice:voice_matthew" ? <Pause className="h-3 w-3" /> : <Play className="h-3 w-3" />}
+													</Button>
+												</div>
+											</div>
+										</DropdownMenuItem>
+									</DropdownMenuContent>
+								</DropdownMenu>
+								<p className="text-muted-foreground text-xs">Overrides any agent voice.</p>
+							</div>
+						</div>
+
+						<div className="space-y-4">
+							<div className="space-y-2">
+								<Label className="block">Preferred Voicemail Message</Label>
+								<DropdownMenu>
+									<DropdownMenuTrigger asChild>
+										<Button variant="outline" className="w-full justify-between">
+											<span>{messageLabel}</span>
+											<ChevronDown className="h-4 w-4 opacity-50" />
+										</Button>
+									</DropdownMenuTrigger>
+									<DropdownMenuContent className="w-full min-w-[300px]">
+										<DropdownMenuItem onSelect={() => setPreferredVoicemailMessageId("vm_professional") }>
+											<div className="flex w-full items-center justify-between">
+												<span>Professional Business Message</span>
+												<div className="flex items-center gap-1">
+													<Button type="button" variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={(e) => handleTogglePlay(e, "message", "vm_professional", "Professional Business Message")}>
+														{playingKey === "message:vm_professional" ? <Pause className="h-3 w-3" /> : <Play className="h-3 w-3" />}
+													</Button>
+												</div>
+											</div>
+										</DropdownMenuItem>
+										<DropdownMenuItem onSelect={() => setPreferredVoicemailMessageId("vm_friendly") }>
+											<div className="flex w-full items-center justify-between">
+												<span>Friendly Personal Message</span>
+												<div className="flex items-center gap-1">
+													<Button type="button" variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={(e) => handleTogglePlay(e, "message", "vm_friendly", "Friendly Personal Message")}>
+														{playingKey === "message:vm_friendly" ? <Pause className="h-3 w-3" /> : <Play className="h-3 w-3" />}
+													</Button>
+												</div>
+											</div>
+										</DropdownMenuItem>
+										<DropdownMenuItem onSelect={() => setPreferredVoicemailMessageId("vm_urgent") }>
+											<div className="flex w-full items-center justify-between">
+												<span>Urgent Callback Message</span>
+												<div className="flex items-center gap-1">
+													<Button type="button" variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={(e) => handleTogglePlay(e, "message", "vm_urgent", "Urgent Callback Message")}>
+														{playingKey === "message:vm_urgent" ? <Pause className="h-3 w-3" /> : <Play className="h-3 w-3" />}
+													</Button>
+												</div>
+											</div>
+										</DropdownMenuItem>
+										<DropdownMenuItem onSelect={() => setPreferredVoicemailMessageId("vm_custom") }>
+											<div className="flex w-full items-center justify-between">
+												<span>Custom Message (Upload Audio)</span>
+												<div className="flex items-center gap-1">
+													<Button type="button" variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={(e) => handleTogglePlay(e, "message", "vm_custom", "Custom Message") }>
+														{playingKey === "message:vm_custom" ? <Pause className="h-3 w-3" /> : <Play className="h-3 w-3" />}
+													</Button>
+												</div>
+											</div>
+										</DropdownMenuItem>
+									</DropdownMenuContent>
+								</DropdownMenu>
+								<p className="text-muted-foreground text-xs">Choose a pre-recorded voicemail message or upload your own audio file.</p>
+							</div>
+						</div>
 
 					{/* Transfer toggle and agent selection */}
 					<div className="space-y-3">
