@@ -114,12 +114,18 @@ const WalkThroughModal: FC<WalkThroughModalProps> = ({
 				role="dialog"
 				aria-modal="true"
 			>
-				<div className="w-96 rounded-lg bg-card p-6 text-center shadow-lg">
+				<div
+					className="relative w-96 rounded-lg bg-card p-6 text-center shadow-lg"
+					onClick={(e) => e.stopPropagation()} // Prevent clicks inside from closing modal
+				>
 					{/* X Button for closing the modal */}
 					<button
-						onClick={onClose}
+						onClick={(e) => {
+							e.stopPropagation();
+							onClose();
+						}}
 						type="button"
-						className="absolute top-2 right-2 text-muted-foreground hover:text-foreground"
+						className="absolute top-2 right-2 z-10 text-muted-foreground hover:text-foreground"
 					>
 						&#x2715; {/* This is the "X" character */}
 					</button>
