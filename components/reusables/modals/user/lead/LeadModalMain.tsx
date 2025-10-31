@@ -514,51 +514,111 @@ function LeadMainModal({
 						launchCampaignIfPossible(launchPayload);
 					}
 
+					console.log(
+						"🔍 [DEBUG] Before onClose() - launchToastId:",
+						launchToastId,
+						"ref:",
+						launchToastIdRef.current,
+					);
 					onClose();
 					setIsLaunchingSuite(false);
 					launchToastIdRef.current = null;
+					console.log(
+						"🔍 [DEBUG] Scheduled setTimeout(0ms) - launchToastId:",
+						launchToastId,
+					);
 					setTimeout(() => {
+						console.log(
+							"🔍 [DEBUG] setTimeout(0ms) callback executing - launchToastId:",
+							launchToastId,
+							"ref:",
+							launchToastIdRef.current,
+						);
+						console.log("🔍 [DEBUG] Dismissing toast:", launchToastId);
 						toast.dismiss(launchToastId);
-						toast.success(
+						console.log("🔍 [DEBUG] Showing success toast");
+						const successToastId = toast.success(
 							`Skip trace suite launched for ${
 								leads.length > 0 ? leads.length.toLocaleString() : "your"
 							} leads and saved to lead lists`,
 						);
+						console.log("🔍 [DEBUG] Success toast ID:", successToastId);
 					}, 0);
 					return;
 				}
 
+				console.log(
+					"🔍 [DEBUG] Scheduled setTimeout(1600ms) - launchToastId:",
+					launchToastId,
+				);
 				setTimeout(() => {
+					console.log(
+						"🔍 [DEBUG] setTimeout(1600ms) callback executing - launchToastId:",
+						launchToastId,
+						"ref:",
+						launchToastIdRef.current,
+					);
 					setIsLaunchingSuite(false);
 					launchToastIdRef.current = null;
+					console.log("🔍 [DEBUG] Dismissing toast:", launchToastId);
 					toast.dismiss(launchToastId);
-					toast.success(
+					console.log("🔍 [DEBUG] Showing success toast");
+					const successToastId = toast.success(
 						`Skip trace suite launched for ${
 							leads.length > 0 ? leads.length.toLocaleString() : "your"
 						} leads and saved to lead lists`,
 					);
+					console.log("🔍 [DEBUG] Success toast ID:", successToastId);
 					setStep(3);
 				}, 1600);
 			} catch (error) {
 				console.error("❌ Error launching suite:", error);
 				setIsLaunchingSuite(false);
 				launchToastIdRef.current = null;
+				console.log(
+					"🔍 [DEBUG] Scheduled setTimeout(0ms) for error - launchToastId:",
+					launchToastId,
+				);
 				setTimeout(() => {
+					console.log(
+						"🔍 [DEBUG] setTimeout(0ms) error callback executing - launchToastId:",
+						launchToastId,
+						"ref:",
+						launchToastIdRef.current,
+					);
+					console.log("🔍 [DEBUG] Dismissing toast:", launchToastId);
 					toast.dismiss(launchToastId);
-					toast.error("Failed to launch enrichment suite. Please try again.");
+					console.log("🔍 [DEBUG] Showing error toast");
+					const errorToastId = toast.error(
+						"Failed to launch enrichment suite. Please try again.",
+					);
+					console.log("🔍 [DEBUG] Error toast ID:", errorToastId);
 				}, 0);
 			}
 		} else {
 			console.log("❌ Missing CSV content or list name");
+			console.log(
+				"🔍 [DEBUG] Scheduled setTimeout(1600ms) for missing CSV - launchToastId:",
+				launchToastId,
+			);
 			setTimeout(() => {
+				console.log(
+					"🔍 [DEBUG] setTimeout(1600ms) missing CSV callback executing - launchToastId:",
+					launchToastId,
+					"ref:",
+					launchToastIdRef.current,
+				);
 				setIsLaunchingSuite(false);
 				launchToastIdRef.current = null;
+				console.log("🔍 [DEBUG] Dismissing toast:", launchToastId);
 				toast.dismiss(launchToastId);
-				toast.success(
+				console.log("🔍 [DEBUG] Showing success toast");
+				const successToastId = toast.success(
 					`Skip trace suite launched for ${
 						csvRowCount > 0 ? csvRowCount.toLocaleString() : "your"
 					} leads`,
 				);
+				console.log("🔍 [DEBUG] Success toast ID:", successToastId);
 				setStep(3);
 			}, 1600);
 		}
