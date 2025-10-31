@@ -893,10 +893,20 @@ const CampaignModalMain: FC<CampaignModalMainProps> = ({
 			if (!onCampaignLaunched) {
 				setTimeout(() => {
 					try {
+						const path =
+							typeof window !== "undefined" ? window.location.pathname : "";
 						const current =
 							typeof window !== "undefined"
 								? window.location.pathname + (window.location.search || "")
 								: "";
+						const onQuickStart = path.includes("/dashboard/quickstart");
+						if (onQuickStart) {
+							campaignDebugLog("launch-router-push-skipped", {
+								reason: "quickstart-open-webhooks",
+								destination: fullUrl,
+							});
+							return;
+						}
 						if (current !== fullUrl) {
 							router.push(fullUrl);
 							campaignDebugLog("launch-router-push", {
