@@ -49,7 +49,7 @@ interface LeadMainModalProps {
 		leadListId: string;
 		leadListName: string;
 		leadCount: number;
-	}) => boolean | void;
+	}) => boolean | undefined;
 }
 
 function LeadMainModal({
@@ -250,7 +250,7 @@ function LeadMainModal({
 	useEffect(() => {
 		let isActive = true;
 		setModalCsvFile(csvFile ?? null);
-		if (externalCsvHeaders && externalCsvHeaders.length) {
+		if (externalCsvHeaders?.length) {
 			setCsvHeaders(externalCsvHeaders);
 			setSelectedHeadersState((prev) => {
 				const autoMapped = autoMapCsvHeaders(externalCsvHeaders, prev);
@@ -458,7 +458,7 @@ function LeadMainModal({
 		setIsLaunchingSuite(true);
 		console.log("⏳ Setting launching state");
 		const launchToastId = toast.loading("Launching enrichment suite...", {
-			duration: Infinity, // Keep loading until explicitly dismissed
+			duration: Number.POSITIVE_INFINITY, // Keep loading until explicitly dismissed
 		});
 		launchToastIdRef.current = launchToastId;
 
@@ -773,10 +773,10 @@ function LeadMainModal({
 					{step === 0.5 && listMode === "create" && (
 						<div className="space-y-4">
 							<div className="text-center">
-								<h3 className="text-lg font-semibold text-foreground mb-2">
+								<h3 className="mb-2 font-semibold text-foreground text-lg">
 									Upload CSV File
 								</h3>
-								<p className="text-muted-foreground text-sm mb-4">
+								<p className="mb-4 text-muted-foreground text-sm">
 									Upload a CSV file to map columns to lead fields
 								</p>
 							</div>
@@ -788,7 +788,7 @@ function LeadMainModal({
 									onClick={triggerModalFileInput}
 									className="w-full max-w-sm"
 								>
-									<Upload className="w-4 h-4 mr-2" />
+									<Upload className="mr-2 h-4 w-4" />
 									{modalCsvFile ? "Change CSV File" : "Upload CSV File"}
 								</Button>
 								<Button
@@ -797,12 +797,12 @@ function LeadMainModal({
 									onClick={() => downloadLeadCsvTemplate()}
 									className="w-full max-w-sm"
 								>
-									<Download className="w-4 h-4 mr-2" />
+									<Download className="mr-2 h-4 w-4" />
 									Download Sample CSV
 								</Button>
 
 								{modalCsvFile && (
-									<div className="text-sm text-muted-foreground text-center">
+									<div className="text-center text-muted-foreground text-sm">
 										<p className="font-medium">{modalCsvFile.name}</p>
 										<p className="text-xs">
 											{csvHeaders.length} columns detected
@@ -919,16 +919,31 @@ function LeadMainModal({
 					)}
 
 					<div className={navClass}>
-						{step !== 0 && step !== 0.5 && (
-							<button
-								type="button"
-								className={buttonClass}
-								onClick={handleBack}
-								disabled={isLaunchingSuite}
-							>
-								Back
-							</button>
-						)}
+						<div className="flex items-center gap-2">
+							{step !== 0 && step !== 0.5 && (
+								<button
+									type="button"
+									className={buttonClass}
+									onClick={handleBack}
+									disabled={isLaunchingSuite}
+								>
+									Back
+								</button>
+							)}
+							{step === 1 && listMode === "create" && (
+								<Button
+									type="button"
+									variant="default"
+									size="default"
+									onClick={() => downloadLeadCsvTemplate()}
+									disabled={isLaunchingSuite}
+									className="gap-2"
+								>
+									<Download className="h-4 w-4" />
+									Download Example CSV
+								</Button>
+							)}
+						</div>
 						<button
 							type="button"
 							className={buttonClass}

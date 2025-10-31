@@ -50,22 +50,48 @@ export const buildLeadCsvTemplateFilename = (
 	return `${segments.filter(Boolean).join("-")}.csv`;
 };
 
-export const downloadLeadCsvTemplate = (
+export const downloadLeadCsvTemplate = async (
 	options: DownloadLeadCsvTemplateOptions = {},
 ) => {
-	const csvContent = buildLeadCsvTemplateCsv();
-	const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8" });
-	const blobUrl = URL.createObjectURL(blob);
-	const anchor = document.createElement("a");
-	anchor.href = blobUrl;
-	anchor.download = buildLeadCsvTemplateFilename(options);
-	anchor.style.display = "none";
-
-	document.body.appendChild(anchor);
 	try {
-		anchor.click();
-	} finally {
-		document.body.removeChild(anchor);
-		URL.revokeObjectURL(blobUrl);
+		// Fetch the example CSV file from the public folder
+		const response = await fetch("/example_data/ExampleCsv.csv");
+		if (!response.ok) {
+			throw new Error("Failed to fetch example CSV file");
+		}
+		const csvContent = await response.text();
+
+		const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8" });
+		const blobUrl = URL.createObjectURL(blob);
+		const anchor = document.createElement("a");
+		anchor.href = blobUrl;
+		anchor.download = buildLeadCsvTemplateFilename(options);
+		anchor.style.display = "none";
+
+		document.body.appendChild(anchor);
+		try {
+			anchor.click();
+		} finally {
+			document.body.removeChild(anchor);
+			URL.revokeObjectURL(blobUrl);
+		}
+	} catch (error) {
+		console.error("Failed to download example CSV:", error);
+		// Fallback to generated CSV if file fetch fails
+		const csvContent = buildLeadCsvTemplateCsv();
+		const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8" });
+		const blobUrl = URL.createObjectURL(blob);
+		const anchor = document.createElement("a");
+		anchor.href = blobUrl;
+		anchor.download = buildLeadCsvTemplateFilename(options);
+		anchor.style.display = "none";
+
+		document.body.appendChild(anchor);
+		try {
+			anchor.click();
+		} finally {
+			document.body.removeChild(anchor);
+			URL.revokeObjectURL(blobUrl);
+		}
 	}
 };

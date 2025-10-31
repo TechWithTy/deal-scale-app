@@ -29,12 +29,14 @@ import ChannelCustomizationStep, {
 import ChannelSelectionStep from "../../../../../external/shadcn-table/src/examples/campaigns/modal/steps/ChannelSelectionStep";
 import { TimingPreferencesStep } from "../../../../../external/shadcn-table/src/examples/campaigns/modal/steps/TimingPreferencesStep.tsx";
 import CampaignSettingsDebug from "./CampaignSettingsDebug";
+import { EvaluationReportModal } from "./EvaluationReportModal";
 import FinalizeCampaignStep from "./steps/FinalizeCampaignStep";
 import { shallow } from "zustand/shallow";
 import type { CallCampaign } from "@/types/_dashboard/campaign";
 import type { EmailCampaign } from "@/types/goHighLevel/email";
 import type { DirectMailCampaign } from "external/shadcn-table/src/examples/DirectMail/utils/mock";
 import { useLeadListStore } from "@/lib/stores/leadList";
+import { toast } from "sonner";
 interface CampaignModalMainProps {
 	isOpen: boolean;
 	onOpenChange: (open: boolean) => void;
@@ -214,6 +216,8 @@ const CampaignModalMain: FC<CampaignModalMainProps> = ({
 	const launchGuardRef = useRef(false);
 	const renderDebugCounterRef = useRef(0);
 	const liveIsOpenRef = useRef<boolean>(false);
+	const [evalRunId, setEvalRunId] = useState<string | null>(null);
+	const [evalReportOpen, setEvalReportOpen] = useState(false);
 
 	const customizationForm = useForm<z.input<typeof FormSchema>>({
 		resolver: zodResolver(TransferConditionalSchema),
@@ -953,21 +957,161 @@ const CampaignModalMain: FC<CampaignModalMainProps> = ({
 	]);
 
 	const handleCreateAbTest = (label?: string) => {
-		// Only create A/B test if explicitly requested
+		// Create A/B test variant: mock-launch current setup, then duplicate settings and restart flow
 		console.log("Creating A/B test variant:", label);
 		setAbTestingEnabled(true);
+
+		// 1) Mock-launch the current campaign so Variant A is recorded
+		try {
+			const nowIso = new Date().toISOString();
+			const mockId = `mock_${Date.now()}`;
+			const normalizedName = campaignName || "Untitled Campaign";
+			const registrationChannel =
+				primaryChannel === "call" ||
+				primaryChannel === "text" ||
+				primaryChannel === "social"
+					? (primaryChannel as "call" | "text" | "social")
+					: primaryChannel === "directmail"
+						? ("direct" as const)
+						: ("email" as const);
+
+			switch (registrationChannel) {
+				case "call":
+				case "text":
+				case "social": {
+					const mockCallCampaign: CallCampaign = {
+						id: mockId,
+						name: normalizedName,
+						goal: campaignGoal || undefined,
+						status: "queued",
+						startDate: nowIso,
+						callInformation: [],
+						callerNumber: "",
+						receiverNumber: "",
+						duration: 0,
+						callType: "outbound",
+						calls: 0,
+						inQueue: 0,
+						leads: 0,
+						voicemail: 0,
+						hungUp: 0,
+						dead: 0,
+						wrongNumber: 0,
+						inactiveNumbers: 0,
+						dnc: 0,
+						endedReason: [],
+					};
+					registerLaunchedCampaign({
+						channel: registrationChannel,
+						campaign: mockCallCampaign,
+					});
+					break;
+				}
+				case "email": {
+					const mockEmailCampaign: EmailCampaign = {
+						id: mockId,
+						name: normalizedName,
+						goal: campaignGoal || undefined,
+						status: "queued",
+						startDate: nowIso,
+						emails: [],
+						senderEmail: "",
+						recipientCount: 0,
+						sentCount: 0,
+						deliveredCount: 0,
+						openedCount: 0,
+						bouncedCount: 0,
+						failedCount: 0,
+					};
+					registerLaunchedCampaign({
+						channel: "email",
+						campaign: mockEmailCampaign,
+					});
+					break;
+				}
+				case "direct": {
+					const directCampaign: DirectMailCampaign = {
+						id: mockId,
+						name: normalizedName,
+						status: "queued",
+						startDate: nowIso,
+						template: { id: `tmpl_${mockId}`, name: normalizedName },
+						mailType: "letter",
+						mailSize: "8.5x11",
+						addressVerified: false,
+						expectedDeliveryAt: new Date(
+							Date.now() + 7 * 24 * 60 * 60 * 1000,
+						).toISOString(),
+						lastEventAt: nowIso,
+						deliveredCount: 0,
+						returnedCount: 0,
+						failedCount: 0,
+						cost: 0,
+						leadsDetails: [],
+						lob: null,
+					};
+					registerLaunchedCampaign({
+						channel: "direct",
+						campaign: directCampaign,
+					});
+					break;
+				}
+			}
+		} catch {}
+
+		// 2) Prepare variant B name and restart flow
 		const variantLabel = (label || "Variant B").trim();
 		if (campaignName) {
+			// Remove any existing variant suffix to avoid duplications
 			const base = campaignName.replace(/\s*\(Variant[^)]*\)$/i, "").trim();
 			setCampaignName(`${base} (${variantLabel})`);
 		}
+		// If user had a single lead list selected, seed Variant A with it
 		if (areaMode === "leadList" && selectedLeadListId && !selectedLeadListAId) {
 			setSelectedLeadListAId(selectedLeadListId);
 			setSelectedLeadListId("");
 		}
-		// Don't automatically go back to step 0 - let user continue with A/B setup
-		// setStep(0);
+		// Reset to step 0 to start new campaign creation flow with same settings
+		setStep(0);
 	};
+
+	const handleEvaluate = useCallback(
+		async (criteria: {
+			name?: string;
+			description?: string;
+			type: "chat.mockConversation";
+			messages: Array<{
+				role: string;
+				content: string;
+				type?: string;
+			}>;
+		}) => {
+			try {
+				// TODO: Replace with actual API call to create evaluation
+				// For now, simulate with a mock eval run ID
+				// This should be replaced with: POST /api/campaigns/evaluate
+				// which returns { evalRunId: string }
+				const mockEvalRunId = `eval_${Date.now()}`;
+
+				// In production, this would be:
+				// const response = await fetch('/api/campaigns/evaluate', {
+				//   method: 'POST',
+				//   body: JSON.stringify(criteria),
+				// });
+				// const { evalRunId } = await response.json();
+
+				setEvalRunId(mockEvalRunId);
+				setEvalReportOpen(true);
+				toast.success("Evaluation started successfully");
+			} catch (error) {
+				console.error("Failed to start evaluation:", error);
+				toast.error(
+					error instanceof Error ? error.message : "Failed to start evaluation",
+				);
+			}
+		},
+		[],
+	);
 
 	useEffect(() => {
 		if (!isOpen) {
@@ -1002,6 +1146,8 @@ const CampaignModalMain: FC<CampaignModalMainProps> = ({
 						<FinalizeCampaignStep
 							onBack={prevStep}
 							onLaunch={launchCampaign}
+							onCreateAbTest={handleCreateAbTest}
+							onEvaluate={handleEvaluate}
 							estimatedCredits={Math.max(
 								estimatedCredits,
 								leadCount > 0 ? 100 : 0,
@@ -1016,6 +1162,11 @@ const CampaignModalMain: FC<CampaignModalMainProps> = ({
 					/>
 				</div>
 			</DialogContent>
+			<EvaluationReportModal
+				evalRunId={evalRunId}
+				open={evalReportOpen}
+				onOpenChange={setEvalReportOpen}
+			/>
 		</Dialog>
 	);
 };

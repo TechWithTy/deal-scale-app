@@ -67,3 +67,18 @@
   - Loading toasts set `duration: Infinity` to persist until dismissed.
   - All async paths (success, error, early return) dismiss toast and clear ref.
 - Removed duplicate ClientToaster from dashboard layout to prevent double Toaster instances.
+
+**Evaluation Report Modal Fixes (2025-01)**
+- Fixed infinite loop when closing Evaluation Report Modal (`components/reusables/modals/user/campaign/EvaluationReportModal.tsx`):
+  - **Root Cause**: Multiple state updates on close triggered cascading re-renders. Async operations continued after modal closed, causing race conditions. Dialog's `onOpenChange` could trigger multiple times.
+  - **Solution**:
+    - Used `useRef` for `pollIntervalRef`, `isMountedRef`, and `openRef` to avoid stale closures in async callbacks.
+    - Separated cleanup logic into distinct effects: one for component unmount, one for modal close reset, one for data fetching.
+    - Added `handleOpenChange` wrapper to check if state already matches target before updating, preventing duplicate updates.
+    - Used `setTimeout(..., 0)` to batch state updates when closing modal, preventing immediate re-renders.
+    - Added `cancelled` flag to cancel async operations when modal closes or component unmounts.
+    - Stored current `evalRunId` and `apiKey` in local variables at effect start to avoid stale closure values in async callbacks.
+    - Added guards using `isMountedRef.current`, `openRef.current`, and `cancelled` flag before all state updates.
+    - Proper interval cleanup: stored in ref, cleared in all code paths (close, unmount, error).
+  - **Modal Structure**: Converted from Popover to Dialog for better scrolling behavior and proper modal lifecycle management.
+  - **Data Source**: Initially used mock data generation instead of API fetching to avoid API key requirements during development.
