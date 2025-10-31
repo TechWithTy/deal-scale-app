@@ -255,8 +255,21 @@ function extractFieldValue(
 		return null;
 	}
 
-	const value = row[fieldMapping];
-	return value != null ? String(value).trim() : null;
+	// Support header keys that include a positional suffix like "Header__0"
+	// Field mapping values may come from UI as `${header}__${index}` to ensure uniqueness.
+	// Papa.parse rows are keyed by the raw header text, so strip the suffix when needed.
+	const direct = row[fieldMapping];
+	if (direct != null) return String(direct).trim();
+
+	// Only strip a trailing positional suffix like __0, __1, ...
+	const suffixMatch = fieldMapping.match(/^(.*)__\d+$/);
+	if (suffixMatch) {
+		const baseHeader = suffixMatch[1];
+		const fallback = row[baseHeader as keyof typeof row];
+		if (fallback != null) return String(fallback).trim();
+	}
+
+	return null;
 }
 
 /**

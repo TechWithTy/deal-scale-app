@@ -1,4 +1,4 @@
-import { create } from "zustand";
+import { createWithEqualityFn } from "zustand/traditional";
 import { LEAD_LISTS_MOCK } from "../../constants/leadLists.mock";
 
 // Define the state and actions for managing lead lists
@@ -12,7 +12,7 @@ interface LeadListState {
 }
 
 // Create Zustand store for lead list management
-export const useLeadListStore = create<LeadListState>((set, get) => ({
+export const useLeadListStore = createWithEqualityFn<LeadListState>((set, get) => ({
 	// Initialize with mock data since this is a standalone submodule
 	leadLists: LEAD_LISTS_MOCK.map((mock) => ({
 		id: mock.id,
