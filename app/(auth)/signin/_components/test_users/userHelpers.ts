@@ -139,6 +139,9 @@ export const ROLE_SELECT_OPTIONS: RoleSelectOption[] = TEST_USER_ROLE_ORDER.map(
 
 export const handleLogin = async (user: EditableUser) => {
 	try {
+		// Check if this is a custom user (starts with "custom-")
+		const isCustomUser = user.id.startsWith("custom-");
+
 		await signIn("credentials", {
 			email: user.email,
 			password: user.password,
@@ -154,6 +157,9 @@ export const handleLogin = async (user: EditableUser) => {
 			skipUsed: String(user.skipTracesCredits.used),
 			isBetaTester: String(Boolean(user.isBetaTester)),
 			isPilotTester: String(Boolean(user.isPilotTester)),
+			// Pass custom user data if applicable
+			isCustomUser: String(isCustomUser),
+			customUserData: isCustomUser ? JSON.stringify(user) : undefined,
 			callbackUrl: "/dashboard",
 			redirect: true,
 		});

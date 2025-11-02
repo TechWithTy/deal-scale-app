@@ -1,6 +1,7 @@
 import type { DefaultSession } from "next-auth";
 import type { JWT as NextAuthJWT } from "next-auth/jwt";
 import type {
+	DemoConfig,
 	PermissionMatrix,
 	UserQuotas,
 	UserRole,
@@ -24,6 +25,7 @@ declare module "next-auth" {
 			quotas?: UserQuotas;
 			isBetaTester?: boolean;
 			isPilotTester?: boolean;
+			demoConfig?: DemoConfig;
 		} & DefaultSession["user"];
 	}
 
@@ -37,6 +39,7 @@ declare module "next-auth" {
 		quotas?: UserQuotas;
 		isBetaTester?: boolean;
 		isPilotTester?: boolean;
+		demoConfig?: DemoConfig;
 	}
 }
 
@@ -52,5 +55,6 @@ declare module "next-auth/jwt" {
 		quotas?: UserQuotas;
 		isBetaTester?: boolean;
 		isPilotTester?: boolean;
+		demoConfig?: DemoConfig;
 	}
 }

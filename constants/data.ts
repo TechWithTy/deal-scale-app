@@ -160,15 +160,8 @@ export const navItems: NavItem[] = [
 		featureKey: "navigation.aiAssistants",
 	},
 	{
-		title: "Property Search",
-		href: "/dashboard",
-		icon: "search",
-		label: "Search Properties",
-		featureKey: "navigation.propertySearch",
-	},
-	{
 		title: "Quick Start",
-		href: "/dashboard/quickstart",
+		href: "/dashboard",
 		icon: "add",
 		label: "Quick Start",
 		featureKey: "navigation.quickStart",

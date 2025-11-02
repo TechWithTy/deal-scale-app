@@ -61,7 +61,7 @@ export function MobileSidebar({ className }: SidebarProps) {
 					<div className="space-y-4 py-4">
 						<div className="px-3">
 							<Link
-								href="/dashboard/quickstart"
+								href="/dashboard"
 								className={cn(
 									"group flex items-center gap-3 rounded-lg bg-primary px-4 py-3 font-semibold text-primary-foreground transition-all hover:bg-primary/90 hover:shadow-md",
 								)}
