@@ -1,20 +1,22 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { ChangeEvent } from "react";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { downloadLeadCsvTemplate } from "@/components/quickstart/utils/downloadLeadCsvTemplate";
 import { Button } from "@/components/ui/button";
-import { Upload } from "lucide-react";
-import { toast } from "sonner";
-import FieldMappingStep from "../skipTrace/steps/FieldMappingStep";
-import SkipTraceSummaryStep from "./steps/SkipTraceSummaryStep";
-import { areRequiredFieldsMapped, autoMapCsvHeaders } from "./utils/csvAutoMap";
-import { useLeadListStore } from "@/lib/stores/leadList";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import {
 	calculateLeadStatistics,
 	parseCsvToLeads,
 } from "@/lib/stores/_utils/csvParser";
+import { useLeadListStore } from "@/lib/stores/leadList";
+import { Download, Upload } from "lucide-react";
 import Papa from "papaparse";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { ChangeEvent } from "react";
+import { toast } from "sonner";
+import FieldMappingStep from "../skipTrace/steps/FieldMappingStep";
+import SkipTraceSummaryStep from "./steps/SkipTraceSummaryStep";
+import { areRequiredFieldsMapped, autoMapCsvHeaders } from "./utils/csvAutoMap";
+import { deriveRecommendedEnrichmentOptions } from "./utils/enrichmentRecommendations";
 
 const INITIAL_COST_DETAILS = {
 	availableCredits: 0,
@@ -32,7 +34,7 @@ interface BulkSuiteModalProps {
 		leadListId: string;
 		leadListName: string;
 		leadCount: number;
-	}) => boolean | void;
+	}) => boolean | undefined;
 }
 
 const deriveDefaultListName = (file?: File | null) => {
@@ -71,6 +73,8 @@ export default function LeadBulkSuiteModal({
 	const [isLaunchingSuite, setIsLaunchingSuite] = useState(false);
 	const [costDetails, setCostDetails] = useState(INITIAL_COST_DETAILS);
 	const [errors, setErrors] = useState<Record<string, string>>({});
+	const parsedToastShownRef = useRef<boolean>(false);
+	const launchToastIdRef = useRef<string | number | null>(null);
 
 	const hasEnoughCredits = costDetails.hasEnoughCredits;
 
@@ -111,17 +115,21 @@ export default function LeadBulkSuiteModal({
 			if (initialCsvHeaders?.length) {
 				const autoMapped = autoMapCsvHeaders(initialCsvHeaders, prev);
 				setCanProceedFromMapping(areRequiredFieldsMapped(autoMapped));
+				setSelectedEnrichmentOptions(
+					deriveRecommendedEnrichmentOptions(autoMapped),
+				);
 				return autoMapped;
 			}
 			setCanProceedFromMapping(false);
+			setSelectedEnrichmentOptions([]);
 			return {};
 		});
-		setSelectedEnrichmentOptions([]);
 		setCsvContent("");
 		setCsvRowCount(0);
 		setCostDetails(INITIAL_COST_DETAILS);
 		setErrors({});
 		setStep(initialCsvHeaders?.length ? 1 : 0);
+		parsedToastShownRef.current = false;
 	}, [initialCsvFile, initialCsvHeaders]);
 
 	useEffect(() => {
@@ -186,9 +194,11 @@ export default function LeadBulkSuiteModal({
 			setSelectedHeaders((prev) => {
 				const autoMapped = autoMapCsvHeaders(headers, prev);
 				setCanProceedFromMapping(areRequiredFieldsMapped(autoMapped));
+				setSelectedEnrichmentOptions(
+					deriveRecommendedEnrichmentOptions(autoMapped),
+				);
 				return autoMapped;
 			});
-			setSelectedEnrichmentOptions([]);
 			setCsvContent(csvText);
 			deriveRowCount(csvText);
 			toast.success(
@@ -197,10 +207,27 @@ export default function LeadBulkSuiteModal({
 					.join(", ")}${headers.length > 3 ? "..." : ""}`,
 			);
 			setStep(1);
+			parsedToastShownRef.current = false;
 		};
 		reader.onerror = () => toast.error("Error reading CSV file");
 		reader.readAsText(file);
 	};
+
+	// When mapping is done and summary step is visible, parse CSV to compute true parsed lead count
+	// and show a confirmation toast once. This uses parser rules (skips empty rows) for accuracy.
+	useEffect(() => {
+		if (step !== 2) return;
+		if (!csvContent) return;
+		if (parsedToastShownRef.current) return;
+		try {
+			const leads = parseCsvToLeads(csvContent, selectedHeaders);
+			setCsvRowCount(leads.length);
+			toast.success(`Parsed ${leads.length.toLocaleString()} leads from CSV`);
+		} catch {
+			// ignore; handled on launch
+		}
+		parsedToastShownRef.current = true;
+	}, [step, csvContent, selectedHeaders]);
 
 	const handleHeaderSelect = (fieldName: string, value: string) => {
 		setSelectedHeaders((prev) => {
@@ -253,7 +280,20 @@ export default function LeadBulkSuiteModal({
 		}
 
 		setIsLaunchingSuite(true);
-		const launchToastId = toast.loading("Launching enrichment suite...");
+		const launchToastId = toast.loading("Launching enrichment suite...", {
+			duration: Number.POSITIVE_INFINITY, // Keep loading until explicitly dismissed
+			onDismiss: () => {
+				// Clean up state when toast is manually dismissed
+				// Use setTimeout to avoid state updates during render
+				setTimeout(() => {
+					if (launchToastIdRef.current === launchToastId) {
+						launchToastIdRef.current = null;
+					}
+					setIsLaunchingSuite(false);
+				}, 0);
+			},
+		});
+		launchToastIdRef.current = launchToastId;
 
 		try {
 			const leads = parseCsvToLeads(csvContent, selectedHeaders);
@@ -325,7 +365,10 @@ export default function LeadBulkSuiteModal({
 				setErrors((prev) => ({ ...prev, listName: "List name is required" }));
 				return;
 			}
-			setErrors((prev) => ({ ...prev, listName: undefined }));
+			setErrors((prev) => {
+				const { listName: _, ...rest } = prev;
+				return rest;
+			});
 			setStep(1);
 			return;
 		}
@@ -354,17 +397,17 @@ export default function LeadBulkSuiteModal({
 					{step === 0 && (
 						<div className="space-y-4">
 							<div className="space-y-2">
-								<h2 className="text-lg font-semibold text-foreground">
+								<h2 className="font-semibold text-foreground text-lg">
 									Name Your Lead List
 								</h2>
-								<p className="text-sm text-muted-foreground">
+								<p className="text-muted-foreground text-sm">
 									Upload your CSV and give the list a recognizable name before
 									mapping fields.
 								</p>
 							</div>
 							<div className="space-y-2">
 								<label
-									className="text-sm font-medium text-foreground"
+									className="font-medium text-foreground text-sm"
 									htmlFor="bulk-list-name"
 								>
 									List Name
@@ -374,11 +417,11 @@ export default function LeadBulkSuiteModal({
 									type="text"
 									value={listName}
 									onChange={(event) => setListName(event.target.value)}
-									className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground shadow-sm focus:outline-none focus:ring-2 focus:ring-ring"
+									className="w-full rounded-md border border-border bg-background px-3 py-2 text-foreground text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-ring"
 									placeholder="e.g., August Outreach List"
 								/>
 								{errors.listName && (
-									<p className="text-sm text-destructive">{errors.listName}</p>
+									<p className="text-destructive text-sm">{errors.listName}</p>
 								)}
 							</div>
 							<div className="space-y-2">
@@ -391,8 +434,17 @@ export default function LeadBulkSuiteModal({
 									<Upload className="mr-2 h-4 w-4" />
 									{modalCsvFile ? "Change CSV File" : "Upload CSV File"}
 								</Button>
+								<Button
+									onClick={() => downloadLeadCsvTemplate()}
+									variant="ghost"
+									type="button"
+									className="w-full"
+								>
+									<Download className="mr-2 h-4 w-4" />
+									Download sample CSV
+								</Button>
 								{modalCsvFile && (
-									<div className="text-sm text-muted-foreground">
+									<div className="text-muted-foreground text-sm">
 										<p className="font-medium">{modalCsvFile.name}</p>
 										<p>{csvHeaders.length} columns detected</p>
 									</div>
@@ -434,13 +486,28 @@ export default function LeadBulkSuiteModal({
 					)}
 
 					<div className="mt-6 flex items-center justify-between">
-						<Button
-							onClick={step === 0 ? onClose : goBack}
-							variant="outline"
-							type="button"
-						>
-							Back
-						</Button>
+						<div className="flex items-center gap-2">
+							<Button
+								onClick={step === 0 ? onClose : goBack}
+								variant="outline"
+								type="button"
+							>
+								Back
+							</Button>
+							{step === 1 && (
+								<Button
+									type="button"
+									variant="default"
+									size="default"
+									onClick={() => downloadLeadCsvTemplate()}
+									disabled={isLaunchingSuite}
+									className="gap-2"
+								>
+									<Download className="h-4 w-4" />
+									Download Example CSV
+								</Button>
+							)}
+						</div>
 						<Button
 							onClick={() => {
 								if (step === 2) {

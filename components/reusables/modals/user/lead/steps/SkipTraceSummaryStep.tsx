@@ -12,28 +12,7 @@ import {
 	type FieldConfig,
 } from "../../skipTrace/steps/FieldMappingStep";
 import { EnrichmentCard } from "../../skipTrace/steps/enrichment/EnrichmentCard";
-
-const FIELD_TO_INPUT_FIELDS: Record<string, InputField[] | undefined> = {
-	firstNameField: ["firstName"],
-	lastNameField: ["lastName"],
-	streetAddressField: ["address"],
-	cityField: [],
-	stateField: [],
-	zipCodeField: [],
-	phone1Field: ["phone", "knownPhone"],
-	phone2Field: ["phone"],
-	emailField: ["email"],
-	possibleEmailsField: ["email"],
-	domainField: ["domain"],
-	facebookField: ["facebookUrl", "socialTag"],
-	linkedinField: ["linkedinUrl", "socialTag"],
-	instagramField: ["socialHandle", "socialTag"],
-	twitterField: ["socialHandle", "socialTag"],
-	dncStatusField: ["dncList"],
-	dncSourceField: [],
-	tcpaOptedInField: ["communicationPreferences"],
-	socialSummary: ["socialSummary"],
-};
+import { deriveAvailableInputFields } from "../utils/enrichmentRecommendations";
 
 const INPUT_FIELD_LABELS: Record<InputField, string> = {
 	firstName: "First Name",
@@ -85,24 +64,7 @@ export function SkipTraceSummaryStep({
 		};
 	});
 
-	const availableInputs = new Set<InputField>();
-
-	const hasStreet = Boolean(selectedHeaders.streetAddressField);
-	const hasCity = Boolean(selectedHeaders.cityField);
-	const hasState = Boolean(selectedHeaders.stateField);
-
-	if (hasStreet && hasCity && hasState) {
-		availableInputs.add("address");
-	}
-
-	for (const { name, mapped } of mappedFields) {
-		if (!mapped) continue;
-		const inputs = FIELD_TO_INPUT_FIELDS[name];
-		if (!inputs) continue;
-		for (const input of inputs) {
-			if (input) availableInputs.add(input);
-		}
-	}
+	const availableInputs = deriveAvailableInputFields(selectedHeaders);
 
 	const userInputForCards = Array.from(availableInputs).reduce(
 		(acc, field) => {

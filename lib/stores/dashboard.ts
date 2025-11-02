@@ -1,6 +1,6 @@
 // stores/useModalStore.ts
 
-import { create } from "zustand";
+import { createWithEqualityFn } from "zustand/traditional";
 import { withAnalytics } from "./_middleware/analytics";
 
 export type WebhookStage = "incoming" | "outgoing" | "feeds";
@@ -37,7 +37,7 @@ interface ModalState {
 	closeEmployeeModal: () => void;
 }
 
-export const useModalStore = create<ModalState>(
+export const useModalStore = createWithEqualityFn<ModalState>(
 	withAnalytics<ModalState>("dashboard_modals", (set) => ({
 		// Usage Modal
 		isUsageModalOpen: false,
@@ -75,6 +75,7 @@ export const useModalStore = create<ModalState>(
 		openEmployeeModal: () => set({ isEmployeeModalOpen: true }),
 		closeEmployeeModal: () => set({ isEmployeeModalOpen: false }),
 	})),
+	Object.is,
 );
 
 // stores/useSecurityStore.ts
@@ -93,7 +94,7 @@ interface SecurityState {
 	setConfirmPassword: (value: string) => void;
 }
 
-export const useSecurityStore = create<SecurityState>(
+export const useSecurityStore = createWithEqualityFn<SecurityState>(
 	withAnalytics<SecurityState>("dashboard_security", (set) => ({
 		showCurrentPassword: false,
 		showNewPassword: false,
@@ -111,4 +112,5 @@ export const useSecurityStore = create<SecurityState>(
 		setNewPassword: (value: string) => set({ newPassword: value }),
 		setConfirmPassword: (value: string) => set({ confirmPassword: value }),
 	})),
+	Object.is,
 );

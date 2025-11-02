@@ -144,7 +144,42 @@ export default function CampaignSettingsDebug({
 							<div>
 								Direct Mail Type: {formatValue(formData.directMailType)}
 							</div>
-							<div>Templates: {formatValue(formData.templates)}</div>
+							{/* Templates quick view: read from form state, friendly labels */}
+							{Array.isArray(formData.templates) && (
+								<div>
+									{(() => {
+										const labelMap: Record<string, string> = {
+											tpl_basic: "Basic Template",
+											tpl_pro: "Professional Template",
+											tpl_modern: "Modern Template",
+										};
+										const required =
+											formData.directMailType === "letter_front_back" ||
+											formData.directMailType === "snap_pack"
+												? 2
+												: 1;
+
+										const selected = formData.templates?.length ?? 0;
+										return (
+											<div className="space-y-1">
+												<div>
+													Templates: {selected} selected (requires at least{" "}
+													{required})
+												</div>
+												{formData.templates.map((tpl, idx) => (
+													<div
+														key={`${tpl.templateId}-${idx}`}
+														className="ml-3"
+													>
+														{labelMap[tpl.templateId] || tpl.templateId}
+														{tpl.description ? ` — ${tpl.description}` : ""}
+													</div>
+												))}
+											</div>
+										);
+									})()}
+								</div>
+							)}
 							<div>
 								Transfer Enabled: {formatValue(formData.transferEnabled)}
 							</div>
@@ -195,6 +230,16 @@ export default function CampaignSettingsDebug({
 					</>
 				)}
 
+				{/* Text Messaging Settings (from store) */}
+				<div className="font-medium text-primary">Text Messaging:</div>
+				<div className="ml-2 space-y-1">
+					<div>Text Signature: {formatValue(store.textSignature)}</div>
+					<div>Media Source: {formatValue((store as any).smsMediaSource)}</div>
+					<div>Can Send Images: {formatValue(store.smsCanSendImages)}</div>
+					<div>Can Send Videos: {formatValue(store.smsCanSendVideos)}</div>
+					<div>Can Send Links: {formatValue(store.smsCanSendLinks)}</div>
+				</div>
+
 				{/* Timing Preferences */}
 				<div className="font-medium text-primary">Timing Preferences:</div>
 				<div className="ml-2 space-y-1">
@@ -217,6 +262,14 @@ export default function CampaignSettingsDebug({
 					</div>
 					<div>TCPA Not Opted In: {formatValue(store.tcpaNotOptedIn)}</div>
 					<div>Do Voicemail Drops: {formatValue(store.doVoicemailDrops)}</div>
+					<div>
+						Voice (overrides agent):{" "}
+						{formatValue((store as any).preferredVoicemailVoiceId)}
+					</div>
+					<div>
+						Preferred Voicemail Message:{" "}
+						{formatValue((store as any).preferredVoicemailMessageId)}
+					</div>
 					<div>
 						Get Timezone from Lead:{" "}
 						{formatValue(store.getTimezoneFromLeadLocation)}

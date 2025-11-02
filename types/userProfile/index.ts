@@ -1,6 +1,10 @@
 import type VoiceClone from "@/public/lottie/RecordingButton.json";
 import type { GetSubAccountPathParams } from "@/types/goHighLevel/subAccounts";
 import type {
+	QuickStartGoalId,
+	QuickStartPersonaId,
+} from "@/lib/config/quickstart/wizardFlows";
+import type {
 	BillingHistoryItem,
 	PaymentDetails,
 } from "../../constants/_faker/profile/userData";
@@ -116,6 +120,11 @@ export interface SecuritySettings {
 	passwordUpdatedAt: Date | null; // When the password was last updated
 }
 
+export interface QuickStartDefaults {
+	personaId?: QuickStartPersonaId;
+	goalId?: QuickStartGoalId;
+}
+
 export type CampaignAnalytics =
 	| EmailCampaignAnalytics
 	| TextMessageCampaignAnalytics
@@ -227,4 +236,5 @@ export interface UserProfile {
 	teamMembers: TeamMember[]; // List of team members with permissions
 	activityLog?: ActivityLog[]; // Log of user activities
 	securitySettings?: SecuritySettings; // Security settings such as last login
+	quickStartDefaults?: QuickStartDefaults;
 }

@@ -1,4 +1,4 @@
-import { create } from "zustand";
+import { createWithEqualityFn } from "zustand/traditional";
 
 // Types for agent selection
 export interface Agent {
@@ -86,8 +86,29 @@ export interface CampaignCreationState {
 	setReachOnWeekend: (v: boolean) => void;
 	reachOnHolidays: boolean;
 	setReachOnHolidays: (v: boolean) => void;
-	countVoicemailAsAnswered: boolean;
-	setCountVoicemailAsAnswered: (v: boolean) => void;
+    countVoicemailAsAnswered: boolean;
+    setCountVoicemailAsAnswered: (v: boolean) => void;
+
+    // Voicemail selection (UI + presets)
+    preferredVoicemailMessageId: string;
+    setPreferredVoicemailMessageId: (id: string) => void;
+    preferredVoicemailVoiceId: string;
+    setPreferredVoicemailVoiceId: (id: string) => void;
+
+	// Text/SMS settings
+	textSignature: string;
+	setTextSignature: (sig: string) => void;
+	smsCanSendImages: boolean;
+	setSmsCanSendImages: (v: boolean) => void;
+	smsCanSendVideos: boolean;
+	setSmsCanSendVideos: (v: boolean) => void;
+	smsCanSendLinks: boolean;
+	setSmsCanSendLinks: (v: boolean) => void;
+	/** If true, append the selected agent name to the signature */
+	smsAppendAgentName: boolean;
+	setSmsAppendAgentName: (v: boolean) => void;
+	smsMediaSource: "ai" | "stock" | "hybrid";
+	setSmsMediaSource: (v: "ai" | "stock" | "hybrid") => void;
 
 	// TCPA and Voicemail preferences
 	tcpaNotOptedIn: boolean;
@@ -133,7 +154,7 @@ export interface CampaignCreationState {
 	reset: () => void;
 }
 
-export const useCampaignCreationStore = create<CampaignCreationState>(
+export const useCampaignCreationStore = createWithEqualityFn<CampaignCreationState>(
 	(set, get) => ({
 		// Step 1: Channel Selection
 		primaryChannel: null,
@@ -196,8 +217,30 @@ export const useCampaignCreationStore = create<CampaignCreationState>(
 		reachOnHolidays: false,
 		setReachOnHolidays: (reachOnHolidays: boolean) => set({ reachOnHolidays }),
 		countVoicemailAsAnswered: false,
-		setCountVoicemailAsAnswered: (countVoicemailAsAnswered: boolean) =>
-			set({ countVoicemailAsAnswered }),
+    setCountVoicemailAsAnswered: (countVoicemailAsAnswered: boolean) =>
+        set({ countVoicemailAsAnswered }),
+
+    // Voicemail selection
+    preferredVoicemailMessageId: "",
+    setPreferredVoicemailMessageId: (preferredVoicemailMessageId: string) =>
+        set({ preferredVoicemailMessageId }),
+    preferredVoicemailVoiceId: "",
+    setPreferredVoicemailVoiceId: (preferredVoicemailVoiceId: string) =>
+        set({ preferredVoicemailVoiceId }),
+
+	// Text/SMS settings
+	textSignature: "",
+	setTextSignature: (textSignature: string) => set({ textSignature }),
+	smsCanSendImages: true,
+	setSmsCanSendImages: (smsCanSendImages: boolean) => set({ smsCanSendImages }),
+	smsCanSendVideos: true,
+	setSmsCanSendVideos: (smsCanSendVideos: boolean) => set({ smsCanSendVideos }),
+	smsCanSendLinks: true,
+	setSmsCanSendLinks: (smsCanSendLinks: boolean) => set({ smsCanSendLinks }),
+	smsAppendAgentName: true,
+	setSmsAppendAgentName: (smsAppendAgentName: boolean) => set({ smsAppendAgentName }),
+	smsMediaSource: "hybrid",
+	setSmsMediaSource: (smsMediaSource: "ai" | "stock" | "hybrid") => set({ smsMediaSource }),
 
 		// TCPA and Voicemail preferences
 		tcpaNotOptedIn: false,
@@ -253,11 +296,11 @@ export const useCampaignCreationStore = create<CampaignCreationState>(
 			set({ numberSelectionStrategy }),
 
 		// Reset function
-		reset: () =>
-			set({
-				// Step 1
-				primaryChannel: null,
-				campaignName: "",
+        reset: () =>
+            set({
+                // Step 1
+                primaryChannel: null,
+                campaignName: "",
 
 				// Agent Selection
 				selectedAgentId: null,
@@ -273,24 +316,33 @@ export const useCampaignCreationStore = create<CampaignCreationState>(
 				leadCount: 0,
 				includeWeekends: false,
 
-				// Step 3
-				daysSelected: 7,
-				startDate: new Date(),
-				availableSenderNumbers: [
-					"+15551230001",
-					"+15551230002",
-					"+15551230003",
-					"+15551230004",
-				],
-				selectedSenderNumbers: [],
-				numberSelectionStrategy: "round_robin",
-				reachOnHolidays: false,
-				minDailyAttempts: 1,
-				maxDailyAttempts: 3,
-				countVoicemailAsAnswered: false,
-				tcpaNotOptedIn: false,
-				doVoicemailDrops: false,
-				getTimezoneFromLeadLocation: true,
-			}),
+                // Step 3
+                daysSelected: 7,
+                startDate: new Date(),
+                endDate: null,
+                availableSenderNumbers: [
+                    "+15551230001",
+                    "+15551230002",
+                    "+15551230003",
+                    "+15551230004",
+                ],
+                selectedSenderNumbers: [],
+                numberSelectionStrategy: "round_robin",
+                reachOnHolidays: false,
+                minDailyAttempts: 1,
+                maxDailyAttempts: 3,
+                countVoicemailAsAnswered: false,
+                tcpaNotOptedIn: false,
+                doVoicemailDrops: false,
+                getTimezoneFromLeadLocation: true,
+                preferredVoicemailMessageId: "",
+                preferredVoicemailVoiceId: "",
+                textSignature: "",
+                smsCanSendImages: true,
+                smsCanSendVideos: true,
+                smsCanSendLinks: true,
+                smsAppendAgentName: true,
+                smsMediaSource: "hybrid",
+            }),
 	}),
 );

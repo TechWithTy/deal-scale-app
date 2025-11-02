@@ -13,7 +13,7 @@ import FieldMappingStep, {
 } from "../skipTrace/steps/FieldMappingStep";
 import SkipTraceSummaryStep from "./steps/SkipTraceSummaryStep";
 import { Button } from "@/components/ui/button";
-import { Upload } from "lucide-react";
+import { Download, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLeadListStore } from "@/lib/stores/leadList";
@@ -23,6 +23,8 @@ import {
 } from "@/lib/stores/_utils/csvParser";
 import Papa from "papaparse";
 import { areRequiredFieldsMapped, autoMapCsvHeaders } from "./utils/csvAutoMap";
+import { deriveRecommendedEnrichmentOptions } from "./utils/enrichmentRecommendations";
+import { downloadLeadCsvTemplate } from "@/components/quickstart/utils/downloadLeadCsvTemplate";
 
 const INITIAL_COST_DETAILS = {
 	availableCredits: 0,
@@ -47,7 +49,7 @@ interface LeadMainModalProps {
 		leadListId: string;
 		leadListName: string;
 		leadCount: number;
-	}) => boolean | void;
+	}) => boolean | undefined;
 }
 
 function LeadMainModal({
@@ -79,6 +81,7 @@ function LeadMainModal({
 	const [isLaunchingSuite, setIsLaunchingSuite] = useState(false);
 	const [costDetails, setCostDetails] = useState(INITIAL_COST_DETAILS);
 	const [csvContent, setCsvContent] = useState<string>("");
+	const launchToastIdRef = useRef<string | number | null>(null);
 
 	// Get the lead list store
 	const addLeadList = useLeadListStore((state) => state.addLeadList);
@@ -247,17 +250,20 @@ function LeadMainModal({
 	useEffect(() => {
 		let isActive = true;
 		setModalCsvFile(csvFile ?? null);
-		if (externalCsvHeaders && externalCsvHeaders.length) {
+		if (externalCsvHeaders?.length) {
 			setCsvHeaders(externalCsvHeaders);
 			setSelectedHeadersState((prev) => {
 				const autoMapped = autoMapCsvHeaders(externalCsvHeaders, prev);
 				setCanProceedFromMapping(areRequiredFieldsMapped(autoMapped));
+				setSelectedEnrichmentOptions(
+					deriveRecommendedEnrichmentOptions(autoMapped),
+				);
 				return autoMapped;
 			});
-			setSelectedEnrichmentOptions([]);
 		} else {
 			setSelectedHeadersState({});
 			setCanProceedFromMapping(false);
+			setSelectedEnrichmentOptions([]);
 		}
 		if (csvFile) {
 			csvFile
@@ -286,6 +292,11 @@ function LeadMainModal({
 			setIsLaunchingSuite(false);
 			setCsvContent("");
 			resetCostDetails();
+			// Dismiss any active launch toast when modal closes
+			if (launchToastIdRef.current !== null) {
+				toast.dismiss(launchToastIdRef.current);
+				launchToastIdRef.current = null;
+			}
 		}
 	}, [isOpen, resetCostDetails]);
 
@@ -372,9 +383,11 @@ function LeadMainModal({
 			setSelectedHeadersState((prev) => {
 				const autoMapped = autoMapCsvHeaders(headers, prev);
 				setCanProceedFromMapping(areRequiredFieldsMapped(autoMapped));
+				setSelectedEnrichmentOptions(
+					deriveRecommendedEnrichmentOptions(autoMapped),
+				);
 				return autoMapped;
 			});
-			setSelectedEnrichmentOptions([]);
 			setCsvContent(csvText);
 			deriveRowCount(csvText);
 			toast.success(
@@ -436,9 +449,28 @@ function LeadMainModal({
 			return;
 		}
 
+		// Clean up any existing toast before creating a new one
+		if (launchToastIdRef.current !== null) {
+			toast.dismiss(launchToastIdRef.current);
+			launchToastIdRef.current = null;
+		}
+
 		setIsLaunchingSuite(true);
 		console.log("⏳ Setting launching state");
-		const launchToastId = toast.loading("Launching enrichment suite...");
+		const launchToastId = toast.loading("Launching enrichment suite...", {
+			duration: Number.POSITIVE_INFINITY, // Keep loading until explicitly dismissed
+			onDismiss: () => {
+				// Clean up state when toast is manually dismissed
+				// Use setTimeout to avoid state updates during render
+				setTimeout(() => {
+					if (launchToastIdRef.current === launchToastId) {
+						launchToastIdRef.current = null;
+					}
+					setIsLaunchingSuite(false);
+				}, 0);
+			},
+		});
+		launchToastIdRef.current = launchToastId;
 
 		if (csvContent && newListName.trim()) {
 			console.log("📄 Processing CSV content, length:", csvContent.length);
@@ -482,47 +514,111 @@ function LeadMainModal({
 						launchCampaignIfPossible(launchPayload);
 					}
 
+					console.log(
+						"🔍 [DEBUG] Before onClose() - launchToastId:",
+						launchToastId,
+						"ref:",
+						launchToastIdRef.current,
+					);
 					onClose();
 					setIsLaunchingSuite(false);
+					launchToastIdRef.current = null;
+					console.log(
+						"🔍 [DEBUG] Scheduled setTimeout(0ms) - launchToastId:",
+						launchToastId,
+					);
 					setTimeout(() => {
+						console.log(
+							"🔍 [DEBUG] setTimeout(0ms) callback executing - launchToastId:",
+							launchToastId,
+							"ref:",
+							launchToastIdRef.current,
+						);
+						console.log("🔍 [DEBUG] Dismissing toast:", launchToastId);
 						toast.dismiss(launchToastId);
-						toast.success(
+						console.log("🔍 [DEBUG] Showing success toast");
+						const successToastId = toast.success(
 							`Skip trace suite launched for ${
 								leads.length > 0 ? leads.length.toLocaleString() : "your"
 							} leads and saved to lead lists`,
 						);
+						console.log("🔍 [DEBUG] Success toast ID:", successToastId);
 					}, 0);
 					return;
 				}
 
+				console.log(
+					"🔍 [DEBUG] Scheduled setTimeout(1600ms) - launchToastId:",
+					launchToastId,
+				);
 				setTimeout(() => {
+					console.log(
+						"🔍 [DEBUG] setTimeout(1600ms) callback executing - launchToastId:",
+						launchToastId,
+						"ref:",
+						launchToastIdRef.current,
+					);
 					setIsLaunchingSuite(false);
+					launchToastIdRef.current = null;
+					console.log("🔍 [DEBUG] Dismissing toast:", launchToastId);
 					toast.dismiss(launchToastId);
-					toast.success(
+					console.log("🔍 [DEBUG] Showing success toast");
+					const successToastId = toast.success(
 						`Skip trace suite launched for ${
 							leads.length > 0 ? leads.length.toLocaleString() : "your"
 						} leads and saved to lead lists`,
 					);
+					console.log("🔍 [DEBUG] Success toast ID:", successToastId);
 					setStep(3);
 				}, 1600);
 			} catch (error) {
 				console.error("❌ Error launching suite:", error);
 				setIsLaunchingSuite(false);
+				launchToastIdRef.current = null;
+				console.log(
+					"🔍 [DEBUG] Scheduled setTimeout(0ms) for error - launchToastId:",
+					launchToastId,
+				);
 				setTimeout(() => {
+					console.log(
+						"🔍 [DEBUG] setTimeout(0ms) error callback executing - launchToastId:",
+						launchToastId,
+						"ref:",
+						launchToastIdRef.current,
+					);
+					console.log("🔍 [DEBUG] Dismissing toast:", launchToastId);
 					toast.dismiss(launchToastId);
-					toast.error("Failed to launch enrichment suite. Please try again.");
+					console.log("🔍 [DEBUG] Showing error toast");
+					const errorToastId = toast.error(
+						"Failed to launch enrichment suite. Please try again.",
+					);
+					console.log("🔍 [DEBUG] Error toast ID:", errorToastId);
 				}, 0);
 			}
 		} else {
 			console.log("❌ Missing CSV content or list name");
+			console.log(
+				"🔍 [DEBUG] Scheduled setTimeout(1600ms) for missing CSV - launchToastId:",
+				launchToastId,
+			);
 			setTimeout(() => {
+				console.log(
+					"🔍 [DEBUG] setTimeout(1600ms) missing CSV callback executing - launchToastId:",
+					launchToastId,
+					"ref:",
+					launchToastIdRef.current,
+				);
 				setIsLaunchingSuite(false);
+				launchToastIdRef.current = null;
+				console.log("🔍 [DEBUG] Dismissing toast:", launchToastId);
 				toast.dismiss(launchToastId);
-				toast.success(
+				console.log("🔍 [DEBUG] Showing success toast");
+				const successToastId = toast.success(
 					`Skip trace suite launched for ${
 						csvRowCount > 0 ? csvRowCount.toLocaleString() : "your"
 					} leads`,
 				);
+				console.log("🔍 [DEBUG] Success toast ID:", successToastId);
 				setStep(3);
 			}, 1600);
 		}
@@ -747,10 +843,10 @@ function LeadMainModal({
 					{step === 0.5 && listMode === "create" && (
 						<div className="space-y-4">
 							<div className="text-center">
-								<h3 className="text-lg font-semibold text-foreground mb-2">
+								<h3 className="mb-2 font-semibold text-foreground text-lg">
 									Upload CSV File
 								</h3>
-								<p className="text-muted-foreground text-sm mb-4">
+								<p className="mb-4 text-muted-foreground text-sm">
 									Upload a CSV file to map columns to lead fields
 								</p>
 							</div>
@@ -762,12 +858,21 @@ function LeadMainModal({
 									onClick={triggerModalFileInput}
 									className="w-full max-w-sm"
 								>
-									<Upload className="w-4 h-4 mr-2" />
+									<Upload className="mr-2 h-4 w-4" />
 									{modalCsvFile ? "Change CSV File" : "Upload CSV File"}
+								</Button>
+								<Button
+									variant="ghost"
+									size="lg"
+									onClick={() => downloadLeadCsvTemplate()}
+									className="w-full max-w-sm"
+								>
+									<Download className="mr-2 h-4 w-4" />
+									Download Sample CSV
 								</Button>
 
 								{modalCsvFile && (
-									<div className="text-sm text-muted-foreground text-center">
+									<div className="text-center text-muted-foreground text-sm">
 										<p className="font-medium">{modalCsvFile.name}</p>
 										<p className="text-xs">
 											{csvHeaders.length} columns detected
@@ -884,16 +989,31 @@ function LeadMainModal({
 					)}
 
 					<div className={navClass}>
-						{step !== 0 && step !== 0.5 && (
-							<button
-								type="button"
-								className={buttonClass}
-								onClick={handleBack}
-								disabled={isLaunchingSuite}
-							>
-								Back
-							</button>
-						)}
+						<div className="flex items-center gap-2">
+							{step !== 0 && step !== 0.5 && (
+								<button
+									type="button"
+									className={buttonClass}
+									onClick={handleBack}
+									disabled={isLaunchingSuite}
+								>
+									Back
+								</button>
+							)}
+							{step === 1 && listMode === "create" && (
+								<Button
+									type="button"
+									variant="default"
+									size="default"
+									onClick={() => downloadLeadCsvTemplate()}
+									disabled={isLaunchingSuite}
+									className="gap-2"
+								>
+									<Download className="h-4 w-4" />
+									Download Example CSV
+								</Button>
+							)}
+						</div>
 						<button
 							type="button"
 							className={buttonClass}

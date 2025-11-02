@@ -9,7 +9,7 @@ import AiUsageModal from "@/components/reusables/modals/user/usage";
 import { UpgradeModal } from "@/components/reusables/modals/user/usage/UpgradeModal";
 import { WebhookModal } from "@/components/reusables/modals/user/webhooks/WebHookMain";
 import { InviteEmployeeModal } from "@/components/tables/employee-tables/utils/addEmployee";
-import { Toaster } from "@/components/ui/sonner";
+import dynamic from "next/dynamic";
 import {
 	MockUserProfile,
 	mockUserProfile,
@@ -71,8 +71,6 @@ export default async function DashboardLayout({
 			<WebhookModal />
 			<UpgradeModal trial={false} />
 			<SkipTraceDialog />
-
-			<Toaster />
 		</div>
 	);
 }

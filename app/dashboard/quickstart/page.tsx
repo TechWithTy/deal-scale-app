@@ -1,38 +1,38 @@
 "use client";
 
+import { HelpCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
-import React, { useCallback, useEffect, useRef, useState } from "react";
-import { toast } from "sonner";
+import { useCallback, useEffect, useRef, useState } from "react";
 
-import WalkThroughModal from "@/components/leadsSearch/search/WalkthroughModal";
+import { campaignSteps } from "@/_tests/tours/campaignTour";
 import QuickStartActionsGrid from "@/components/quickstart/QuickStartActionsGrid";
-import QuickStartBadgeList from "@/components/quickstart/QuickStartBadgeList";
-import QuickStartHeader from "@/components/quickstart/QuickStartHeader";
-import QuickStartHelp from "@/components/quickstart/QuickStartHelp";
-import { useQuickStartCards } from "@/components/quickstart/useQuickStartCards";
+import QuickStartWizard from "@/components/quickstart/wizard/QuickStartWizard";
+import QuickStartLegacyModals, {
+	type QuickStartCampaignContext,
+} from "@/components/quickstart/QuickStartLegacyModals";
+import QuickStartSupportCard from "@/components/quickstart/QuickStartSupportCard";
+import { useBulkCsvUpload } from "@/components/quickstart/useBulkCsvUpload";
+import { useQuickStartCardViewModel } from "@/components/quickstart/useQuickStartCardViewModel";
 import { useQuickStartSavedSearches } from "@/components/quickstart/useQuickStartSavedSearches";
-import HelpModal from "@/components/reusables/modals/HelpModal";
-import SavedSearchModal from "@/components/reusables/modals/SavedSearchModal";
-import { CampaignModalMain } from "@/components/reusables/modals/user/campaign/CampaignModalMain";
-import LeadBulkSuiteModal from "@/components/reusables/modals/user/lead/LeadBulkSuiteModal";
-import LeadModalMain from "@/components/reusables/modals/user/lead/LeadModalMain";
+import type { QuickStartWizardPreset } from "@/components/quickstart/types";
 import {
-	useCampaignCreationStore,
-	type CampaignCreationState,
-} from "@/lib/stores/campaignCreation";
+	applyQuickStartTemplatePreset,
+	getQuickStartTemplate,
+	type QuickStartTemplateId,
+} from "@/lib/config/quickstart/templates";
+import { getGoalDefinition } from "@/lib/config/quickstart/wizardFlows";
+import { useQuickStartWizardStore } from "@/lib/stores/quickstartWizard";
+import { useQuickStartWizardDataStore } from "@/lib/stores/quickstartWizardData";
+import { useQuickStartWizardExperienceStore } from "@/lib/stores/quickstartWizardExperience";
+import { useCampaignCreationStore } from "@/lib/stores/campaignCreation";
 import { useModalStore } from "@/lib/stores/dashboard";
 import type { WebhookStage } from "@/lib/stores/dashboard";
 import { shallow } from "zustand/shallow";
 
-void React;
-
-interface CampaignContext {
-	readonly leadListId: string;
-	readonly leadListName: string;
-	readonly leadCount: number;
-}
+let lastAppliedTemplateIdGlobal: QuickStartTemplateId | null = null;
 
 export default function QuickStartPage() {
+	const router = useRouter();
 	const [showLeadModal, setShowLeadModal] = useState(false);
 	const [leadModalMode, setLeadModalMode] = useState<"select" | "create">(
 		"create",
@@ -42,53 +42,51 @@ export default function QuickStartPage() {
 	const [showBulkSuiteModal, setShowBulkSuiteModal] = useState(false);
 	const [showCampaignModal, setShowCampaignModal] = useState(false);
 	const [campaignModalContext, setCampaignModalContext] =
-		useState<CampaignContext | null>(null);
-	const previousCampaignModalOpenRef = useRef(showCampaignModal);
-	const campaignResetTimeoutRef = useRef<number | null>(null);
-	const quickstartDebugEnabled = process.env.NODE_ENV !== "production" && false; // Temporarily disabled for browser compatibility testing
-	const logQuickStartDebug = useCallback(
-		(phase: string, details: Record<string, unknown>) => {
-			if (!quickstartDebugEnabled) return;
-			// eslint-disable-next-line no-console -- intentional debug surface for modal close loops
-			console.debug(`[QuickStart] ${phase}`, details);
-		},
-		[quickstartDebugEnabled],
-	);
-	const logQuickStartWarn = useCallback(
-		(phase: string, details: Record<string, unknown>) => {
-			if (!quickstartDebugEnabled) return;
-			// eslint-disable-next-line no-console -- intentional debug surface for modal close loops
-			console.warn(`[QuickStart] ${phase}`, details);
-		},
-		[quickstartDebugEnabled],
-	);
-	const campaignModalTransitionRef = useRef({
-		lastState: false,
-		lastTimestamp: 0,
-		rapidTransitionCount: 0,
-	});
-	const previousCampaignContextRef = useRef<CampaignContext | null>(
-		campaignModalContext,
-	);
+		useState<QuickStartCampaignContext | null>(null);
+	const [isTourOpen, setIsTourOpen] = useState(false);
 
-	const router = useRouter();
+	const fileInputRef = useRef<HTMLInputElement | null>(null);
+	const lastAppliedTemplateIdRef = useRef<QuickStartTemplateId | null>(
+		lastAppliedTemplateIdGlobal,
+	);
+	const [lastTemplateId, setLastTemplateIdState] =
+		useState<QuickStartTemplateId | null>(lastAppliedTemplateIdRef.current);
+	const updateLastTemplateId = useCallback(
+		(value: QuickStartTemplateId | null) => {
+			lastAppliedTemplateIdGlobal = value;
+			lastAppliedTemplateIdRef.current = value;
+			setLastTemplateIdState(value);
+		},
+		[],
+	);
+	const [bulkCsvFile, setBulkCsvFile] = useState<File | null>(null);
+	const [bulkCsvHeaders, setBulkCsvHeaders] = useState<string[]>([]);
+
+	// Minimal debug logger to satisfy calls
+	const logQuickStartDebug = () => {};
+
 	const openWebhookModal = useModalStore((state) => state.openWebhookModal);
 	const {
-		reset: resetCampaignStore,
-		setAreaMode,
-		setSelectedLeadListId,
-		setLeadCount,
-		setCampaignName,
-	} = useCampaignCreationStore(
-		(state: CampaignCreationState) => ({
-			reset: state.reset,
-			setAreaMode: state.setAreaMode,
-			setSelectedLeadListId: state.setSelectedLeadListId,
-			setLeadCount: state.setLeadCount,
-			setCampaignName: state.setCampaignName,
+		open: openWizard,
+		launchWithAction,
+		isOpen: isWizardOpen,
+	} = useQuickStartWizardStore(
+		(state) => ({
+			open: state.open,
+			launchWithAction: state.launchWithAction,
+			isOpen: state.isOpen,
 		}),
 		shallow,
 	);
+	const { hasSeenWizard, isHydrated: isExperienceHydrated } =
+		useQuickStartWizardExperienceStore(
+			(state) => ({
+				hasSeenWizard: state.hasSeenWizard,
+				isHydrated: state.isHydrated,
+			}),
+			shallow,
+		);
+	const campaignStore = useCampaignCreationStore();
 
 	const {
 		savedSearches,
@@ -96,6 +94,8 @@ export default function QuickStartPage() {
 		setSearchPriority,
 		handleCloseSavedSearches,
 		handleSelectSavedSearch,
+		handleStartNewSearch,
+		handleOpenSavedSearches,
 		savedSearchModalOpen,
 	} = useQuickStartSavedSearches();
 
@@ -109,297 +109,332 @@ export default function QuickStartPage() {
 	}, []);
 
 	const handleLaunchCampaign = useCallback(
-		({ leadListId, leadListName, leadCount }: CampaignContext) => {
-			resetCampaignStore();
-			setAreaMode("leadList");
-			setSelectedLeadListId(leadListId);
-			setLeadCount(leadCount);
-			setCampaignName(`${leadListName} Campaign`);
-			logQuickStartDebug("campaign-modal-launch-request", {
-				leadListId,
-				leadListName,
-				leadCount,
-				stack: new Error("campaign-modal-launch-request").stack,
-			});
+		({ leadListId, leadListName, leadCount }: QuickStartCampaignContext) => {
+			// Reset the campaign store first
+			campaignStore.reset();
+
+			// If a Quick Start template was selected earlier, apply its preset.
+			// Then override the name to keep the lead-list based naming.
+			if (lastTemplateId) {
+				applyQuickStartTemplatePreset(lastTemplateId, campaignStore);
+				// Fallback: if template didn't specify an agent, assign the first available one
+				const live = useCampaignCreationStore.getState();
+				if (!live.selectedAgentId && live.availableAgents?.length) {
+					campaignStore.setSelectedAgentId(live.availableAgents[0].id);
+				}
+			}
+
+			// Hydrate lead list context and preferred name derived from the list
+			campaignStore.setAreaMode("leadList");
+			campaignStore.setSelectedLeadListId(leadListId);
+			campaignStore.setLeadCount(leadCount);
+			campaignStore.setCampaignName(`${leadListName} Campaign`);
+
+			// Open campaign modal with the captured context
 			setCampaignModalContext({ leadListId, leadListName, leadCount });
 			setShowCampaignModal(true);
 			setShowLeadModal(false);
 		},
-		[
-			resetCampaignStore,
-			setAreaMode,
-			setSelectedLeadListId,
-			setLeadCount,
-			setCampaignName,
-			logQuickStartDebug,
-		],
+		[campaignStore, lastTemplateId],
 	);
 
 	const handleSuiteLaunchComplete = useCallback(
-		(payload: CampaignContext) => {
-			logQuickStartDebug("campaign-modal-bulk-suite-request", {
-				payload,
-				stack: new Error("campaign-modal-bulk-suite-request").stack,
-			});
+		(payload: QuickStartCampaignContext) => {
 			handleLaunchCampaign(payload);
 			return true;
 		},
-		[handleLaunchCampaign, logQuickStartDebug],
+		[handleLaunchCampaign],
 	);
 
-	const handleCloseLeadModal = useCallback(() => setShowLeadModal(false), []);
+	const handleCloseLeadModal = () => setShowLeadModal(false);
 
-	const handleConnectionSettings = useCallback(
-		() =>
-			toast.info("Data source connections and API configuration coming soon!"),
-		[],
-	);
+	const handleImportFromSource = useCallback(() => {
+		triggerFileInput();
+	}, [triggerFileInput]);
 
-	const handleImportFromSource = useCallback(
-		() => setShowBulkSuiteModal(true),
-		[],
-	);
+	const handleConfigureConnections = useCallback(() => {
+		router.push("/dashboard/integrations");
+	}, [router]);
 
-	const handleCampaignCreation = useCallback(() => {
-		resetCampaignStore();
-		setAreaMode("leadList");
-		logQuickStartDebug("campaign-modal-new-campaign", {
-			stack: new Error("campaign-modal-new-campaign").stack,
-		});
-		setCampaignModalContext(null);
+	const handleCampaignCreate = useCallback(() => {
+		const templateId = lastTemplateId;
+		const hasLeadListContext = campaignModalContext !== null;
+
+		if (templateId && !hasLeadListContext) {
+			const campaignState = useCampaignCreationStore.getState();
+			campaignState.reset();
+			applyQuickStartTemplatePreset(templateId, campaignState);
+			const template = getQuickStartTemplate(templateId);
+			if (template) {
+				useCampaignCreationStore.setState({
+					campaignName: template.campaignName,
+					primaryChannel: template.primaryChannel,
+					selectedWorkflowId:
+						template.workflowId ?? campaignState.selectedWorkflowId,
+					selectedAgentId:
+						typeof template.agentId !== "undefined"
+							? template.agentId
+							: campaignState.selectedAgentId,
+				});
+			}
+		}
+
 		setShowCampaignModal(true);
-	}, [resetCampaignStore, setAreaMode, logQuickStartDebug]);
+	}, [campaignModalContext, lastTemplateId]);
 
-	const handleViewTemplates = useCallback(
-		() => toast.info("Campaign templates feature coming soon!"),
-		[],
-	);
+	useEffect(() => {
+		if (!showCampaignModal || campaignModalContext) {
+			return;
+		}
 
-	const handleOpenWebhookModal = useCallback(
-		(stage: WebhookStage) => openWebhookModal(stage),
+		const templateId = lastTemplateId;
+		if (!templateId) {
+			return;
+		}
+
+		const campaignState = useCampaignCreationStore.getState();
+		if (campaignState.campaignName) {
+			return;
+		}
+
+		applyQuickStartTemplatePreset(templateId, campaignState);
+		const template = getQuickStartTemplate(templateId);
+		if (template) {
+			useCampaignCreationStore.setState({
+				campaignName: template.campaignName,
+				primaryChannel: template.primaryChannel,
+				selectedWorkflowId:
+					template.workflowId ?? campaignState.selectedWorkflowId,
+				selectedAgentId:
+					typeof template.agentId !== "undefined"
+						? template.agentId
+						: campaignState.selectedAgentId,
+			});
+		}
+	}, [campaignModalContext, lastTemplateId, showCampaignModal]);
+
+	const handleViewTemplates = useCallback(() => {
+		router.push("/dashboard/campaigns/templates");
+	}, [router]);
+
+	const handleOpenWebhook = useCallback(
+		(stage: WebhookStage) => {
+			openWebhookModal(stage);
+		},
 		[openWebhookModal],
 	);
 
-	const handleWalkthroughOpen = useCallback(() => setShowHelpModal(true), []);
+	const handleBrowserExtension = useCallback(() => {
+		router.push("/dashboard/extensions");
+	}, [router]);
+
+	const handleStartTour = () => setIsTourOpen(true);
+	const handleCloseTour = () => setIsTourOpen(false);
 
 	const handleCampaignModalToggle = useCallback(
 		(open: boolean) => {
-			logQuickStartDebug("campaign-modal-open-change", {
-				open,
-				origin: "CampaignModalMain.onOpenChange",
-				stack: new Error("campaign-modal-open-change").stack,
-			});
 			setShowCampaignModal(open);
+			if (!open) {
+				setCampaignModalContext(null);
+				// Defer store reset to prevent infinite loops during modal close
+				// The reset triggers massive store updates that cause re-renders
+				setTimeout(() => {
+					campaignStore.reset();
+				}, 100);
+			}
 		},
-		[logQuickStartDebug],
+		[campaignStore],
 	);
 
-	const handleCampaignLaunched = useCallback(
-		({
-			campaignId,
-			channelType,
-		}: { campaignId: string; channelType: string }) => {
-			logQuickStartDebug("campaign-modal-launched", {
-				campaignId,
-				channelType,
-				stack: new Error("campaign-modal-launched").stack,
-			});
-			setShowCampaignModal(false);
-
-			logQuickStartDebug("campaign-modal-opening-webhooks", {
-				campaignId,
-				channelType,
-				stack: new Error("campaign-modal-opening-webhooks").stack,
-			});
-
-			// Open webhooks outgoing modal instead of navigating to campaigns
-			openWebhookModal("outgoing");
-		},
-		[openWebhookModal, logQuickStartDebug],
-	);
-
-	// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
-	useEffect(() => {
-		const previous = previousCampaignContextRef.current;
-		if (previous !== campaignModalContext) {
-			logQuickStartDebug("campaign-modal-context-changed", {
-				previous,
-				next: campaignModalContext,
-			});
-			previousCampaignContextRef.current = campaignModalContext;
+	const handleCloseBulkModal = () => {
+		setShowBulkSuiteModal(false);
+		setBulkCsvFile(null);
+		setBulkCsvHeaders([]);
+		if (fileInputRef.current) {
+			fileInputRef.current.value = "";
 		}
-	}, [campaignModalContext, logQuickStartDebug]);
+	};
+
+	const handleCsvUpload = useBulkCsvUpload({
+		onFileChange: setBulkCsvFile,
+		onHeadersParsed: setBulkCsvHeaders,
+		onShowModal: () => setShowBulkSuiteModal(true),
+	});
 
 	useEffect(() => {
-		const now = Date.now(); // Use Date.now() instead of performance.now() for better browser compatibility
-		const previousState = campaignModalTransitionRef.current.lastState;
-		const timeSinceLast =
-			now - campaignModalTransitionRef.current.lastTimestamp;
-		const nextRapidTransitionCount =
-			previousState === showCampaignModal
-				? campaignModalTransitionRef.current.rapidTransitionCount
-				: timeSinceLast < 750
-					? campaignModalTransitionRef.current.rapidTransitionCount + 1
-					: 1;
+		if (!isExperienceHydrated) {
+			return;
+		}
 
-		campaignModalTransitionRef.current = {
-			lastState: showCampaignModal,
-			lastTimestamp: now,
-			rapidTransitionCount: nextRapidTransitionCount,
+		if (!hasSeenWizard && !isWizardOpen) {
+			openWizard();
+		}
+	}, [hasSeenWizard, isExperienceHydrated, isWizardOpen, openWizard]);
+
+	// Removed legacy modal auto-reset effect block referencing undefined refs
+
+	const handleWizardLaunch = useCallback(
+		(preset: QuickStartWizardPreset | undefined, action: () => void) => {
+			campaignStore.reset();
+			if (preset?.templateId) {
+				applyQuickStartTemplatePreset(preset.templateId, campaignStore);
+				updateLastTemplateId(preset.templateId);
+			} else {
+				updateLastTemplateId(null);
+			}
+			launchWithAction(preset, action);
+		},
+		[campaignStore, launchWithAction, updateLastTemplateId],
+	);
+
+	const createRouterPush = useCallback(
+		(path: string) => () => {
+			router.push(path);
+		},
+		[router],
+	);
+
+	const handleLaunchQuickStartFlow = useCallback(() => {
+		const { goalId } = useQuickStartWizardDataStore.getState();
+		if (!goalId) {
+			return;
+		}
+
+		const goalDefinition = getGoalDefinition(goalId);
+		if (!goalDefinition || goalDefinition.flow.length === 0) {
+			return;
+		}
+
+		if (goalDefinition.templateId) {
+			const campaignState = useCampaignCreationStore.getState();
+			campaignState.reset();
+			applyQuickStartTemplatePreset(goalDefinition.templateId, campaignState);
+			updateLastTemplateId(goalDefinition.templateId);
+		}
+
+		const [firstStep] = goalDefinition.flow;
+		const launchers: Record<string, () => void> = {
+			import: handleImportFromSource,
+			campaign: handleCampaignCreate,
+			webhooks: () => handleOpenWebhook("incoming"),
+			"market-deals": handleStartNewSearch,
+			extension: handleBrowserExtension,
 		};
 
-		logQuickStartDebug("campaign-modal-visibility-updated", {
-			previous: previousState,
-			next: showCampaignModal,
-			deltaMs: timeSinceLast,
-			rapidTransitionCount: nextRapidTransitionCount,
-			contextPresent: Boolean(campaignModalContext),
-		});
+		const launch = launchers[firstStep.cardId];
 
-		if (nextRapidTransitionCount > 3 && previousState !== showCampaignModal) {
-			// Reduced from 5 to 3 for better compatibility
-			logQuickStartWarn("campaign-modal-rapid-toggle-detected", {
-				transitions: nextRapidTransitionCount,
-				deltaMs: timeSinceLast,
-				stack: new Error("campaign-modal-rapid-toggle").stack,
-			});
+		if (launch) {
+			launch();
+			return;
+		}
+
+		if (process.env.NODE_ENV !== "production") {
+			console.warn(
+				`[QuickStartPage] Missing launcher for QuickStart flow card "${firstStep.cardId}".`,
+			);
 		}
 	}, [
-		showCampaignModal,
-		campaignModalContext,
-		logQuickStartDebug,
-		logQuickStartWarn,
+		handleImportFromSource,
+		handleCampaignCreate,
+		handleOpenWebhook,
+		handleStartNewSearch,
+		handleBrowserExtension,
+		updateLastTemplateId,
 	]);
 
-	useEffect(() => {
-		const wasOpen = previousCampaignModalOpenRef.current;
-		previousCampaignModalOpenRef.current = showCampaignModal;
+	const quickStartCards = useQuickStartCardViewModel({
+		bulkCsvFile,
+		bulkCsvHeaders,
+		onImport: handleImportFromSource,
+		onSelectList: handleSelectList,
+		onConfigureConnections: handleConfigureConnections,
+		onCampaignCreate: handleCampaignCreate,
+		onViewTemplates: handleViewTemplates,
+		onOpenWebhookModal: handleOpenWebhook,
+		onBrowserExtension: handleBrowserExtension,
+		createRouterPush,
+		onStartNewSearch: handleStartNewSearch,
+		onOpenSavedSearches: handleOpenSavedSearches,
+		onLaunchWizard: handleWizardLaunch,
+		onLaunchQuickStartFlow: handleLaunchQuickStartFlow,
+	});
 
-		if (wasOpen && !showCampaignModal) {
-			logQuickStartDebug("campaign-modal-close-observed", {
-				source: "visibility-effect",
-				campaignModalContext,
-			});
-			setCampaignModalContext(null);
-
-			// Clear any existing timeout before setting a new one
-			if (campaignResetTimeoutRef.current !== null) {
-				clearTimeout(campaignResetTimeoutRef.current);
-			}
-
-			logQuickStartDebug("campaign-modal-close-detected", {
-				source: "launch-or-dismiss",
-			});
-
-			// Use a more conservative timeout for better browser compatibility
-			campaignResetTimeoutRef.current = window.setTimeout(() => {
-				logQuickStartDebug("campaign-store-reset", {
-					reason: "modal-close-timer",
-				});
-				resetCampaignStore();
-				campaignResetTimeoutRef.current = null;
-			}, 300); // Increased from 150ms to 300ms for better compatibility
-
-			return () => {
-				if (campaignResetTimeoutRef.current !== null) {
-					clearTimeout(campaignResetTimeoutRef.current);
-					campaignResetTimeoutRef.current = null;
-				}
-			};
-		}
-
-		if (!showCampaignModal && campaignResetTimeoutRef.current !== null) {
-			logQuickStartDebug("campaign-modal-close-cleanup", {
-				hasTimeout: true,
-			});
-			return () => {
-				if (campaignResetTimeoutRef.current !== null) {
-					clearTimeout(campaignResetTimeoutRef.current);
-					campaignResetTimeoutRef.current = null;
-				}
-			};
-		}
-
-		return undefined;
-	}, [
-		showCampaignModal,
-		resetCampaignStore,
-		logQuickStartDebug,
-		setCampaignModalContext,
-	]);
-
-	useEffect(
-		() => () => {
-			if (campaignResetTimeoutRef.current !== null) {
-				logQuickStartDebug("campaign-modal-timeout-dispose", {
-					reason: "component-unmount",
-				});
-				clearTimeout(campaignResetTimeoutRef.current);
-				campaignResetTimeoutRef.current = null;
-			}
-		},
-		[],
-	);
-
-	const handleCloseBulkModal = useCallback(
-		() => setShowBulkSuiteModal(false),
-		[],
-	);
+	const handlePostLaunch = useCallback(() => {
+		// After launching a campaign, defer opening webhooks modal
+		// to avoid render-time state updates during modal close
+		setTimeout(() => {
+			openWebhookModal("incoming");
+		}, 0);
+	}, [openWebhookModal]);
 
 	return (
 		<div className="container mx-auto px-4 py-8">
-			<QuickStartHeader onOpenWalkthrough={handleWalkthroughOpen} />
+			<div className="relative mb-8 text-center">
+				<h1 className="mb-2 font-bold text-3xl text-foreground">Quick Start</h1>
+				<p className="text-lg text-muted-foreground">
+					Get up and running in minutes. Choose how you’d like to begin.
+				</p>
+				<button
+					onClick={() => setShowWalkthrough(true)}
+					className="absolute top-0 right-0 flex h-10 w-10 items-center justify-center rounded-full border border-transparent text-muted-foreground transition hover:bg-muted"
+					type="button"
+				>
+					<HelpCircle className="h-5 w-5" />
+				</button>
+			</div>
 
-			{/* <div className="mb-10 flex justify-center">
-				<QuickStartBadgeList />
-			</div> */}
+			<QuickStartActionsGrid cards={quickStartCards} />
+			<QuickStartWizard />
 
-			<QuickStartActionsGrid cards={cards} />
+			<input
+				ref={fileInputRef}
+				type="file"
+				accept=".csv,text/csv"
+				onChange={handleCsvUpload}
+				className="hidden"
+			/>
 
-			<QuickStartHelp />
-
-			<LeadModalMain
-				isOpen={showLeadModal}
-				onClose={handleCloseLeadModal}
-				initialListMode={leadModalMode}
+			<QuickStartLegacyModals
+				showLeadModal={showLeadModal}
+				leadModalMode={leadModalMode}
+				onCloseLeadModal={handleCloseLeadModal}
 				onLaunchCampaign={handleLaunchCampaign}
-			/>
-
-			<LeadBulkSuiteModal
-				isOpen={showBulkSuiteModal}
-				onClose={handleCloseBulkModal}
-				initialCsvFile={null}
-				initialCsvHeaders={[]}
+				showBulkSuiteModal={showBulkSuiteModal}
+				onCloseBulkSuite={handleCloseBulkModal}
+				bulkCsvFile={bulkCsvFile}
+				bulkCsvHeaders={bulkCsvHeaders}
 				onSuiteLaunchComplete={(payload) => {
-					handleSuiteLaunchComplete(payload);
+					const result = handleSuiteLaunchComplete(payload);
 					handleCloseBulkModal();
-					return true;
+					return result;
 				}}
-			/>
-
-			<CampaignModalMain
-				isOpen={showCampaignModal}
-				onOpenChange={handleCampaignModalToggle}
-				initialLeadListId={campaignModalContext?.leadListId}
-				initialLeadListName={campaignModalContext?.leadListName}
-				initialLeadCount={campaignModalContext?.leadCount ?? 0}
-				initialStep={0}
-				onCampaignLaunched={handleCampaignLaunched}
-			/>
-
-			<SavedSearchModal
-				open={savedSearchModalOpen}
-				onClose={handleCloseSavedSearches}
+				showCampaignModal={showCampaignModal}
+				onCampaignModalToggle={handleCampaignModalToggle}
+				campaignModalContext={campaignModalContext}
+				savedSearchModalOpen={savedSearchModalOpen}
+				onCloseSavedSearches={handleCloseSavedSearches}
 				savedSearches={savedSearches}
-				onDelete={deleteSavedSearch}
-				onSelect={handleSelectSavedSearch}
-				onSetPriority={setSearchPriority}
+				onDeleteSavedSearch={deleteSavedSearch}
+				onSelectSavedSearch={handleSelectSavedSearch}
+				onSetSearchPriority={setSearchPriority}
+				showWalkthrough={showWalkthrough}
+				onCloseWalkthrough={() => setShowWalkthrough(false)}
+				isTourOpen={isTourOpen}
+				onStartTour={handleStartTour}
+				onCloseTour={handleCloseTour}
+				campaignSteps={campaignSteps}
+				defaultChannel={(() => {
+					if (!lastTemplateId) return undefined;
+					const t = getQuickStartTemplate(lastTemplateId);
+					if (!t) return undefined;
+					return t.primaryChannel === "call" || t.primaryChannel === "text"
+						? t.primaryChannel
+						: undefined;
+				})()}
+				onCampaignLaunched={() => handlePostLaunch()}
 			/>
 
-			<HelpModal
-				isOpen={showHelpModal}
-				onClose={() => setShowHelpModal(false)}
-			/>
+			<QuickStartSupportCard />
 		</div>
 	);
 }

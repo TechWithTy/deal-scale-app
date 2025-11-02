@@ -1,8 +1,11 @@
 "use client";
 
-import type { LucideIcon } from "lucide-react";
-import type { FC, ReactNode } from "react";
+import type { FC } from "react";
 
+import type {
+	QuickStartCardChipTone,
+	QuickStartCardConfig,
+} from "@/components/quickstart/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,42 +16,6 @@ import {
 	CardTitle,
 } from "@/components/ui/card";
 import { cn } from "@/lib/_utils";
-
-export type QuickStartCardChipTone =
-	| "primary"
-	| "success"
-	| "warning"
-	| "info"
-	| "accent"
-	| "neutral";
-
-export interface QuickStartCardChipConfig {
-	readonly label: string;
-	readonly tone?: QuickStartCardChipTone;
-}
-
-export interface QuickStartActionConfig {
-	readonly label: string;
-	readonly icon: LucideIcon;
-	readonly variant?: "default" | "outline";
-	readonly className?: string;
-	readonly onClick: () => void;
-}
-
-export interface QuickStartCardConfig {
-	readonly key: string;
-	readonly title: string;
-	readonly description: string;
-	readonly icon?: LucideIcon;
-	readonly iconNode?: ReactNode;
-	readonly cardClassName?: string;
-	readonly titleClassName?: string;
-	readonly iconWrapperClassName?: string;
-	readonly iconClassName?: string;
-	readonly footer?: ReactNode;
-	readonly featureChips?: QuickStartCardChipConfig[];
-	readonly actions: QuickStartActionConfig[];
-}
 
 interface QuickStartActionsGridProps {
 	readonly cards: QuickStartCardConfig[];
@@ -68,15 +35,7 @@ const featureToneStyles: Record<QuickStartCardChipTone, string> = {
 };
 
 const QuickStartActionsGrid: FC<QuickStartActionsGridProps> = ({ cards }) => (
-	<div
-		className="mx-auto grid max-w-5xl gap-6 md:grid-cols-2 xl:grid-cols-3"
-		style={{
-			display: "grid",
-			gridAutoRows: "auto",
-			alignItems: "start",
-			justifyItems: "center",
-		}}
-	>
+	<div className="mx-auto grid max-w-5xl items-start justify-items-stretch gap-6 md:auto-rows-[minmax(0,1fr)] md:grid-cols-2 xl:grid-cols-3">
 		{cards.map(
 			({
 				key,
@@ -95,7 +54,7 @@ const QuickStartActionsGrid: FC<QuickStartActionsGridProps> = ({ cards }) => (
 				<Card
 					key={key}
 					className={cn(
-						"group flex h-auto w-full max-w-sm flex-col border-2 transition hover:border-primary/20 hover:shadow-lg",
+						"group flex h-full w-full max-w-sm flex-col border-2 transition hover:border-primary/20 hover:shadow-lg",
 						cardClassName,
 					)}
 				>

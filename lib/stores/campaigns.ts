@@ -1,4 +1,4 @@
-import { create } from "zustand";
+import { createWithEqualityFn } from "zustand/traditional";
 import { withAnalytics } from "./_middleware/analytics";
 
 import { MockUserProfile } from "@/constants/_faker/profile/userProfile";
@@ -85,7 +85,7 @@ const mergeById = <T extends { id: string }>(
 };
 
 // Create Zustand store
-export const useCampaignStore = create<CampaignState>()(
+export const useCampaignStore = createWithEqualityFn<CampaignState>()(
 	withAnalytics<CampaignState>("campaigns", (set, get) => {
 		const initial = createInitialState();
 
@@ -191,4 +191,5 @@ export const useCampaignStore = create<CampaignState>()(
 			},
 		};
 	}),
+	Object.is,
 );

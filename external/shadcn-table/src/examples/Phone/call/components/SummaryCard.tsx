@@ -17,17 +17,25 @@ type Props = {
 };
 
 export function SummaryCard({
-	table,
-	campaignType,
-	dateChip,
-	setDateChip,
+        table,
+        campaignType,
+        dateChip,
+        setDateChip,
 }: Props) {
-	const uiRows = table.getFilteredRowModel().rows.map((r) => r.original);
-	type Totals = {
-		calls: number;
-		leads: number;
-		inQueue: number;
-	};
+        const uiRows = table.getFilteredRowModel().rows.map((r) => r.original);
+        const startDateColumn = React.useMemo(() => {
+                const columns =
+                        typeof table.getAllLeafColumns === "function"
+                                ? table.getAllLeafColumns()
+                                : table.getAllColumns();
+
+                return columns.find((column) => column.id === "startDate");
+        }, [table]);
+        type Totals = {
+                calls: number;
+                leads: number;
+                inQueue: number;
+        };
 
 	const totals = React.useMemo<Totals>(() => {
 		return uiRows.reduce<Totals>(
@@ -71,29 +79,26 @@ export function SummaryCard({
 					>
 						7d
 					</Button>
-					<Button
-						type="button"
-						size="sm"
-						variant={dateChip === "30d" ? "secondary" : "ghost"}
-						onClick={() => setDateChip("30d")}
-					>
-						30d
-					</Button>
-					{(() => {
-						const startDateCol = table.getColumn("startDate");
-						return startDateCol ? (
-							<DataTableDateFilter
-								column={startDateCol}
-								title="Range"
-								multiple
-							/>
-						) : null;
-					})()}
-				</div>
-			</div>
-			<div className="p-4 pt-0">
-				<div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-					<div className="rounded-md border p-3">
+                                        <Button
+                                                type="button"
+                                                size="sm"
+                                                variant={dateChip === "30d" ? "secondary" : "ghost"}
+                                                onClick={() => setDateChip("30d")}
+                                        >
+                                                30d
+                                        </Button>
+                                        {startDateColumn ? (
+                                                <DataTableDateFilter
+                                                        column={startDateColumn}
+                                                        title="Range"
+                                                        multiple
+                                                />
+                                        ) : null}
+                                </div>
+                        </div>
+                        <div className="p-4 pt-0">
+                                <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+                                        <div className="rounded-md border p-3">
 						<div className="text-muted-foreground text-xs">Rows</div>
 						<div className="font-semibold text-lg">{uiRows.length}</div>
 					</div>

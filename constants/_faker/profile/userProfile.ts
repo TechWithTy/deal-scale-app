@@ -266,12 +266,16 @@ export const generateMockUserProfile = (): UserProfile => {
 			},
 		],
 
-		securitySettings: {
-			lastLoginTime: faker.date.recent(),
-			password: faker.string.uuid(),
-			passwordUpdatedAt: faker.date.past(),
-		},
-	};
+                securitySettings: {
+                        lastLoginTime: faker.date.recent(),
+                        password: faker.string.uuid(),
+                        passwordUpdatedAt: faker.date.past(),
+                },
+                quickStartDefaults: {
+                        personaId: "investor",
+                        goalId: "investor-pipeline",
+                },
+        };
 };
 
 export const mockUserProfile: UserProfile | undefined =

@@ -22,8 +22,8 @@ import {
 
 import type { CallCampaign } from "../../../../types/_dashboard/campaign";
 import {
-	generateCallCampaignData,
-	mockCallCampaignData,
+        fallbackCallCampaignData,
+        mockCallCampaignData,
 } from "../../../../constants/_faker/calls/callCampaign";
 import CampaignModalMain from "./campaigns/modal/CampaignModalMain";
 import { useCampaignRowFocus } from "@/components/campaigns/utils/useCampaignRowFocus";
@@ -45,12 +45,13 @@ export default function CallCampaignsDemoTable({
         onCampaignSelect,
         initialCampaigns,
 }: CallCampaignsDemoTableProps) {
-        const fallbackCampaigns = React.useMemo(
-                () =>
+        const fallbackCampaigns = React.useMemo(() => {
+                const seeded =
                         (mockCallCampaignData as CallCampaign[] | false) ||
-                        generateCallCampaignData(),
-                [],
-        );
+                        fallbackCallCampaignData;
+
+                return seeded.map((campaign) => ({ ...campaign }));
+        }, []);
 
         const mergeCampaigns = React.useCallback(
                 (incoming?: CallCampaign[]) => {
@@ -185,66 +186,77 @@ export default function CallCampaignsDemoTable({
 		},
 	});
 
-	// Ensure playback is NOT pinned; if any state re-adds it, remove it.
-	// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
-	React.useEffect(() => {
-		const current = table.getState().columnPinning;
-		const nextRight = (current.right ?? []).filter((id) => id !== "playback");
-		if (nextRight.length !== (current.right ?? []).length) {
-			table.setColumnPinning({
-				left: current.left ?? ["select"],
-				right: nextRight,
-			});
-		}
-		table.getColumn("playback")?.pin(false as unknown as "left" | "right");
-	}, [campaignType, table, columns]);
+    // Ensure playback is NOT pinned; only update when state actually changes.
+    // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
+    React.useEffect(() => {
+        const current = table.getState().columnPinning;
+        const currentRight = current.right ?? [];
+        const nextRight = currentRight.filter((id) => id !== "playback");
+        if (nextRight.length !== currentRight.length) {
+            table.setColumnPinning({
+                left: current.left ?? ["select"],
+                right: nextRight,
+            });
+        }
+        const playback = table.getColumn("playback");
+        const isPinned = (playback as any)?.getIsPinned?.();
+        if (isPinned === "left" || isPinned === "right") {
+            playback?.pin(false as unknown as "left" | "right");
+        }
+    }, [campaignType, table, columns]);
 
-	// Ensure column order matches selected campaign type
-	React.useEffect(() => {
-		const isText = campaignType === "Text";
-		const textOrder = [
-			"select",
-			"name",
-			"sent",
-			"delivered",
-			"failed",
-			"totalMessages",
-			"status",
-			"startDate",
-			"lastMessageAt",
-			"download",
-		];
-		const callsOrder = [
-			"select",
-			"controls",
-			"feedback",
-			"name",
-			"calls",
-			"inQueue",
-			"leads",
-			"status",
-			"transfer",
-			"transfers",
-			// Vapi call details
-			"transport",
-			"provider",
-			"callStatus",
-			"costTotal",
-			"startedAt",
-			"endedAt",
-			// Dialing configuration & webhook
-			"totalDialAttempts",
-			"maxDailyAttempts",
-			"minMinutesBetweenCalls",
-			"countVoicemailAsAnswered",
-			"postCallWebhookUrl",
-			// existing date and playback columns
-			"startDate",
-			"playback",
-		];
-		const desired = isText ? textOrder : callsOrder;
-		table.setColumnOrder(desired);
-	}, [campaignType, table]);
+    // Ensure column order matches selected campaign type (only update when different)
+    React.useEffect(() => {
+        const isText = campaignType === "Text";
+        const textOrder = [
+            "select",
+            "name",
+            "sent",
+            "delivered",
+            "failed",
+            "totalMessages",
+            "status",
+            "startDate",
+            "lastMessageAt",
+            "download",
+        ];
+        const callsOrder = [
+            "select",
+            "controls",
+            "feedback",
+            "name",
+            "calls",
+            "inQueue",
+            "leads",
+            "status",
+            "transfer",
+            "transfers",
+            // Vapi call details
+            "transport",
+            "provider",
+            "callStatus",
+            "costTotal",
+            "startedAt",
+            "endedAt",
+            // Dialing configuration & webhook
+            "totalDialAttempts",
+            "maxDailyAttempts",
+            "minMinutesBetweenCalls",
+            "countVoicemailAsAnswered",
+            "postCallWebhookUrl",
+            // existing date and playback columns
+            "startDate",
+            "playback",
+        ];
+        const desired = isText ? textOrder : callsOrder;
+        const current = (table.getState().columnOrder ?? []) as string[];
+        const isSame =
+            current.length === desired.length &&
+            current.every((id, idx) => id === desired[idx]);
+        if (!isSame) {
+            table.setColumnOrder(desired);
+        }
+    }, [campaignType, table]);
 
         const carousel = useRowCarousel(table, { loop: true });
 

@@ -81,6 +81,32 @@ export interface CampaignCreationState {
 	availableSalesScripts: SalesScriptOption[];
 	setAvailableSalesScripts: (scripts: SalesScriptOption[]) => void;
 
+	// Campaign Goal (Finalize step prefill)
+	campaignGoal: string;
+	setCampaignGoal: (goal: string) => void;
+
+	// Voicemail selection (UI + presets)
+	preferredVoicemailMessageId: string; // e.g., vm_professional, vm_friendly
+	setPreferredVoicemailMessageId: (id: string) => void;
+	preferredVoicemailVoiceId: string; // e.g., voice_emma, voice_paul
+	setPreferredVoicemailVoiceId: (id: string) => void;
+
+	// Text/SMS settings
+	textSignature: string;
+	setTextSignature: (sig: string) => void;
+	smsCanSendImages: boolean;
+	setSmsCanSendImages: (v: boolean) => void;
+	smsCanSendVideos: boolean;
+	setSmsCanSendVideos: (v: boolean) => void;
+	smsCanSendLinks: boolean;
+	setSmsCanSendLinks: (v: boolean) => void;
+	/** If true, append the selected agent name to the signature */
+	smsAppendAgentName: boolean;
+	setSmsAppendAgentName: (v: boolean) => void;
+	/** Preferred media sourcing for text messaging */
+	smsMediaSource: "ai" | "stock" | "hybrid";
+	setSmsMediaSource: (v: "ai" | "stock" | "hybrid") => void;
+
 	// Step 2: Area & Lead List
 	areaMode: "zip" | "leadList";
 	setAreaMode: (mode: "zip" | "leadList") => void;
@@ -202,6 +228,33 @@ export const useCampaignCreationStore =
 			availableSalesScripts: MOCK_SALES_SCRIPTS,
 			setAvailableSalesScripts: (availableSalesScripts) =>
 				set({ availableSalesScripts }),
+
+			// Campaign Goal default/draft
+			campaignGoal: "",
+			setCampaignGoal: (campaignGoal) => set({ campaignGoal }),
+
+			// Voicemail selection
+			preferredVoicemailMessageId: "",
+			setPreferredVoicemailMessageId: (preferredVoicemailMessageId) =>
+				set({ preferredVoicemailMessageId }),
+			preferredVoicemailVoiceId: "",
+			setPreferredVoicemailVoiceId: (preferredVoicemailVoiceId) =>
+				set({ preferredVoicemailVoiceId }),
+
+			// Text/SMS settings
+			textSignature: "",
+			setTextSignature: (textSignature) => set({ textSignature }),
+			smsCanSendImages: true,
+			setSmsCanSendImages: (smsCanSendImages) => set({ smsCanSendImages }),
+			smsCanSendVideos: true,
+			setSmsCanSendVideos: (smsCanSendVideos) => set({ smsCanSendVideos }),
+			smsCanSendLinks: true,
+			setSmsCanSendLinks: (smsCanSendLinks) => set({ smsCanSendLinks }),
+			smsAppendAgentName: true,
+			setSmsAppendAgentName: (smsAppendAgentName) =>
+				set({ smsAppendAgentName }),
+			smsMediaSource: "hybrid",
+			setSmsMediaSource: (smsMediaSource) => set({ smsMediaSource }),
 
 			// Step 2: Area & Lead List
 			areaMode: "leadList",
@@ -394,6 +447,15 @@ export const useCampaignCreationStore =
 
 					selectedSalesScriptId: null,
 					availableSalesScripts: MOCK_SALES_SCRIPTS,
+					campaignGoal: "",
+					preferredVoicemailMessageId: "",
+					preferredVoicemailVoiceId: "",
+					textSignature: "",
+					smsCanSendImages: true,
+					smsCanSendVideos: true,
+					smsCanSendLinks: true,
+					smsAppendAgentName: true,
+					smsMediaSource: "hybrid",
 
 					// Step 2
 					areaMode: "leadList",

@@ -27,13 +27,16 @@ import ChannelCustomizationStep, {
 	type FormSchema,
 } from "../../../../../external/shadcn-table/src/examples/campaigns/modal/steps/ChannelCustomizationStep";
 import ChannelSelectionStep from "../../../../../external/shadcn-table/src/examples/campaigns/modal/steps/ChannelSelectionStep";
-import { TimingPreferencesStep } from "../../../../../external/shadcn-table/src/examples/campaigns/modal/steps/TimingPreferencesStep";
+import { TimingPreferencesStep } from "../../../../../external/shadcn-table/src/examples/campaigns/modal/steps/TimingPreferencesStep.tsx";
 import CampaignSettingsDebug from "./CampaignSettingsDebug";
+import { EvaluationReportModal } from "./EvaluationReportModal";
 import FinalizeCampaignStep from "./steps/FinalizeCampaignStep";
 import { shallow } from "zustand/shallow";
 import type { CallCampaign } from "@/types/_dashboard/campaign";
 import type { EmailCampaign } from "@/types/goHighLevel/email";
 import type { DirectMailCampaign } from "external/shadcn-table/src/examples/DirectMail/utils/mock";
+import { useLeadListStore } from "@/lib/stores/leadList";
+import { toast } from "sonner";
 interface CampaignModalMainProps {
 	isOpen: boolean;
 	onOpenChange: (open: boolean) => void;
@@ -122,7 +125,7 @@ const selectCampaignStoreDebugSnapshot = (
 	daysSelected: state.daysSelected,
 });
 
-export const CampaignModalMain: FC<CampaignModalMainProps> = ({
+const CampaignModalMain: FC<CampaignModalMainProps> = ({
 	isOpen,
 	onOpenChange,
 	initialLeadListId,
@@ -213,6 +216,10 @@ export const CampaignModalMain: FC<CampaignModalMainProps> = ({
 	const launchGuardRef = useRef(false);
 	const renderDebugCounterRef = useRef(0);
 	const liveIsOpenRef = useRef<boolean>(false);
+	const [evalRunId, setEvalRunId] = useState<string | null>(null);
+	const [evalReportOpen, setEvalReportOpen] = useState(false);
+	const isMountedRef = useRef(true);
+	const isOpenRef = useRef(isOpen);
 
 	const customizationForm = useForm<z.input<typeof FormSchema>>({
 		resolver: zodResolver(TransferConditionalSchema),
@@ -223,6 +230,44 @@ export const CampaignModalMain: FC<CampaignModalMainProps> = ({
 				selectedLeadListId || DEFAULT_CUSTOMIZATION_VALUES.selectedLeadListId,
 		},
 	});
+
+	// Ensure leadCount reflects actual selected list size when available
+	const leadLists = useLeadListStore((s) => s.leadLists);
+	useEffect(() => {
+		// Don't run when modal is closed or closing
+		if (!isOpen || closingStateRef.current.closing || !isMountedRef.current)
+			return;
+
+		if (areaMode !== "leadList") return;
+		const id = selectedLeadListId || selectedLeadListAId;
+		if (!id) return;
+		const list = leadLists.find((l) => l.id === id);
+		if (!list) return;
+		const records =
+			typeof list.records === "number"
+				? list.records
+				: Array.isArray((list as any).leads)
+					? ((list as any).leads as unknown[]).length
+					: 0;
+		if (Number.isFinite(records) && records >= 0) {
+			setLeadCount(records);
+		}
+		// Also mirror into the form field so A/B logic sees a consistent value
+		if (!customizationForm.getValues("selectedLeadListId")) {
+			customizationForm.setValue("selectedLeadListId", id, {
+				shouldValidate: false,
+				shouldDirty: false,
+			});
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [
+		areaMode,
+		selectedLeadListId,
+		selectedLeadListAId,
+		leadLists,
+		setLeadCount,
+		isOpen,
+	]);
 
 	useEffect(
 		() => () => {
@@ -237,9 +282,23 @@ export const CampaignModalMain: FC<CampaignModalMainProps> = ({
 		[],
 	);
 
+	// Update refs for isOpen to avoid stale closures
 	useEffect(() => {
 		liveIsOpenRef.current = isOpen;
+		isOpenRef.current = isOpen;
 	}, [isOpen]);
+
+	// Cleanup on unmount
+	useEffect(() => {
+		isMountedRef.current = true;
+		return () => {
+			isMountedRef.current = false;
+			if (closingReleaseTimeoutRef.current !== null) {
+				window.clearTimeout(closingReleaseTimeoutRef.current);
+				closingReleaseTimeoutRef.current = null;
+			}
+		};
+	}, []);
 
 	useEffect(() => {
 		renderDebugCounterRef.current += 1;
@@ -343,6 +402,7 @@ export const CampaignModalMain: FC<CampaignModalMainProps> = ({
 		}
 	}, []);
 
+	// Handle modal open/close state transitions
 	useEffect(() => {
 		if (isOpen) {
 			if (
@@ -361,6 +421,9 @@ export const CampaignModalMain: FC<CampaignModalMainProps> = ({
 			});
 			return;
 		}
+
+		// Only process close if not already closing or if mounted
+		if (!isMountedRef.current) return;
 
 		if (!closingStateRef.current.closing) {
 			closingStateRef.current.closing = true;
@@ -381,12 +444,14 @@ export const CampaignModalMain: FC<CampaignModalMainProps> = ({
 			}
 
 			closingReleaseTimeoutRef.current = window.setTimeout(() => {
-				closingStateRef.current.closing = false;
-				closingStateRef.current.renderCount = 0;
-				launchGuardRef.current = false;
-				campaignDebugLog("modal-close-finalized", {
-					step: stepRef.current,
-				});
+				if (isMountedRef.current) {
+					closingStateRef.current.closing = false;
+					closingStateRef.current.renderCount = 0;
+					launchGuardRef.current = false;
+					campaignDebugLog("modal-close-finalized", {
+						step: stepRef.current,
+					});
+				}
 				closingReleaseTimeoutRef.current = null;
 			}, 200);
 		}
@@ -538,9 +603,7 @@ export const CampaignModalMain: FC<CampaignModalMainProps> = ({
 	useEffect(() => {
 		if (!isOpen) {
 			hasInitializedRef.current = false;
-			if (previousIsOpenRef.current) {
-				customizationForm.reset(DEFAULT_CUSTOMIZATION_VALUES);
-			}
+			// Form reset is handled in separate effect with deferred execution
 			previousIsOpenRef.current = isOpen;
 			return;
 		}
@@ -615,21 +678,27 @@ export const CampaignModalMain: FC<CampaignModalMainProps> = ({
 	]);
 
 	const closeModal = useCallback(() => {
-		if (closingStateRef.current.closing) {
+		if (closingStateRef.current.closing || !isOpenRef.current) {
 			campaignWarnLog("duplicate-close-ignored", {
 				step: stepRef.current,
-				isOpen,
+				isOpen: isOpenRef.current,
 			});
 			return;
 		}
 		closingStateRef.current.closing = true;
 		closingStateRef.current.renderCount = 0;
+		isOpenRef.current = false;
 		campaignDebugLog("close-requested", {
 			step: stepRef.current,
-			isOpen,
+			isOpen: isOpenRef.current,
 		});
-		onOpenChange(false);
-	}, [isOpen, onOpenChange]);
+		// Defer to prevent render-time state updates
+		setTimeout(() => {
+			if (isMountedRef.current) {
+				onOpenChange(false);
+			}
+		}, 0);
+	}, [onOpenChange]);
 
 	const nextStep = async () => {
 		if (step === 1) {
@@ -825,6 +894,17 @@ export const CampaignModalMain: FC<CampaignModalMainProps> = ({
 				type: campaignType,
 				campaignId,
 			});
+
+			// Optional: include SMS capability flags and signature for debugging/navigation
+			try {
+				const s = useCampaignCreationStore.getState();
+				if (s.textSignature) params.set("textSignature", s.textSignature);
+				params.set("smsImages", String(s.smsCanSendImages));
+				params.set("smsVideos", String(s.smsCanSendVideos));
+				params.set("smsLinks", String(s.smsCanSendLinks));
+				if ((s as any).smsMediaSource)
+					params.set("smsMediaSource", String((s as any).smsMediaSource));
+			} catch {}
 			const paramsString = params.toString();
 			const fullUrl = `/dashboard/campaigns?${paramsString}`;
 			campaignDebugLog("launch-navigation-target", {
@@ -846,10 +926,35 @@ export const CampaignModalMain: FC<CampaignModalMainProps> = ({
 			});
 
 			if (!onCampaignLaunched) {
-				router.push(fullUrl);
-				campaignDebugLog("launch-router-push", {
-					destination: fullUrl,
-				});
+				setTimeout(() => {
+					try {
+						const path =
+							typeof window !== "undefined" ? window.location.pathname : "";
+						const current =
+							typeof window !== "undefined"
+								? window.location.pathname + (window.location.search || "")
+								: "";
+						const onQuickStart = path.includes("/dashboard/quickstart");
+						if (onQuickStart) {
+							campaignDebugLog("launch-router-push-skipped", {
+								reason: "quickstart-open-webhooks",
+								destination: fullUrl,
+							});
+							return;
+						}
+						if (current !== fullUrl) {
+							router.push(fullUrl);
+							campaignDebugLog("launch-router-push", {
+								destination: fullUrl,
+							});
+						} else {
+							campaignDebugLog("launch-router-push-skipped", {
+								reason: "same-url",
+								destination: fullUrl,
+							});
+						}
+					} catch {}
+				}, 0);
 			}
 
 			campaignDebugLog("launch-success", {
@@ -883,30 +988,210 @@ export const CampaignModalMain: FC<CampaignModalMainProps> = ({
 	]);
 
 	const handleCreateAbTest = (label?: string) => {
-		// Only create A/B test if explicitly requested
+		// Create A/B test variant: mock-launch current setup, then duplicate settings and restart flow
 		console.log("Creating A/B test variant:", label);
 		setAbTestingEnabled(true);
+
+		// 1) Mock-launch the current campaign so Variant A is recorded
+		try {
+			const nowIso = new Date().toISOString();
+			const mockId = `mock_${Date.now()}`;
+			const normalizedName = campaignName || "Untitled Campaign";
+			const registrationChannel =
+				primaryChannel === "call" ||
+				primaryChannel === "text" ||
+				primaryChannel === "social"
+					? (primaryChannel as "call" | "text" | "social")
+					: primaryChannel === "directmail"
+						? ("direct" as const)
+						: ("email" as const);
+
+			switch (registrationChannel) {
+				case "call":
+				case "text":
+				case "social": {
+					const mockCallCampaign: CallCampaign = {
+						id: mockId,
+						name: normalizedName,
+						goal: campaignGoal || undefined,
+						status: "queued",
+						startDate: nowIso,
+						callInformation: [],
+						callerNumber: "",
+						receiverNumber: "",
+						duration: 0,
+						callType: "outbound",
+						calls: 0,
+						inQueue: 0,
+						leads: 0,
+						voicemail: 0,
+						hungUp: 0,
+						dead: 0,
+						wrongNumber: 0,
+						inactiveNumbers: 0,
+						dnc: 0,
+						endedReason: [],
+					};
+					registerLaunchedCampaign({
+						channel: registrationChannel,
+						campaign: mockCallCampaign,
+					});
+					break;
+				}
+				case "email": {
+					const mockEmailCampaign: EmailCampaign = {
+						id: mockId,
+						name: normalizedName,
+						goal: campaignGoal || undefined,
+						status: "queued",
+						startDate: nowIso,
+						emails: [],
+						senderEmail: "",
+						recipientCount: 0,
+						sentCount: 0,
+						deliveredCount: 0,
+						openedCount: 0,
+						bouncedCount: 0,
+						failedCount: 0,
+					};
+					registerLaunchedCampaign({
+						channel: "email",
+						campaign: mockEmailCampaign,
+					});
+					break;
+				}
+				case "direct": {
+					const directCampaign: DirectMailCampaign = {
+						id: mockId,
+						name: normalizedName,
+						status: "queued",
+						startDate: nowIso,
+						template: { id: `tmpl_${mockId}`, name: normalizedName },
+						mailType: "letter",
+						mailSize: "8.5x11",
+						addressVerified: false,
+						expectedDeliveryAt: new Date(
+							Date.now() + 7 * 24 * 60 * 60 * 1000,
+						).toISOString(),
+						lastEventAt: nowIso,
+						deliveredCount: 0,
+						returnedCount: 0,
+						failedCount: 0,
+						cost: 0,
+						leadsDetails: [],
+						lob: null,
+					};
+					registerLaunchedCampaign({
+						channel: "direct",
+						campaign: directCampaign,
+					});
+					break;
+				}
+			}
+		} catch {}
+
+		// 2) Prepare variant B name and restart flow
 		const variantLabel = (label || "Variant B").trim();
 		if (campaignName) {
+			// Remove any existing variant suffix to avoid duplications
 			const base = campaignName.replace(/\s*\(Variant[^)]*\)$/i, "").trim();
 			setCampaignName(`${base} (${variantLabel})`);
 		}
+		// If user had a single lead list selected, seed Variant A with it
 		if (areaMode === "leadList" && selectedLeadListId && !selectedLeadListAId) {
 			setSelectedLeadListAId(selectedLeadListId);
 			setSelectedLeadListId("");
 		}
-		// Don't automatically go back to step 0 - let user continue with A/B setup
-		// setStep(0);
+		// Reset to step 0 to start new campaign creation flow with same settings
+		setStep(0);
 	};
 
+	const handleEvaluate = useCallback(
+		async (criteria: {
+			name?: string;
+			description?: string;
+			type: "chat.mockConversation";
+			messages: Array<{
+				role: string;
+				content: string;
+				type?: string;
+			}>;
+		}) => {
+			try {
+				// TODO: Replace with actual API call to create evaluation
+				// For now, simulate with a mock eval run ID
+				// This should be replaced with: POST /api/campaigns/evaluate
+				// which returns { evalRunId: string }
+				const mockEvalRunId = `eval_${Date.now()}`;
+
+				// In production, this would be:
+				// const response = await fetch('/api/campaigns/evaluate', {
+				//   method: 'POST',
+				//   body: JSON.stringify(criteria),
+				// });
+				// const { evalRunId } = await response.json();
+
+				setEvalRunId(mockEvalRunId);
+				setEvalReportOpen(true);
+				toast.success("Evaluation started successfully");
+			} catch (error) {
+				console.error("Failed to start evaluation:", error);
+				toast.error(
+					error instanceof Error ? error.message : "Failed to start evaluation",
+				);
+			}
+		},
+		[],
+	);
+
+	// Reset form when modal closes (with deferred execution to prevent loops)
 	useEffect(() => {
-		if (!isOpen) {
-			customizationForm.reset(DEFAULT_CUSTOMIZATION_VALUES);
+		if (!isOpen && isMountedRef.current) {
+			// Defer form reset to prevent immediate re-renders
+			const timeoutId = setTimeout(() => {
+				if (isMountedRef.current && !isOpenRef.current) {
+					customizationForm.reset(DEFAULT_CUSTOMIZATION_VALUES);
+				}
+			}, 0);
+
+			return () => clearTimeout(timeoutId);
 		}
-	}, [isOpen, customizationForm]);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [isOpen]);
+
+	const handleDialogOpenChange = useCallback(
+		(newOpen: boolean) => {
+			// Prevent duplicate state updates
+			if (newOpen === isOpenRef.current) return;
+
+			// Update ref immediately
+			isOpenRef.current = newOpen;
+			liveIsOpenRef.current = newOpen;
+
+			if (!newOpen) {
+				// Mark as closing to prevent duplicate close operations
+				if (!closingStateRef.current.closing) {
+					closingStateRef.current.closing = true;
+					closingStateRef.current.renderCount = 0;
+				}
+				// Defer the actual close to prevent render-time updates
+				setTimeout(() => {
+					if (isMountedRef.current) {
+						onOpenChange(false);
+					}
+				}, 0);
+			} else {
+				// Opening - reset closing state
+				closingStateRef.current.closing = false;
+				closingStateRef.current.renderCount = 0;
+				onOpenChange(true);
+			}
+		},
+		[onOpenChange],
+	);
 
 	return (
-		<Dialog open={isOpen} onOpenChange={onOpenChange}>
+		<Dialog open={isOpen} onOpenChange={handleDialogOpenChange}>
 			<DialogContent className="-translate-x-1/2 -translate-y-1/2 fixed top-1/2 left-1/2 z-50 flex h-[85vh] max-h-[85vh] min-h-0 w-full max-w-xl flex-col gap-0 overflow-hidden rounded-xl border bg-background p-0 text-foreground shadow-lg outline-none">
 				<div className="min-h-0 flex-1 overflow-y-auto bg-card px-6 pr-7 pb-6 text-card-foreground">
 					{step === 0 && (
@@ -932,6 +1217,9 @@ export const CampaignModalMain: FC<CampaignModalMainProps> = ({
 						<FinalizeCampaignStep
 							onBack={prevStep}
 							onLaunch={launchCampaign}
+							onCreateAbTest={handleCreateAbTest}
+							onEvaluate={handleEvaluate}
+							isModalOpen={isOpen}
 							estimatedCredits={Math.max(
 								estimatedCredits,
 								leadCount > 0 ? 100 : 0,
@@ -946,6 +1234,13 @@ export const CampaignModalMain: FC<CampaignModalMainProps> = ({
 					/>
 				</div>
 			</DialogContent>
+			<EvaluationReportModal
+				evalRunId={evalRunId}
+				open={evalReportOpen}
+				onOpenChange={setEvalReportOpen}
+			/>
 		</Dialog>
 	);
 };
+
+export default CampaignModalMain;

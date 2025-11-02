@@ -1,18 +1,22 @@
 import type { FC } from "react";
-import { useEffect, useState } from "react";
-import { useFieldArray, useForm } from "react-hook-form";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useFieldArray, useForm, type UseFormReturn } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 
-import { useCampaignCreationStore } from "@/lib/stores/campaignCreation";
+import {
+	type Agent,
+	useCampaignCreationStore,
+} from "@/lib/stores/campaignCreation";
 import {
 	Form,
+	FormControl,
 	FormField,
 	FormItem,
-	FormControl,
-	FormMessage,
 	FormLabel,
+	FormMessage,
 } from "../../../../components/ui/form";
+import { Label } from "../../../../components/ui/label";
 import PhoneNumberInput from "./channelCustomization/PhoneNumberInput";
 import AreaModeSelector from "./channelCustomization/AreaModeSelector";
 import LeadListSelector from "./channelCustomization/LeadListSelector";
@@ -25,12 +29,19 @@ import {
 	SelectValue,
 } from "../../../../components/ui/select";
 import { Button } from "../../../../components/ui/button";
+import { Input } from "../../../../components/ui/input";
 import { Textarea } from "../../../../components/ui/textarea";
 import { Checkbox } from "../../../../components/ui/checkbox";
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuTrigger,
+} from "../../../../components/ui/dropdown-menu";
+import { ChevronDown, Pause, Play } from "lucide-react";
 import AllRecipientDropdown from "../../../../../../ai-avatar-dropdown/AllRecipientDropdown";
 
 // * Step 2: Channel Customization
-import type { UseFormReturn } from "react-hook-form";
 
 interface ChannelCustomizationStepProps {
 	onNext: () => void;
@@ -95,6 +106,7 @@ export const FormSchema = z
 			.trim()
 			.optional()
 			.refine((val) => !val || /^MG[a-zA-Z0-9]{32}$/.test(val), {
+				message: "Invalid Messaging Service SID format.",
 			}),
 		senderPoolNumbersCsv: z.string().default(""), // CSV of E.164 numbers
 		smartEncodingEnabled: z.boolean().default(true),
@@ -118,7 +130,7 @@ export const FormSchema = z
 		skipName: z.boolean().default(false),
 		addressVerified: z.boolean().default(false),
 		phoneVerified: z.boolean().default(false),
-	emailAddress: z.union([z.string().email(), z.literal("")]).optional(),
+		emailAddress: z.union([z.string().email(), z.literal("")]).optional(),
 		emailVerified: z.boolean().default(false),
 		possiblePhones: z.string().optional(),
 		possibleEmails: z.string().optional(),
@@ -241,6 +253,12 @@ const ChannelCustomizationStep: FC<ChannelCustomizationStepProps> = ({
 		numberSelectionStrategy,
 		setNumberSelectionStrategy,
 		setAvailableSenderNumbers,
+
+		// Voice and voicemail preferences
+		preferredVoicemailVoiceId,
+		setPreferredVoicemailVoiceId,
+		preferredVoicemailMessageId,
+		setPreferredVoicemailMessageId,
 	} = useCampaignCreationStore();
 
 	const watchedAreaMode = form.watch("areaMode");
@@ -255,6 +273,150 @@ const ChannelCustomizationStep: FC<ChannelCustomizationStepProps> = ({
 	const [poolingExpanded, setPoolingExpanded] = useState(false);
 	const [loadingNumbers, setLoadingNumbers] = useState(false);
 	const [numbersError, setNumbersError] = useState<string | null>(null);
+
+	// Derived labels for voice and voicemail message
+	const voiceLabel = useMemo(() => {
+		const map: Record<string, string> = {
+			voice_emma: "Emma (Natural)",
+			voice_paul: "Paul (Warm)",
+			voice_matthew: "Matthew (Clear)",
+		};
+		return preferredVoicemailVoiceId
+			? (map[preferredVoicemailVoiceId] ?? "Select a voice")
+			: "Select a voice";
+	}, [preferredVoicemailVoiceId]);
+
+	const messageLabel = useMemo(() => {
+		const map: Record<string, string> = {
+			vm_professional: "Professional Business Message",
+			vm_friendly: "Friendly Personal Message",
+			vm_urgent: "Urgent Callback Message",
+			vm_custom: "Custom Message (Upload Audio)",
+		};
+		return preferredVoicemailMessageId
+			? (map[preferredVoicemailMessageId] ?? "Select a voicemail message")
+			: "Select a voicemail message";
+	}, [preferredVoicemailMessageId]);
+
+	// Audio preview control
+	const audioRef = useRef<HTMLAudioElement | null>(null);
+	const [playingKey, setPlayingKey] = useState<string | null>(null);
+
+	// Text/SMS settings from store
+	const {
+		textSignature,
+		setTextSignature,
+		smsCanSendImages,
+		setSmsCanSendImages,
+		smsCanSendVideos,
+		setSmsCanSendVideos,
+		smsCanSendLinks,
+		setSmsCanSendLinks,
+		smsMediaSource,
+		setSmsMediaSource,
+		smsAppendAgentName,
+		setSmsAppendAgentName,
+		selectedAgentId,
+	} = useCampaignCreationStore();
+
+	// Prefill signature for Text channel based on company name
+	// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
+	useEffect(() => {
+		if (watchedPrimaryChannel === "text") {
+			if (!textSignature || textSignature.trim().length === 0) {
+				try {
+					// eslint-disable-next-line @typescript-eslint/no-var-requires
+					const profile =
+						require("@/constants/_faker/profile/userProfile").mockUserProfile;
+					const company = profile?.companyInfo?.companyName || "Your Company";
+					setTextSignature(`-- ${company}`);
+				} catch {
+					setTextSignature("--");
+				}
+			}
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [watchedPrimaryChannel]);
+
+	const agentName = (() => {
+		try {
+			const found = (availableAgents || []).find(
+				(a: Agent) => a.id === selectedAgentId,
+			);
+			return found?.name || "Your Agent";
+		} catch {
+			return "Your Agent";
+		}
+	})();
+
+	const getAudioUrl = (
+		kind: "voice" | "message",
+		id: string,
+	): string | null => {
+		const voiceMap: Record<string, string> = {
+			voice_emma: "/audio/voices/voice_emma.mp3",
+			voice_paul: "/audio/voices/voice_paul.mp3",
+			voice_matthew: "/audio/voices/voice_matthew.mp3",
+		};
+		const msgMap: Record<string, string> = {
+			vm_professional: "/audio/messages/vm_professional.mp3",
+			vm_friendly: "/audio/messages/vm_friendly.mp3",
+			vm_urgent: "/audio/messages/vm_urgent.mp3",
+			vm_custom: "/audio/messages/vm_custom.mp3",
+		};
+		return kind === "voice" ? (voiceMap[id] ?? null) : (msgMap[id] ?? null);
+	};
+
+	const stopAudio = () => {
+		try {
+			audioRef.current?.pause();
+			if (audioRef.current) audioRef.current.currentTime = 0;
+		} catch {}
+		audioRef.current = null;
+	};
+
+	const handleTogglePlay = (
+		e: React.MouseEvent,
+		kind: "voice" | "message",
+		id: string,
+		label: string,
+	) => {
+		e.stopPropagation();
+		const key = `${kind}:${id}`;
+		if (playingKey === key) {
+			stopAudio();
+			setPlayingKey(null);
+			return;
+		}
+		stopAudio();
+		const url = getAudioUrl(kind, id);
+		if (!url) {
+			// eslint-disable-next-line no-console
+			console.warn("No preview available for", { kind, id, label });
+			setPlayingKey(null);
+			return;
+		}
+		try {
+			const audio = new Audio(url);
+			audioRef.current = audio;
+			void audio.play().catch((err) => {
+				// eslint-disable-next-line no-console
+				console.warn("Audio preview failed", { kind, id, error: err });
+				setPlayingKey(null);
+			});
+			setPlayingKey(key);
+			audio.onended = () => {
+				setPlayingKey((curr) => (curr === key ? null : curr));
+			};
+		} catch (err) {
+			// eslint-disable-next-line no-console
+			console.warn("Audio init failed", { kind, id, error: err });
+			setPlayingKey(null);
+		}
+	};
+
+	// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
+	useEffect(() => () => stopAudio(), []);
 
 	const { fields, append, remove } = useFieldArray({
 		control: form.control,
@@ -382,8 +544,7 @@ const ChannelCustomizationStep: FC<ChannelCustomizationStepProps> = ({
 		watchedTransferType === "appraisal";
 
 	// Normalize direct mail channel check to store representation ('email')
-	const isDirectMailChannel =
-		primaryChannel != null && (primaryChannel as unknown as string) === "email";
+	const isDirectMailChannel = String(primaryChannel ?? "") === "email";
 
 	return (
 		<Form {...form}>
@@ -527,9 +688,8 @@ const ChannelCustomizationStep: FC<ChannelCustomizationStepProps> = ({
 													Messaging Service SID
 												</FormLabel>
 												<FormControl>
-													<input
+													<Input
 														id="twilio-messaging-service-sid"
-														className="w-full rounded-md border bg-background px-3 py-2"
 														placeholder="MGXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
 														disabled={!poolingEnabled}
 														{...field}
@@ -552,11 +712,10 @@ const ChannelCustomizationStep: FC<ChannelCustomizationStepProps> = ({
 													Per-number daily limit
 												</FormLabel>
 												<FormControl>
-													<input
+													<Input
 														id="per-number-daily-limit"
 														type="number"
 														min={1}
-														className="w-full rounded-md border bg-background px-3 py-2"
 														value={field.value ?? 75}
 														onChange={(e) =>
 															field.onChange(Number(e.target.value))
@@ -631,6 +790,379 @@ const ChannelCustomizationStep: FC<ChannelCustomizationStepProps> = ({
 								</div>
 							)}
 						</div>
+					)}
+
+					{/* Text Messaging Settings (separate card) */}
+					{watchedPrimaryChannel === "text" && (
+						<div className="mt-4 space-y-4 rounded-md border p-3">
+							<div>
+								<FormLabel>Text Signature</FormLabel>
+								<FormControl>
+									<Input
+										placeholder="-- Your Name"
+										value={textSignature}
+										onChange={(e) => setTextSignature(e.target.value)}
+									/>
+								</FormControl>
+							</div>
+							<div className="flex items-center gap-2">
+								<Checkbox
+									id="append-agent-name"
+									checked={smsAppendAgentName}
+									onCheckedChange={(v) => setSmsAppendAgentName(Boolean(v))}
+								/>
+								<Label className="!m-0" htmlFor="append-agent-name">
+									Auto-append agent name
+								</Label>
+							</div>
+							<p className="text-muted-foreground text-xs">
+								Final signature: {(textSignature || "").trim() || "--"}
+								{smsAppendAgentName ? ` ${agentName}` : ""}
+							</p>
+							<div>
+								<FormLabel>Media Source</FormLabel>
+								<div className="mt-1">
+									<Select
+										value={smsMediaSource}
+										onValueChange={(v) =>
+											setSmsMediaSource(v as "ai" | "stock" | "hybrid")
+										}
+									>
+										<SelectTrigger>
+											<SelectValue placeholder="Choose source" />
+										</SelectTrigger>
+										<SelectContent>
+											<SelectItem value="ai">AI-generated media</SelectItem>
+											<SelectItem value="stock">Stock assets</SelectItem>
+											<SelectItem value="hybrid">Hybrid</SelectItem>
+										</SelectContent>
+									</Select>
+								</div>
+							</div>
+							<div>
+								<FormLabel>Media Permissions</FormLabel>
+								<div className="mt-2 grid grid-cols-1 gap-x-4 gap-y-2 md:grid-cols-3">
+									<FormItem className="flex flex-row items-center space-x-2 space-y-0">
+										<FormControl>
+											<Checkbox
+												id="sms-can-send-images"
+												checked={smsCanSendImages}
+												onCheckedChange={(v) => setSmsCanSendImages(Boolean(v))}
+											/>
+										</FormControl>
+										<FormLabel
+											htmlFor="sms-can-send-images"
+											className="font-normal"
+										>
+											Can send images
+										</FormLabel>
+									</FormItem>
+									<FormItem className="flex flex-row items-center space-x-2 space-y-0">
+										<FormControl>
+											<Checkbox
+												id="sms-can-send-videos"
+												checked={smsCanSendVideos}
+												onCheckedChange={(v) => setSmsCanSendVideos(Boolean(v))}
+											/>
+										</FormControl>
+										<FormLabel
+											htmlFor="sms-can-send-videos"
+											className="font-normal"
+										>
+											Can send videos
+										</FormLabel>
+									</FormItem>
+									<FormItem className="flex flex-row items-center space-x-2 space-y-0">
+										<FormControl>
+											<Checkbox
+												id="sms-can-send-links"
+												checked={smsCanSendLinks}
+												onCheckedChange={(v) => setSmsCanSendLinks(Boolean(v))}
+											/>
+										</FormControl>
+										<FormLabel
+											htmlFor="sms-can-send-links"
+											className="font-normal"
+										>
+											Can send links
+										</FormLabel>
+									</FormItem>
+								</div>
+								<p className="mt-2 text-muted-foreground text-xs">
+									These limits affect message composition and compliance; media
+									may count as multiple segments.
+								</p>
+							</div>
+						</div>
+					)}
+
+					{watchedPrimaryChannel === "call" && (
+						<>
+							{/* Voice and Voicemail Preferences */}
+							<div className="space-y-6">
+								<div className="space-y-3">
+									<Label>Voice</Label>
+									<div className="space-y-2">
+										<DropdownMenu>
+											<DropdownMenuTrigger asChild>
+												<Button
+													variant="outline"
+													className="w-full justify-between"
+												>
+													<span>{voiceLabel}</span>
+													<ChevronDown className="h-4 w-4 opacity-50" />
+												</Button>
+											</DropdownMenuTrigger>
+											<DropdownMenuContent className="w-full min-w-[300px]">
+												<DropdownMenuItem
+													onSelect={() =>
+														setPreferredVoicemailVoiceId("voice_emma")
+													}
+												>
+													<div className="flex w-full items-center justify-between">
+														<span>Emma (Natural)</span>
+														<div className="flex items-center gap-1">
+															<Button
+																type="button"
+																variant="ghost"
+																size="sm"
+																className="h-6 w-6 p-0"
+																onClick={(e) =>
+																	handleTogglePlay(
+																		e,
+																		"voice",
+																		"voice_emma",
+																		"Emma (Natural)",
+																	)
+																}
+															>
+																{playingKey === "voice:voice_emma" ? (
+																	<Pause className="h-3 w-3" />
+																) : (
+																	<Play className="h-3 w-3" />
+																)}
+															</Button>
+														</div>
+													</div>
+												</DropdownMenuItem>
+												<DropdownMenuItem
+													onSelect={() =>
+														setPreferredVoicemailVoiceId("voice_paul")
+													}
+												>
+													<div className="flex w-full items-center justify-between">
+														<span>Paul (Warm)</span>
+														<div className="flex items-center gap-1">
+															<Button
+																type="button"
+																variant="ghost"
+																size="sm"
+																className="h-6 w-6 p-0"
+																onClick={(e) =>
+																	handleTogglePlay(
+																		e,
+																		"voice",
+																		"voice_paul",
+																		"Paul (Warm)",
+																	)
+																}
+															>
+																{playingKey === "voice:voice_paul" ? (
+																	<Pause className="h-3 w-3" />
+																) : (
+																	<Play className="h-3 w-3" />
+																)}
+															</Button>
+														</div>
+													</div>
+												</DropdownMenuItem>
+												<DropdownMenuItem
+													onSelect={() =>
+														setPreferredVoicemailVoiceId("voice_matthew")
+													}
+												>
+													<div className="flex w-full items-center justify-between">
+														<span>Matthew (Clear)</span>
+														<div className="flex items-center gap-1">
+															<Button
+																type="button"
+																variant="ghost"
+																size="sm"
+																className="h-6 w-6 p-0"
+																onClick={(e) =>
+																	handleTogglePlay(
+																		e,
+																		"voice",
+																		"voice_matthew",
+																		"Matthew (Clear)",
+																	)
+																}
+															>
+																{playingKey === "voice:voice_matthew" ? (
+																	<Pause className="h-3 w-3" />
+																) : (
+																	<Play className="h-3 w-3" />
+																)}
+															</Button>
+														</div>
+													</div>
+												</DropdownMenuItem>
+											</DropdownMenuContent>
+										</DropdownMenu>
+										<p className="text-muted-foreground text-xs">
+											Overrides any agent voice.
+										</p>
+									</div>
+								</div>
+
+								<div className="space-y-4">
+									<div className="space-y-2">
+										<Label className="block">Preferred Voicemail Message</Label>
+										<DropdownMenu>
+											<DropdownMenuTrigger asChild>
+												<Button
+													variant="outline"
+													className="w-full justify-between"
+												>
+													<span>{messageLabel}</span>
+													<ChevronDown className="h-4 w-4 opacity-50" />
+												</Button>
+											</DropdownMenuTrigger>
+											<DropdownMenuContent className="w-full min-w-[300px]">
+												<DropdownMenuItem
+													onSelect={() =>
+														setPreferredVoicemailMessageId("vm_professional")
+													}
+												>
+													<div className="flex w-full items-center justify-between">
+														<span>Professional Business Message</span>
+														<div className="flex items-center gap-1">
+															<Button
+																type="button"
+																variant="ghost"
+																size="sm"
+																className="h-6 w-6 p-0"
+																onClick={(e) =>
+																	handleTogglePlay(
+																		e,
+																		"message",
+																		"vm_professional",
+																		"Professional Business Message",
+																	)
+																}
+															>
+																{playingKey === "message:vm_professional" ? (
+																	<Pause className="h-3 w-3" />
+																) : (
+																	<Play className="h-3 w-3" />
+																)}
+															</Button>
+														</div>
+													</div>
+												</DropdownMenuItem>
+												<DropdownMenuItem
+													onSelect={() =>
+														setPreferredVoicemailMessageId("vm_friendly")
+													}
+												>
+													<div className="flex w-full items-center justify-between">
+														<span>Friendly Personal Message</span>
+														<div className="flex items-center gap-1">
+															<Button
+																type="button"
+																variant="ghost"
+																size="sm"
+																className="h-6 w-6 p-0"
+																onClick={(e) =>
+																	handleTogglePlay(
+																		e,
+																		"message",
+																		"vm_friendly",
+																		"Friendly Personal Message",
+																	)
+																}
+															>
+																{playingKey === "message:vm_friendly" ? (
+																	<Pause className="h-3 w-3" />
+																) : (
+																	<Play className="h-3 w-3" />
+																)}
+															</Button>
+														</div>
+													</div>
+												</DropdownMenuItem>
+												<DropdownMenuItem
+													onSelect={() =>
+														setPreferredVoicemailMessageId("vm_urgent")
+													}
+												>
+													<div className="flex w-full items-center justify-between">
+														<span>Urgent Callback Message</span>
+														<div className="flex items-center gap-1">
+															<Button
+																type="button"
+																variant="ghost"
+																size="sm"
+																className="h-6 w-6 p-0"
+																onClick={(e) =>
+																	handleTogglePlay(
+																		e,
+																		"message",
+																		"vm_urgent",
+																		"Urgent Callback Message",
+																	)
+																}
+															>
+																{playingKey === "message:vm_urgent" ? (
+																	<Pause className="h-3 w-3" />
+																) : (
+																	<Play className="h-3 w-3" />
+																)}
+															</Button>
+														</div>
+													</div>
+												</DropdownMenuItem>
+												<DropdownMenuItem
+													onSelect={() =>
+														setPreferredVoicemailMessageId("vm_custom")
+													}
+												>
+													<div className="flex w-full items-center justify-between">
+														<span>Custom Message (Upload Audio)</span>
+														<div className="flex items-center gap-1">
+															<Button
+																type="button"
+																variant="ghost"
+																size="sm"
+																className="h-6 w-6 p-0"
+																onClick={(e) =>
+																	handleTogglePlay(
+																		e,
+																		"message",
+																		"vm_custom",
+																		"Custom Message",
+																	)
+																}
+															>
+																{playingKey === "message:vm_custom" ? (
+																	<Pause className="h-3 w-3" />
+																) : (
+																	<Play className="h-3 w-3" />
+																)}
+															</Button>
+														</div>
+													</div>
+												</DropdownMenuItem>
+											</DropdownMenuContent>
+										</DropdownMenu>
+										<p className="text-muted-foreground text-xs">
+											Choose a pre-recorded voicemail message or upload your own
+											audio file.
+										</p>
+									</div>
+								</div>
+							</div>
+						</>
 					)}
 
 					{/* Transfer toggle and agent selection */}
@@ -928,8 +1460,7 @@ const ChannelCustomizationStep: FC<ChannelCustomizationStepProps> = ({
 								<FormItem>
 									<FormLabel>Zip Code</FormLabel>
 									<FormControl>
-										<input
-											className="w-full rounded-md border bg-background px-3 py-2"
+										<Input
 											placeholder="Enter US zip code (e.g., 12345 or 12345-6789)"
 											{...field}
 										/>
