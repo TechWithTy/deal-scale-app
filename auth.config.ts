@@ -211,6 +211,7 @@ function applyExtendedUserToToken(
         token.subscription = userData.subscription;
         token.isBetaTester = userData.isBetaTester;
         token.isPilotTester = userData.isPilotTester;
+        token.demoConfig = userData.demoConfig;
         if (userData.id) {
                 token.sub = userData.id;
         }
@@ -235,6 +236,7 @@ function applyTokenToSessionUser(
         sessionUser.subscription = token.subscription;
         sessionUser.isBetaTester = token.isBetaTester;
         sessionUser.isPilotTester = token.isPilotTester;
+        sessionUser.demoConfig = token.demoConfig;
         if (typeof token.sub === "string" && token.sub) {
                 sessionUser.id = token.sub;
         }
@@ -283,13 +285,51 @@ const authConfig = {
                                         required: false,
                                 },
                         },
-                        async authorize(credentials) {
+			async authorize(credentials) {
 				const email = credentials?.email as string | undefined;
 				const password = credentials?.password as string | undefined;
 
 				if (!email || !password) return null;
 
-				const user = getUserByEmail(email);
+				// Check if this is a custom demo user
+				const isCustomUser = credentials?.isCustomUser === "true";
+				let user: User | undefined;
+
+				if (isCustomUser && credentials?.customUserData) {
+					try {
+						const customData = JSON.parse(credentials.customUserData as string);
+						// Build a User object from custom data
+						user = {
+							id: customData.id,
+							name: customData.name,
+							email: customData.email,
+							password: customData.password,
+							role: customData.role,
+							tier: customData.tier,
+							permissions: customData.permissions,
+							permissionList: customData.permissionList,
+							quotas: {
+								ai: customData.aiCredits,
+								leads: customData.leadsCredits,
+								skipTraces: customData.skipTracesCredits,
+							},
+							subscription: {
+								aiCredits: customData.aiCredits,
+								leads: customData.leadsCredits,
+								skipTraces: customData.skipTracesCredits,
+							},
+							isBetaTester: customData.isBetaTester,
+							isPilotTester: customData.isPilotTester,
+							demoConfig: customData.demoConfig,
+						};
+					} catch (error) {
+						console.error("Failed to parse custom user data:", error);
+						return null;
+					}
+				} else {
+					user = getUserByEmail(email);
+				}
+
 				if (!user) return null;
 
 				// Simple mock validation against in-memory users
@@ -405,6 +445,7 @@ const authConfig = {
                                         subscription: updatedSub,
                                         isBetaTester,
                                         isPilotTester,
+                                        demoConfig: user.demoConfig,
                                 } as NextAuthUser;
                         },
                 }),
@@ -476,6 +517,7 @@ const authConfig = {
 						extendedToken.subscription = impersonatedUser.subscription || extendedToken.subscription;
 						extendedToken.isBetaTester = impersonatedUser.isBetaTester ?? extendedToken.isBetaTester;
 						extendedToken.isPilotTester = impersonatedUser.isPilotTester ?? extendedToken.isPilotTester;
+						extendedToken.demoConfig = impersonatedUser.demoConfig || extendedToken.demoConfig;
 						if (impersonatedUser.id) {
 							extendedToken.sub = impersonatedUser.id;
 						}

@@ -37,6 +37,56 @@ export type UserRole =
 
 export type UserTier = SubscriptionTier;
 
+export type ClientType = "investor" | "wholesaler" | "agent" | "loan_officer";
+
+/**
+ * Demo configuration for realistic client simulations.
+ * Allows customizing the user experience to match potential client branding.
+ */
+export interface DemoConfig {
+	/** Client company name for branding */
+	companyName?: string;
+	/** URL or path to company logo */
+	companyLogo?: string;
+	/** Company website URL */
+	website?: string;
+	/** Primary contact email */
+	email?: string;
+	/** Primary contact phone number */
+	phoneNumber?: string;
+	/** Company address line 1 */
+	address?: string;
+	/** City */
+	city?: string;
+	/** State/Province */
+	state?: string;
+	/** ZIP/Postal code */
+	zipCode?: string;
+	/** Industry/vertical (e.g., "Real Estate", "SaaS", "E-commerce") */
+	industry?: string;
+	/** Client type/role */
+	clientType?: ClientType;
+	/** Client's primary goal */
+	goal?: string;
+	/** Social media links */
+	social?: {
+		facebook?: string;
+		instagram?: string;
+		linkedin?: string;
+		twitter?: string;
+		youtube?: string;
+		tiktok?: string;
+	};
+	/** Primary brand color (hex) */
+	brandColor?: string;
+	/** Secondary brand color (hex) */
+	brandColorSecondary?: string;
+	/** Accent brand color (hex) */
+	brandColorAccent?: string;
+	/** Additional notes about the demo client */
+	notes?: string;
+}
+
 export interface User {
 	id: string;
 	name: string;
@@ -54,5 +104,7 @@ export interface User {
 		leads: { allotted: number; used: number; resetInDays: number };
 		skipTraces: { allotted: number; used: number; resetInDays: number };
 	};
+	/** Optional demo configuration for client simulations */
+	demoConfig?: DemoConfig;
 }
 import type { SubscriptionTier } from "@/constants/subscription/tiers";

@@ -146,7 +146,7 @@ export default function SidebarClient({ user }: { user: UserProfile | null }) {
 					{/* Quick Start Section - Prominent and Standout */}
 					<div className="px-3 py-2">
 						<Link
-							href="/dashboard/quickstart"
+							href="/dashboard"
 							className={cn(
 								"group flex items-center gap-3 rounded-lg bg-primary px-3 py-3 font-medium text-primary-foreground transition-all hover:bg-primary/90 hover:shadow-md",
 								isSidebarMinimized ? "justify-center px-2" : "justify-start",
