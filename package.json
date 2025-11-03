@@ -19,6 +19,7 @@
 		"typecheck": "tsc -p tsconfig.typecheck.json --noEmit",
 		"postinstall:submodules": "node scripts/postinstall.js",
 		"clean:external": "node scripts/clean-external-node-modules.js",
+		"clean:cache": "node scripts/clear-next-cache.js",
 		"bdd": "set TS_NODE_PROJECT=tsconfig.cucumber.json&& cucumber-js --require-module ts-node/register/transpile-only --require-module tsconfig-paths/register --require lib/stores/user/_tests/_steps/support.ts",
 		"bdd:stores": "set TS_NODE_PROJECT=tsconfig.cucumber.json&& cucumber-js --tags '@stores' --require-module ts-node/register/transpile-only --require-module tsconfig-paths/register --require lib/stores/user/_tests/_steps/support.ts"
 	},

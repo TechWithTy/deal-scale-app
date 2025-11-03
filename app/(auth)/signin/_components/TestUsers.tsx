@@ -14,6 +14,8 @@ const testUsers = users as unknown as TestUser[];
 const STORAGE_KEY = "dealscale_custom_demo_users";
 
 export function TestUsers() {
+	// Track if component has hydrated to prevent SSR mismatch
+	const [isHydrated, setIsHydrated] = useState(false);
 	const [editableUsers, setEditableUsers] = useState<EditableUser[]>(() =>
 		initializeEditableUsers(testUsers),
 	);
@@ -31,6 +33,8 @@ export function TestUsers() {
 		} catch (error) {
 			console.error("Failed to load custom demo users:", error);
 		}
+		// Mark as hydrated after loading localStorage
+		setIsHydrated(true);
 	}, []);
 
 	// Save custom users to localStorage whenever they change
@@ -65,6 +69,16 @@ export function TestUsers() {
 			});
 		}
 	};
+
+	// Don't render until hydrated to avoid SSR mismatch
+	if (!isHydrated) {
+		return (
+			<div className="mx-auto mt-8 w-full max-w-md">
+				<h2 className="mb-6 text-center font-semibold text-xl">Test Users</h2>
+				<div className="text-center text-muted-foreground">Loading...</div>
+			</div>
+		);
+	}
 
 	return (
 		<div className="mx-auto mt-8 w-full max-w-md">
