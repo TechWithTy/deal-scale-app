@@ -75,9 +75,11 @@ const nextConfig = {
 		],
 	},
 
+	// Only apply production optimizations in production mode
+	// Running these in development causes webpack module factory corruption
 	compiler: {
-		removeConsole: true,
-		reactRemoveProperties: true,
+		removeConsole: process.env.NODE_ENV === "production",
+		reactRemoveProperties: process.env.NODE_ENV === "production",
 	},
 
 	modularizeImports: {
