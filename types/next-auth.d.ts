@@ -1,6 +1,7 @@
 import type { DefaultSession } from "next-auth";
 import type { JWT as NextAuthJWT } from "next-auth/jwt";
 import type {
+	DemoConfig,
 	PermissionMatrix,
 	UserQuotas,
 	UserRole,
@@ -24,6 +25,11 @@ declare module "next-auth" {
 			quotas?: UserQuotas;
 			isBetaTester?: boolean;
 			isPilotTester?: boolean;
+			demoConfig?: DemoConfig;
+			quickStartDefaults?: {
+				personaId?: "investor" | "wholesaler" | "lender" | "agent";
+				goalId?: string;
+			};
 		} & DefaultSession["user"];
 	}
 
@@ -37,6 +43,11 @@ declare module "next-auth" {
 		quotas?: UserQuotas;
 		isBetaTester?: boolean;
 		isPilotTester?: boolean;
+		demoConfig?: DemoConfig;
+		quickStartDefaults?: {
+			personaId?: "investor" | "wholesaler" | "lender" | "agent";
+			goalId?: string;
+		};
 	}
 }
 
@@ -52,5 +63,10 @@ declare module "next-auth/jwt" {
 		quotas?: UserQuotas;
 		isBetaTester?: boolean;
 		isPilotTester?: boolean;
+		demoConfig?: DemoConfig;
+		quickStartDefaults?: {
+			personaId?: "investor" | "wholesaler" | "lender" | "agent";
+			goalId?: string;
+		};
 	}
 }

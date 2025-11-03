@@ -3,7 +3,7 @@ import React from "react";
 import { act } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import QuickStartPage from "@/app/dashboard/quickstart/page";
+import QuickStartPage from "@/app/dashboard/page";
 import { useCampaignCreationStore } from "@/lib/stores/campaignCreation";
 
 (globalThis as Record<string, unknown>).React = React;

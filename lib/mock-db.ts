@@ -1,4 +1,5 @@
 import type { PermissionAction, PermissionResource, User } from "../types/user";
+import type { QuickStartDefaults } from "../types/userProfile";
 
 const fullCrud: PermissionAction[] = ["create", "read", "update", "delete"];
 const adminPermissions: Record<PermissionResource, PermissionAction[]> = {
@@ -33,6 +34,26 @@ function flattenPermissionMatrix(
 	);
 }
 
+/**
+ * Converts clientType to QuickStart persona ID
+ * This ensures QuickStart Wizard auto-selects the appropriate persona
+ */
+function createQuickStartDefaults(
+	clientType: "investor" | "wholesaler" | "agent" | "loan_officer" | undefined,
+): QuickStartDefaults | undefined {
+	if (!clientType) return undefined;
+
+	const mapping = {
+		investor: "investor",
+		wholesaler: "wholesaler",
+		agent: "agent",
+		loan_officer: "lender",
+	} as const;
+
+	const personaId = mapping[clientType];
+	return personaId ? { personaId } : undefined;
+}
+
 export const users: User[] = [
 	{
 		id: "1",
@@ -55,6 +76,32 @@ export const users: User[] = [
 			leads: { allotted: 500, used: 120, resetInDays: 30 },
 			skipTraces: { allotted: 200, used: 50, resetInDays: 30 },
 		},
+		demoConfig: {
+			companyName: "Acme Real Estate Group",
+			companyLogo: "https://via.placeholder.com/200x60/3b82f6/ffffff?text=ACME",
+			website: "https://acme-realestate.example.com",
+			email: "contact@acme-realestate.example.com",
+			phoneNumber: "(555) 123-4567",
+			address: "123 Main Street",
+			city: "San Francisco",
+			state: "CA",
+			zipCode: "94105",
+			industry: "Real Estate",
+			clientType: "agent",
+			goal: "Generate 50+ qualified leads per month for luxury properties",
+			social: {
+				facebook: "https://facebook.com/acmerealestate",
+				instagram: "https://instagram.com/acmerealestate",
+				linkedin: "https://linkedin.com/company/acme-real-estate",
+				twitter: "https://twitter.com/acmerealestate",
+				youtube: "https://youtube.com/@acmerealestate",
+			},
+			brandColor: "#3b82f6",
+			brandColorSecondary: "#1e40af",
+			brandColorAccent: "#60a5fa",
+			notes: "Enterprise real estate client with 50+ agents",
+		},
+		quickStartDefaults: { personaId: "agent", goalId: "agent-sphere" },
 	},
 	{
 		id: "2",
@@ -80,6 +127,34 @@ export const users: User[] = [
 			leads: { allotted: 50, used: 12, resetInDays: 30 },
 			skipTraces: { allotted: 20, used: 5, resetInDays: 30 },
 		},
+		demoConfig: {
+			companyName: "Sunrise Homes LLC",
+			companyLogo:
+				"https://via.placeholder.com/200x60/f59e0b/ffffff?text=Sunrise",
+			website: "https://sunrisehomes.example.com",
+			email: "info@sunrisehomes.example.com",
+			phoneNumber: "(555) 234-5678",
+			address: "456 Oak Avenue",
+			city: "Austin",
+			state: "TX",
+			zipCode: "78701",
+			industry: "Real Estate",
+			clientType: "wholesaler",
+			goal: "Build automated SMS campaigns to connect with motivated sellers",
+			social: {
+				facebook: "https://facebook.com/sunrisehomes",
+				instagram: "https://instagram.com/sunrisehomestx",
+				linkedin: "https://linkedin.com/company/sunrise-homes",
+			},
+			brandColor: "#f59e0b",
+			brandColorSecondary: "#d97706",
+			brandColorAccent: "#fbbf24",
+			notes: "Small real estate startup, 3-5 agents",
+		},
+		quickStartDefaults: {
+			personaId: "wholesaler",
+			goalId: "wholesaler-dispositions",
+		},
 	},
 	{
 		id: "3",
@@ -104,6 +179,30 @@ export const users: User[] = [
 			leads: { allotted: 5, used: 1, resetInDays: 30 },
 			skipTraces: { allotted: 2, used: 0, resetInDays: 30 },
 		},
+		demoConfig: {
+			companyName: "Metro Property Investors",
+			companyLogo:
+				"https://via.placeholder.com/200x60/10b981/ffffff?text=METRO",
+			website: "https://metroprop.example.com",
+			email: "john@metroprop.example.com",
+			phoneNumber: "(555) 345-6789",
+			address: "789 Pine Street",
+			city: "Seattle",
+			state: "WA",
+			zipCode: "98101",
+			industry: "Real Estate Investment",
+			clientType: "investor",
+			goal: "Find off-market multifamily deals with 15%+ ROI",
+			social: {
+				linkedin: "https://linkedin.com/company/metro-property-investors",
+				youtube: "https://youtube.com/@metropropertyinvestors",
+			},
+			brandColor: "#10b981",
+			brandColorSecondary: "#059669",
+			brandColorAccent: "#34d399",
+			notes: "Individual investor testing the platform",
+		},
+		quickStartDefaults: { personaId: "investor", goalId: "investor-pipeline" },
 	},
 	{
 		id: "4",
@@ -126,6 +225,7 @@ export const users: User[] = [
 			leads: { allotted: 600, used: 80, resetInDays: 30 },
 			skipTraces: { allotted: 240, used: 30, resetInDays: 30 },
 		},
+		quickStartDefaults: { personaId: "investor", goalId: "investor-pipeline" }, // Default for platform admin
 	},
 	{
 		id: "5",
@@ -148,6 +248,7 @@ export const users: User[] = [
 			leads: { allotted: 200, used: 40, resetInDays: 30 },
 			skipTraces: { allotted: 100, used: 25, resetInDays: 30 },
 		},
+		quickStartDefaults: { personaId: "agent", goalId: "agent-sphere" }, // Default for platform support
 	},
 ];
 

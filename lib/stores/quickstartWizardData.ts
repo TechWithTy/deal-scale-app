@@ -1,4 +1,5 @@
 import { createWithEqualityFn } from "zustand/traditional";
+import { useSession } from "next-auth/react";
 
 import type { QuickStartWizardPreset } from "@/components/quickstart/types";
 import { captureQuickStartEvent } from "@/lib/analytics/quickstart";
@@ -54,10 +55,22 @@ const deriveStateFromDefaults = (
 	};
 };
 
-const createInitialState = () =>
-	deriveStateFromDefaults(
-		useUserProfileStore.getState().userProfile?.quickStartDefaults,
-	);
+const createInitialState = () => {
+	// Try to get defaults from UserProfile first
+	const profileDefaults =
+		useUserProfileStore.getState().userProfile?.quickStartDefaults;
+
+	if (profileDefaults) {
+		return deriveStateFromDefaults(profileDefaults);
+	}
+
+	// If no profile, try to get from session (for auth users)
+	// This will be populated by the subscriber below
+	return {
+		personaId: null as QuickStartPersonaId | null,
+		goalId: null as QuickStartGoalId | null,
+	};
+};
 
 export const useQuickStartWizardDataStore =
 	createWithEqualityFn<QuickStartWizardDataState>(
@@ -140,6 +153,7 @@ export const useQuickStartWizardDataStore =
 		Object.is,
 	);
 
+// Subscribe to UserProfile changes
 useUserProfileStore.subscribe(
 	(state) => state.userProfile?.quickStartDefaults,
 	(defaults) => {
@@ -161,3 +175,10 @@ useUserProfileStore.subscribe(
 		});
 	},
 );
+
+// ALSO subscribe to session changes (for authenticated users without full UserProfile)
+if (typeof window !== "undefined") {
+	import("next-auth/react").then(({ useSession }) => {
+		// This will be handled by the SessionDefaultsSync component
+	});
+}

@@ -11,7 +11,7 @@ import {
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 // Note: Using fireEvent for compatibility; userEvent can be added if available
 
-import QuickStartPage from "@/app/dashboard/quickstart/page";
+import QuickStartPage from "@/app/dashboard/page";
 import { useCampaignCreationStore } from "@/lib/stores/campaignCreation";
 import { useCampaignStore } from "@/lib/stores/campaigns";
 import { useQuickStartWizardStore } from "@/lib/stores/quickstartWizard";
@@ -33,7 +33,7 @@ vi.mock("next/navigation", () => ({
 		push: routerPushMock,
 		replace: routerReplaceMock,
 	}),
-	usePathname: () => "/dashboard/quickstart",
+	usePathname: () => "/dashboard",
 	useSearchParams: () =>
 		new URLSearchParams() as unknown as ReadonlyURLSearchParams,
 }));

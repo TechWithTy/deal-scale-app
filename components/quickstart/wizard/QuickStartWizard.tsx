@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useRef } from "react";
 import { shallow } from "zustand/shallow";
+import { useSession } from "next-auth/react";
+import { useQuickStartUrlParams } from "@/hooks/useQuickStartUrlParams";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -49,6 +51,7 @@ const QuickStartWizard = () => {
 		goToStep,
 		cancel,
 		complete,
+		open,
 	} = useQuickStartWizardStore(
 		(state) => ({
 			isOpen: state.isOpen,
@@ -58,11 +61,107 @@ const QuickStartWizard = () => {
 			goToStep: state.goToStep,
 			cancel: state.cancel,
 			complete: state.complete,
+			open: state.open,
 		}),
 		shallow,
 	);
-	const { personaId, goalId, selectPersona, selectGoal } =
+	const { personaId, goalId, selectPersona, selectGoal, reset } =
 		useQuickStartWizardDataStore();
+
+	// 🔗 READ URL PARAMETERS (highest priority)
+	const { params: urlParams, clearParams: clearUrlParams } =
+		useQuickStartUrlParams();
+	// Guard: if we applied URL defaults, do not let session defaults override
+	const appliedFromUrlRef = useRef(false);
+
+	// 🔥 SYNC DEFAULTS TO WIZARD STORE (Priority: URL > Session > Profile)
+	const { data: session } = useSession();
+	useEffect(() => {
+		// Priority 1: URL parameters (for deep linking and sharing)
+		if (urlParams.goalId) {
+			console.log("🔗 [QuickStart] URL goalId detected:", urlParams.goalId);
+			if (!goalId || goalId !== urlParams.goalId) {
+				selectGoal(urlParams.goalId);
+				// Clear URL params after applying them
+				setTimeout(() => clearUrlParams(), 100);
+			}
+			// Auto open wizard whenever explicit goal provided in URL
+			if (!isOpen) {
+				open();
+			}
+			// Mark that URL source has been applied so session does not override
+			appliedFromUrlRef.current = true;
+			return;
+		}
+
+		if (urlParams.personaId) {
+			console.log(
+				"🔗 [QuickStart] URL personaId detected:",
+				urlParams.personaId,
+			);
+			if (!personaId || personaId !== urlParams.personaId) {
+				selectPersona(urlParams.personaId);
+				// Clear URL params after applying them
+				setTimeout(() => clearUrlParams(), 100);
+			}
+			// Auto open wizard when persona provided in URL
+			if (!isOpen) {
+				open();
+			}
+			// Mark that URL source has been applied so session does not override
+			appliedFromUrlRef.current = true;
+			return;
+		}
+
+		// Priority 2: Session defaults (from user profile/auth)
+		const defaults = session?.user?.quickStartDefaults;
+		if (!defaults) return;
+		// If URL already applied, do not let session override
+		if (appliedFromUrlRef.current) {
+			return;
+		}
+
+		console.log("🔧 [QuickStart] Syncing session defaults:", defaults);
+		console.log("🔧 [QuickStart] Current wizard state:", { personaId, goalId });
+
+		// If user has a goalId, select that (it will auto-set persona too)
+		if (!goalId && defaults.goalId) {
+			console.log(
+				"🔧 [QuickStart] Selecting goal from session:",
+				defaults.goalId,
+			);
+			selectGoal(defaults.goalId as QuickStartGoalId);
+			return;
+		}
+
+		// Otherwise, just select persona if available
+		if (!personaId && defaults.personaId) {
+			console.log(
+				"🔧 [QuickStart] Selecting persona from session:",
+				defaults.personaId,
+			);
+			selectPersona(defaults.personaId as QuickStartPersonaId);
+		}
+	}, [
+		urlParams.goalId,
+		urlParams.personaId,
+		session?.user?.quickStartDefaults,
+		personaId,
+		goalId,
+		selectPersona,
+		selectGoal,
+		clearUrlParams,
+	]);
+
+	// 🔓 Auto-open wizard if URL parameter is set
+	useEffect(() => {
+		if (urlParams.shouldOpen && !isOpen) {
+			console.log("🔗 [QuickStart] Auto-opening wizard from URL");
+			// Clear the open flag from URL
+			clearUrlParams();
+			// Open the wizard (you'll need to add an 'open' method to the wizard store)
+		}
+	}, [urlParams.shouldOpen, isOpen, clearUrlParams]);
 
 	const personaOptions = quickStartPersonas;
 	const goalOptions = personaId ? getGoalsForPersona(personaId) : [];

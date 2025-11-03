@@ -159,6 +159,11 @@ type ExtendedJWT = JWT & {
         subscription?: UserProfileSubscription;
         isBetaTester?: boolean;
         isPilotTester?: boolean;
+        demoConfig?: DemoConfig;
+        quickStartDefaults?: {
+                personaId?: "investor" | "wholesaler" | "lender" | "agent";
+                goalId?: string;
+        };
         impersonator?: ImpersonationIdentity | null;
 };
 
@@ -173,6 +178,11 @@ type ExtendedUserLike = {
         subscription?: UserProfileSubscription;
         isBetaTester?: boolean;
         isPilotTester?: boolean;
+        demoConfig?: DemoConfig;
+        quickStartDefaults?: {
+                personaId?: "investor" | "wholesaler" | "lender" | "agent";
+                goalId?: string;
+        };
         name?: string | null;
         email?: string | null;
 };
@@ -188,56 +198,65 @@ type SessionUserLike = {
         subscription?: UserProfileSubscription;
         isBetaTester?: boolean;
         isPilotTester?: boolean;
+        demoConfig?: DemoConfig;
+        quickStartDefaults?: {
+                personaId?: "investor" | "wholesaler" | "lender" | "agent";
+                goalId?: string;
+        };
         name?: string | null;
         email?: string | null;
 };
 
 function applyExtendedUserToToken(
-        token: ExtendedJWT,
-        userData: ExtendedUserLike,
+	token: ExtendedJWT,
+	userData: ExtendedUserLike,
 ): void {
-        if (userData.name) {
-                token.name = userData.name;
-        }
-        if (userData.email) {
-                token.email = userData.email;
-        }
-        token.role = userData.role as UserRole | undefined;
-        token.tier = userData.tier;
-        token.permissions = userData.permissions;
-        token.permissionMatrix = userData.permissionMatrix;
-        token.permissionList = userData.permissionList ?? userData.permissions;
-        token.quotas = userData.quotas;
-        token.subscription = userData.subscription;
-        token.isBetaTester = userData.isBetaTester;
-        token.isPilotTester = userData.isPilotTester;
-        if (userData.id) {
-                token.sub = userData.id;
-        }
+	if (userData.name) {
+		token.name = userData.name;
+	}
+	if (userData.email) {
+		token.email = userData.email;
+	}
+	token.role = userData.role as UserRole | undefined;
+	token.tier = userData.tier;
+	token.permissions = userData.permissions;
+	token.permissionMatrix = userData.permissionMatrix;
+	token.permissionList = userData.permissionList ?? userData.permissions;
+	token.quotas = userData.quotas;
+	token.subscription = userData.subscription;
+	token.isBetaTester = userData.isBetaTester;
+	token.isPilotTester = userData.isPilotTester;
+	token.demoConfig = userData.demoConfig;
+	token.quickStartDefaults = userData.quickStartDefaults;
+	if (userData.id) {
+		token.sub = userData.id;
+	}
 }
 
 function applyTokenToSessionUser(
-        sessionUser: SessionUserLike & Record<string, unknown>,
-        token: ExtendedJWT,
+	sessionUser: SessionUserLike & Record<string, unknown>,
+	token: ExtendedJWT,
 ): void {
-        if (typeof token.name === "string") {
-                sessionUser.name = token.name;
-        }
-        if (typeof token.email === "string") {
-                sessionUser.email = token.email;
-        }
-        sessionUser.role = token.role as UserRole | undefined;
-        sessionUser.tier = token.tier as SubscriptionTier | undefined;
-        sessionUser.permissions = token.permissions as string[] | undefined;
-        sessionUser.permissionMatrix = token.permissionMatrix;
-        sessionUser.permissionList = token.permissionList ?? token.permissions;
-        sessionUser.quotas = token.quotas;
-        sessionUser.subscription = token.subscription;
-        sessionUser.isBetaTester = token.isBetaTester;
-        sessionUser.isPilotTester = token.isPilotTester;
-        if (typeof token.sub === "string" && token.sub) {
-                sessionUser.id = token.sub;
-        }
+	if (typeof token.name === "string") {
+		sessionUser.name = token.name;
+	}
+	if (typeof token.email === "string") {
+		sessionUser.email = token.email;
+	}
+	sessionUser.role = token.role as UserRole | undefined;
+	sessionUser.tier = token.tier as SubscriptionTier | undefined;
+	sessionUser.permissions = token.permissions as string[] | undefined;
+	sessionUser.permissionMatrix = token.permissionMatrix;
+	sessionUser.permissionList = token.permissionList ?? token.permissions;
+	sessionUser.quotas = token.quotas;
+	sessionUser.subscription = token.subscription;
+	sessionUser.isBetaTester = token.isBetaTester;
+	sessionUser.isPilotTester = token.isPilotTester;
+	sessionUser.demoConfig = token.demoConfig;
+	sessionUser.quickStartDefaults = token.quickStartDefaults;
+	if (typeof token.sub === "string" && token.sub) {
+		sessionUser.id = token.sub;
+	}
 }
 
 const authConfig = {
@@ -283,13 +302,51 @@ const authConfig = {
                                         required: false,
                                 },
                         },
-                        async authorize(credentials) {
+			async authorize(credentials) {
 				const email = credentials?.email as string | undefined;
 				const password = credentials?.password as string | undefined;
 
 				if (!email || !password) return null;
 
-				const user = getUserByEmail(email);
+				// Check if this is a custom demo user
+				const isCustomUser = credentials?.isCustomUser === "true";
+				let user: User | undefined;
+
+				if (isCustomUser && credentials?.customUserData) {
+					try {
+						const customData = JSON.parse(credentials.customUserData as string);
+						// Build a User object from custom data
+						user = {
+							id: customData.id,
+							name: customData.name,
+							email: customData.email,
+							password: customData.password,
+							role: customData.role,
+							tier: customData.tier,
+							permissions: customData.permissions,
+							permissionList: customData.permissionList,
+							quotas: {
+								ai: customData.aiCredits,
+								leads: customData.leadsCredits,
+								skipTraces: customData.skipTracesCredits,
+							},
+							subscription: {
+								aiCredits: customData.aiCredits,
+								leads: customData.leadsCredits,
+								skipTraces: customData.skipTracesCredits,
+							},
+							isBetaTester: customData.isBetaTester,
+							isPilotTester: customData.isPilotTester,
+							demoConfig: customData.demoConfig,
+						};
+					} catch (error) {
+						console.error("Failed to parse custom user data:", error);
+						return null;
+					}
+				} else {
+					user = getUserByEmail(email);
+				}
+
 				if (!user) return null;
 
 				// Simple mock validation against in-memory users
@@ -392,20 +449,22 @@ const authConfig = {
                                 const isBetaTester = betaOverride ?? Boolean(user.isBetaTester);
                                 const isPilotTester = pilotOverride ?? Boolean(user.isPilotTester);
 
-                                return {
-                                        id: user.id,
-                                        name: user.name,
-                                        email: user.email,
-                                        role,
-                                        tier,
-                                        permissions: permissionList,
-                                        permissionMatrix: mergedMatrix,
-                                        permissionList,
-                                        quotas: updatedQuotas,
-                                        subscription: updatedSub,
-                                        isBetaTester,
-                                        isPilotTester,
-                                } as NextAuthUser;
+				return {
+					id: user.id,
+					name: user.name,
+					email: user.email,
+					role,
+					tier,
+					permissions: permissionList,
+					permissionMatrix: mergedMatrix,
+					permissionList,
+					quotas: updatedQuotas,
+					subscription: updatedSub,
+					isBetaTester,
+					isPilotTester,
+					demoConfig: user.demoConfig,
+					quickStartDefaults: user.quickStartDefaults,
+				} as NextAuthUser;
                         },
                 }),
 	],
@@ -476,6 +535,7 @@ const authConfig = {
 						extendedToken.subscription = impersonatedUser.subscription || extendedToken.subscription;
 						extendedToken.isBetaTester = impersonatedUser.isBetaTester ?? extendedToken.isBetaTester;
 						extendedToken.isPilotTester = impersonatedUser.isPilotTester ?? extendedToken.isPilotTester;
+						extendedToken.demoConfig = impersonatedUser.demoConfig || extendedToken.demoConfig;
 						if (impersonatedUser.id) {
 							extendedToken.sub = impersonatedUser.id;
 						}

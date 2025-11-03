@@ -28,9 +28,12 @@ import type { CreditsProps } from "./CreditsComponent";
 import type { PermissionsEditorProps } from "./PermissionsEditor";
 import { CreditsComponent } from "./CreditsComponent";
 import { PermissionsEditor } from "./PermissionsEditor";
+import { DemoConfigEditor } from "./DemoConfigEditor";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import type { SubscriptionTier } from "@/constants/subscription/tiers";
+import type { DemoConfig } from "@/types/user";
 
 interface UserCardProps {
 	user: EditableUser;
@@ -118,6 +121,57 @@ export function UserCard({ user, onUpdateUser, onLogin }: UserCardProps) {
 			</CardHeader>
 			<CardContent>
 				<div className="space-y-2">
+					{/* Login Credentials */}
+					<div className="rounded-lg border border-border bg-muted/20 p-3 space-y-2">
+						<Label className="text-xs font-semibold text-muted-foreground">
+							Login Credentials
+						</Label>
+						<div className="space-y-2">
+							<div className="space-y-1">
+								<Label
+									htmlFor={`email-${user.id}`}
+									className="text-xs text-muted-foreground"
+								>
+									Email
+								</Label>
+								<Input
+									id={`email-${user.id}`}
+									type="email"
+									value={user.email}
+									onChange={(e) =>
+										onUpdateUser(user.id, (u: EditableUser) => ({
+											...u,
+											email: e.target.value,
+										}))
+									}
+									placeholder="user@example.com"
+									className="h-8 text-sm"
+								/>
+							</div>
+							<div className="space-y-1">
+								<Label
+									htmlFor={`password-${user.id}`}
+									className="text-xs text-muted-foreground"
+								>
+									Password
+								</Label>
+								<Input
+									id={`password-${user.id}`}
+									type="text"
+									value={user.password || "password123"}
+									onChange={(e) =>
+										onUpdateUser(user.id, (u: EditableUser) => ({
+											...u,
+											password: e.target.value,
+										}))
+									}
+									placeholder="password123"
+									className="h-8 font-mono text-sm"
+								/>
+							</div>
+						</div>
+					</div>
+
 					<div className="flex items-center justify-between gap-2 text-sm">
 						<span className="font-medium">Role:</span>
 						<Select
@@ -216,6 +270,17 @@ export function UserCard({ user, onUpdateUser, onLogin }: UserCardProps) {
 							/>
 						</div>
 					</div>
+
+					<DemoConfigEditor
+						demoConfig={user.demoConfig}
+						userId={user.id}
+						onUpdate={(config: DemoConfig) =>
+							onUpdateUser(user.id, (u: EditableUser) => ({
+								...u,
+								demoConfig: config,
+							}))
+						}
+					/>
 				</div>
 			</CardContent>
 			<CardFooter>
