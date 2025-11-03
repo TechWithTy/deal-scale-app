@@ -8,6 +8,7 @@ import type { Session } from "next-auth";
 import dynamic from "next/dynamic";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import React, { type ReactNode } from "react";
+import { QuickStartDebug } from "@/components/quickstart/QuickStartDebug";
 
 const SupademoClient = dynamic(
 	() => import("@/components/integrations/SupademoClient"),
@@ -42,6 +43,7 @@ export function AuthenticatedAppShell({
 					<SupademoClient />
 					{children}
 					<SessionSync />
+					<QuickStartDebug />
 				</Providers>
 				<ActionBarRoot />
 			</NuqsAdapter>

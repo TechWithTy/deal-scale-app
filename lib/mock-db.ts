@@ -1,4 +1,5 @@
 import type { PermissionAction, PermissionResource, User } from "../types/user";
+import type { QuickStartDefaults } from "../types/userProfile";
 
 const fullCrud: PermissionAction[] = ["create", "read", "update", "delete"];
 const adminPermissions: Record<PermissionResource, PermissionAction[]> = {
@@ -31,6 +32,26 @@ function flattenPermissionMatrix(
 	return Object.entries(matrix).flatMap(([resource, actions]) =>
 		actions.map((action) => `${resource}:${action}`),
 	);
+}
+
+/**
+ * Converts clientType to QuickStart persona ID
+ * This ensures QuickStart Wizard auto-selects the appropriate persona
+ */
+function createQuickStartDefaults(
+	clientType: "investor" | "wholesaler" | "agent" | "loan_officer" | undefined,
+): QuickStartDefaults | undefined {
+	if (!clientType) return undefined;
+
+	const mapping = {
+		investor: "investor",
+		wholesaler: "wholesaler",
+		agent: "agent",
+		loan_officer: "lender",
+	} as const;
+
+	const personaId = mapping[clientType];
+	return personaId ? { personaId } : undefined;
 }
 
 export const users: User[] = [
@@ -80,6 +101,7 @@ export const users: User[] = [
 			brandColorAccent: "#60a5fa",
 			notes: "Enterprise real estate client with 50+ agents",
 		},
+		quickStartDefaults: { personaId: "agent", goalId: "agent-sphere" },
 	},
 	{
 		id: "2",
@@ -129,6 +151,10 @@ export const users: User[] = [
 			brandColorAccent: "#fbbf24",
 			notes: "Small real estate startup, 3-5 agents",
 		},
+		quickStartDefaults: {
+			personaId: "wholesaler",
+			goalId: "wholesaler-dispositions",
+		},
 	},
 	{
 		id: "3",
@@ -176,6 +202,7 @@ export const users: User[] = [
 			brandColorAccent: "#34d399",
 			notes: "Individual investor testing the platform",
 		},
+		quickStartDefaults: { personaId: "investor", goalId: "investor-pipeline" },
 	},
 	{
 		id: "4",
@@ -198,6 +225,7 @@ export const users: User[] = [
 			leads: { allotted: 600, used: 80, resetInDays: 30 },
 			skipTraces: { allotted: 240, used: 30, resetInDays: 30 },
 		},
+		quickStartDefaults: { personaId: "investor", goalId: "investor-pipeline" }, // Default for platform admin
 	},
 	{
 		id: "5",
@@ -220,6 +248,7 @@ export const users: User[] = [
 			leads: { allotted: 200, used: 40, resetInDays: 30 },
 			skipTraces: { allotted: 100, used: 25, resetInDays: 30 },
 		},
+		quickStartDefaults: { personaId: "agent", goalId: "agent-sphere" }, // Default for platform support
 	},
 ];
 

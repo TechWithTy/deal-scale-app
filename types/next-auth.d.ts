@@ -26,6 +26,10 @@ declare module "next-auth" {
 			isBetaTester?: boolean;
 			isPilotTester?: boolean;
 			demoConfig?: DemoConfig;
+			quickStartDefaults?: {
+				personaId?: "investor" | "wholesaler" | "lender" | "agent";
+				goalId?: string;
+			};
 		} & DefaultSession["user"];
 	}
 
@@ -40,6 +44,10 @@ declare module "next-auth" {
 		isBetaTester?: boolean;
 		isPilotTester?: boolean;
 		demoConfig?: DemoConfig;
+		quickStartDefaults?: {
+			personaId?: "investor" | "wholesaler" | "lender" | "agent";
+			goalId?: string;
+		};
 	}
 }
 
@@ -56,5 +64,9 @@ declare module "next-auth/jwt" {
 		isBetaTester?: boolean;
 		isPilotTester?: boolean;
 		demoConfig?: DemoConfig;
+		quickStartDefaults?: {
+			personaId?: "investor" | "wholesaler" | "lender" | "agent";
+			goalId?: string;
+		};
 	}
 }
