@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef } from "react";
 import { shallow } from "zustand/shallow";
+import { useSession } from "next-auth/react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -63,6 +64,35 @@ const QuickStartWizard = () => {
 	);
 	const { personaId, goalId, selectPersona, selectGoal } =
 		useQuickStartWizardDataStore();
+
+	// 🔥 SYNC SESSION DEFAULTS TO WIZARD STORE
+	const { data: session } = useSession();
+	useEffect(() => {
+		const defaults = session?.user?.quickStartDefaults;
+		if (!defaults) return;
+
+		console.log("🔧 [QuickStart] Syncing session defaults:", defaults);
+		console.log("🔧 [QuickStart] Current wizard state:", { personaId, goalId });
+
+		// If user has a goalId, select that (it will auto-set persona too)
+		if (!goalId && defaults.goalId) {
+			console.log("🔧 [QuickStart] Selecting goal:", defaults.goalId);
+			selectGoal(defaults.goalId as QuickStartGoalId);
+			return;
+		}
+
+		// Otherwise, just select persona if available
+		if (!personaId && defaults.personaId) {
+			console.log("🔧 [QuickStart] Selecting persona:", defaults.personaId);
+			selectPersona(defaults.personaId as QuickStartPersonaId);
+		}
+	}, [
+		session?.user?.quickStartDefaults,
+		personaId,
+		goalId,
+		selectPersona,
+		selectGoal,
+	]);
 
 	const personaOptions = quickStartPersonas;
 	const goalOptions = personaId ? getGoalsForPersona(personaId) : [];

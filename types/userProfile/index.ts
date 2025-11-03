@@ -152,6 +152,8 @@ export interface CompanyInfo {
 	leads: LeadTypeGlobal[];
 	leadLists: LeadList[]; // Array of lead lists
 	KanbanTasks: KanbanState;
+	/** ICP/Business type - used to auto-select QuickStart wizard persona */
+	clientType?: "investor" | "wholesaler" | "agent" | "loan_officer";
 }
 
 // AI Knowledgebase Type

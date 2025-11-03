@@ -106,5 +106,10 @@ export interface User {
 	};
 	/** Optional demo configuration for client simulations */
 	demoConfig?: DemoConfig;
+	/** QuickStart wizard preferences - automatically pre-selects persona/goal */
+	quickStartDefaults?: {
+		personaId?: "investor" | "wholesaler" | "lender" | "agent";
+		goalId?: string;
+	};
 }
 import type { SubscriptionTier } from "@/constants/subscription/tiers";
