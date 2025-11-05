@@ -159,108 +159,111 @@ export default function FloatingHelpSupademo({
 
 	return (
 		<>
-			<Rnd
-				bounds="window"
-				size={{ width: fabSize, height: fabSize }}
-				position={{ x: pos.x, y: pos.y }}
-				onDragStart={() => {
-					dragMovedRef.current = false;
-				}}
-				onDrag={(_, data) => {
-					// Mark as a real drag only if there is visible movement
-					if (Math.abs(data.deltaX) > 3 || Math.abs(data.deltaY) > 3) {
-						dragMovedRef.current = true;
-					}
-				}}
-				onDragStop={(_, data) => {
-					const snapped = snapToNearestCorner(data.x, data.y);
-					const next = { x: snapped.x, y: snapped.y };
-					setPos(next);
-					try {
-						window.localStorage.setItem(posKey, JSON.stringify(next));
-					} catch {}
-				}}
-				enableResizing={false}
-				className={[
-					"z-50", // allow halo to render outside container
-					hiddenOnMobile ? "hidden md:block" : "",
-				].join(" ")}
-			>
-				{/* Ping background */}
-				<span
-					className="-inset-2 absolute animate-ping rounded-full bg-primary/30"
-					aria-hidden
-				/>
-
-				{/* Button */}
-				<button
-					className="relative flex h-12 w-12 items-center justify-center rounded-full border border-primary bg-background text-primary shadow-lg transition-transform hover:scale-105 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-primary/50"
-					aria-label={label}
-					title={label}
-					type="button"
-					onClick={(e) => {
-						e.stopPropagation();
-						if (dragMovedRef.current) return;
-						if (mode === "fullscreen") {
-							// Trigger Supademo global handler if present, otherwise fallback to new tab
-							const anyWin = window as unknown as {
-								Supademo?: { open?: (id: string) => void };
-							};
-							if (anyWin?.Supademo?.open) {
-								anyWin.Supademo.open(finalDemoId);
-							} else {
-								window.open(
-									`https://app.supademo.com/embed/${finalDemoId}?embed_v=2&utm_source=embed`,
-									"_blank",
-									"noopener,noreferrer",
-								);
-							}
-							return;
-						}
-						// Default: open in-app modal and suppress any global Supademo lightbox
-						try {
-							interface SupademoGlobal {
-								open?: (id: string) => void;
-							}
-							const w = window as unknown as {
-								Supademo?: SupademoGlobal;
-								__SupademoBackup__?: SupademoGlobal;
-							};
-							if (w && typeof w.Supademo !== "undefined") {
-								w.__SupademoBackup__ = w.Supademo;
-								w.Supademo = { open: (_id: string) => undefined };
-							}
-						} catch {}
-						setIsHelpOpen(true);
+			{/* Fixed, full-viewport container so dragging isn't affected by scroll */}
+			<div className="pointer-events-none fixed inset-0 z-50">
+				<Rnd
+					bounds="parent"
+					size={{ width: fabSize, height: fabSize }}
+					position={{ x: pos.x, y: pos.y }}
+					onDragStart={() => {
+						dragMovedRef.current = false;
 					}}
+					onDrag={(_, data) => {
+						// Mark as a real drag only if there is visible movement
+						if (Math.abs(data.deltaX) > 3 || Math.abs(data.deltaY) > 3) {
+							dragMovedRef.current = true;
+						}
+					}}
+					onDragStop={(_, data) => {
+						const snapped = snapToNearestCorner(data.x, data.y);
+						const next = { x: snapped.x, y: snapped.y };
+						setPos(next);
+						try {
+							window.localStorage.setItem(posKey, JSON.stringify(next));
+						} catch {}
+					}}
+					enableResizing={false}
+					className={[
+						"pointer-events-auto", // re-enable pointer events for the FAB itself
+						hiddenOnMobile ? "hidden md:block" : "",
+					].join(" ")}
 				>
-					{/* Glow ring */}
+					{/* Ping background */}
 					<span
-						className="-inset-1 absolute rounded-full bg-primary/20 blur-sm"
+						className="-inset-2 absolute animate-ping rounded-full bg-primary/30"
 						aria-hidden
 					/>
-					{/* Icon */}
-					<span className="relative select-none font-bold text-lg">?</span>
-				</button>
 
-				{/* Dismiss control */}
-				<button
-					className="absolute top-[-0.5rem] right-[-0.5rem] h-5 w-5 rounded-full bg-primary text-background text-xs leading-none shadow ring-1 ring-primary/60 hover:scale-105"
-					aria-label="Dismiss help"
-					type="button"
-					onClick={() => {
-						try {
-							window.localStorage.setItem(
-								cacheKey,
-								JSON.stringify({ ts: Date.now() }),
-							);
-						} catch {}
-						setDismissed(true);
-					}}
-				>
-					×
-				</button>
-			</Rnd>
+					{/* Button */}
+					<button
+						className="relative flex h-12 w-12 items-center justify-center rounded-full border border-primary bg-background text-primary shadow-lg transition-transform hover:scale-105 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-primary/50"
+						aria-label={label}
+						title={label}
+						type="button"
+						onClick={(e) => {
+							e.stopPropagation();
+							if (dragMovedRef.current) return;
+							if (mode === "fullscreen") {
+								// Trigger Supademo global handler if present, otherwise fallback to new tab
+								const anyWin = window as unknown as {
+									Supademo?: { open?: (id: string) => void };
+								};
+								if (anyWin?.Supademo?.open) {
+									anyWin.Supademo.open(finalDemoId);
+								} else {
+									window.open(
+										`https://app.supademo.com/embed/${finalDemoId}?embed_v=2&utm_source=embed`,
+										"_blank",
+										"noopener,noreferrer",
+									);
+								}
+								return;
+							}
+							// Default: open in-app modal and suppress any global Supademo lightbox
+							try {
+								interface SupademoGlobal {
+									open?: (id: string) => void;
+								}
+								const w = window as unknown as {
+									Supademo?: SupademoGlobal;
+									__SupademoBackup__?: SupademoGlobal;
+								};
+								if (w && typeof w.Supademo !== "undefined") {
+									w.__SupademoBackup__ = w.Supademo;
+									w.Supademo = { open: (_id: string) => undefined };
+								}
+							} catch {}
+							setIsHelpOpen(true);
+						}}
+					>
+						{/* Glow ring */}
+						<span
+							className="-inset-1 absolute rounded-full bg-primary/20 blur-sm"
+							aria-hidden
+						/>
+						{/* Icon */}
+						<span className="relative select-none font-bold text-lg">?</span>
+					</button>
+
+					{/* Dismiss control */}
+					<button
+						className="absolute top-[-0.5rem] right-[-0.5rem] h-5 w-5 rounded-full bg-primary text-background text-xs leading-none shadow ring-1 ring-primary/60 hover:scale-105"
+						aria-label="Dismiss help"
+						type="button"
+						onClick={() => {
+							try {
+								window.localStorage.setItem(
+									cacheKey,
+									JSON.stringify({ ts: Date.now() }),
+								);
+							} catch {}
+							setDismissed(true);
+						}}
+					>
+						×
+					</button>
+				</Rnd>
+			</div>
 			{mode === "modal" && (
 				<WalkThroughModal
 					isOpen={isHelpOpen}
