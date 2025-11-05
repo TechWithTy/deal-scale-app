@@ -19,6 +19,7 @@ export default function FloatingHelpSupademo({
 	cacheDays = 7,
 	position = "br",
 	offset = 24,
+	mode = "modal",
 }: {
 	demoId?: string;
 	label?: string;
@@ -33,6 +34,10 @@ export default function FloatingHelpSupademo({
 	 * Base offset in pixels from edges
 	 */
 	offset?: number;
+	/**
+	 * How to open help: 'modal' (in-app) or 'fullscreen' (Supademo default).
+	 */
+	mode?: "modal" | "fullscreen";
 }) {
 	// Defer mount slightly to avoid layout shift on page load
 	const [mounted, setMounted] = useState(false);
@@ -97,7 +102,7 @@ export default function FloatingHelpSupademo({
 
 	// Draggable state (persisted)
 	type Pos = { x: number; y: number };
-	const posKey = `supademo_fab_pos_v1`;
+	const posKey = "supademo_fab_pos_v1";
 	const [pos, setPos] = useState<Pos | null>(null);
 	const dragMovedRef = useRef(false);
 	const fabSize = 56; // core button size
@@ -190,13 +195,42 @@ export default function FloatingHelpSupademo({
 				{/* Button */}
 				<button
 					className="relative flex h-12 w-12 items-center justify-center rounded-full border border-primary bg-background text-primary shadow-lg transition-transform hover:scale-105 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-primary/50"
-					data-supademo-demo={finalDemoId}
 					aria-label={label}
 					title={label}
 					type="button"
 					onClick={(e) => {
 						e.stopPropagation();
 						if (dragMovedRef.current) return;
+						if (mode === "fullscreen") {
+							// Trigger Supademo global handler if present, otherwise fallback to new tab
+							const anyWin = window as unknown as {
+								Supademo?: { open?: (id: string) => void };
+							};
+							if (anyWin?.Supademo?.open) {
+								anyWin.Supademo.open(finalDemoId);
+							} else {
+								window.open(
+									`https://app.supademo.com/embed/${finalDemoId}?embed_v=2&utm_source=embed`,
+									"_blank",
+									"noopener,noreferrer",
+								);
+							}
+							return;
+						}
+						// Default: open in-app modal and suppress any global Supademo lightbox
+						try {
+							interface SupademoGlobal {
+								open?: (id: string) => void;
+							}
+							const w = window as unknown as {
+								Supademo?: SupademoGlobal;
+								__SupademoBackup__?: SupademoGlobal;
+							};
+							if (w && typeof w.Supademo !== "undefined") {
+								w.__SupademoBackup__ = w.Supademo;
+								w.Supademo = { open: (_id: string) => undefined };
+							}
+						} catch {}
 						setIsHelpOpen(true);
 					}}
 				>
@@ -227,17 +261,31 @@ export default function FloatingHelpSupademo({
 					×
 				</button>
 			</Rnd>
-			<WalkThroughModal
-				isOpen={isHelpOpen}
-				onClose={() => setIsHelpOpen(false)}
-				videoUrl={`https://app.supademo.com/embed/${finalDemoId}?embed_v=2&utm_source=embed`}
-				title="Welcome To Deal Scale"
-				subtitle="Get help getting started with your lead generation platform."
-				steps={[]}
-				isTourOpen={false}
-				onStartTour={() => {}}
-				onCloseTour={() => {}}
-			/>
+			{mode === "modal" && (
+				<WalkThroughModal
+					isOpen={isHelpOpen}
+					onClose={() => {
+						setIsHelpOpen(false);
+						// Restore Supademo if we suppressed it
+						try {
+							interface SupademoGlobal {
+								open?: (id: string) => void;
+							}
+							const w = window as unknown as {
+								Supademo?: SupademoGlobal;
+								__SupademoBackup__?: SupademoGlobal;
+							};
+							if (w && typeof w.__SupademoBackup__ !== "undefined") {
+								w.Supademo = w.__SupademoBackup__;
+								w.__SupademoBackup__ = undefined;
+							}
+						} catch {}
+					}}
+					videoUrl={`https://app.supademo.com/embed/${finalDemoId}?embed_v=2&utm_source=embed`}
+					title="Welcome To Deal Scale"
+					subtitle="Get help getting started with your lead generation platform."
+				/>
+			)}
 		</>
 	);
 }

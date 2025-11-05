@@ -208,55 +208,55 @@ type SessionUserLike = {
 };
 
 function applyExtendedUserToToken(
-	token: ExtendedJWT,
-	userData: ExtendedUserLike,
+        token: ExtendedJWT,
+        userData: ExtendedUserLike,
 ): void {
-	if (userData.name) {
-		token.name = userData.name;
-	}
-	if (userData.email) {
-		token.email = userData.email;
-	}
-	token.role = userData.role as UserRole | undefined;
-	token.tier = userData.tier;
-	token.permissions = userData.permissions;
-	token.permissionMatrix = userData.permissionMatrix;
-	token.permissionList = userData.permissionList ?? userData.permissions;
-	token.quotas = userData.quotas;
-	token.subscription = userData.subscription;
-	token.isBetaTester = userData.isBetaTester;
-	token.isPilotTester = userData.isPilotTester;
-	token.demoConfig = userData.demoConfig;
+        if (userData.name) {
+                token.name = userData.name;
+        }
+        if (userData.email) {
+                token.email = userData.email;
+        }
+        token.role = userData.role as UserRole | undefined;
+        token.tier = userData.tier;
+        token.permissions = userData.permissions;
+        token.permissionMatrix = userData.permissionMatrix;
+        token.permissionList = userData.permissionList ?? userData.permissions;
+        token.quotas = userData.quotas;
+        token.subscription = userData.subscription;
+        token.isBetaTester = userData.isBetaTester;
+        token.isPilotTester = userData.isPilotTester;
+        token.demoConfig = userData.demoConfig;
 	token.quickStartDefaults = userData.quickStartDefaults;
-	if (userData.id) {
-		token.sub = userData.id;
-	}
+        if (userData.id) {
+                token.sub = userData.id;
+        }
 }
 
 function applyTokenToSessionUser(
-	sessionUser: SessionUserLike & Record<string, unknown>,
-	token: ExtendedJWT,
+        sessionUser: SessionUserLike & Record<string, unknown>,
+        token: ExtendedJWT,
 ): void {
-	if (typeof token.name === "string") {
-		sessionUser.name = token.name;
-	}
-	if (typeof token.email === "string") {
-		sessionUser.email = token.email;
-	}
-	sessionUser.role = token.role as UserRole | undefined;
-	sessionUser.tier = token.tier as SubscriptionTier | undefined;
-	sessionUser.permissions = token.permissions as string[] | undefined;
-	sessionUser.permissionMatrix = token.permissionMatrix;
-	sessionUser.permissionList = token.permissionList ?? token.permissions;
-	sessionUser.quotas = token.quotas;
-	sessionUser.subscription = token.subscription;
-	sessionUser.isBetaTester = token.isBetaTester;
-	sessionUser.isPilotTester = token.isPilotTester;
-	sessionUser.demoConfig = token.demoConfig;
+        if (typeof token.name === "string") {
+                sessionUser.name = token.name;
+        }
+        if (typeof token.email === "string") {
+                sessionUser.email = token.email;
+        }
+        sessionUser.role = token.role as UserRole | undefined;
+        sessionUser.tier = token.tier as SubscriptionTier | undefined;
+        sessionUser.permissions = token.permissions as string[] | undefined;
+        sessionUser.permissionMatrix = token.permissionMatrix;
+        sessionUser.permissionList = token.permissionList ?? token.permissions;
+        sessionUser.quotas = token.quotas;
+        sessionUser.subscription = token.subscription;
+        sessionUser.isBetaTester = token.isBetaTester;
+        sessionUser.isPilotTester = token.isPilotTester;
+        sessionUser.demoConfig = token.demoConfig;
 	sessionUser.quickStartDefaults = token.quickStartDefaults;
-	if (typeof token.sub === "string" && token.sub) {
-		sessionUser.id = token.sub;
-	}
+        if (typeof token.sub === "string" && token.sub) {
+                sessionUser.id = token.sub;
+        }
 }
 
 const authConfig = {
@@ -449,22 +449,22 @@ const authConfig = {
                                 const isBetaTester = betaOverride ?? Boolean(user.isBetaTester);
                                 const isPilotTester = pilotOverride ?? Boolean(user.isPilotTester);
 
-				return {
-					id: user.id,
-					name: user.name,
-					email: user.email,
-					role,
-					tier,
-					permissions: permissionList,
-					permissionMatrix: mergedMatrix,
-					permissionList,
-					quotas: updatedQuotas,
-					subscription: updatedSub,
-					isBetaTester,
-					isPilotTester,
-					demoConfig: user.demoConfig,
+                                return {
+                                        id: user.id,
+                                        name: user.name,
+                                        email: user.email,
+                                        role,
+                                        tier,
+                                        permissions: permissionList,
+                                        permissionMatrix: mergedMatrix,
+                                        permissionList,
+                                        quotas: updatedQuotas,
+                                        subscription: updatedSub,
+                                        isBetaTester,
+                                        isPilotTester,
+                                        demoConfig: user.demoConfig,
 					quickStartDefaults: user.quickStartDefaults,
-				} as NextAuthUser;
+                                } as NextAuthUser;
                         },
                 }),
 	],
