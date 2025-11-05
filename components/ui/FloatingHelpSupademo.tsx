@@ -20,6 +20,8 @@ export default function FloatingHelpSupademo({
 	position = "br",
 	offset = 24,
 	mode = "modal",
+	theme = "default",
+	defaultVisible = false,
 }: {
 	demoId?: string;
 	label?: string;
@@ -38,7 +40,58 @@ export default function FloatingHelpSupademo({
 	 * How to open help: 'modal' (in-app) or 'fullscreen' (Supademo default).
 	 */
 	mode?: "modal" | "fullscreen";
+	/**
+	 * Visual theme: default | mood | weather | pipeline
+	 */
+	theme?: "default" | "mood" | "weather" | "pipeline";
+	/** If false, the FAB is hidden until an event is fired to show it. */
+	defaultVisible?: boolean;
 }) {
+	// Theme styles (enumerated classes to satisfy Tailwind scan)
+	const themeStyles = (() => {
+		switch (theme) {
+			case "mood":
+				return {
+					border: "border-fuchsia-400",
+					text: "text-fuchsia-300",
+					bg: "bg-gradient-to-br from-fuchsia-900/40 to-indigo-900/40",
+					ring: "ring-fuchsia-400/50",
+					pingBg: "bg-fuchsia-400/30",
+					glowBg: "bg-fuchsia-400/20",
+					chipRing: "ring-fuchsia-400/30",
+				};
+			case "weather":
+				return {
+					border: "border-sky-400",
+					text: "text-sky-300",
+					bg: "bg-gradient-to-br from-sky-900/40 to-cyan-900/40",
+					ring: "ring-sky-400/50",
+					pingBg: "bg-sky-400/30",
+					glowBg: "bg-sky-400/20",
+					chipRing: "ring-sky-400/30",
+				};
+			case "pipeline":
+				return {
+					border: "border-emerald-400",
+					text: "text-emerald-300",
+					bg: "bg-gradient-to-br from-emerald-900/40 to-lime-900/40",
+					ring: "ring-emerald-400/50",
+					pingBg: "bg-emerald-400/30",
+					glowBg: "bg-emerald-400/20",
+					chipRing: "ring-emerald-400/30",
+				};
+			default:
+				return {
+					border: "border-primary",
+					text: "text-primary",
+					bg: "bg-background",
+					ring: "ring-primary/50",
+					pingBg: "bg-primary/30",
+					glowBg: "bg-primary/20",
+					chipRing: "ring-primary/30",
+				};
+		}
+	})();
 	// Defer mount slightly to avoid layout shift on page load
 	const [mounted, setMounted] = useState(false);
 	useEffect(() => {
@@ -62,6 +115,7 @@ export default function FloatingHelpSupademo({
 	const forceHelp = searchParams?.get("help") === "1";
 	const [dismissed, setDismissed] = useState<boolean>(() => {
 		if (typeof window === "undefined") return false;
+		if (!defaultVisible) return true; // hidden by default unless opted-in
 		try {
 			const raw = window.localStorage.getItem(cacheKey);
 			if (!raw) return false;
@@ -100,6 +154,33 @@ export default function FloatingHelpSupademo({
 	// Local modal fallback (does not depend on external SDK)
 	const [isHelpOpen, setIsHelpOpen] = useState(false);
 
+	// Event bridge so static page icon can reveal the FAB
+	useEffect(() => {
+		if (typeof window === "undefined") return;
+		const show = () => {
+			try {
+				window.localStorage.removeItem(cacheKey);
+			} catch {}
+			setDismissed(false);
+			setPos((prev) => prev ?? computeDefaultPos());
+		};
+		const hide = () => {
+			try {
+				window.localStorage.setItem(
+					cacheKey,
+					JSON.stringify({ ts: Date.now() }),
+				);
+			} catch {}
+			setDismissed(true);
+		};
+		window.addEventListener("dealScale:helpFab:show", show);
+		window.addEventListener("dealScale:helpFab:hide", hide);
+		return () => {
+			window.removeEventListener("dealScale:helpFab:show", show);
+			window.removeEventListener("dealScale:helpFab:hide", hide);
+		};
+	}, []);
+
 	// Draggable state (persisted)
 	type Pos = { x: number; y: number };
 	const posKey = "supademo_fab_pos_v1";
@@ -129,7 +210,22 @@ export default function FloatingHelpSupademo({
 		setPos({ x: defaultX, y: defaultY });
 	}, [chatOffset, offset]);
 
-	if (!mounted || dismissed || !pos) return null;
+	// Utility: compute default bottom-right position
+	const computeDefaultPos = (): Pos => {
+		const w = typeof window !== "undefined" ? window.innerWidth : 0;
+		const h = typeof window !== "undefined" ? window.innerHeight : 0;
+		return {
+			x: Math.max(8, w - (offset + chatOffset + fabSize + haloPad)),
+			y: Math.max(8, h - (offset + fabSize + haloPad)),
+		};
+	};
+
+	if (!mounted) return null;
+
+	// If dismissed, render nothing; the static page icon triggers show via event
+	if (dismissed) return null;
+
+	if (!pos) return null;
 
 	// Snap to nearest corner when dragging stops
 	const snapToNearestCorner = (x: number, y: number): Pos => {
