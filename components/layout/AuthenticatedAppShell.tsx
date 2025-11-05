@@ -45,8 +45,8 @@ export function AuthenticatedAppShell({
 					{children}
 					<SessionSync />
 					<QuickStartDebug />
-					{/* Floating animated help demo trigger */}
-					<FloatingHelpSupademo />
+					{/* Hidden by default; shown when Quick Start help icon dispatches show event */}
+					<FloatingHelpSupademo defaultVisible={false} />
 				</Providers>
 				<ActionBarRoot />
 			</NuqsAdapter>

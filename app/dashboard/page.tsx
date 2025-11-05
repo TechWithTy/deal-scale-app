@@ -375,7 +375,11 @@ export default function QuickStartPage() {
 					Get up and running in minutes. Choose how you'd like to begin.
 				</p>
 				<button
-					onClick={() => setShowWalkthrough(true)}
+					onClick={() => {
+						if (typeof window !== "undefined") {
+							window.dispatchEvent(new Event("dealScale:helpFab:show"));
+						}
+					}}
 					className="absolute top-0 right-0 flex h-10 w-10 items-center justify-center rounded-full border border-transparent text-muted-foreground transition hover:bg-muted"
 					type="button"
 				>
