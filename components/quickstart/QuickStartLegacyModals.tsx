@@ -114,7 +114,7 @@ const QuickStartLegacyModals: FC<QuickStartLegacyModalsProps> = ({
 		<WalkThroughModal
 			isOpen={showWalkthrough}
 			onClose={onCloseWalkthrough}
-			videoUrl="https://www.youtube.com/watch?v=hyosynoNbSU"
+			videoUrl="https://app.supademo.com/embed/cmhjlwt7i0jk4u1hm0scmf39w?embed_v=2&utm_source=embed"
 			title="Welcome To Deal Scale"
 			subtitle="Get help getting started with your lead generation platform."
 			steps={campaignSteps}
