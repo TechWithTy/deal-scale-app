@@ -246,6 +246,20 @@ export const navItems: NavItem[] = [
 		featureKey: "navigation.employee",
 	},
 	{
+		title: "separator",
+		href: "#",
+		icon: "separator",
+		label: "separator",
+	},
+	{
+		title: "Community",
+		href: "https://discord.gg/BNrsYRPtFN",
+		icon: "users",
+		label: "Community",
+		external: true,
+		badge: "new",
+	},
+	{
 		title: "Marketplace",
 		href: "https://www.dealscale.io/products",
 		icon: "store",

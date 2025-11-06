@@ -13,6 +13,7 @@ export interface NavItem {
 	onlyMobile?: boolean;
 	hasSaleItems?: boolean;
 	saleLink?: string;
+	badge?: string;
 }
 
 export interface NavItemWithChildren extends NavItem {

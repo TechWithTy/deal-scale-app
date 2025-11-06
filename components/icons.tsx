@@ -22,6 +22,7 @@ import {
 	MessageCircle,
 	type LucideIcon,
 	type LucideProps,
+	Minus,
 	Moon,
 	MoreVertical,
 	Pizza,
@@ -33,6 +34,7 @@ import {
 	SunMedium,
 	Trash,
 	Twitter,
+	Users,
 	Webhook,
 	Unplug,
 	User2Icon,
@@ -80,6 +82,8 @@ export const Icons = {
 	rss: Rss,
 	store: Store,
 	chart: BarChart3,
+	users: Users,
+	separator: Minus,
 	gitHub: ({ ...props }: LucideProps) => (
 		<svg
 			aria-hidden="true"
