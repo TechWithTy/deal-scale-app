@@ -6,6 +6,10 @@
 
 import type { LookalikeConfig } from "@/types/lookalike";
 import type { FormValues } from "../types";
+import type {
+	QuickStartPersonaId,
+	QuickStartGoalId,
+} from "@/lib/config/quickstart/wizardFlows";
 
 /**
  * Builds a complete LookalikeConfig from form values
@@ -16,11 +20,15 @@ export function buildLookalikeConfig(
 	seedListId: string,
 	seedListName: string,
 	seedLeadCount: number,
+	userPersona?: QuickStartPersonaId,
+	userGoal?: QuickStartGoalId,
 ): LookalikeConfig {
 	return {
 		seedListId,
 		seedListName,
 		seedLeadCount,
+		userPersona,
+		userGoal,
 		similarityThreshold: values.similarityThreshold,
 		targetSize: values.targetSize,
 		salesTargeting: {
