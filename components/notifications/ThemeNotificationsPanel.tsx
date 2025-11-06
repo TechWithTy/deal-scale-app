@@ -2,6 +2,15 @@
 
 import { AnimatedList } from "@/components/magicui/animated-list";
 import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuLabel,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
 	Form,
 	FormControl,
@@ -11,11 +20,18 @@ import {
 	FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import {
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+} from "@/components/ui/popover";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { cn } from "@/lib/_utils";
 import { useNotificationsStore } from "@/lib/stores/notificationsStore";
 import type { NotificationFormField } from "@/lib/stores/notificationsStore";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { X } from "lucide-react";
+import { format } from "date-fns";
+import { CalendarIcon, ChevronDown, X } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -84,6 +100,25 @@ function NotificationForm({
 			schemaFields[field.id] = field.required
 				? numSchema
 				: numSchema.optional();
+		} else if (field.type === "date" || field.type === "datetime") {
+			let dateSchema = z.date();
+			if (field.minDate) {
+				const minD = new Date(field.minDate);
+				dateSchema = dateSchema.min(
+					minD,
+					`Date must be after ${format(minD, "MMM d, yyyy")}`,
+				);
+			}
+			if (field.maxDate) {
+				const maxD = new Date(field.maxDate);
+				dateSchema = dateSchema.max(
+					maxD,
+					`Date must be before ${format(maxD, "MMM d, yyyy")}`,
+				);
+			}
+			schemaFields[field.id] = field.required
+				? dateSchema
+				: dateSchema.optional();
 		} else if (field.type === "file") {
 			let fileSchema = z.instanceof(File, { message: "File required" });
 			// Server-side or client-side refinements for file size/type/dimensions
@@ -203,6 +238,40 @@ function NotificationForm({
 											}
 											className="h-8 text-xs"
 										/>
+									) : field.type === "date" || field.type === "datetime" ? (
+										<Popover>
+											<PopoverTrigger asChild>
+												<Button
+													variant="outline"
+													className={cn(
+														"h-8 w-full justify-start text-left font-normal text-xs",
+														!fieldProps.value && "text-muted-foreground",
+													)}
+												>
+													<CalendarIcon className="mr-2 h-3 w-3" />
+													{fieldProps.value ? (
+														format(fieldProps.value as Date, "PPP")
+													) : (
+														<span>Pick a date</span>
+													)}
+												</Button>
+											</PopoverTrigger>
+											<PopoverContent className="w-auto p-0" align="start">
+												<Calendar
+													mode="single"
+													selected={fieldProps.value as Date | undefined}
+													onSelect={fieldProps.onChange}
+													disabled={(date) => {
+														if (field.minDate && date < new Date(field.minDate))
+															return true;
+														if (field.maxDate && date > new Date(field.maxDate))
+															return true;
+														return false;
+													}}
+													initialFocus
+												/>
+											</PopoverContent>
+										</Popover>
 									) : field.type === "file" ? (
 										<Input
 											type="file"
@@ -259,6 +328,10 @@ export default function ThemeNotificationsPanel({
 				: allNotifs;
 	const hasAny = filteredNotifs.length > 0;
 
+	const addUnsafe = useNotificationsStore.getState().add as unknown as (
+		payload: Record<string, unknown>,
+	) => void;
+
 	return (
 		<div
 			className={`relative w-[360px] overflow-hidden rounded-lg border bg-card text-card-foreground ${maxHeightClass}`}
@@ -285,84 +358,412 @@ export default function ThemeNotificationsPanel({
 					</TabsList>
 				</Tabs>
 				<div className="mt-2 flex items-center gap-2">
-					<Button
-						variant="outline"
-						size="sm"
-						onClick={() => addMany(5)}
-						className="text-xs"
-					>
-						+ 5 mock
-					</Button>
-					<Button
-						variant="outline"
-						size="sm"
-						onClick={() => {
-							const addUnsafe = useNotificationsStore.getState()
-								.add as unknown as (payload: Record<string, unknown>) => void;
-							addUnsafe({
-								title: "Approve campaign launch?",
-								description: "Starter plan, 42 leads, SMS + Email",
-								icon: "🚀",
-								colorHsl: "142 76% 36%",
-								action: {
-									approveLabel: "Approve",
-									denyLabel: "Deny",
-									onApprove: () => console.log("Campaign approved"),
-									onDeny: () => console.log("Campaign denied"),
-								},
-							});
-						}}
-						className="text-xs"
-					>
-						+ approval
-					</Button>
-					<Button
-						variant="outline"
-						size="sm"
-						onClick={() => {
-							const addUnsafe = useNotificationsStore.getState()
-								.add as unknown as (payload: Record<string, unknown>) => void;
-							addUnsafe({
-								title: "Complete your profile",
-								description: "Please provide the following details",
-								icon: "📝",
-								colorHsl: "258 84% 54%",
-								formFields: [
-									{
-										id: "name",
-										label: "Full Name",
-										type: "text",
-										required: true,
-									},
-									{
-										id: "age",
-										label: "Age",
-										type: "number",
-										placeholder: "18",
-									},
-									{ id: "avatar", label: "Profile Photo", type: "file" },
-								],
-								submitLabel: "Submit",
-								action: {
-									onSubmit: (data: Record<string, unknown>) =>
-										console.log("Form submitted:", data),
-								},
-							});
-						}}
-						className="text-xs"
-					>
-						+ form
-					</Button>
+					<DropdownMenu>
+						<DropdownMenuTrigger asChild>
+							<Button variant="outline" size="sm" className="text-xs">
+								Mock Notifications <ChevronDown className="ml-1 h-3 w-3" />
+							</Button>
+						</DropdownMenuTrigger>
+						<DropdownMenuContent align="start" className="w-56">
+							<DropdownMenuLabel>Quick Actions</DropdownMenuLabel>
+							<DropdownMenuSeparator />
+							<DropdownMenuItem onClick={() => addMany(3)}>
+								+ 3 mock items
+							</DropdownMenuItem>
+							<DropdownMenuSeparator />
+							<DropdownMenuItem
+								onClick={() => {
+									addUnsafe({
+										title: "Approve campaign launch?",
+										description: "Starter plan, 42 leads, SMS + Email",
+										icon: "🚀",
+										colorHsl: "142 76% 36%",
+										action: {
+											approveLabel: "Approve",
+											denyLabel: "Deny",
+											onApprove: () => console.log("Campaign approved"),
+											onDeny: () => console.log("Campaign denied"),
+										},
+									});
+								}}
+							>
+								Approval demo
+							</DropdownMenuItem>
+							<DropdownMenuLabel className="mt-2">Form Demos</DropdownMenuLabel>
+							<DropdownMenuItem
+								onClick={() => {
+									addUnsafe({
+										title: "Account Security Setup",
+										description: "Configure your credentials and verification",
+										icon: "🔐",
+										colorHsl: "0 84% 42%",
+										formFields: [
+											{
+												id: "username",
+												label: "Username",
+												type: "text",
+												required: true,
+												minLength: 3,
+												maxLength: 20,
+												regex: "^[a-zA-Z0-9_]+$",
+												regexMessage: "Only letters, numbers, and underscores",
+											},
+											{
+												id: "email",
+												label: "Email",
+												type: "email",
+												required: true,
+												placeholder: "user@example.com",
+											},
+											{
+												id: "password",
+												label: "Password",
+												type: "password",
+												required: true,
+												minLength: 8,
+												maxLength: 64,
+												sensitive: true,
+												regex: "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).+$",
+												regexMessage:
+													"Must include uppercase, lowercase, and number",
+											},
+										],
+										submitLabel: "Save Credentials",
+										action: {
+											onSubmit: (data: Record<string, unknown>) =>
+												console.log("Security data:", data),
+										},
+									});
+								}}
+							>
+								Security (password/regex)
+							</DropdownMenuItem>
+							<DropdownMenuItem
+								onClick={() => {
+									addUnsafe({
+										title: "Upload campaign assets",
+										description: "Logo and hero image required",
+										icon: "🖼️",
+										colorHsl: "200 85% 45%",
+										formFields: [
+											{
+												id: "logo",
+												label: "Company Logo",
+												type: "file",
+												required: true,
+												acceptedFileTypes: ["image/png", "image/svg+xml"],
+												maxFileSizeMB: 2,
+												minWidth: 100,
+												maxWidth: 500,
+												minHeight: 100,
+												maxHeight: 500,
+											},
+											{
+												id: "hero",
+												label: "Hero Image",
+												type: "file",
+												acceptedFileTypes: [
+													"image/jpeg",
+													"image/png",
+													"image/webp",
+												],
+												maxFileSizeMB: 5,
+												minWidth: 1200,
+												maxWidth: 3840,
+												minHeight: 600,
+												maxHeight: 2160,
+											},
+										],
+										submitLabel: "Upload Assets",
+										action: {
+											onSubmit: (data: Record<string, unknown>) =>
+												console.log("Assets uploaded:", data),
+										},
+									});
+								}}
+							>
+								Media upload (file/dimensions)
+							</DropdownMenuItem>
+							<DropdownMenuItem
+								onClick={() => {
+									addUnsafe({
+										title: "Set campaign budget",
+										description: "Define spend limits and targeting",
+										icon: "💰",
+										colorHsl: "46 100% 50%",
+										formFields: [
+											{
+												id: "dailyBudget",
+												label: "Daily Budget ($)",
+												type: "number",
+												required: true,
+												min: 10,
+												max: 10000,
+												placeholder: "100",
+											},
+											{
+												id: "maxLeads",
+												label: "Max Leads Per Day",
+												type: "number",
+												required: true,
+												min: 1,
+												max: 1000,
+											},
+											{
+												id: "bidAmount",
+												label: "Cost Per Lead ($)",
+												type: "number",
+												min: 0.5,
+												max: 50,
+												placeholder: "2.50",
+											},
+										],
+										submitLabel: "Set Budget",
+										action: {
+											onSubmit: (data: Record<string, unknown>) =>
+												console.log("Budget configured:", data),
+										},
+									});
+								}}
+							>
+								Budget (number ranges)
+							</DropdownMenuItem>
+							<DropdownMenuItem
+								onClick={() => {
+									addUnsafe({
+										title: "Connect API Integration",
+										description: "Add your API credentials",
+										icon: "🔑",
+										colorHsl: "258 84% 54%",
+										formFields: [
+											{
+												id: "apiKey",
+												label: "API Key",
+												type: "password",
+												required: true,
+												minLength: 32,
+												maxLength: 128,
+												sensitive: true,
+												regex: "^[a-zA-Z0-9_-]+$",
+												regexMessage: "Invalid API key format",
+											},
+											{
+												id: "apiSecret",
+												label: "API Secret",
+												type: "password",
+												required: true,
+												minLength: 32,
+												sensitive: true,
+											},
+											{
+												id: "webhookUrl",
+												label: "Webhook URL",
+												type: "text",
+												placeholder: "https://api.example.com/webhook",
+												regex: "^https?://.*",
+												regexMessage: "Must be a valid URL",
+											},
+										],
+										submitLabel: "Connect",
+										action: {
+											onSubmit: (data: Record<string, unknown>) =>
+												console.log("API connected:", data),
+										},
+									});
+								}}
+							>
+								API keys (sensitive)
+							</DropdownMenuItem>
+							<DropdownMenuSeparator />
+							<DropdownMenuItem
+								onClick={() => {
+									addUnsafe({
+										title: "Reconnect CRM Integration",
+										description:
+											"Your Salesforce connection expired. Click to re-authorize.",
+										icon: "🔄",
+										colorHsl: "24 95% 50%",
+										approveLabel: "Authorize Salesforce",
+										denyLabel: "Skip",
+										action: {
+											approveLabel: "Authorize Salesforce",
+											denyLabel: "Skip",
+											onApprove: () => {
+												console.log("Opening OAuth flow...");
+												// Mock OAuth flow
+												window.open(
+													"https://login.salesforce.com/services/oauth2/authorize?client_id=mock&redirect_uri=mock",
+													"_blank",
+												);
+											},
+											onDeny: () => console.log("Skipped reconnection"),
+										},
+									});
+								}}
+							>
+								Reconnect (OAuth)
+							</DropdownMenuItem>
+							<DropdownMenuItem
+								onClick={() => {
+									addUnsafe({
+										title: "Train AI on your context",
+										description:
+											"Provide business context for better AI responses",
+										icon: "🤖",
+										colorHsl: "142 76% 36%",
+										formFields: [
+											{
+												id: "companyDescription",
+												label: "Company Description",
+												type: "text",
+												required: true,
+												minLength: 50,
+												maxLength: 500,
+												placeholder:
+													"Describe your business, products, and services...",
+											},
+											{
+												id: "targetAudience",
+												label: "Target Audience",
+												type: "text",
+												required: true,
+												minLength: 20,
+												maxLength: 200,
+												placeholder: "Who are your ideal customers?",
+											},
+											{
+												id: "toneOfVoice",
+												label: "Brand Voice",
+												type: "text",
+												minLength: 10,
+												maxLength: 100,
+												placeholder: "e.g., Professional, friendly, casual",
+											},
+										],
+										submitLabel: "Train AI",
+										action: {
+											onSubmit: (data: Record<string, unknown>) =>
+												console.log("AI context saved:", data),
+										},
+									});
+								}}
+							>
+								AI context (text limits)
+							</DropdownMenuItem>
+							<DropdownMenuItem
+								onClick={() => {
+									const today = new Date().toISOString().split("T")[0];
+									const maxDate = new Date();
+									maxDate.setDate(maxDate.getDate() + 90);
+									addUnsafe({
+										title: "Schedule campaign launch",
+										description: "Choose your campaign start date",
+										icon: "📅",
+										colorHsl: "258 84% 54%",
+										formFields: [
+											{
+												id: "campaignName",
+												label: "Campaign Name",
+												type: "text",
+												required: true,
+												minLength: 3,
+												maxLength: 50,
+												placeholder: "Q1 2025 Outreach",
+											},
+											{
+												id: "startDate",
+												label: "Launch Date",
+												type: "date",
+												required: true,
+												minDate: today,
+												maxDate: maxDate.toISOString().split("T")[0],
+											},
+											{
+												id: "leadCount",
+												label: "Target Leads",
+												type: "number",
+												required: true,
+												min: 10,
+												max: 10000,
+												placeholder: "500",
+											},
+										],
+										submitLabel: "Schedule",
+										action: {
+											onSubmit: (data: Record<string, unknown>) =>
+												console.log("Campaign scheduled:", data),
+										},
+									});
+								}}
+							>
+								Schedule (date picker)
+							</DropdownMenuItem>
+							<DropdownMenuItem
+								onClick={() => {
+									addUnsafe({
+										title: "Submit marketing copy",
+										description: "Upload your campaign text assets",
+										icon: "📄",
+										colorHsl: "200 85% 45%",
+										formFields: [
+											{
+												id: "headline",
+												label: "Campaign Headline",
+												type: "text",
+												required: true,
+												minLength: 10,
+												maxLength: 80,
+												placeholder: "Your attention-grabbing headline",
+											},
+											{
+												id: "bodyText",
+												label: "Email Body",
+												type: "text",
+												required: true,
+												minLength: 50,
+												maxLength: 1000,
+												placeholder: "Full email message content...",
+											},
+											{
+												id: "ctaText",
+												label: "Call-to-Action",
+												type: "text",
+												required: true,
+												minLength: 3,
+												maxLength: 30,
+												placeholder: "e.g., Get Started, Learn More",
+											},
+											{
+												id: "wordCount",
+												label: "Target Word Count",
+												type: "number",
+												min: 50,
+												max: 500,
+												placeholder: "150",
+											},
+										],
+										submitLabel: "Submit Copy",
+										action: {
+											onSubmit: (data: Record<string, unknown>) =>
+												console.log("Copy submitted:", data),
+										},
+									});
+								}}
+							>
+								Copy submission
+							</DropdownMenuItem>
+						</DropdownMenuContent>
+					</DropdownMenu>
 				</div>
 			</div>
-			<div className="relative h-full overflow-y-auto p-2 pb-20">
+			<div className="relative h-full overflow-y-auto p-2 pb-32">
 				{hasAny ? (
 					<>
-						<AnimatedList className="items-stretch">
+						<AnimatedList className="items-stretch gap-3">
 							{filteredNotifs.map((n) => (
 								<div
 									key={n.id}
-									className="group relative rounded-md border bg-background/60 p-3 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-background/40"
+									className="group relative rounded-md border bg-background/60 p-3 pb-4 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-background/40"
 								>
 									{/* Top right controls */}
 									<div className="absolute top-2 right-2 flex items-center gap-1.5">
@@ -448,7 +849,7 @@ export default function ThemeNotificationsPanel({
 								</div>
 							))}
 						</AnimatedList>
-						<div className="pointer-events-none absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-background" />
+						<div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-card" />
 					</>
 				) : (
 					<div className="flex h-[260px] w-full flex-col items-center justify-center gap-2 text-center text-muted-foreground text-sm">

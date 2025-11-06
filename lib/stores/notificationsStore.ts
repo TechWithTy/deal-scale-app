@@ -1,6 +1,13 @@
 import { create } from "zustand";
 
-export type FormFieldType = "text" | "number" | "file" | "password" | "email";
+export type FormFieldType =
+	| "text"
+	| "number"
+	| "file"
+	| "password"
+	| "email"
+	| "date"
+	| "datetime";
 
 export type NotificationFormField = {
 	id: string;
@@ -24,6 +31,9 @@ export type NotificationFormField = {
 	maxWidth?: number;
 	minHeight?: number;
 	maxHeight?: number;
+	// Date validation
+	minDate?: string; // ISO date string
+	maxDate?: string; // ISO date string
 	sensitive?: boolean; // marks field as sensitive (masked input)
 };
 

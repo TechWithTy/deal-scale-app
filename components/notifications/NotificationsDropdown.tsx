@@ -78,8 +78,12 @@ export default function NotificationsDropdown() {
 					) : null}
 				</Button>
 			</DropdownMenuTrigger>
-			<DropdownMenuContent align="end" className="p-0">
-				<ThemeNotificationsPanel maxHeightClass="h-[420px]" />
+			<DropdownMenuContent
+				align="end"
+				className="p-0 max-h-[85vh]"
+				sideOffset={8}
+			>
+				<ThemeNotificationsPanel maxHeightClass="h-[600px]" />
 			</DropdownMenuContent>
 		</DropdownMenu>
 	);
