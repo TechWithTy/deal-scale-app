@@ -47,7 +47,7 @@ export const primaryQuickStartCards: readonly QuickStartCardDescriptor[] = [
 		...primaryCardStyles,
 		cardClassName: cn(
 			primaryCardStyles.cardClassName,
-			"md:row-span-2 md:col-span-2 md:max-w-none xl:row-span-2",
+			"md:row-span-2 md:col-span-2 md:max-w-none xl:row-span-2 xl:col-span-2",
 		),
 	},
 	{
@@ -120,13 +120,6 @@ export const primaryQuickStartCards: readonly QuickStartCardDescriptor[] = [
 				label: "Start Campaign",
 				icon: Plus,
 				handler: "onCampaignCreate",
-			}),
-			handlerAction({
-				id: "campaign-view-templates",
-				label: "View Templates",
-				icon: List,
-				handler: "onViewTemplates",
-				variant: "outline",
 			}),
 			routeAction({
 				id: "campaign-view",

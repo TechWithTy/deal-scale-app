@@ -11,13 +11,6 @@ interface CampaignPageProps {
 }
 
 const CampaignPage: React.FC<CampaignPageProps> = ({ urlParams }) => {
-	// Debug URL parameters
-	React.useEffect(() => {
-		if (urlParams?.type || urlParams?.campaignId) {
-			console.log("🎯 CAMPAIGN PAGE URL PARAMS:", urlParams);
-		}
-	}, [urlParams]);
-
 	return (
 		<div className="w-full dark:bg-gray-900">
 			{/* ! Ensure the content area doesn't force the layout wider than the sidebar container */}

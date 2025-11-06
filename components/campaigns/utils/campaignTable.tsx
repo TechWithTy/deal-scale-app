@@ -36,6 +36,11 @@ export default function CampaignCallTablePage({
 	const searchParams = useSearchParams();
 	const searchParamsString = searchParams?.toString() ?? "";
 
+	// Always read from searchParams (hook), not urlParams (prop)
+	const currentTypeParam = searchParams?.get("type") ?? urlParams?.type ?? null;
+	const currentCampaignIdParam =
+		searchParams?.get("campaignId") ?? urlParams?.campaignId ?? null;
+
 	const tabToType = React.useMemo<
 		Record<ParentTab, "call" | "text" | "social" | "direct">
 	>(
@@ -47,8 +52,6 @@ export default function CampaignCallTablePage({
 		}),
 		[],
 	);
-
-	const campaignId = urlParams?.campaignId ?? null;
 
 	// Map URL type parameter to tab
 	const getInitialTab = React.useCallback((type?: string | null): ParentTab => {
@@ -67,7 +70,7 @@ export default function CampaignCallTablePage({
 	}, []);
 
 	const [tab, setTab] = React.useState<ParentTab>(() =>
-		getInitialTab(urlParams?.type),
+		getInitialTab(currentTypeParam),
 	);
 
 	const pushParams = React.useCallback(
@@ -90,7 +93,7 @@ export default function CampaignCallTablePage({
 			setTab(next);
 			pushParams(next, null);
 		},
-		[pushParams],
+		[pushParams, tab],
 	);
 
 	const handleCampaignSelect = React.useCallback(
@@ -100,33 +103,15 @@ export default function CampaignCallTablePage({
 		[pushParams, tab],
 	);
 
-	// Update tab when URL params change
+	// Update tab when URL params change ONLY if different from local state
+	// This prevents race conditions where router.push hasn't updated searchParams yet
 	React.useEffect(() => {
-		const newTab = getInitialTab(urlParams?.type);
-		if (newTab !== tab) {
-			console.log(
-				"🔄 CAMPAIGN TABLE: Switching tab from",
-				tab,
-				"to",
-				newTab,
-				"based on URL param:",
-				urlParams?.type,
-			);
+		// Only sync if we have a type param and it's different from current tab
+		if (currentTypeParam && currentTypeParam !== tabToType[tab]) {
+			const newTab = getInitialTab(currentTypeParam);
 			setTab(newTab);
 		}
-	}, [urlParams?.type, tab, getInitialTab]);
-
-	// Debug URL parameters
-	React.useEffect(() => {
-		if (urlParams?.type || urlParams?.campaignId) {
-			console.log(
-				"📋 CAMPAIGN TABLE URL PARAMS:",
-				urlParams,
-				"-> Initial tab:",
-				getInitialTab(urlParams?.type),
-			);
-		}
-	}, [urlParams, getInitialTab]);
+	}, [currentTypeParam, tab, getInitialTab, tabToType]);
 	const { callCampaigns, textCampaigns, socialCampaigns, directMailCampaigns } =
 		useCampaignStore(
 			React.useCallback(
@@ -249,7 +234,7 @@ export default function CampaignCallTablePage({
 				<CallCampaignsDemoTable
 					key="calls"
 					onNavigate={handleTabChange}
-					campaignId={campaignId}
+					campaignId={currentCampaignIdParam}
 					onCampaignSelect={handleCampaignSelect}
 					initialCampaigns={memoizedCallCampaigns}
 				/>
@@ -258,7 +243,7 @@ export default function CampaignCallTablePage({
 				<TextCampaignsDemoTable
 					key="text"
 					onNavigate={handleTabChange}
-					campaignId={campaignId}
+					campaignId={currentCampaignIdParam}
 					onCampaignSelect={handleCampaignSelect}
 					initialCampaigns={memoizedTextCampaigns}
 				/>
@@ -271,7 +256,7 @@ export default function CampaignCallTablePage({
 					<SocialCampaignsDemoTable
 						key="social"
 						onNavigate={handleTabChange}
-						campaignId={campaignId}
+						campaignId={currentCampaignIdParam}
 						onCampaignSelect={handleCampaignSelect}
 						initialCampaigns={memoizedSocialCampaigns}
 					/>
@@ -285,7 +270,7 @@ export default function CampaignCallTablePage({
 					<DirectMailCampaignsDemoTable
 						key="directMail"
 						onNavigate={handleTabChange}
-						campaignId={campaignId}
+						campaignId={currentCampaignIdParam}
 						onCampaignSelect={handleCampaignSelect}
 						initialCampaigns={memoizedDirectMailCampaigns}
 					/>

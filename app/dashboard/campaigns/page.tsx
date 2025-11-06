@@ -18,21 +18,18 @@ export default function page() {
 	const typeParam = searchParams.get("type");
 	const campaignIdParam = searchParams.get("campaignId");
 
-	// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
-	useEffect(() => {
-		// Log URL parameters for debugging
-		if (typeParam || campaignIdParam) {
-			console.log("🚀 CAMPAIGN URL PARAMS:", { typeParam, campaignIdParam });
-		}
-	}, [searchParams, typeParam, campaignIdParam]);
-
 	return (
 		<PageContainer>
 			<div className="w-full min-w-0 space-y-2">
 				<Breadcrumbs items={breadcrumbItems} />
 				{/* ! Keep inner content from forcing layout width */}
 				<div className="w-full min-w-0">
-					<CampaignPage />
+					<CampaignPage
+						urlParams={{
+							type: typeParam,
+							campaignId: campaignIdParam,
+						}}
+					/>
 				</div>
 			</div>
 		</PageContainer>
