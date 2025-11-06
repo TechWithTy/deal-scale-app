@@ -151,10 +151,17 @@ export function UpgradeModalMain({
 			onClick={(e) => {
 				if (e.currentTarget === e.target) closeUpgradeModal();
 			}}
+			onKeyDown={(e) => {
+				if (e.key === "Escape" && paymentState !== "processing") {
+					closeUpgradeModal();
+				}
+			}}
+			tabIndex={-1}
 		>
 			<div
 				className="relative flex max-h-[90vh] w-full max-w-6xl animate-fade-in flex-col rounded-xl border border-border bg-card p-0 shadow-2xl"
 				onClick={(e) => e.stopPropagation()}
+				onKeyDown={(e) => e.stopPropagation()}
 			>
 				<div className="flex-1 overflow-y-auto p-6 sm:p-8">
 					<button
