@@ -48,7 +48,7 @@ export const YourRankCard = ({ rank, totalPlayers }: YourRankCardProps) => {
 								transition={{ duration: 0.6 }}
 								className="flex items-center gap-2"
 							>
-								<span className="font-bold text-lg text-foreground sm:text-xl md:text-2xl">
+								<span className="font-bold text-lg text-foreground sm:text-xl md:text-2xl lg:text-3xl">
 									#{rank.toLocaleString()}
 								</span>
 							</motion.div>

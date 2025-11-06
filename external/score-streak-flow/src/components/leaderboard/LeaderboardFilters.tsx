@@ -47,7 +47,7 @@ export function LeaderboardFilters({
 	const isTop10 = currentUserRank ? currentUserRank <= 10 : false;
 
 	return (
-		<div className="flex flex-wrap items-center gap-2 rounded-lg border bg-card p-2 sm:gap-3 sm:p-3">
+		<div className="flex flex-wrap items-center gap-2 rounded-lg border bg-card p-2 sm:gap-3 sm:p-3 lg:gap-4 lg:p-4">
 			{/* Time Period Filter */}
 			<div className="flex items-center gap-2">
 				<Calendar className="h-4 w-4 text-muted-foreground" />
