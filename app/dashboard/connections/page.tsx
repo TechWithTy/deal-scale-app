@@ -45,18 +45,20 @@ const StageCard = ({ stage, onOpen }: StageCardProps) => {
 
 	return (
 		<Card className="transition-shadow hover:shadow-md">
-			<CardHeader className="flex flex-col gap-3 border-b pb-4 sm:flex-row sm:items-center sm:justify-between">
-				<div className="space-y-1">
-					<CardTitle className="flex items-center gap-2 text-lg">
+			<CardHeader className="flex flex-col items-center gap-4 border-b pb-5 text-center">
+				<div className="space-y-2">
+					<CardTitle className="flex items-center justify-center gap-2 text-lg">
 						<Icon className="h-5 w-5 text-primary" />
 						{config.title}
 					</CardTitle>
-					<CardDescription>{config.description}</CardDescription>
+					<CardDescription className="mx-auto max-w-2xl">
+						{config.description}
+					</CardDescription>
 				</div>
 				<Button
 					variant={config.buttonVariant}
 					onClick={() => onOpen(stage)}
-					className="w-full shrink-0 sm:w-auto"
+					className="w-full sm:w-auto"
 				>
 					{config.buttonLabel}
 				</Button>
@@ -146,14 +148,14 @@ const ConnectionsPage = () => {
 	const categories: WebhookCategory[] = ["leads", "campaigns", "skiptracing"];
 
 	return (
-		<div className="space-y-6">
+		<div className="mx-auto max-w-7xl space-y-8 px-4 py-6 sm:px-6 lg:px-8">
 			{/* Header */}
-			<div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-				<div className="flex-1 space-y-1">
-					<h1 className="text-3xl font-bold tracking-tight text-foreground">
+			<div className="flex flex-col items-center gap-5 text-center">
+				<div className="space-y-2.5">
+					<h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
 						Connections Hub
 					</h1>
-					<p className="text-sm text-muted-foreground">
+					<p className="mx-auto max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">
 						Manage webhooks, feeds, and delivery activity from a single
 						workspace.
 					</p>
@@ -165,7 +167,7 @@ const ConnectionsPage = () => {
 							window.dispatchEvent(new Event("dealScale:helpFab:show"));
 						}
 					}}
-					className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border bg-background text-muted-foreground transition-all hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+					className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border bg-background text-muted-foreground shadow-sm transition-all hover:border-primary/50 hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 					aria-label="Show help and demo"
 				>
 					<HelpCircle className="h-5 w-5" />
@@ -178,25 +180,27 @@ const ConnectionsPage = () => {
 				onValueChange={(value) =>
 					handleCategoryChange(value as WebhookCategory)
 				}
-				className="space-y-4"
+				className="w-full space-y-6"
 			>
-				<TabsList className="inline-flex h-10 w-full items-center justify-start rounded-md bg-muted p-1 md:w-auto">
-					{categories.map((category) => (
-						<TabsTrigger
-							key={category}
-							value={category}
-							className="flex-1 data-[state=active]:bg-background data-[state=active]:shadow-sm md:flex-initial"
-						>
-							{categoryConfig[category].label}
-						</TabsTrigger>
-					))}
-				</TabsList>
+				<div className="flex justify-center">
+					<TabsList className="inline-flex h-11 items-center justify-center rounded-lg bg-muted p-1.5">
+						{categories.map((category) => (
+							<TabsTrigger
+								key={category}
+								value={category}
+								className="px-4 py-2 text-sm font-medium transition-all data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:text-foreground"
+							>
+								{categoryConfig[category].label}
+							</TabsTrigger>
+						))}
+					</TabsList>
+				</div>
 
 				{categories.map((category) => (
 					<TabsContent
 						key={category}
 						value={category}
-						className="mt-4 space-y-4"
+						className="mt-6 space-y-6"
 					>
 						{/* Stage Tabs within each category */}
 						<Tabs
@@ -204,36 +208,38 @@ const ConnectionsPage = () => {
 							onValueChange={(value) =>
 								handleStageChange(value as WebhookStage)
 							}
-							className="space-y-4"
+							className="w-full space-y-6"
 						>
-							<TabsList className="inline-flex h-10 w-full items-center justify-start rounded-md bg-muted p-1 md:w-auto">
-								<TabsTrigger
-									value="incoming"
-									className="flex-1 data-[state=active]:bg-background data-[state=active]:shadow-sm md:flex-initial"
-								>
-									Incoming
-								</TabsTrigger>
-								<TabsTrigger
-									value="outgoing"
-									className="flex-1 data-[state=active]:bg-background data-[state=active]:shadow-sm md:flex-initial"
-								>
-									Outgoing
-								</TabsTrigger>
-								<TabsTrigger
-									value="feeds"
-									className="flex-1 data-[state=active]:bg-background data-[state=active]:shadow-sm md:flex-initial"
-								>
-									Feeds
-								</TabsTrigger>
-							</TabsList>
+							<div className="flex justify-center">
+								<TabsList className="inline-flex h-11 items-center justify-center rounded-lg bg-muted p-1.5">
+									<TabsTrigger
+										value="incoming"
+										className="px-4 py-2 text-sm font-medium transition-all data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:text-foreground"
+									>
+										Incoming
+									</TabsTrigger>
+									<TabsTrigger
+										value="outgoing"
+										className="px-4 py-2 text-sm font-medium transition-all data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:text-foreground"
+									>
+										Outgoing
+									</TabsTrigger>
+									<TabsTrigger
+										value="feeds"
+										className="px-4 py-2 text-sm font-medium transition-all data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:text-foreground"
+									>
+										Feeds
+									</TabsTrigger>
+								</TabsList>
+							</div>
 
-							<TabsContent value="incoming" className="mt-4">
+							<TabsContent value="incoming" className="mt-6">
 								<StageCard stage="incoming" onOpen={handleOpenModal} />
 							</TabsContent>
-							<TabsContent value="outgoing" className="mt-4">
+							<TabsContent value="outgoing" className="mt-6">
 								<StageCard stage="outgoing" onOpen={handleOpenModal} />
 							</TabsContent>
-							<TabsContent value="feeds" className="mt-4">
+							<TabsContent value="feeds" className="mt-6">
 								<StageCard stage="feeds" onOpen={handleOpenModal} />
 							</TabsContent>
 						</Tabs>
@@ -241,21 +247,23 @@ const ConnectionsPage = () => {
 				))}
 			</Tabs>
 
-			<Card>
-				<CardHeader className="flex flex-col gap-3 border-b pb-4 sm:flex-row sm:items-center sm:justify-between">
-					<div className="space-y-1">
-						<CardTitle className="text-lg">Activity History</CardTitle>
-						<CardDescription>
+			<Card className="border shadow-sm">
+				<CardHeader className="flex flex-col gap-4 border-b bg-muted/30 px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
+					<div className="space-y-1.5">
+						<CardTitle className="text-xl font-semibold">
+							Activity History
+						</CardTitle>
+						<CardDescription className="text-sm">
 							Review deliveries, troubleshoot failures, and confirm feed
 							refreshes.
 						</CardDescription>
 					</div>
-					<Badge variant="secondary" className="w-fit shrink-0">
+					<Badge variant="secondary" className="w-fit shrink-0 font-medium">
 						{categoryConfig[activeCategory].label} •{" "}
 						{activeStage === "feeds" ? "All stages" : `${activeStage} focus`}
 					</Badge>
 				</CardHeader>
-				<CardContent className="pt-6">
+				<CardContent className="p-6">
 					{filteredLog.length === 0 ? (
 						<div className="flex flex-col items-center justify-center py-12 text-center">
 							<p className="text-sm font-medium text-foreground">
@@ -296,13 +304,28 @@ const ConnectionsPage = () => {
 											{row.endpoint}
 										</TableCell>
 										<TableCell>
-											<Badge
-												variant={
-													row.status >= 400 ? "destructive" : "secondary"
-												}
-											>
-												{row.status}
-											</Badge>
+											{row.status >= 400 ? (
+												<Badge
+													variant="destructive"
+													className="bg-destructive text-white dark:bg-destructive dark:text-white"
+												>
+													{row.status}
+												</Badge>
+											) : row.status >= 300 ? (
+												<Badge
+													variant="outline"
+													className="border-primary/30 bg-primary/10 font-medium text-primary dark:border-primary/50 dark:bg-primary/20 dark:text-primary"
+												>
+													{row.status}
+												</Badge>
+											) : (
+												<Badge
+													variant="default"
+													className="bg-primary text-primary-foreground"
+												>
+													{row.status}
+												</Badge>
+											)}
 										</TableCell>
 										<TableCell>{row.latency}</TableCell>
 										<TableCell>{row.response}</TableCell>
