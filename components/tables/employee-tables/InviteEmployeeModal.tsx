@@ -34,6 +34,18 @@ const defaultInviteValues: TeamMemberFormValues = {
 		isEnabled: false,
 		methods: { sms: false, email: false, authenticatorApp: false },
 	},
+	platformIntegration: {
+		callTransferBufferTime: 30,
+		textBufferPeriod: 5,
+		autoResponseEnabled: false,
+		workingHoursStart: "09:00",
+		workingHoursEnd: "17:00",
+		timezone: "America/New_York",
+		maxConcurrentConversations: 5,
+		enableCallRecording: false,
+		enableTextNotifications: true,
+		enableEmailNotifications: true,
+	},
 };
 
 export default function InviteEmployeeModal({

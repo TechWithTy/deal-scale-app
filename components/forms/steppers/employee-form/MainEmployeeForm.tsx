@@ -13,6 +13,7 @@ import { EmployeeInfoFields } from "./steps/EmployeeInfoFields";
 import { EmployeePermissionsSection } from "./steps/EmployeePermissionsSection";
 import { EmployeeRoleField } from "./steps/EmployeeRoleField";
 import { EmployeeTwoFactorSection } from "./steps/EmployeeTwoFactorSection";
+import { EmployeePlatformIntegrationSection } from "./steps/EmployeePlatformIntegrationSection";
 import { ResetPasswordSection } from "./steps/ResetPasswordSection";
 import { UpdatePasswordSection } from "./steps/UpdatePasswordSection";
 import { Breadcrumbs } from "@/components/breadcrumbs";
@@ -66,6 +67,18 @@ export const MainEmployeeForm: React.FC<MainEmployeeFormProps> = (props) => {
 						isEnabled: false,
 						methods: { sms: false, email: false, authenticatorApp: false },
 					},
+					platformIntegration: {
+						callTransferBufferTime: 30,
+						textBufferPeriod: 5,
+						autoResponseEnabled: false,
+						workingHoursStart: "09:00",
+						workingHoursEnd: "17:00",
+						timezone: "America/New_York",
+						maxConcurrentConversations: 5,
+						enableCallRecording: false,
+						enableTextNotifications: true,
+						enableEmailNotifications: true,
+					},
 				};
 
 	const form = useForm<TeamMemberFormValues>({
@@ -114,6 +127,7 @@ export const MainEmployeeForm: React.FC<MainEmployeeFormProps> = (props) => {
 					</div>
 				)}
 				<EmployeeTwoFactorSection form={form} loading={loading} />
+				<EmployeePlatformIntegrationSection form={form} loading={loading} />
 				{isEdit && initialData?.id && initialData?.email && (
 					<>
 						<ResetPasswordSection
