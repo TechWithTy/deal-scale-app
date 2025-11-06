@@ -215,9 +215,13 @@ export function ROICalculator() {
 	const [hoursPerDealManual, setHoursPerDealManual] = useState<string | number>(
 		12,
 	);
+	const [selectedBenchmark, setSelectedBenchmark] = useState<
+		"small" | "medium" | "enterprise" | null
+	>(null);
 
 	// Benchmark presets based on team size
 	const applyBenchmark = (benchmarkType: "small" | "medium" | "enterprise") => {
+		setSelectedBenchmark(benchmarkType);
 		const benchmarks = {
 			small: {
 				dealsPerMonth: 3.5,
@@ -326,14 +330,25 @@ export function ROICalculator() {
 		const smsMessages = Math.round(totalTouches * 0.5);
 		const socialResponses = Math.round(totalTouches * 0.2);
 
+		// Calculate campaign usage costs
 		const callCost = ((calls * 5) / 5) * costs.callCostPer5Min;
 		const smsCost = smsMessages * costs.smsCostPerMessage;
 		const socialCost = socialResponses * costs.socialResponseCost;
+		const totalCampaignCost = callCost + smsCost + socialCost;
+
+		// Calculate subscription and credits
 		const subscriptionCost = costs.monthlyPrice * totalMonths;
+		const includedCredits = costs.aiCreditsPerMonth * totalMonths;
+
+		// Only charge for campaign costs that exceed included credits
+		const campaignOverage =
+			totalCampaignCost > includedCredits
+				? totalCampaignCost - includedCredits
+				: 0;
+
 		const overheadCost = overhead * totalMonths;
 
-		const totalCost =
-			subscriptionCost + callCost + smsCost + socialCost + overheadCost;
+		const totalCost = subscriptionCost + campaignOverage + overheadCost;
 		const netProfit = revenueProfit - totalCost;
 		const roi = totalCost > 0 ? (netProfit / totalCost) * 100 : 0;
 		const costPerLead = leadsNeeded > 0 ? totalCost / leadsNeeded : 0;
@@ -353,6 +368,10 @@ export function ROICalculator() {
 			netProfit,
 			actualProfit: revenueProfit,
 			totalTimeSaved,
+			// Additional breakdown for transparency
+			campaignCost: totalCampaignCost,
+			includedCredits,
+			campaignOverage,
 		};
 	};
 
@@ -418,21 +437,39 @@ export function ROICalculator() {
 
 								{/* Benchmark Presets */}
 								<div className="space-y-2">
-									<div className="flex items-center justify-between">
-										<Label className="text-sm font-medium">
-											Quick Benchmarks (Team Size):
-										</Label>
-										<div className="rounded-md bg-primary/10 px-2 py-1">
-											<span className="text-xs font-medium text-primary">
-												Using {sessionUser?.tier || "Basic"} Tier Pricing
-											</span>
+									<div className="space-y-2">
+										<div className="flex items-center justify-between gap-2">
+											<Label className="text-sm font-medium">
+												Quick Benchmarks (Team Size):
+											</Label>
+											<div className="rounded-md bg-primary/10 px-2 py-1">
+												<span className="text-xs font-medium text-primary">
+													{sessionUser?.tier || "Basic"} Tier
+												</span>
+											</div>
 										</div>
+										{selectedBenchmark && (
+											<div className="flex items-center gap-2">
+												<span className="text-xs font-medium text-primary bg-primary/20 px-2 py-1 rounded capitalize inline-flex items-center gap-1">
+													<span className="h-2 w-2 rounded-full bg-primary animate-pulse" />
+													{selectedBenchmark === "enterprise"
+														? "Enterprise"
+														: selectedBenchmark}{" "}
+													Team Active
+												</span>
+											</div>
+										)}
 									</div>
 									<div className="grid grid-cols-3 gap-2">
 										<button
 											type="button"
 											onClick={() => applyBenchmark("small")}
-											className="rounded-lg border-2 border-muted hover:border-primary hover:bg-primary/5 p-3 text-center transition-colors"
+											className={cn(
+												"rounded-lg border-2 p-3 text-center transition-all",
+												selectedBenchmark === "small"
+													? "border-primary bg-primary/10 shadow-sm"
+													: "border-muted hover:border-primary hover:bg-primary/5",
+											)}
 										>
 											<p className="font-semibold text-sm">Small Team</p>
 											<p className="text-xs text-muted-foreground mt-1">
@@ -442,7 +479,12 @@ export function ROICalculator() {
 										<button
 											type="button"
 											onClick={() => applyBenchmark("medium")}
-											className="rounded-lg border-2 border-muted hover:border-primary hover:bg-primary/5 p-3 text-center transition-colors"
+											className={cn(
+												"rounded-lg border-2 p-3 text-center transition-all",
+												selectedBenchmark === "medium"
+													? "border-primary bg-primary/10 shadow-sm"
+													: "border-muted hover:border-primary hover:bg-primary/5",
+											)}
 										>
 											<p className="font-semibold text-sm">Medium Team</p>
 											<p className="text-xs text-muted-foreground mt-1">
@@ -452,7 +494,12 @@ export function ROICalculator() {
 										<button
 											type="button"
 											onClick={() => applyBenchmark("enterprise")}
-											className="rounded-lg border-2 border-muted hover:border-primary hover:bg-primary/5 p-3 text-center transition-colors"
+											className={cn(
+												"rounded-lg border-2 p-3 text-center transition-all",
+												selectedBenchmark === "enterprise"
+													? "border-primary bg-primary/10 shadow-sm"
+													: "border-muted hover:border-primary hover:bg-primary/5",
+											)}
 										>
 											<p className="font-semibold text-sm">Enterprise</p>
 											<p className="text-xs text-muted-foreground mt-1">
@@ -614,11 +661,12 @@ export function ROICalculator() {
 										type="text"
 										inputMode="numeric"
 										value={profileDealsPerMonth}
-										onChange={(e) =>
+										onChange={(e) => {
 											setProfileDealsPerMonth(
 												handleNumericInput(e.target.value),
-											)
-										}
+											);
+											setSelectedBenchmark(null); // Clear benchmark when manually editing
+										}}
 									/>
 									<p className="text-xs text-muted-foreground">
 										Based on your{" "}
@@ -843,25 +891,43 @@ export function ROICalculator() {
 											<ChevronDown className="h-3 w-3" />
 											View cost breakdown
 										</CollapsibleTrigger>
-										<CollapsibleContent className="space-y-1 pt-1">
-											<div className="flex items-center justify-between text-xs pl-4">
-												<span className="text-muted-foreground">
-													Subscription ({sessionUser?.tier || "Basic"}):
-												</span>
-												<span className="font-medium">
-													$
-													{(
-														planCosts[
-															(sessionUser?.tier?.toLowerCase() ||
-																"basic") as SubscriptionPlan
-														]?.monthlyPrice *
-														(Number(profileMonthsToCalculate) || 1)
-													).toLocaleString()}
-												</span>
+										<CollapsibleContent className="space-y-2 pt-1">
+											<div className="space-y-1 pl-4">
+												<div className="flex items-center justify-between text-xs">
+													<span className="text-muted-foreground">
+														Subscription ({sessionUser?.tier || "Basic"}):
+													</span>
+													<span className="font-medium">
+														$
+														{(
+															planCosts[
+																(sessionUser?.tier?.toLowerCase() ||
+																	"basic") as SubscriptionPlan
+															]?.monthlyPrice *
+															(Number(profileMonthsToCalculate) || 1)
+														).toLocaleString()}
+													</span>
+												</div>
+												<div className="flex items-center justify-between text-xs">
+													<span className="text-muted-foreground text-[11px] italic">
+														• Includes{" "}
+														{(
+															planCosts[
+																(sessionUser?.tier?.toLowerCase() ||
+																	"basic") as SubscriptionPlan
+															]?.aiCreditsPerMonth *
+															(Number(profileMonthsToCalculate) || 1)
+														).toLocaleString()}{" "}
+														AI credits
+													</span>
+													<span className="text-[11px] text-green-600">
+														Covered ✓
+													</span>
+												</div>
 											</div>
 											<div className="flex items-center justify-between text-xs pl-4">
 												<span className="text-muted-foreground">
-													Campaign Costs:
+													Campaign Overages:
 												</span>
 												<span className="font-medium">
 													$
