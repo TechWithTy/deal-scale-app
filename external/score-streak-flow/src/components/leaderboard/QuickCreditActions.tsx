@@ -33,6 +33,7 @@ export const QuickCreditActions = ({
 }: QuickCreditActionsProps) => {
 	const [open, setOpen] = React.useState(false);
 	const [selectedType, setSelectedType] = React.useState<CreditType | null>(null);
+	const [giftCode, setGiftCode] = React.useState("");
 	const [termsAccepted, setTermsAccepted] = React.useState(false);
 
 	const handleSubmit = () => {
@@ -62,6 +63,10 @@ export const QuickCreditActions = ({
 			const raw = window.localStorage.getItem(key);
 			const existing = raw ? (JSON.parse(raw) as Record<string, unknown>) : {};
 			
+			// Calculate expiration (7 days from now)
+			const expiresAt = new Date();
+			expiresAt.setDate(expiresAt.getDate() + 7);
+			
 			const payload = {
 				userId: currentUserId ?? "unknown",
 				username: currentUserName ?? "Anonymous",
@@ -69,6 +74,11 @@ export const QuickCreditActions = ({
 				creditType: selectedType,
 				actionType: isTop10 ? "request-payback" : "request-donation",
 				requiresPayback: isTop10,
+				visibilityPeriodDays: 7,
+				expiresAt: expiresAt.toISOString(),
+				monthlyLimit: isTop10 ? null : 2, // Gift requests limited to 2 per month
+				earnableVia: isTop10 ? null : ["wheel_spins", "discord_help", "charitable_actions"],
+				giftCode: !isTop10 && giftCode ? giftCode : null, // Track source of earned credits
 				termsAccepted,
 				createdAt: new Date().toISOString(),
 			};
@@ -78,14 +88,15 @@ export const QuickCreditActions = ({
 			window.localStorage.setItem(key, JSON.stringify(existing));
 
 			toast({
-				title: isTop10 ? "Credit request submitted" : "Donation request submitted",
+				title: isTop10 ? "Credit offer posted" : "Donation request posted",
 				description: isTop10 
-					? `Your ${creditTypeLabels[selectedType]} request has been recorded. Payback with interest required.`
-					: `Your ${creditTypeLabels[selectedType]} donation request has been recorded.`,
+					? `Your ${creditTypeLabels[selectedType]} offer will be visible for 7 days. Payback with interest required.`
+					: `Your ${creditTypeLabels[selectedType]} request will be visible for 7 days.`,
 			});
 			
 			setOpen(false);
 			setSelectedType(null);
+			setGiftCode("");
 			setTermsAccepted(false);
 		} catch (e) {
 			toast({
@@ -127,6 +138,24 @@ export const QuickCreditActions = ({
 								: "Request donated credits from leaders. No payback required."
 							}
 						</p>
+						<div className="mt-2 space-y-2 rounded-md border border-primary/20 bg-primary/5 px-3 py-2 dark:bg-primary/10">
+							<p className="text-xs text-foreground leading-relaxed">
+								{isTop10 ? (
+									<>
+										<strong>Note:</strong> Your offer will be visible for 7 days.
+									</>
+								) : (
+									<>
+										<strong>Limit:</strong> 2 gift requests per month. Visible for 7 days.
+									</>
+								)}
+							</p>
+							{!isTop10 && (
+								<p className="text-xs text-muted-foreground leading-relaxed">
+									💡 Earn extra requests via wheel spins, helping in Discord, or charitable actions.
+								</p>
+							)}
+						</div>
 					</div>
 
 					{/* Credit Type Selection */}
@@ -152,6 +181,26 @@ export const QuickCreditActions = ({
 						))}
 					</div>
 					</div>
+
+					{/* Gift Request Code - Only for non-top 10 */}
+					{!isTop10 && (
+						<div className="space-y-2">
+							<Label htmlFor="gift-code" className="text-sm">
+								Gift Request Code <span className="text-muted-foreground">(Optional)</span>
+							</Label>
+							<input
+								id="gift-code"
+								type="text"
+								value={giftCode}
+								onChange={(e) => setGiftCode(e.target.value.toUpperCase())}
+								placeholder="e.g., WHEEL2024, DISCORD-HELP, CHARITY-50"
+								className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+							/>
+							<p className="text-xs text-muted-foreground">
+								Enter code from wheel spin, Discord reward, or charitable action
+							</p>
+						</div>
+					)}
 
 					{/* Terms and Conditions */}
 					<div className="flex items-start gap-2 rounded-md border border-border bg-muted/50 p-3 dark:bg-muted/20">
