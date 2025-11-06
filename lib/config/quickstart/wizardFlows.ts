@@ -171,8 +171,8 @@ const GOALS: readonly QuickStartGoalDefinition[] = [
 		templateId: "campaign-default",
 		flow: [
 			{
-				cardId: "market-deals",
-				note: "Identify hyper-local trends and homeowners ready for outreach.",
+				cardId: "import",
+				note: "Import your client list or sync with your CRM to get started.",
 			},
 			{
 				cardId: "campaign",
