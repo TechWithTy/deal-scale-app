@@ -305,20 +305,20 @@ export default function SidebarClient({ user }: { user: UserProfile | null }) {
 						</div>
 					)}
 				</div>
-				{/* Vertical Sticky Banner - Attached to right side of sidebar */}
-				<VerticalStickyBanner
-					isSidebarMinimized={isSidebarMinimized}
-					variant="feature"
-					tooltipText="New Feature Available! Check out our latest updates"
-					link="/dashboard"
-					subtitleLink="/dashboard/updates"
-				>
-					<p className={cn("text-[10px] font-semibold leading-tight")}>
-						New Feature Available!
-					</p>
-					<p className={cn("text-[9px] leading-tight")}>Check out updates</p>
-				</VerticalStickyBanner>
 			</aside>
+			{/* Vertical Sticky Banner - Attached to right side of sidebar */}
+			<VerticalStickyBanner
+				isSidebarMinimized={isSidebarMinimized}
+				variant="feature"
+				tooltipText="New Feature Available! Check out our latest updates"
+				link="/dashboard"
+				subtitleLink="/dashboard/updates"
+			>
+				<p className={cn("text-[10px] font-semibold leading-tight")}>
+					New Feature Available!
+				</p>
+				<p className={cn("text-[9px] leading-tight")}>Check out updates</p>
+			</VerticalStickyBanner>
 		</div>
 	);
 }
