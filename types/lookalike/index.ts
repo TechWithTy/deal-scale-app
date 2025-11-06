@@ -1,5 +1,10 @@
 // Look-Alike Audience Type Definitions
 
+import type {
+	QuickStartPersonaId,
+	QuickStartGoalId,
+} from "@/lib/config/quickstart/wizardFlows";
+
 export type AdPlatform = "meta" | "google" | "linkedin";
 
 export type BuyerPersona =
@@ -55,6 +60,10 @@ export interface LookalikeConfig {
 	seedListId: string;
 	seedListName: string;
 	seedLeadCount: number;
+
+	// User Context (from profile)
+	userPersona?: QuickStartPersonaId;
+	userGoal?: QuickStartGoalId;
 
 	// Similarity settings
 	similarityThreshold: number; // 60-95%

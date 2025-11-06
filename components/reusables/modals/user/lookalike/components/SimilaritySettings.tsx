@@ -34,9 +34,14 @@ export function SimilaritySettings({
 			<div className="flex items-center justify-between">
 				<Label className="text-base font-semibold">Similarity Settings</Label>
 				{estimatedSize !== null && (
-					<Badge variant="secondary" className="gap-2">
-						<Users className="h-3 w-3" />~{estimatedSize.toLocaleString()} leads
-						{isEstimating && <Loader2 className="h-3 w-3 animate-spin" />}
+					<Badge variant="secondary" className="gap-2 whitespace-nowrap">
+						<Users className="h-3 w-3 shrink-0" />
+						<span className="whitespace-nowrap">
+							~{estimatedSize.toLocaleString()} leads
+						</span>
+						{isEstimating && (
+							<Loader2 className="h-3 w-3 animate-spin shrink-0" />
+						)}
 					</Badge>
 				)}
 			</div>

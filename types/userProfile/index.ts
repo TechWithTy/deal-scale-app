@@ -49,6 +49,9 @@ export interface SavedSearch {
 	updatedAt: Date;
 	priority?: boolean;
 	lookalikeConfig?: any; // Optional lookalike audience configuration
+	// User context (for lookalike audiences)
+	userPersona?: QuickStartPersonaId;
+	userGoal?: QuickStartGoalId;
 }
 
 export interface Integration {

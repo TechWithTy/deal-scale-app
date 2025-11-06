@@ -116,7 +116,9 @@ export function GeneralOptions({ form }: GeneralOptionsProps) {
 				</div>
 
 				<div>
-					<Label htmlFor="corporate">Corporate Ownership</Label>
+					<Label htmlFor="corporate" className="whitespace-nowrap">
+						Corporate Ownership
+					</Label>
 					<Select
 						value={form.watch("corporateOwnership") || "all"}
 						onValueChange={(value) =>
@@ -136,7 +138,9 @@ export function GeneralOptions({ form }: GeneralOptionsProps) {
 			</div>
 
 			<div>
-				<Label htmlFor="absentee">Absentee Owner</Label>
+				<Label htmlFor="absentee" className="whitespace-nowrap">
+					Absentee Owner
+				</Label>
 				<Select
 					value={form.watch("absenteeOwner") || "all"}
 					onValueChange={(value) => form.setValue("absenteeOwner", value)}

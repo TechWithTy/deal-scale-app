@@ -6,7 +6,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -24,10 +24,20 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { AlertCircle, Loader2, TrendingUp } from "lucide-react";
+import { AlertCircle, Loader2, TrendingUp, User, Target } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import type { LookalikeConfig } from "@/types/lookalike";
+import type {
+	QuickStartPersonaId,
+	QuickStartGoalId,
+} from "@/lib/config/quickstart/wizardFlows";
+import {
+	getPersonaDefinition,
+	getGoalDefinition,
+} from "@/lib/config/quickstart/wizardFlows";
 import { estimateAudienceSize } from "@/lib/api/lookalike/generate";
 import { toast } from "sonner";
+import { useQuickStartWizardDataStore } from "@/lib/stores/quickstartWizardData";
 import { lookalikeConfigSchema, type FormValues } from "./types";
 import { buildLookalikeConfig } from "./utils/configBuilder";
 import { SimilaritySettings } from "./components/SimilaritySettings";
@@ -46,6 +56,8 @@ interface LookalikeConfigModalProps {
 	onGenerate: (config: LookalikeConfig) => void;
 	onSaveConfig?: (config: LookalikeConfig, configName: string) => void;
 	initialConfig?: Partial<FormValues>;
+	userPersona?: QuickStartPersonaId;
+	userGoal?: QuickStartGoalId;
 }
 
 /**
@@ -61,6 +73,8 @@ export function LookalikeConfigModal({
 	onGenerate,
 	onSaveConfig,
 	initialConfig,
+	userPersona,
+	userGoal,
 }: LookalikeConfigModalProps) {
 	const [isGenerating, setIsGenerating] = useState(false);
 	const [estimatedSize, setEstimatedSize] = useState<number | null>(null);
@@ -88,6 +102,23 @@ export function LookalikeConfigModal({
 
 	const watchedValues = form.watch();
 
+	// Create a stable reference for estimation-relevant fields only
+	const estimationKey = useMemo(
+		() =>
+			JSON.stringify({
+				similarityThreshold: watchedValues.similarityThreshold,
+				targetSize: watchedValues.targetSize,
+				seedListId,
+				seedLeadCount,
+			}),
+		[
+			watchedValues.similarityThreshold,
+			watchedValues.targetSize,
+			seedListId,
+			seedLeadCount,
+		],
+	);
+
 	// Validation logic
 	const isValidSeedList = seedLeadCount > 0;
 	const hasTargetSize = (watchedValues.targetSize || 0) > 0;
@@ -113,7 +144,7 @@ export function LookalikeConfigModal({
 		});
 	}
 
-	/** Debounced audience size estimation */
+	/** Debounced audience size estimation - only runs when relevant fields change */
 	useEffect(() => {
 		if (!isOpen) return;
 
@@ -125,6 +156,8 @@ export function LookalikeConfigModal({
 					seedListId,
 					seedListName,
 					seedLeadCount,
+					userPersona,
+					userGoal,
 				);
 				const size = await estimateAudienceSize(config);
 				setEstimatedSize(size);
@@ -133,10 +166,11 @@ export function LookalikeConfigModal({
 			} finally {
 				setIsEstimating(false);
 			}
-		}, 1000);
+		}, 1500);
 
 		return () => clearTimeout(timer);
-	}, [isOpen, watchedValues, seedListId, seedListName, seedLeadCount]);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [isOpen, estimationKey]);
 
 	/** Handles form submission and audience generation */
 	const handleGenerate = async (values: FormValues) => {
@@ -148,8 +182,10 @@ export function LookalikeConfigModal({
 				seedListId,
 				seedListName,
 				seedLeadCount,
+				userPersona,
+				userGoal,
 			);
-			console.log("[LookalikeConfig] Built config:", config);
+			console.log("[LookalikeConfig] Built config with persona/goal:", config);
 			await onGenerate(config);
 			toast.success("Lookalike audience generated successfully!");
 		} catch (error) {
@@ -186,6 +222,8 @@ export function LookalikeConfigModal({
 				seedListId,
 				seedListName,
 				seedLeadCount,
+				userPersona,
+				userGoal,
 			);
 			await onSaveConfig(config, configName);
 			toast.success(`Configuration "${configName}" saved!`);
@@ -215,6 +253,24 @@ export function LookalikeConfigModal({
 						</span>
 						). Adjust filters to refine your audience.
 					</DialogDescription>
+
+					{/* User Persona & Goal */}
+					{(userPersona || userGoal) && (
+						<div className="mt-3 flex flex-wrap gap-2">
+							{userPersona && (
+								<Badge variant="secondary" className="gap-1.5">
+									<User className="h-3 w-3" />
+									{getPersonaDefinition(userPersona)?.title || userPersona}
+								</Badge>
+							)}
+							{userGoal && (
+								<Badge variant="secondary" className="gap-1.5">
+									<Target className="h-3 w-3" />
+									{getGoalDefinition(userGoal)?.title || userGoal}
+								</Badge>
+							)}
+						</div>
+					)}
 
 					{/* Validation Errors */}
 					{validationErrors.length > 0 && (

@@ -335,12 +335,14 @@ export default function QuickStartPage() {
 					config.seedLeadCount || seedLeadListData?.leadCount || 100,
 			};
 
-			// Create saved search object
+			// Create saved search object with user persona and goal
 			const savedSearch: SavedSearch = {
 				id: `lookalike_config_${Date.now()}`,
 				name: configName,
 				searchCriteria: {} as any, // Empty for lookalike
 				lookalikeConfig: completeConfig,
+				userPersona: config.userPersona,
+				userGoal: config.userGoal,
 				createdAt: new Date(),
 				updatedAt: new Date(),
 				priority: false,
@@ -838,6 +840,8 @@ export default function QuickStartPage() {
 				seedListId={seedLeadListData?.listId || ""}
 				seedListName={seedLeadListData?.listName || "Seed List"}
 				seedLeadCount={seedLeadListData?.leadCount || 0}
+				userPersona={useQuickStartWizardDataStore.getState().personaId}
+				userGoal={useQuickStartWizardDataStore.getState().goalId}
 				onGenerate={handleGenerateLookalike}
 				onSaveConfig={handleSaveLookalikeConfig}
 			/>
