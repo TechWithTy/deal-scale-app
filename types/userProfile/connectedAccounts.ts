@@ -33,3 +33,15 @@ export interface TwitterOAuthData extends OAuthData {
 	id: string; // Twitter-specific field
 	handle: string; // Twitter handle (e.g., @username)
 }
+
+export interface GoHighLevelOAuthData extends OAuthData {
+	locationId: string; // GoHighLevel location ID
+	companyId?: string; // Optional company ID
+	userId?: string; // Optional user ID
+}
+
+export interface LoftyCRMOAuthData extends OAuthData {
+	accountId: string; // Lofty CRM account ID
+	teamId?: string; // Optional team ID
+	agentId?: string; // Optional agent ID
+}
