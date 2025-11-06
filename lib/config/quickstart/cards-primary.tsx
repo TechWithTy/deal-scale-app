@@ -47,7 +47,7 @@ export const primaryQuickStartCards: readonly QuickStartCardDescriptor[] = [
 		...primaryCardStyles,
 		cardClassName: cn(
 			primaryCardStyles.cardClassName,
-			"md:row-span-2 md:col-span-2 md:max-w-none xl:row-span-2 xl:col-span-2",
+			"md:col-span-2 md:row-span-2 xl:col-span-2 xl:row-span-2",
 		),
 	},
 	{

@@ -54,7 +54,7 @@ const QuickStartActionsGrid: FC<QuickStartActionsGridProps> = ({ cards }) => (
 				<Card
 					key={key}
 					className={cn(
-						"group flex w-full max-w-sm flex-col border-2 transition hover:border-primary/20 hover:shadow-lg",
+						"group flex w-full flex-col border-2 transition hover:border-primary/20 hover:shadow-lg",
 						cardClassName,
 					)}
 				>
