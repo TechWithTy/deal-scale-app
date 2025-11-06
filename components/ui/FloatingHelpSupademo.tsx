@@ -155,6 +155,7 @@ export default function FloatingHelpSupademo({
 	const [isHelpOpen, setIsHelpOpen] = useState(false);
 
 	// Event bridge so static page icon can reveal the FAB
+	// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
 	useEffect(() => {
 		if (typeof window === "undefined") return;
 		const show = () => {
