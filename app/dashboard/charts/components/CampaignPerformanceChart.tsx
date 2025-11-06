@@ -12,7 +12,6 @@ import {
 	BarChart,
 	CartesianGrid,
 	Legend,
-	ResponsiveContainer,
 	Tooltip,
 	XAxis,
 	YAxis,
@@ -62,32 +61,33 @@ export function CampaignPerformanceChart({
 				</div>
 			</CardHeader>
 			<CardContent>
-				<ChartContainer config={chartConfig} className="h-[300px] w-full">
-					<ResponsiveContainer width="100%" height="100%">
-						<BarChart data={data}>
-							<CartesianGrid strokeDasharray="3 3" vertical={false} />
-							<XAxis
-								dataKey="name"
-								tickLine={false}
-								axisLine={false}
-								tickMargin={8}
-								style={{ fontSize: "12px" }}
-							/>
-							<YAxis
-								tickLine={false}
-								axisLine={false}
-								style={{ fontSize: "12px" }}
-							/>
-							<Tooltip content={<ChartTooltipContent />} />
-							<Legend />
-							<Bar
-								dataKey={metric}
-								fill={chartConfig[metric].color}
-								radius={[4, 4, 0, 0]}
-								name={chartConfig[metric].label}
-							/>
-						</BarChart>
-					</ResponsiveContainer>
+				<ChartContainer
+					config={chartConfig}
+					className="aspect-auto h-[300px] w-full"
+				>
+					<BarChart data={data} width={500} height={300}>
+						<CartesianGrid strokeDasharray="3 3" vertical={false} />
+						<XAxis
+							dataKey="name"
+							tickLine={false}
+							axisLine={false}
+							tickMargin={8}
+							style={{ fontSize: "12px" }}
+						/>
+						<YAxis
+							tickLine={false}
+							axisLine={false}
+							style={{ fontSize: "12px" }}
+						/>
+						<Tooltip content={<ChartTooltipContent />} />
+						<Legend />
+						<Bar
+							dataKey={metric}
+							fill={chartConfig[metric].color}
+							radius={[4, 4, 0, 0]}
+							name={chartConfig[metric].label}
+						/>
+					</BarChart>
 				</ChartContainer>
 			</CardContent>
 		</Card>
