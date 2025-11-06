@@ -1,8 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
-import { ArrowUpRight } from "lucide-react";
+import { HelpCircle } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -22,8 +21,13 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useModalStore, type WebhookStage } from "@/lib/stores/dashboard";
 import {
+	useModalStore,
+	type WebhookCategory,
+	type WebhookStage,
+} from "@/lib/stores/dashboard";
+import {
+	categoryConfig,
 	connectionActivity,
 	connectionHighlights,
 	connectionStageCards,
@@ -40,33 +44,37 @@ const StageCard = ({ stage, onOpen }: StageCardProps) => {
 	const HighlightIcon = config.highlightIcon;
 
 	return (
-		<Card>
-			<CardHeader className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-				<div>
-					<CardTitle className="flex items-center gap-2">
+		<Card className="transition-shadow hover:shadow-md">
+			<CardHeader className="flex flex-col gap-3 border-b pb-4 sm:flex-row sm:items-center sm:justify-between">
+				<div className="space-y-1">
+					<CardTitle className="flex items-center gap-2 text-lg">
 						<Icon className="h-5 w-5 text-primary" />
 						{config.title}
 					</CardTitle>
 					<CardDescription>{config.description}</CardDescription>
 				</div>
-				<Button variant={config.buttonVariant} onClick={() => onOpen(stage)}>
+				<Button
+					variant={config.buttonVariant}
+					onClick={() => onOpen(stage)}
+					className="w-full shrink-0 sm:w-auto"
+				>
 					{config.buttonLabel}
 				</Button>
 			</CardHeader>
-			<CardContent className="space-y-4">
+			<CardContent className="space-y-4 pt-6">
 				<div className="grid gap-4 md:grid-cols-2">
 					{connectionHighlights[stage].map((highlight) => (
 						<div
 							key={highlight.title}
-							className="rounded-lg border bg-card/40 p-4"
+							className="rounded-lg border bg-muted/50 p-4 transition-colors hover:bg-muted"
 						>
 							<div className="flex items-start gap-3">
-								<HighlightIcon className="mt-1 h-5 w-5 text-primary" />
-								<div>
+								<HighlightIcon className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+								<div className="space-y-1">
 									<p className="font-medium text-foreground">
 										{highlight.title}
 									</p>
-									<p className="text-sm text-muted-foreground">
+									<p className="text-sm leading-relaxed text-muted-foreground">
 										{highlight.description}
 									</p>
 								</div>
@@ -74,31 +82,56 @@ const StageCard = ({ stage, onOpen }: StageCardProps) => {
 						</div>
 					))}
 				</div>
-				<p className="text-xs text-muted-foreground">{config.footer}</p>
+				<p className="border-t pt-4 text-xs text-muted-foreground">
+					{config.footer}
+				</p>
 			</CardContent>
 		</Card>
 	);
 };
 
 const ConnectionsPage = () => {
-	const { webhookStage, setWebhookStage, openWebhookModal } = useModalStore(
-		(state) => ({
-			webhookStage: state.webhookStage,
-			setWebhookStage: state.setWebhookStage,
-			openWebhookModal: state.openWebhookModal,
-		}),
-	);
+	const {
+		webhookStage,
+		webhookCategory,
+		setWebhookStage,
+		setWebhookCategory,
+		openWebhookModal,
+	} = useModalStore((state) => ({
+		webhookStage: state.webhookStage,
+		webhookCategory: state.webhookCategory,
+		setWebhookStage: state.setWebhookStage,
+		setWebhookCategory: state.setWebhookCategory,
+		openWebhookModal: state.openWebhookModal,
+	}));
 
+	const [activeCategory, setActiveCategory] =
+		useState<WebhookCategory>(webhookCategory);
 	const [activeStage, setActiveStage] = useState<WebhookStage>(webhookStage);
 
 	useEffect(() => {
+		setActiveCategory(webhookCategory);
 		setActiveStage(webhookStage);
-	}, [webhookStage]);
+	}, [webhookCategory, webhookStage]);
 
 	const filteredLog = useMemo(() => {
-		if (activeStage === "feeds") return connectionActivity;
-		return connectionActivity.filter((row) => row.stage === activeStage);
-	}, [activeStage]);
+		let filtered = connectionActivity;
+		if (activeStage !== "feeds") {
+			filtered = filtered.filter((row) => row.stage === activeStage);
+		}
+		// Filter by category if specified
+		if (activeCategory) {
+			filtered = filtered.filter(
+				(row) => !row.category || row.category === activeCategory,
+			);
+		}
+		return filtered;
+	}, [activeStage, activeCategory]);
+
+	const handleCategoryChange = (category: WebhookCategory) => {
+		setActiveCategory(category);
+		setWebhookCategory(category);
+	};
 
 	const handleStageChange = (stage: WebhookStage) => {
 		setActiveStage(stage);
@@ -107,69 +140,132 @@ const ConnectionsPage = () => {
 
 	const handleOpenModal = (stage: WebhookStage) => {
 		handleStageChange(stage);
-		openWebhookModal(stage);
+		openWebhookModal(stage, activeCategory);
 	};
 
+	const categories: WebhookCategory[] = ["leads", "campaigns", "skiptracing"];
+
 	return (
-		<div className="space-y-10">
-			<div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-				<div>
-					<h1 className="text-3xl font-bold text-foreground">
+		<div className="space-y-6">
+			{/* Header */}
+			<div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+				<div className="flex-1 space-y-1">
+					<h1 className="text-3xl font-bold tracking-tight text-foreground">
 						Connections Hub
 					</h1>
-					<p className="text-muted-foreground">
+					<p className="text-sm text-muted-foreground">
 						Manage webhooks, feeds, and delivery activity from a single
 						workspace.
 					</p>
 				</div>
-				<Button variant="outline" asChild>
-					<Link href="/docs/webhooks" aria-label="Open webhook documentation">
-						View docs
-						<ArrowUpRight className="ml-2 h-4 w-4" />
-					</Link>
-				</Button>
+				<button
+					type="button"
+					onClick={() => {
+						if (typeof window !== "undefined") {
+							window.dispatchEvent(new Event("dealScale:helpFab:show"));
+						}
+					}}
+					className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border bg-background text-muted-foreground transition-all hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+					aria-label="Show help and demo"
+				>
+					<HelpCircle className="h-5 w-5" />
+				</button>
 			</div>
 
+			{/* Category Tabs */}
 			<Tabs
-				value={activeStage}
-				onValueChange={(value) => handleStageChange(value as WebhookStage)}
+				value={activeCategory}
+				onValueChange={(value) =>
+					handleCategoryChange(value as WebhookCategory)
+				}
+				className="space-y-4"
 			>
-				<TabsList className="grid w-full gap-2 md:w-auto md:grid-cols-3">
-					<TabsTrigger value="incoming">Incoming</TabsTrigger>
-					<TabsTrigger value="outgoing">Outgoing</TabsTrigger>
-					<TabsTrigger value="feeds">Feeds</TabsTrigger>
+				<TabsList className="inline-flex h-10 w-full items-center justify-start rounded-md bg-muted p-1 md:w-auto">
+					{categories.map((category) => (
+						<TabsTrigger
+							key={category}
+							value={category}
+							className="flex-1 data-[state=active]:bg-background data-[state=active]:shadow-sm md:flex-initial"
+						>
+							{categoryConfig[category].label}
+						</TabsTrigger>
+					))}
 				</TabsList>
 
-				<TabsContent value="incoming" className="mt-6">
-					<StageCard stage="incoming" onOpen={handleOpenModal} />
-				</TabsContent>
-				<TabsContent value="outgoing" className="mt-6">
-					<StageCard stage="outgoing" onOpen={handleOpenModal} />
-				</TabsContent>
-				<TabsContent value="feeds" className="mt-6">
-					<StageCard stage="feeds" onOpen={handleOpenModal} />
-				</TabsContent>
+				{categories.map((category) => (
+					<TabsContent
+						key={category}
+						value={category}
+						className="mt-4 space-y-4"
+					>
+						{/* Stage Tabs within each category */}
+						<Tabs
+							value={activeStage}
+							onValueChange={(value) =>
+								handleStageChange(value as WebhookStage)
+							}
+							className="space-y-4"
+						>
+							<TabsList className="inline-flex h-10 w-full items-center justify-start rounded-md bg-muted p-1 md:w-auto">
+								<TabsTrigger
+									value="incoming"
+									className="flex-1 data-[state=active]:bg-background data-[state=active]:shadow-sm md:flex-initial"
+								>
+									Incoming
+								</TabsTrigger>
+								<TabsTrigger
+									value="outgoing"
+									className="flex-1 data-[state=active]:bg-background data-[state=active]:shadow-sm md:flex-initial"
+								>
+									Outgoing
+								</TabsTrigger>
+								<TabsTrigger
+									value="feeds"
+									className="flex-1 data-[state=active]:bg-background data-[state=active]:shadow-sm md:flex-initial"
+								>
+									Feeds
+								</TabsTrigger>
+							</TabsList>
+
+							<TabsContent value="incoming" className="mt-4">
+								<StageCard stage="incoming" onOpen={handleOpenModal} />
+							</TabsContent>
+							<TabsContent value="outgoing" className="mt-4">
+								<StageCard stage="outgoing" onOpen={handleOpenModal} />
+							</TabsContent>
+							<TabsContent value="feeds" className="mt-4">
+								<StageCard stage="feeds" onOpen={handleOpenModal} />
+							</TabsContent>
+						</Tabs>
+					</TabsContent>
+				))}
 			</Tabs>
 
 			<Card>
-				<CardHeader className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-					<div>
-						<CardTitle>Activity history</CardTitle>
+				<CardHeader className="flex flex-col gap-3 border-b pb-4 sm:flex-row sm:items-center sm:justify-between">
+					<div className="space-y-1">
+						<CardTitle className="text-lg">Activity History</CardTitle>
 						<CardDescription>
 							Review deliveries, troubleshoot failures, and confirm feed
 							refreshes.
 						</CardDescription>
 					</div>
-					<Badge variant="secondary">
+					<Badge variant="secondary" className="w-fit shrink-0">
+						{categoryConfig[activeCategory].label} •{" "}
 						{activeStage === "feeds" ? "All stages" : `${activeStage} focus`}
 					</Badge>
 				</CardHeader>
-				<CardContent>
+				<CardContent className="pt-6">
 					{filteredLog.length === 0 ? (
-						<p className="text-sm text-muted-foreground">
-							No events recorded for the selected stage yet. Trigger a test from
-							the modal to populate history.
-						</p>
+						<div className="flex flex-col items-center justify-center py-12 text-center">
+							<p className="text-sm font-medium text-foreground">
+								No activity recorded
+							</p>
+							<p className="mt-1 text-sm text-muted-foreground">
+								No events recorded for the selected stage yet. Trigger a test
+								from the modal to populate history.
+							</p>
+						</div>
 					) : (
 						<Table>
 							<TableHeader>

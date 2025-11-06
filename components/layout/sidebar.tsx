@@ -85,9 +85,10 @@ export default function SidebarClient({ user }: { user: UserProfile | null }) {
 		<div className="relative hidden md:block">
 			<aside
 				className={cn(
-					"relative sticky top-0 z-40 h-[100dvh] flex-none overflow-y-auto overflow-x-visible border-r bg-card transition-[width] duration-500",
+					"relative sticky top-0 z-40 h-[100dvh] flex-none overflow-y-auto border-r bg-card transition-[width] duration-500",
 					isSidebarMinimized ? "w-[72px]" : "w-72",
 				)}
+				style={{ overflowX: "visible" }}
 			>
 				<div
 					aria-label={
@@ -305,20 +306,33 @@ export default function SidebarClient({ user }: { user: UserProfile | null }) {
 						</div>
 					)}
 				</div>
+				{/* Vertical Sticky Banner - Attached to right side of sidebar */}
+				<div
+					className="absolute top-0 right-0 h-full pointer-events-none"
+					style={{
+						transform: isSidebarMinimized
+							? "translateX(32px)"
+							: "translateX(56px)",
+					}}
+				>
+					<div className="pointer-events-auto h-full">
+						<VerticalStickyBanner
+							isSidebarMinimized={isSidebarMinimized}
+							variant="feature"
+							tooltipText="New Feature Available! Check out our latest updates"
+							link="/dashboard"
+							subtitleLink="/dashboard/updates"
+						>
+							<p className={cn("text-[10px] font-semibold leading-tight")}>
+								New Feature Available!
+							</p>
+							<p className={cn("text-[9px] leading-tight")}>
+								Check out updates
+							</p>
+						</VerticalStickyBanner>
+					</div>
+				</div>
 			</aside>
-			{/* Vertical Sticky Banner - Attached to right side of sidebar */}
-			<VerticalStickyBanner
-				isSidebarMinimized={isSidebarMinimized}
-				variant="feature"
-				tooltipText="New Feature Available! Check out our latest updates"
-				link="/dashboard"
-				subtitleLink="/dashboard/updates"
-			>
-				<p className={cn("text-[10px] font-semibold leading-tight")}>
-					New Feature Available!
-				</p>
-				<p className={cn("text-[9px] leading-tight")}>Check out updates</p>
-			</VerticalStickyBanner>
 		</div>
 	);
 }

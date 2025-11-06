@@ -1,14 +1,21 @@
 "use client";
 
+import { categoryConfig } from "@/app/dashboard/connections/config";
+import WalkThroughModal from "@/components/leadsSearch/search/WalkthroughModal";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Pencil } from "lucide-react";
 import { mockUserProfile } from "@/constants/_faker/profile/userProfile";
-import { useModalStore, type WebhookStage } from "@/lib/stores/dashboard";
+import {
+	type WebhookCategory,
+	type WebhookStage,
+	useModalStore,
+} from "@/lib/stores/dashboard";
 import { useRouter } from "next/navigation";
 import type React from "react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import WalkThroughModal from "@/components/leadsSearch/search/WalkthroughModal";
 import WebhookFeedPreview, { type FeedItemType } from "./WebhookFeedPreview";
 import WebhookHistory from "./WebhookHistory";
 import type { WebhookEntryType } from "./WebhookHistory";
@@ -20,88 +27,119 @@ type WebhookHistoryByStage = Record<
 	WebhookEntryType[]
 >;
 
-const webhookHistoryByStage: WebhookHistoryByStage = {
-	incoming: [
-		{
-			id: "incoming-001",
-			event: "lead.created",
-			date: "Jan 05, 2025 3:18 PM",
-			status: "delivered",
-			responseCode: 202,
-			payload: {
-				lead_id: "inc-76352",
-				email: "lead.one@example.com",
-				first_name: "Alex",
-				last_name: "Rivera",
-				phone: "+15551230001",
-				status: "new",
+const getWebhookHistory = (
+	category: WebhookCategory,
+): WebhookHistoryByStage => {
+	const baseId =
+		category === "leads"
+			? "lead"
+			: category === "campaigns"
+				? "campaign"
+				: "skiptrace";
+	const basePath =
+		category === "leads"
+			? "leads"
+			: category === "campaigns"
+				? "campaigns"
+				: "skiptracing";
+
+	return {
+		incoming: [
+			{
+				id: `${category}-incoming-001`,
+				event: `${baseId}.created`,
+				date: "Jan 05, 2025 3:18 PM",
+				status: "delivered",
+				responseCode: 202,
+				payload: {
+					[`${baseId}_id`]: "inc-76352",
+					email: `${baseId}.one@example.com`,
+					first_name: "Alex",
+					last_name: "Rivera",
+					phone: "+15551230001",
+					status: "new",
+				},
 			},
-		},
-		{
-			id: "incoming-002",
-			event: "lead.status.updated",
-			date: "Jan 04, 2025 10:11 AM",
-			status: "failed",
-			responseCode: 500,
-			payload: {
-				lead_id: "inc-76352",
-				status: "contacted",
-				previous_status: "new",
-				triggered_by: "Zapier",
-				attempt: 3,
+			{
+				id: `${category}-incoming-002`,
+				event: `${baseId}.status.updated`,
+				date: "Jan 04, 2025 10:11 AM",
+				status: "failed",
+				responseCode: 500,
+				payload: {
+					[`${baseId}_id`]: "inc-76352",
+					status: "contacted",
+					previous_status: "new",
+					triggered_by: "Zapier",
+					attempt: 3,
+				},
 			},
-		},
-	],
-	outgoing: [
-		{
-			id: "outgoing-001",
-			event: "message.sent",
-			date: "Jan 06, 2025 9:42 AM",
-			status: "delivered",
-			responseCode: 200,
-			payload: {
-				lead_id: "out-22991",
-				recipient: "jordan@examplecrm.com",
-				channel: "email",
-				subject: "Follow-up: Demo availability",
-				preview: "Just confirming our time later today.",
+		],
+		outgoing: [
+			{
+				id: `${category}-outgoing-001`,
+				event: "message.sent",
+				date: "Jan 06, 2025 9:42 AM",
+				status: "delivered",
+				responseCode: 200,
+				payload: {
+					[`${baseId}_id`]: "out-22991",
+					recipient: "jordan@examplecrm.com",
+					channel: "email",
+					subject: "Follow-up: Demo availability",
+					preview: "Just confirming our time later today.",
+				},
 			},
-		},
-		{
-			id: "outgoing-002",
-			event: "task.created",
-			date: "Jan 03, 2025 7:06 PM",
-			status: "pending",
-			responseCode: 102,
-			payload: {
-				lead_id: "out-99310",
-				title: "Schedule walkthrough call",
-				due_date: "2025-01-07T15:00:00Z",
-				assigned_to: "deal-team@crm.io",
+			{
+				id: `${category}-outgoing-002`,
+				event: "task.created",
+				date: "Jan 03, 2025 7:06 PM",
+				status: "pending",
+				responseCode: 102,
+				payload: {
+					[`${baseId}_id`]: "out-99310",
+					title: "Schedule walkthrough call",
+					due_date: "2025-01-07T15:00:00Z",
+					assigned_to: "deal-team@crm.io",
+				},
 			},
-		},
-	],
+		],
+	};
 };
 
-const webhookFeedItems: FeedItemType[] = [
-	{
-		id: "feed-001",
-		title: "message.sent — Jane Doe",
-		publishedAt: "Wed, 08 Oct 2025 14:35:00 GMT",
-		link: "https://app.dealscale.io/dashboard/chat/12345",
-		summary:
-			'AI replied: "Hey Jane, confirming our walkthrough tomorrow at 3 PM."',
-		author: "DealScale Automations",
-	},
-	{
-		id: "feed-002",
-		title: "lead.status.updated — Liam Patel",
-		publishedAt: "Wed, 08 Oct 2025 14:20:00 GMT",
-		link: "https://app.dealscale.io/dashboard/leads/56789",
-		summary: "Lead moved to Qualified after responding to SMS outreach.",
-		author: "DealScale Automations",
-	},
-];
+const getWebhookFeedItems = (category: WebhookCategory): FeedItemType[] => {
+	const basePath =
+		category === "leads"
+			? "leads"
+			: category === "campaigns"
+				? "campaigns"
+				: "skiptracing";
+	const itemType =
+		category === "leads"
+			? "Lead"
+			: category === "campaigns"
+				? "Campaign"
+				: "Skip Trace";
+
+	return [
+		{
+			id: `feed-${category}-001`,
+			title: `message.sent — ${itemType} Jane Doe`,
+			publishedAt: "Wed, 08 Oct 2025 14:35:00 GMT",
+			link: `https://app.dealscale.io/dashboard/${basePath}/12345`,
+			summary: `AI replied: "Hey Jane, confirming our walkthrough tomorrow at 3 PM."`,
+			author: "DealScale Automations",
+		},
+		{
+			id: `feed-${category}-002`,
+			title: `${category}.status.updated — ${itemType} Liam Patel`,
+			publishedAt: "Wed, 08 Oct 2025 14:20:00 GMT",
+			link: `https://app.dealscale.io/dashboard/${basePath}/56789`,
+			summary: `${itemType} moved to Qualified after responding to SMS outreach.`,
+			author: "DealScale Automations",
+		},
+	];
+};
 
 const Modal = ({
 	isOpen,
@@ -196,25 +234,36 @@ export const WebhookModal: React.FC = () => {
 		isWebhookModalOpen,
 		closeWebhookModal,
 		webhookStage,
+		webhookCategory,
 		setWebhookStage,
+		setWebhookCategory,
 	} = useModalStore();
 
 	const router = useRouter();
 
 	const orgId = mockUserProfile?.companyInfo?.GHLID?.locationId ?? "org-demo";
 	const compactOrgId = orgId.replace(/[^a-zA-Z0-9]/g, "");
-	const defaultIncomingEndpoint = `https://app.dealscale.io/api/webhooks/${orgId}/incoming`;
-	const defaultOutgoingEndpoint =
+
+	const getDefaultIncomingEndpoint = () =>
+		`https://app.dealscale.io/api/webhooks/${orgId}/${webhookCategory}/incoming`;
+	const getDefaultOutgoingEndpoint = () =>
 		mockUserProfile?.companyInfo.webhook ??
 		"https://crm.example.com/hooks/dealscale";
-	const defaultFeedEndpoint = `https://app.dealscale.io/api/webhooks/${orgId}/feeds/activity.xml`;
+	const getDefaultFeedEndpoint = () =>
+		`https://app.dealscale.io/api/webhooks/${orgId}/${webhookCategory}/feeds/activity.xml`;
 
 	const [incomingWebhookUrl, setIncomingWebhookUrl] = useState(
-		defaultIncomingEndpoint,
+		getDefaultIncomingEndpoint(),
 	);
 	const [outgoingWebhookUrl, setOutgoingWebhookUrl] = useState(
-		defaultOutgoingEndpoint,
+		getDefaultOutgoingEndpoint(),
 	);
+
+	// Update URLs when category changes
+	useEffect(() => {
+		const newIncoming = `https://app.dealscale.io/api/webhooks/${orgId}/${webhookCategory}/incoming`;
+		setIncomingWebhookUrl(newIncoming);
+	}, [webhookCategory, orgId]);
 
 	// State for CRM walkthrough modal
 	const [showCrmWalkthrough, setShowCrmWalkthrough] = useState(false);
@@ -253,36 +302,56 @@ export const WebhookModal: React.FC = () => {
 		closeWebhookModal();
 	};
 
-	const payloadTemplates: Record<WebhookStage, string> = {
-		incoming: `{
-  "event": "lead.status.updated",
-  "lead_id": "12345",
+	const getPayloadTemplates = (
+		category: WebhookCategory,
+	): Record<WebhookStage, string> => {
+		const baseEvent =
+			category === "leads"
+				? "lead"
+				: category === "campaigns"
+					? "campaign"
+					: "skiptrace";
+
+		return {
+			incoming: `{
+  "event": "${baseEvent}.status.updated",
+  "${baseEvent}_id": "12345",
   "status": "Interested",
   "first_name": "John",
   "phone": "+15551234567",
   "timestamp": "2025-10-08T14:32:00Z"
 }`,
-		outgoing: `{
+			outgoing: `{
   "event": "message.sent",
-  "lead_id": "12345",
+  "${baseEvent}_id": "12345",
   "sender": "AI",
   "message": "Hey John, is 3PM still a good time?",
   "timestamp": "2025-10-08T14:35:00Z"
 }`,
-		feeds: `<item>
+			feeds: `<item>
   <title>message.sent — Jane Doe</title>
-  <link>https://app.dealscale.io/dashboard/chat/12345</link>
-  <guid isPermaLink="false">wh-${compactOrgId}-message-sent-12345</guid>
+  <link>https://app.dealscale.io/dashboard/${category}/12345</link>
+  <guid isPermaLink="false">wh-${compactOrgId}-${category}-message-sent-12345</guid>
   <pubDate>Wed, 08 Oct 2025 14:35:00 GMT</pubDate>
   <description><![CDATA[AI replied: "Hey John, is 3PM still a good time?"]]></description>
 </item>`,
+		};
 	};
 
-	const signingSecrets: Record<WebhookStage, string> = {
-		incoming: `whsec_${compactOrgId.slice(0, 12) || "incoming"}`,
-		outgoing: `whout_${compactOrgId.slice(-12) || "outgoing"}`,
-		feeds: `rss_${compactOrgId.slice(0, 6)}${compactOrgId.slice(-6)}`,
+	const payloadTemplates = getPayloadTemplates(webhookCategory);
+
+	const getSigningSecrets = (
+		category: WebhookCategory,
+	): Record<WebhookStage, string> => {
+		const categoryPrefix = category.slice(0, 2);
+		return {
+			incoming: `whsec_${categoryPrefix}_${compactOrgId.slice(0, 10) || "incoming"}`,
+			outgoing: `whout_${categoryPrefix}_${compactOrgId.slice(-10) || "outgoing"}`,
+			feeds: `rss_${categoryPrefix}_${compactOrgId.slice(0, 5)}${compactOrgId.slice(-5)}`,
+		};
 	};
+
+	const signingSecrets = getSigningSecrets(webhookCategory);
 
 	const copyValue = async (value: string, successMessage: string) => {
 		try {
@@ -353,23 +422,43 @@ export const WebhookModal: React.FC = () => {
 		<>
 			<Modal isOpen={isWebhookModalOpen} onClose={handleWebhookModalClose}>
 				<>
-					<div className="mt-4 space-y-4">
-						<h3 className="text-lg font-medium text-foreground">
+					<div className="space-y-3">
+						<h3 className="font-semibold text-foreground text-xl tracking-tight">
 							Webhook &amp; Feed Integrations
 						</h3>
-						<p className="text-sm text-muted-foreground">
+						<p className="text-muted-foreground text-sm">
 							Configure inbound CRM webhooks and outbound DealScale
 							notifications from a single modal.
 						</p>
 					</div>
 
+					{/* Category Tabs */}
+					<div className="mt-6">
+						<Tabs
+							value={webhookCategory}
+							onValueChange={(value) =>
+								setWebhookCategory(value as WebhookCategory)
+							}
+						>
+							<TabsList className="grid w-full grid-cols-3">
+								{(
+									["leads", "campaigns", "skiptracing"] as WebhookCategory[]
+								).map((category) => (
+									<TabsTrigger key={category} value={category}>
+										{categoryConfig[category].label}
+									</TabsTrigger>
+								))}
+							</TabsList>
+						</Tabs>
+					</div>
+
 					{/* CRM Integration Buttons Section */}
-					<div className="mt-6 space-y-3 border-b border-border pb-4">
+					<div className="mt-6 space-y-3 border-border border-b pb-4">
 						<div className="space-y-2">
-							<h4 className="text-sm font-medium text-foreground">
+							<h4 className="font-medium text-foreground text-sm">
 								CRM Integration Guides
 							</h4>
-							<p className="text-xs text-muted-foreground">
+							<p className="text-muted-foreground text-xs">
 								Watch video tutorials to integrate with your CRM without
 								resetup.
 							</p>
@@ -382,9 +471,9 @@ export const WebhookModal: React.FC = () => {
 									size="sm"
 									onClick={() => handleCrmIntegrationClick(crm)}
 									type="button"
-									className="flex flex-col items-center gap-1 h-auto py-3 px-2"
+									className="flex h-auto flex-col items-center gap-1 px-2 py-3"
 								>
-									<span className="text-xs font-medium">{crm.name}</span>
+									<span className="font-medium text-xs">{crm.name}</span>
 								</Button>
 							))}
 						</div>
@@ -393,6 +482,7 @@ export const WebhookModal: React.FC = () => {
 					<Tabs
 						value={webhookStage}
 						onValueChange={(value) => setWebhookStage(value as WebhookStage)}
+						className="mt-6"
 					>
 						<TabsList className="grid w-full grid-cols-3">
 							<TabsTrigger value="incoming">Incoming</TabsTrigger>
@@ -401,14 +491,15 @@ export const WebhookModal: React.FC = () => {
 						</TabsList>
 
 						{/* Incoming */}
-						<TabsContent value="incoming">
+						<TabsContent value="incoming" className="mt-6 space-y-4">
 							<WebhookUrlInput
 								label="Incoming endpoint"
 								description="Share this read-only endpoint with your CRM or form provider to push events into DealScale."
 								webhookUrl={incomingWebhookUrl}
 								setWebhookUrl={setIncomingWebhookUrl}
-								placeholder={defaultIncomingEndpoint}
+								placeholder={getDefaultIncomingEndpoint()}
 								readOnly
+								showCopyButton
 							/>
 							<WebhookPayloadSection
 								label="Sample CRM payload"
@@ -422,7 +513,7 @@ export const WebhookModal: React.FC = () => {
 										<p className="font-medium text-foreground">
 											Signing secret
 										</p>
-										<p className="text-xs text-muted-foreground">
+										<p className="text-muted-foreground text-xs">
 											DealScale validates the <code>X-DealScale-Signature</code>{" "}
 											header using this key.
 										</p>
@@ -436,21 +527,39 @@ export const WebhookModal: React.FC = () => {
 										Copy
 									</Button>
 								</div>
-								<code className="mt-3 block truncate font-mono text-xs text-muted-foreground">
+								<code className="mt-3 block truncate font-mono text-muted-foreground text-xs">
 									{signingSecrets.incoming}
 								</code>
 							</div>
 						</TabsContent>
 
 						{/* Outgoing */}
-						<TabsContent value="outgoing">
-							<WebhookUrlInput
-								label="Destination URL"
-								description="DealScale will POST outbound events to this URL, complete with signatures and retry logic."
-								webhookUrl={outgoingWebhookUrl}
-								setWebhookUrl={setOutgoingWebhookUrl}
-								placeholder={defaultOutgoingEndpoint}
-							/>
+						<TabsContent value="outgoing" className="mt-6 space-y-4">
+							<div className="mt-4">
+								<div className="mb-1 flex items-center gap-2">
+									<label
+										htmlFor="outgoingWebhookUrl"
+										className="block font-medium text-sm"
+									>
+										Destination URL
+									</label>
+									<Pencil className="h-3.5 w-3.5 text-muted-foreground" />
+								</div>
+								<p className="mb-2 text-muted-foreground text-xs">
+									DealScale will POST outbound events to this URL, complete with
+									signatures and retry logic.
+								</p>
+								<Input
+									id="outgoingWebhookUrl"
+									type="url"
+									placeholder={getDefaultOutgoingEndpoint()}
+									value={outgoingWebhookUrl}
+									onChange={(event) =>
+										setOutgoingWebhookUrl(event.target.value)
+									}
+									className="font-mono"
+								/>
+							</div>
 							<WebhookPayloadSection
 								label="Sample DealScale payload"
 								description="Use this schema to map DealScale events to your CRM or automation platform."
@@ -463,7 +572,7 @@ export const WebhookModal: React.FC = () => {
 										<p className="font-medium text-foreground">
 											Signing secret
 										</p>
-										<p className="text-xs text-muted-foreground">
+										<p className="text-muted-foreground text-xs">
 											Share this key with your CRM to verify outbound requests
 											and power optional RSS-style activity feeds.
 										</p>
@@ -477,11 +586,11 @@ export const WebhookModal: React.FC = () => {
 										Copy
 									</Button>
 								</div>
-								<code className="mt-3 block truncate font-mono text-xs text-muted-foreground">
+								<code className="mt-3 block truncate font-mono text-muted-foreground text-xs">
 									{signingSecrets.outgoing}
 								</code>
 							</div>
-							<p className="mt-3 text-xs text-muted-foreground">
+							<p className="mt-3 text-muted-foreground text-xs">
 								Tip: enable the RSS management toggle inside Integrations →
 								Webhooks to broadcast the same events as a secure feed for
 								downstream analytics.
@@ -489,13 +598,14 @@ export const WebhookModal: React.FC = () => {
 						</TabsContent>
 
 						{/* Feeds */}
-						<TabsContent value="feeds">
+						<TabsContent value="feeds" className="mt-6 space-y-4">
 							<WebhookUrlInput
 								label="Activity feed URL"
 								description="Share this read-only endpoint with stakeholders or BI tools to subscribe to webhook events as RSS/XML."
-								webhookUrl={defaultFeedEndpoint}
+								webhookUrl={getDefaultFeedEndpoint()}
 								readOnly
 								setWebhookUrl={() => undefined}
+								showCopyButton
 							/>
 							<WebhookPayloadSection
 								label="Sample feed item"
@@ -503,12 +613,14 @@ export const WebhookModal: React.FC = () => {
 								webhookPayload={payloadTemplates.feeds}
 								onCopy={() => void copyPayloadFor("feeds")}
 							/>
-							<WebhookFeedPreview feedItems={webhookFeedItems} />
+							<WebhookFeedPreview
+								feedItems={getWebhookFeedItems(webhookCategory)}
+							/>
 							<div className="mt-4 rounded-md border border-dashed bg-muted/40 p-4 text-sm">
 								<div className="flex items-start justify-between gap-2">
 									<div>
 										<p className="font-medium text-foreground">Feed token</p>
-										<p className="text-xs text-muted-foreground">
+										<p className="text-muted-foreground text-xs">
 											Use this token to authenticate RSS requests or append it
 											as <code className="mx-1">?token=</code> in the feed URL.
 										</p>
@@ -522,11 +634,11 @@ export const WebhookModal: React.FC = () => {
 										Copy
 									</Button>
 								</div>
-								<code className="mt-3 block truncate font-mono text-xs text-muted-foreground">
+								<code className="mt-3 block truncate font-mono text-muted-foreground text-xs">
 									{signingSecrets.feeds}
 								</code>
 							</div>
-							<p className="mt-3 text-xs text-muted-foreground">
+							<p className="mt-3 text-muted-foreground text-xs">
 								Followers can consume the RSS stream or use the token to request
 								a JSON feed for embedded dashboards.
 							</p>
@@ -535,7 +647,7 @@ export const WebhookModal: React.FC = () => {
 
 					<WebhookHistory
 						activeStage={webhookStage}
-						historyByStage={webhookHistoryByStage}
+						historyByStage={getWebhookHistory(webhookCategory)}
 					/>
 
 					<WebhookModalActions
