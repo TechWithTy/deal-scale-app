@@ -305,10 +305,7 @@ const ConnectionsPage = () => {
 										</TableCell>
 										<TableCell>
 											{row.status >= 400 ? (
-												<Badge
-													variant="destructive"
-													className="bg-destructive text-white dark:bg-destructive dark:text-white"
-												>
+												<Badge className="border-transparent bg-red-600 text-white shadow hover:bg-red-600/80 dark:bg-red-600 dark:text-white">
 													{row.status}
 												</Badge>
 											) : row.status >= 300 ? (

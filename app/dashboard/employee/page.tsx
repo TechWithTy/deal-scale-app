@@ -1,9 +1,7 @@
 "use client"; // Ensure it's a client-side component
 
-import { campaignSteps } from "@/_tests/tours/campaignTour";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import PageContainer from "@/components/layout/page-container";
-import WalkThroughModal from "../../../components/leadsSearch/search/WalkthroughModal";
 import { DataTableViewOptions } from "external/shadcn-table/src/components/data-table/data-table-view-options";
 import { columns } from "@/components/tables/employee-tables/columns";
 import { buttonVariants } from "@/components/ui/button";
@@ -56,8 +54,6 @@ export default function EmployeePage({
 }: {
 	searchParams: { [key: string]: string | string[] | undefined };
 }) {
-	const [isHelpModalOpen, setIsHelpModalOpen] = useState(false); // State for help modal
-	const [isTourOpen, setIsTourOpen] = useState(false); // State for the tour
 	const [totalUsers, setTotalUsers] = useState(0); // Total users state
 	const [employees, setEmployees] = useState<TeamMember[]>([]); // Employees state
 	const [pageCount, setPageCount] = useState(0); // Page count state
@@ -82,18 +78,12 @@ export default function EmployeePage({
 		loadEmployees();
 	}, [page, pageLimit]);
 
-	// Handlers for help modal and tour
-	const handleHelpOpenModal = () => setIsHelpModalOpen(true);
-	const handleHelpCloseModal = () => setIsHelpModalOpen(false);
-	const handleHelpStartTour = () => setIsTourOpen(true);
-	const handleHelpCloseTour = () => setIsTourOpen(false);
-
 	return (
 		<PageContainer>
 			<div className="space-y-4">
 				<Breadcrumbs items={breadcrumbItems} />
 
-				<div className="flex w-full flex-col items-center justify-between space-y-4 sm:flex-row sm:items-center sm:space-y-0">
+				<div className="flex w-full flex-col items-center justify-between space-y-5 sm:flex-row sm:items-center sm:space-y-0">
 					{/* Heading Component */}
 					<div className="w-full text-center sm:w-auto sm:text-left">
 						<Heading
@@ -106,11 +96,15 @@ export default function EmployeePage({
 					<div className="flex w-full justify-center sm:w-auto">
 						<button
 							type="button"
-							onClick={handleHelpOpenModal}
-							title="Get More help"
-							className="animate-bounce rounded-full bg-blue-500 p-2 text-white hover:animate-none dark:bg-green-700 dark:text-gray-300"
+							onClick={() => {
+								if (typeof window !== "undefined") {
+									window.dispatchEvent(new Event("dealScale:helpFab:show"));
+								}
+							}}
+							className="my-2 flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border bg-background text-muted-foreground shadow-sm transition-all hover:border-primary/50 hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:my-0"
+							aria-label="Show help and demo"
 						>
-							<HelpCircle size={20} />
+							<HelpCircle className="h-5 w-5" />
 						</button>
 					</div>
 
@@ -130,19 +124,6 @@ export default function EmployeePage({
 				</div>
 
 				<Separator />
-
-				{/* Help Modal */}
-				<WalkThroughModal
-					isOpen={isHelpModalOpen}
-					onClose={handleHelpCloseModal}
-					videoUrl="https://www.youtube.com/embed/example-video" // Example YouTube video URL
-					title="Welcome to Employee Management"
-					subtitle="Learn how to manage your employees and use the employee table effectively."
-					steps={campaignSteps} // Steps for the tour
-					isTourOpen={isTourOpen}
-					onStartTour={handleHelpStartTour}
-					onCloseTour={handleHelpCloseTour}
-				/>
 
 				{/* Team Credits Banner */}
 				<TeamCreditsBanner />
