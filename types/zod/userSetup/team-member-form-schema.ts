@@ -47,6 +47,35 @@ export const teamMemberFormSchema = z.object({
 				message: "At least one 2FA method must be enabled",
 			}),
 	}),
+	platformIntegration: z
+		.object({
+			callTransferBufferTime: z
+				.number()
+				.min(0, { message: "Buffer time must be positive" })
+				.max(300, { message: "Buffer time cannot exceed 300 seconds" }),
+			textBufferPeriod: z
+				.number()
+				.min(0, { message: "Buffer period must be positive" })
+				.max(1440, {
+					message: "Buffer period cannot exceed 1440 minutes (24 hours)",
+				}),
+			autoResponseEnabled: z.boolean(),
+			workingHoursStart: z.string().regex(/^([01]\d|2[0-3]):([0-5]\d)$/, {
+				message: "Start time must be in HH:mm format (e.g., 09:00)",
+			}),
+			workingHoursEnd: z.string().regex(/^([01]\d|2[0-3]):([0-5]\d)$/, {
+				message: "End time must be in HH:mm format (e.g., 17:00)",
+			}),
+			timezone: z.string().min(1, { message: "Timezone is required" }),
+			maxConcurrentConversations: z
+				.number()
+				.min(1, { message: "Must allow at least 1 conversation" })
+				.max(50, { message: "Cannot exceed 50 concurrent conversations" }),
+			enableCallRecording: z.boolean(),
+			enableTextNotifications: z.boolean(),
+			enableEmailNotifications: z.boolean(),
+		})
+		.optional(),
 });
 
 export type TeamMemberFormValues = z.infer<typeof teamMemberFormSchema>;

@@ -101,7 +101,7 @@ export default function EmployeePage({
 									window.dispatchEvent(new Event("dealScale:helpFab:show"));
 								}
 							}}
-							className="my-2 flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border bg-background text-muted-foreground shadow-sm transition-all hover:border-primary/50 hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:my-0"
+							className="my-4 flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border bg-background text-muted-foreground shadow-sm transition-all hover:border-primary/50 hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 							aria-label="Show help and demo"
 						>
 							<HelpCircle className="h-5 w-5" />
