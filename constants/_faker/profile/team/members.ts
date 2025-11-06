@@ -30,6 +30,18 @@ const TEAM_MEMBERS: TeamMember[] = [
 			isEnabled: true,
 			methods: { sms: true, email: true, authenticatorApp: false },
 		},
+		platformIntegration: {
+			callTransferBufferTime: 15,
+			textBufferPeriod: 3,
+			autoResponseEnabled: true,
+			workingHoursStart: "08:00",
+			workingHoursEnd: "18:00",
+			timezone: "America/New_York",
+			maxConcurrentConversations: 10,
+			enableCallRecording: true,
+			enableTextNotifications: true,
+			enableEmailNotifications: true,
+		},
 	},
 	{
 		id: "b8b2e7b2-2d5a-4e4e-8d1c-2a2b2b2b2b2b",
@@ -56,6 +68,18 @@ const TEAM_MEMBERS: TeamMember[] = [
 		twoFactorAuth: {
 			isEnabled: false,
 			methods: { sms: false, email: false, authenticatorApp: false },
+		},
+		platformIntegration: {
+			callTransferBufferTime: 30,
+			textBufferPeriod: 5,
+			autoResponseEnabled: false,
+			workingHoursStart: "09:00",
+			workingHoursEnd: "17:00",
+			timezone: "America/Los_Angeles",
+			maxConcurrentConversations: 5,
+			enableCallRecording: false,
+			enableTextNotifications: true,
+			enableEmailNotifications: true,
 		},
 	},
 	// Add more fixed team members as needed
