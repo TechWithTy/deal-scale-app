@@ -20,10 +20,14 @@ import { useFormContext } from "react-hook-form";
 import CreateVoiceModal from "./voice/CreateVoiceModal";
 
 import { KnowledgeVoiceSelector } from "./KnowledgeVoiceSelector";
+import { SalesScriptManager } from "./SalesScriptManager";
+import { VoiceManager } from "./VoiceManager";
 import { FormLabel } from "@/components/ui/form";
 import type { PlayButtonTimeLineHandle } from "@/components/reusables/audio/timeline/types";
 import { FeatureGuard } from "@/components/access/FeatureGuard";
 import { CloneModal } from "@/external/teleprompter-modal";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
 
 export interface KnowledgeBaseMainProps {
 	loading: boolean;
@@ -87,105 +91,139 @@ export const KnowledgeBaseMain: React.FC<KnowledgeBaseMainProps> = ({
 	};
 
 	return (
-		<div className="mx-auto flex w-full max-w-3xl flex-col gap-8">
-			{/* Voice Features Group */}
-			<div className="flex flex-col gap-4 rounded-xl border bg-card p-6 text-card-foreground shadow-sm">
-				<span className="mb-2 font-semibold text-lg">Voice Features</span>
-				<KnowledgeVoiceSelector loading={loading} />
-				<VoiceFeatureTabs
-					tabs={[
-						{
-							label: "Record Voicemail",
-							content: (
-								<button
-									type="button"
-									className="w-56 rounded-lg bg-blue-600 px-4 py-2 font-semibold text-white shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 dark:bg-blue-500 dark:hover:bg-blue-600"
-									onClick={() => setShowVoicemailModal(true)}
-									aria-label="Record Voicemail"
-								>
-									+ Record Voicemail
-								</button>
-							),
-						},
-						{
-							label: "Clone Voice",
-							content: (
-								<FeatureGuard featureKey="userProfile.cloneVoice">
-									<button
-										type="button"
-										className="w-56 rounded-lg bg-purple-600 px-4 py-2 font-semibold text-white shadow hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-2 dark:bg-purple-500 dark:hover:bg-purple-600"
-										onClick={() => setShowVoiceCloneModal(true)}
-										aria-label="Clone Voice"
-									>
-										+ Clone Voice
-									</button>
-								</FeatureGuard>
-							),
-						},
-						{
-							label: "Create Voice",
-							audioSrc:
-								"https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
-							timelineRef: createVoiceTimelineRef,
-							content: (
-								<button
-									type="button"
-									className="w-56 rounded-lg bg-yellow-600 px-4 py-2 font-semibold text-white shadow hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-2 dark:bg-yellow-500 dark:hover:bg-yellow-600"
-									onClick={() => setShowCreateVoiceModal(true)}
-									aria-label="Create Voice"
-								>
-									+ Create Voice
-								</button>
-							),
-						},
-					]}
-					className="w-full"
-				/>
-				<VoicemailModal
-					open={showVoicemailModal}
-					onClose={() => setShowVoicemailModal(false)}
-					onSave={handleVoicemailAudio}
-				/>
-				<CloneModal
-					open={showVoiceCloneModal}
-					onClose={() => setShowVoiceCloneModal(false)}
-					onSave={handleVoiceCloneAudio}
-				/>
-				<CreateVoiceModal
-					open={showCreateVoiceModal}
-					onClose={() => setShowCreateVoiceModal(false)}
-					onSave={handleCreatedVoiceAudio}
-				/>
-			</div>
+		<div className="mx-auto flex w-full max-w-5xl flex-col gap-8">
+			<Tabs defaultValue="voice-library" className="w-full">
+				<TabsList className="grid w-full grid-cols-2">
+					<TabsTrigger value="voice-library">
+						<span className="flex items-center gap-2">
+							Voice Library
+							<Badge variant="secondary" className="text-xs">
+								New
+							</Badge>
+						</span>
+					</TabsTrigger>
+					<TabsTrigger value="scripts">
+						<span className="flex items-center gap-2">
+							Sales Scripts
+							<Badge variant="secondary" className="text-xs">
+								New
+							</Badge>
+						</span>
+					</TabsTrigger>
+				</TabsList>
 
-			{/* Script & Email Features Group */}
-			<div className="flex flex-col gap-4 rounded-xl border bg-card p-6 text-card-foreground shadow-sm">
-				<span className="mb-2 font-semibold text-lg">Sales Script</span>
-				<FormLabel>
-					Select Voice (Optional): Personalize your agent's voice{" "}
-				</FormLabel>
+				{/* Legacy Voice Features Tab - Hidden but kept for reference */}
+				<TabsContent value="voice" className="space-y-6 hidden">
+					{/* Voice Features Group */}
+					<div className="flex flex-col gap-4 rounded-xl border bg-card p-6 text-card-foreground shadow-sm">
+						<span className="mb-2 font-semibold text-lg">Voice Features</span>
+						<KnowledgeVoiceSelector loading={loading} />
+						<VoiceFeatureTabs
+							tabs={[
+								{
+									label: "Record Voicemail",
+									content: (
+										<button
+											type="button"
+											className="w-56 rounded-lg bg-blue-600 px-4 py-2 font-semibold text-white shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 dark:bg-blue-500 dark:hover:bg-blue-600"
+											onClick={() => setShowVoicemailModal(true)}
+											aria-label="Record Voicemail"
+										>
+											+ Record Voicemail
+										</button>
+									),
+								},
+								{
+									label: "Clone Voice",
+									content: (
+										<FeatureGuard featureKey="userProfile.cloneVoice">
+											<button
+												type="button"
+												className="w-56 rounded-lg bg-purple-600 px-4 py-2 font-semibold text-white shadow hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-2 dark:bg-purple-500 dark:hover:bg-purple-600"
+												onClick={() => setShowVoiceCloneModal(true)}
+												aria-label="Clone Voice"
+											>
+												+ Clone Voice
+											</button>
+										</FeatureGuard>
+									),
+								},
+								{
+									label: "Create Voice",
+									audioSrc:
+										"https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
+									timelineRef: createVoiceTimelineRef,
+									content: (
+										<button
+											type="button"
+											className="w-56 rounded-lg bg-yellow-600 px-4 py-2 font-semibold text-white shadow hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-2 dark:bg-yellow-500 dark:hover:bg-yellow-600"
+											onClick={() => setShowCreateVoiceModal(true)}
+											aria-label="Create Voice"
+										>
+											+ Create Voice
+										</button>
+									),
+								},
+							]}
+							className="w-full"
+						/>
+						<VoicemailModal
+							open={showVoicemailModal}
+							onClose={() => setShowVoicemailModal(false)}
+							onSave={handleVoicemailAudio}
+						/>
+						<CloneModal
+							open={showVoiceCloneModal}
+							onClose={() => setShowVoiceCloneModal(false)}
+							onSave={handleVoiceCloneAudio}
+						/>
+						<CreateVoiceModal
+							open={showCreateVoiceModal}
+							onClose={() => setShowCreateVoiceModal(false)}
+							onSave={handleCreatedVoiceAudio}
+						/>
+					</div>
 
-				<KnowledgeSalesScriptUpload
-					loading={loading}
-					handleScriptUpload={handleScriptUpload}
-					selectedScriptFileName={selectedScriptFileName}
-				/>
-				{/* <div className="relative flex w-full flex-col items-center justify-center gap-2">
-					<label
-						htmlFor="exampleEmailBody"
-						className="mb-1 font-medium text-base text-gray-700 dark:text-gray-200"
-					>
-						Upload Email Body Content
-					</label>
-					<KnowledgeEmailUpload
-						loading={loading}
-						handleEmailUpload={handleEmailUpload}
-						selectedEmailFileName={selectedEmailFileName}
-						disabled={true} // ! Feature flag for coming soon
-					/>
-					
-				</div> */}
-			</div>
+					{/* Sales Script Upload - Legacy */}
+					<div className="flex flex-col gap-4 rounded-xl border bg-card p-6 text-card-foreground shadow-sm">
+						<span className="mb-2 font-semibold text-lg">Sales Script</span>
+						<FormLabel>
+							Select Voice (Optional): Personalize your agent's voice{" "}
+						</FormLabel>
+
+						<KnowledgeSalesScriptUpload
+							loading={loading}
+							handleScriptUpload={handleScriptUpload}
+							selectedScriptFileName={selectedScriptFileName}
+						/>
+						{/* <div className="relative flex w-full flex-col items-center justify-center gap-2">
+							<label
+								htmlFor="exampleEmailBody"
+								className="mb-1 font-medium text-base text-gray-700 dark:text-gray-200"
+							>
+								Upload Email Body Content
+							</label>
+							<KnowledgeEmailUpload
+								loading={loading}
+								handleEmailUpload={handleEmailUpload}
+								selectedEmailFileName={selectedEmailFileName}
+								disabled={true} // ! Feature flag for coming soon
+							/>
+							
+						</div> */}
+					</div>
+				</TabsContent>
+
+				{/* Voice Library Tab */}
+				<TabsContent value="voice-library" className="space-y-6">
+					<VoiceManager />
+				</TabsContent>
+
+				{/* Sales Scripts Tab */}
+				<TabsContent value="scripts" className="space-y-6">
+					<SalesScriptManager />
+				</TabsContent>
+			</Tabs>
 
 			{/* Modals */}
 			{showVoiceCloneModal && (

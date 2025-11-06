@@ -6,6 +6,8 @@ import { useFormContext } from "react-hook-form";
 import type { InitialBaseSetupData } from "../../../utils/const/getBasetProfile";
 import { BaseSetupAssets } from "./BaseSetupAssets";
 import { BaseSetupFields } from "./BaseSetupFields";
+import { PlatformSettingsFields } from "./PlatformSettingsFields";
+import { ProfileTypeSelector } from "./ProfileTypeSelector";
 import { v4 as uuidv4 } from "uuid";
 
 export interface BaseSetupMainProps {
@@ -67,6 +69,17 @@ export const BaseSetupMain: React.FC<BaseSetupMainProps> = ({
 			<div className="my-8 border-gray-200 border-t dark:border-gray-700" />
 
 			<section className="space-y-4">
+				<h2 className="mb-2 font-bold text-xl">Profile Type & Goal</h2>
+				<p className="mb-4 text-gray-500 text-sm">
+					Select your role and primary objective to customize your DealScale
+					experience.
+				</p>
+				<ProfileTypeSelector loading={loading} />
+			</section>
+
+			<div className="my-8 border-gray-200 border-t dark:border-gray-700" />
+
+			<section className="space-y-4">
 				<h2 className="mb-2 font-bold text-xl">Branding Assets</h2>
 				<p className="mb-4 text-gray-500 text-sm">
 					Upload your logo and company assets. Images should be clear and
@@ -76,6 +89,18 @@ export const BaseSetupMain: React.FC<BaseSetupMainProps> = ({
 			</section>
 
 			<div className="my-8 border-gray-200 border-t dark:border-gray-700" />
+
+			{/* Platform Integration Settings */}
+			<section className="space-y-4">
+				<h2 className="mb-2 font-bold text-xl">
+					Platform Integration Settings
+				</h2>
+				<p className="mb-6 text-gray-500 text-sm">
+					Configure collaboration and communication settings for this team
+					member.
+				</p>
+				<PlatformSettingsFields loading={loading} />
+			</section>
 		</form>
 	);
 };

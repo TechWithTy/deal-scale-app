@@ -35,6 +35,24 @@ export const BaseSetupFields: React.FC<BaseSetupFieldsProps> = ({
 					</FormItem>
 				)}
 			/>
+			<FormField
+				control={control}
+				name="companyWebsite"
+				render={({ field }) => (
+					<FormItem>
+						<FormLabel>Company Website</FormLabel>
+						<FormControl>
+							<Input
+								type="url"
+								disabled={loading}
+								placeholder="https://www.example.com"
+								{...field}
+							/>
+						</FormControl>
+						<FormMessage />
+					</FormItem>
+				)}
+			/>
 			{/* <div className="relative">
 				<div className="pointer-events-auto absolute inset-0 z-10 flex items-center justify-center rounded-lg bg-background/70">
 					<span className="text-sm font-medium text-muted-foreground">Coming soon</span>
