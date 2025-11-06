@@ -10,6 +10,7 @@ import type {
 	LeadTypeGlobal,
 	SocialLinks,
 } from "@/types/_dashboard/leads";
+import { enrichLeadWithIntentSignals } from "@/lib/helpers/enrichLeadsWithIntentSignals";
 
 //
 // Configuration
@@ -110,14 +111,38 @@ export function generateMockLeads(count: number): LeadTypeGlobal[] {
 						: "DM Opt-out";
 		}
 
-		leads.push(lead);
+		// Enrich leads with intent signals based on their status
+		// Only enrich every 3rd lead to improve performance (lazy load the rest)
+		const shouldEnrich = i % 3 === 0; // 33% of leads get signals immediately
+		
+		if (shouldEnrich) {
+			const intentProfile = 
+				lead.status === "Closed" ? "high" :
+				lead.status === "Contacted" ? "medium" :
+				"low";
+			const enrichedLead = enrichLeadWithIntentSignals(lead, intentProfile);
+			leads.push(enrichedLead);
+		} else {
+			// Store a flag for lazy enrichment on first view
+			leads.push({ ...lead, _needsIntentEnrichment: true } as LeadTypeGlobal);
+		}
 	}
 
 	return leads;
 }
 
+// Cache generated leads to avoid regenerating on every import
+let _cachedMockLeads: LeadTypeGlobal[] | null = null;
+
+function getMockGeneratedLeads(): LeadTypeGlobal[] {
+	if (!_cachedMockLeads) {
+		_cachedMockLeads = generateMockLeads(50); // Reduced from 100 to 50 for faster load
+	}
+	return _cachedMockLeads;
+}
+
 export const mockGeneratedLeads = NEXT_PUBLIC_APP_TESTING_MODE
-	? generateMockLeads(100)
+	? getMockGeneratedLeads()
 	: [];
 
 //
