@@ -47,7 +47,7 @@ export function DashboardNav({
 	}
 
 	return (
-		<nav className="grid items-start gap-2">
+		<nav className="grid items-start gap-2 overflow-visible">
 			<TooltipProvider>
 				{items.map((item, index) => {
 					if (item.onlyMobile && !isMobileNav) {
@@ -69,7 +69,7 @@ export function DashboardNav({
 						isPrimary && "nav-item--primary",
 					);
 					const itemClasses = cn(
-						"flex items-center gap-2 overflow-hidden rounded-md py-2 font-medium text-sm transition-colors group relative",
+						"flex items-center gap-2 rounded-md py-2 font-medium text-sm transition-colors group relative overflow-visible",
 						!isPrimary && "hover:bg-accent hover:text-accent-foreground",
 						path === item.href && !isPrimary ? "bg-accent" : "transparent",
 						item.disabled && "cursor-not-allowed opacity-80",
@@ -95,6 +95,54 @@ export function DashboardNav({
 										<span className="mr-2 truncate">Logout</span>
 									) : null}
 								</button>
+							) : item.external ? (
+								<a
+									href={item.disabled ? "#" : item.href || "/"}
+									className={itemClasses}
+									target="_blank"
+									rel="noopener noreferrer"
+									onClick={() => {
+										if (setOpen) setOpen(false);
+									}}
+								>
+									<Icon className="ml-3 size-5 flex-none" />
+									{isMobileNav || (!isMinimized && !isMobileNav) ? (
+										<span className="mr-2 truncate">{item.title}</span>
+									) : null}
+									{/* Visual indicator for blocked features */}
+									{featureKey && (
+										<div
+											className={cn(
+												"absolute -translate-y-1/2 top-1/2 h-2 w-2 rounded-full bg-orange-400 opacity-60",
+												item.hasSaleItems
+													? isMinimized
+														? "right-0"
+														: "right-6"
+													: isMinimized
+														? "right-0"
+														: "right-2",
+											)}
+										/>
+									)}
+									{/* Sale indicator */}
+									{item.hasSaleItems && item.saleLink && (
+										<a
+											href={item.saleLink}
+											target="_blank"
+											rel="noopener noreferrer"
+											onClick={(e) => {
+												e.stopPropagation();
+												if (setOpen) setOpen(false);
+											}}
+											className={cn(
+												"absolute -translate-y-1/2 top-1/2 h-2.5 w-2.5 rounded-full bg-red-500 ring-2 ring-background transition-transform hover:scale-125",
+												isMinimized ? "right-0" : "right-2",
+											)}
+											aria-label="Items on sale"
+											title="Items on sale - Click to view"
+										/>
+									)}
+								</a>
 							) : (
 								<Link
 									href={item.disabled ? "/" : item.href || "/"}
@@ -109,7 +157,36 @@ export function DashboardNav({
 									) : null}
 									{/* Visual indicator for blocked features */}
 									{featureKey && (
-										<div className="-right-1 -translate-y-1/2 absolute top-1/2 h-2 w-2 rounded-full bg-orange-400 opacity-60" />
+										<div
+											className={cn(
+												"absolute -translate-y-1/2 top-1/2 h-2 w-2 rounded-full bg-orange-400 opacity-60",
+												item.hasSaleItems
+													? isMinimized
+														? "right-0"
+														: "right-6"
+													: isMinimized
+														? "right-0"
+														: "right-2",
+											)}
+										/>
+									)}
+									{/* Sale indicator */}
+									{item.hasSaleItems && item.saleLink && (
+										<a
+											href={item.saleLink}
+											target="_blank"
+											rel="noopener noreferrer"
+											onClick={(e) => {
+												e.stopPropagation();
+												if (setOpen) setOpen(false);
+											}}
+											className={cn(
+												"absolute -translate-y-1/2 top-1/2 h-2.5 w-2.5 rounded-full bg-red-500 ring-2 ring-background transition-transform hover:scale-125",
+												isMinimized ? "right-0" : "right-2",
+											)}
+											aria-label="Items on sale"
+											title="Items on sale - Click to view"
+										/>
 									)}
 								</Link>
 							)}

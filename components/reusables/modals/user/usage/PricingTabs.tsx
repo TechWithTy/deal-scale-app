@@ -3,6 +3,8 @@
  * Modern tab design for category switching
  */
 
+"use client";
+
 import type { PricingCategory } from "@/lib/mock/plans";
 
 interface PricingTabsProps {
