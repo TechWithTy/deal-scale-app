@@ -1,5 +1,32 @@
 import { create } from "zustand";
 
+export type FormFieldType = "text" | "number" | "file" | "password" | "email";
+
+export type NotificationFormField = {
+	id: string;
+	label: string;
+	type: FormFieldType;
+	placeholder?: string;
+	required?: boolean;
+	// Text/password/email validation
+	minLength?: number;
+	maxLength?: number;
+	regex?: string; // regex pattern as string
+	regexMessage?: string;
+	// Number validation
+	min?: number;
+	max?: number;
+	// File validation
+	acceptedFileTypes?: string[]; // e.g. ["image/png", "image/jpeg"]
+	maxFileSizeMB?: number;
+	// Image-specific validation
+	minWidth?: number;
+	maxWidth?: number;
+	minHeight?: number;
+	maxHeight?: number;
+	sensitive?: boolean; // marks field as sensitive (masked input)
+};
+
 export type AppNotification = {
 	id: string;
 	title: string;
@@ -11,25 +38,65 @@ export type AppNotification = {
 	actionId?: string;
 	approveLabel?: string;
 	denyLabel?: string;
+	formFields?: NotificationFormField[];
+	submitLabel?: string;
 };
 
 type NotificationsState = {
 	notifications: AppNotification[];
 	add: (n: Omit<AppNotification, "id" | "createdAt">) => AppNotification;
+	addMany: (count?: number) => void;
 	dismiss: (id: string) => void;
 	clearAll: () => void;
 	markRead: (id: string) => void;
 	markAllRead: () => void;
 	hasUnread: () => boolean;
 	// action handlers keyed by actionId
-	_actions: Record<string, { onApprove?: () => void; onDeny?: () => void }>;
+	_actions: Record<
+		string,
+		{
+			onApprove?: () => void;
+			onDeny?: () => void;
+			onSubmit?: (data: Record<string, string | number | File>) => void;
+		}
+	>;
 	approve: (id: string) => void;
 	deny: (id: string) => void;
+	submitForm: (
+		id: string,
+		data: Record<string, string | number | File>,
+	) => void;
 };
 
 export const useNotificationsStore = create<NotificationsState>((set, get) => ({
 	notifications: [],
 	_actions: {},
+	addMany: (count = 5) => {
+		const icons = ["✨", "📥", "🔔", "📧", "📈", "⚙️", "🛠️", "🚀"];
+		const colors = [
+			"46 100% 50%",
+			"200 85% 45%",
+			"142 76% 36%",
+			"258 84% 54%",
+			"24 95% 50%",
+		];
+		const created: AppNotification[] = [];
+		for (let i = 0; i < count; i += 1) {
+			const icon = icons[i % icons.length];
+			const colorHsl = colors[i % colors.length];
+			const base: AppNotification = {
+				id: crypto.randomUUID(),
+				title: `Mock notification #${i + 1}`,
+				description: "This is a test notification.",
+				icon,
+				colorHsl,
+				createdAt: Date.now() + i,
+				unread: true,
+			};
+			created.push(base);
+		}
+		set((s) => ({ notifications: [...created, ...s.notifications] }));
+	},
 	add: (n) => {
 		// extract optional action handlers (if provided via cast)
 		const maybeAction = (
@@ -96,6 +163,16 @@ export const useNotificationsStore = create<NotificationsState>((set, get) => ({
 		if (action?.onDeny) {
 			try {
 				action.onDeny();
+			} catch {}
+		}
+		set((s) => ({ notifications: s.notifications.filter((n) => n.id !== id) }));
+	},
+	submitForm: (id, data) => {
+		const notif = get().notifications.find((n) => n.id === id);
+		const action = notif?.actionId ? get()._actions[notif.actionId] : undefined;
+		if (action?.onSubmit) {
+			try {
+				action.onSubmit(data);
 			} catch {}
 		}
 		set((s) => ({ notifications: s.notifications.filter((n) => n.id !== id) }));
