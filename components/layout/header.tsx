@@ -1,4 +1,5 @@
 import ThemeToggle from "@/components/layout/ThemeToggle/theme-toggle";
+import NotificationsDropdown from "@/components/notifications/NotificationsDropdown";
 import { mockSubscriptions } from "@/constants/_faker/profile/userSubscription";
 import { cn } from "@/lib/_utils";
 import { SecurityModal } from "../reusables/modals/user/security";
@@ -18,6 +19,7 @@ export default function Header() {
 						<UpgradeButton currentMembership={currentMembership} />
 					)}
 					<UserNav />
+					<NotificationsDropdown />
 					<ThemeToggle />
 					<SecurityModal />
 				</div>
