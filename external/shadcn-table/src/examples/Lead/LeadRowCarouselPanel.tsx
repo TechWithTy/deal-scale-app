@@ -438,6 +438,26 @@ export function LeadRowCarouselPanel(props: LeadRowCarouselPanelProps) {
 					</div>
 				</div>
 			</div>
+
+			{/* Intent Signals Section */}
+			{lead.intentSignals && lead.intentScore && lead.intentSignals.length > 0 && (
+				<div className="mt-6">
+					{(() => {
+						try {
+							const { IntentSignalsTab } = require("@/components/tables/lead-tables/tabs/IntentSignalsTab");
+							return (
+								<IntentSignalsTab 
+									signals={lead.intentSignals} 
+									score={lead.intentScore}
+								/>
+							);
+						} catch (err) {
+							console.error("Failed to load IntentSignalsTab:", err);
+							return null;
+						}
+					})()}
+				</div>
+			)}
 		</div>
 	);
 }
