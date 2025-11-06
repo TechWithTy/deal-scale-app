@@ -1,6 +1,7 @@
 import {
 	AlertTriangle,
 	ArrowRight,
+	BarChart3,
 	Bot,
 	Check,
 	ChevronLeft,
@@ -78,6 +79,7 @@ export const Icons = {
 	webhook: Webhook,
 	rss: Rss,
 	store: Store,
+	chart: BarChart3,
 	gitHub: ({ ...props }: LucideProps) => (
 		<svg
 			aria-hidden="true"
