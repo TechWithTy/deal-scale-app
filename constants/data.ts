@@ -213,9 +213,10 @@ export const navItems: NavItem[] = [
 	},
 	{
 		title: "Marketplace",
-		href: "/dashboard/marketplace",
+		href: "https://www.dealscale.io/products",
 		icon: "store",
 		label: "Marketplace",
+		external: true,
 		hasSaleItems: true,
 		saleLink: "https://dealscale.io/product/{id}",
 	},

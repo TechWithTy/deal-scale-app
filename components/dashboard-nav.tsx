@@ -109,38 +109,36 @@ export function DashboardNav({
 									{isMobileNav || (!isMinimized && !isMobileNav) ? (
 										<span className="mr-2 truncate">{item.title}</span>
 									) : null}
-									{/* Visual indicator for blocked features */}
-									{featureKey && (
-										<div
-											className={cn(
-												"absolute -translate-y-1/2 top-1/2 h-2 w-2 rounded-full bg-orange-400 opacity-60",
-												item.hasSaleItems
-													? isMinimized
-														? "right-0"
-														: "right-6"
-													: isMinimized
-														? "right-0"
-														: "right-2",
-											)}
-										/>
-									)}
-									{/* Sale indicator */}
-									{item.hasSaleItems && item.saleLink && (
-										<a
-											href={item.saleLink}
-											target="_blank"
-											rel="noopener noreferrer"
-											onClick={(e) => {
-												e.stopPropagation();
-												if (setOpen) setOpen(false);
-											}}
-											className={cn(
-												"absolute -translate-y-1/2 top-1/2 h-2.5 w-2.5 rounded-full bg-red-500 ring-2 ring-background transition-transform hover:scale-125",
-												isMinimized ? "right-0" : "right-2",
-											)}
-											aria-label="Items on sale"
-											title="Items on sale - Click to view"
-										/>
+									{/* Sale indicator with tooltip - only show when no featureKey (no tab blockers) to avoid overlap */}
+									{item.hasSaleItems && item.saleLink && !featureKey && (
+										<Tooltip>
+											<TooltipTrigger asChild>
+												<button
+													type="button"
+													onClick={(e) => {
+														e.stopPropagation();
+														e.preventDefault();
+														window.open(
+															item.saleLink,
+															"_blank",
+															"noopener,noreferrer",
+														);
+														if (setOpen) setOpen(false);
+													}}
+													className={cn(
+														"absolute -translate-y-1/2 top-1/2 h-2.5 w-2.5 rounded-full bg-red-500 ring-2 ring-background transition-transform hover:scale-125 cursor-pointer",
+														isMinimized ? "right-0" : "right-2",
+													)}
+													aria-label="Items on sale"
+												/>
+											</TooltipTrigger>
+											<TooltipContent side="right" sideOffset={8}>
+												<p className="font-semibold">Items on sale</p>
+												<p className="text-xs">
+													Click to view marketplace deals
+												</p>
+											</TooltipContent>
+										</Tooltip>
 									)}
 								</a>
 							) : (
@@ -155,38 +153,36 @@ export function DashboardNav({
 									{isMobileNav || (!isMinimized && !isMobileNav) ? (
 										<span className="mr-2 truncate">{item.title}</span>
 									) : null}
-									{/* Visual indicator for blocked features */}
-									{featureKey && (
-										<div
-											className={cn(
-												"absolute -translate-y-1/2 top-1/2 h-2 w-2 rounded-full bg-orange-400 opacity-60",
-												item.hasSaleItems
-													? isMinimized
-														? "right-0"
-														: "right-6"
-													: isMinimized
-														? "right-0"
-														: "right-2",
-											)}
-										/>
-									)}
-									{/* Sale indicator */}
-									{item.hasSaleItems && item.saleLink && (
-										<a
-											href={item.saleLink}
-											target="_blank"
-											rel="noopener noreferrer"
-											onClick={(e) => {
-												e.stopPropagation();
-												if (setOpen) setOpen(false);
-											}}
-											className={cn(
-												"absolute -translate-y-1/2 top-1/2 h-2.5 w-2.5 rounded-full bg-red-500 ring-2 ring-background transition-transform hover:scale-125",
-												isMinimized ? "right-0" : "right-2",
-											)}
-											aria-label="Items on sale"
-											title="Items on sale - Click to view"
-										/>
+									{/* Sale indicator with tooltip - only show when no featureKey (no tab blockers) to avoid overlap */}
+									{item.hasSaleItems && item.saleLink && !featureKey && (
+										<Tooltip>
+											<TooltipTrigger asChild>
+												<button
+													type="button"
+													onClick={(e) => {
+														e.stopPropagation();
+														e.preventDefault();
+														window.open(
+															item.saleLink,
+															"_blank",
+															"noopener,noreferrer",
+														);
+														if (setOpen) setOpen(false);
+													}}
+													className={cn(
+														"absolute -translate-y-1/2 top-1/2 h-2.5 w-2.5 rounded-full bg-red-500 ring-2 ring-background transition-transform hover:scale-125 cursor-pointer",
+														isMinimized ? "right-0" : "right-2",
+													)}
+													aria-label="Items on sale"
+												/>
+											</TooltipTrigger>
+											<TooltipContent side="right" sideOffset={8}>
+												<p className="font-semibold">Items on sale</p>
+												<p className="text-xs">
+													Click to view marketplace deals
+												</p>
+											</TooltipContent>
+										</Tooltip>
 									)}
 								</Link>
 							)}
