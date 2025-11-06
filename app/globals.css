@@ -6,6 +6,240 @@ video {
 	height: auto;
 }
 
+@layer base {
+	/* Variant-only accents: do not touch background/foreground */
+	.variant-mood-calm {
+		--accent: 200 90% 85%;
+		--accent-foreground: 220 40% 20%;
+		--primary: 200 85% 40%;
+		--primary-foreground: 210 40% 98%;
+	}
+	.variant-mood-energetic {
+		--accent: 36 100% 80%;
+		--accent-foreground: 24 70% 18%;
+		--primary: 24 95% 50%;
+		--primary-foreground: 210 40% 98%;
+	}
+	.variant-mood-focused {
+		--accent: 260 90% 88%;
+		--accent-foreground: 255 30% 22%;
+		--primary: 258 84% 54%;
+		--primary-foreground: 210 40% 98%;
+	}
+
+	.variant-weather-sunny {
+		--accent: 50 100% 80%;
+		--accent-foreground: 35 60% 18%;
+		--primary: 46 100% 50%;
+		--primary-foreground: 222.2 47.4% 11.2%;
+	}
+	.variant-weather-rainy {
+		--accent: 205 90% 85%;
+		--accent-foreground: 220 30% 22%;
+		--primary: 205 80% 45%;
+		--primary-foreground: 210 40% 98%;
+	}
+	.variant-weather-stormy {
+		--accent: 260 60% 60%;
+		--accent-foreground: 230 30% 12%;
+		--primary: 260 70% 55%;
+		--primary-foreground: 210 40% 98%;
+	}
+
+	.variant-pipeline-healthy {
+		--accent: 142 76% 80%;
+		--accent-foreground: 150 35% 18%;
+		--primary: 142 76% 36%;
+		--primary-foreground: 355.7 100% 97.3%;
+	}
+	.variant-pipeline-watch {
+		--accent: 48 100% 84%;
+		--accent-foreground: 35 60% 18%;
+		--primary: 38 92% 50%;
+		--primary-foreground: 222.2 47.4% 11.2%;
+	}
+	.variant-pipeline-risk {
+		--accent: 0 85% 80%;
+		--accent-foreground: 0 65% 20%;
+		--primary: 0 84.2% 42%;
+		--primary-foreground: 210 40% 98%;
+	}
+
+	.dark.variant-mood-calm {
+		--accent: 200 60% 35%;
+		--accent-foreground: 210 40% 98%;
+		--primary: 200 70% 45%;
+		--primary-foreground: 210 40% 98%;
+	}
+	.dark.variant-mood-energetic {
+		--accent: 24 90% 45%;
+		--accent-foreground: 210 40% 98%;
+		--primary: 24 95% 55%;
+		--primary-foreground: 210 40% 98%;
+	}
+	.dark.variant-mood-focused {
+		--accent: 260 70% 45%;
+		--accent-foreground: 210 40% 98%;
+		--primary: 258 84% 56%;
+		--primary-foreground: 210 40% 98%;
+	}
+
+	.dark.variant-weather-sunny {
+		--accent: 50 90% 45%;
+		--accent-foreground: 210 40% 98%;
+		--primary: 46 100% 55%;
+		--primary-foreground: 222.2 47.4% 11.2%;
+	}
+	.dark.variant-weather-rainy {
+		--accent: 205 70% 40%;
+		--accent-foreground: 210 40% 98%;
+		--primary: 205 80% 50%;
+		--primary-foreground: 210 40% 98%;
+	}
+	.dark.variant-weather-stormy {
+		--accent: 260 55% 55%;
+		--accent-foreground: 210 40% 98%;
+		--primary: 260 70% 60%;
+		--primary-foreground: 210 40% 98%;
+	}
+
+	.dark.variant-pipeline-healthy {
+		--accent: 142 60% 35%;
+		--accent-foreground: 210 40% 98%;
+		--primary: 142 76% 40%;
+		--primary-foreground: 355.7 100% 97.3%;
+	}
+	.dark.variant-pipeline-watch {
+		--accent: 48 90% 45%;
+		--accent-foreground: 210 40% 98%;
+		--primary: 38 92% 55%;
+		--primary-foreground: 222.2 47.4% 11.2%;
+	}
+	.dark.variant-pipeline-risk {
+		--accent: 0 70% 40%;
+		--accent-foreground: 210 40% 98%;
+		--primary: 0 84.2% 48%;
+		--primary-foreground: 210 40% 98%;
+	}
+}
+
+@layer base {
+	/* Ensure variants apply when class is on <html> by also targeting :root */
+	:root.variant-mood-calm {
+		--accent: 200 90% 85%;
+		--accent-foreground: 220 40% 20%;
+		--primary: 200 85% 40%;
+		--primary-foreground: 210 40% 98%;
+	}
+	:root.variant-mood-energetic {
+		--accent: 36 100% 80%;
+		--accent-foreground: 24 70% 18%;
+		--primary: 24 95% 50%;
+		--primary-foreground: 210 40% 98%;
+	}
+	:root.variant-mood-focused {
+		--accent: 260 90% 88%;
+		--accent-foreground: 255 30% 22%;
+		--primary: 258 84% 54%;
+		--primary-foreground: 210 40% 98%;
+	}
+
+	:root.variant-weather-sunny {
+		--accent: 50 100% 80%;
+		--accent-foreground: 35 60% 18%;
+		--primary: 46 100% 50%;
+		--primary-foreground: 222.2 47.4% 11.2%;
+	}
+	:root.variant-weather-rainy {
+		--accent: 205 90% 85%;
+		--accent-foreground: 220 30% 22%;
+		--primary: 205 80% 45%;
+		--primary-foreground: 210 40% 98%;
+	}
+	:root.variant-weather-stormy {
+		--accent: 260 60% 60%;
+		--accent-foreground: 230 30% 12%;
+		--primary: 260 70% 55%;
+		--primary-foreground: 210 40% 98%;
+	}
+
+	:root.variant-pipeline-healthy {
+		--accent: 142 76% 80%;
+		--accent-foreground: 150 35% 18%;
+		--primary: 142 76% 36%;
+		--primary-foreground: 355.7 100% 97.3%;
+	}
+	:root.variant-pipeline-watch {
+		--accent: 48 100% 84%;
+		--accent-foreground: 35 60% 18%;
+		--primary: 38 92% 50%;
+		--primary-foreground: 222.2 47.4% 11.2%;
+	}
+	:root.variant-pipeline-risk {
+		--accent: 0 85% 80%;
+		--accent-foreground: 0 65% 20%;
+		--primary: 0 84.2% 42%;
+		--primary-foreground: 210 40% 98%;
+	}
+
+	.dark:root.variant-mood-calm {
+		--accent: 200 60% 35%;
+		--accent-foreground: 210 40% 98%;
+		--primary: 200 70% 45%;
+		--primary-foreground: 210 40% 98%;
+	}
+	.dark:root.variant-mood-energetic {
+		--accent: 24 90% 45%;
+		--accent-foreground: 210 40% 98%;
+		--primary: 24 95% 55%;
+		--primary-foreground: 210 40% 98%;
+	}
+	.dark:root.variant-mood-focused {
+		--accent: 260 70% 45%;
+		--accent-foreground: 210 40% 98%;
+		--primary: 258 84% 56%;
+		--primary-foreground: 210 40% 98%;
+	}
+
+	.dark:root.variant-weather-sunny {
+		--accent: 50 90% 45%;
+		--accent-foreground: 210 40% 98%;
+		--primary: 46 100% 55%;
+		--primary-foreground: 222.2 47.4% 11.2%;
+	}
+	.dark:root.variant-weather-rainy {
+		--accent: 205 70% 40%;
+		--accent-foreground: 210 40% 98%;
+		--primary: 205 80% 50%;
+		--primary-foreground: 210 40% 98%;
+	}
+	.dark:root.variant-weather-stormy {
+		--accent: 260 55% 55%;
+		--accent-foreground: 210 40% 98%;
+		--primary: 260 70% 60%;
+		--primary-foreground: 210 40% 98%;
+	}
+
+	.dark:root.variant-pipeline-healthy {
+		--accent: 142 60% 35%;
+		--accent-foreground: 210 40% 98%;
+		--primary: 142 76% 40%;
+		--primary-foreground: 355.7 100% 97.3%;
+	}
+	.dark:root.variant-pipeline-watch {
+		--accent: 48 90% 45%;
+		--accent-foreground: 210 40% 98%;
+		--primary: 38 92% 55%;
+		--primary-foreground: 222.2 47.4% 11.2%;
+	}
+	.dark:root.variant-pipeline-risk {
+		--accent: 0 70% 40%;
+		--accent-foreground: 210 40% 98%;
+		--primary: 0 84.2% 48%;
+		--primary-foreground: 210 40% 98%;
+	}
+}
+
 @tailwind components;
 @tailwind utilities;
 
@@ -71,6 +305,252 @@ video {
 		--hero-foreground: 210 40% 98%;
 		--hero-accent: 197 88% 48%;
 		--hero-accent-foreground: 222 40% 12%;
+	}
+
+	/* Named Themes: Mood */
+	.theme-mood-calm {
+		--background: 210 60% 98%;
+		--foreground: 222.2 84% 4.9%;
+		--accent: 200 90% 85%;
+		--accent-foreground: 220 40% 20%;
+		--primary: 200 85% 40%;
+		--primary-foreground: 210 40% 98%;
+	}
+
+	.dark.theme-mood-calm {
+		--background: 220 30% 12%;
+		--foreground: 210 40% 98%;
+		--accent: 200 60% 35%;
+		--accent-foreground: 210 40% 98%;
+		--primary: 200 70% 45%;
+		--primary-foreground: 210 40% 98%;
+	}
+
+	.theme-mood-energetic {
+		--background: 36 100% 97%;
+		--foreground: 24 60% 15%;
+		--accent: 36 100% 80%;
+		--accent-foreground: 24 70% 18%;
+		--primary: 24 95% 50%;
+		--primary-foreground: 210 40% 98%;
+	}
+
+	.dark.theme-mood-energetic {
+		--background: 24 25% 12%;
+		--foreground: 210 40% 98%;
+		--accent: 24 90% 45%;
+		--accent-foreground: 210 40% 98%;
+		--primary: 24 95% 55%;
+		--primary-foreground: 210 40% 98%;
+	}
+
+	.theme-mood-focused {
+		--background: 250 60% 98%;
+		--foreground: 250 30% 18%;
+		--accent: 260 90% 88%;
+		--accent-foreground: 255 30% 22%;
+		--primary: 258 84% 54%;
+		--primary-foreground: 210 40% 98%;
+	}
+
+	.dark.theme-mood-focused {
+		--background: 255 35% 12%;
+		--foreground: 210 40% 98%;
+		--accent: 260 70% 45%;
+		--accent-foreground: 210 40% 98%;
+		--primary: 258 84% 56%;
+		--primary-foreground: 210 40% 98%;
+	}
+
+	/* Named Themes: Weather */
+	.theme-weather-sunny {
+		--background: 50 100% 97%;
+		--foreground: 35 60% 15%;
+		--accent: 50 100% 80%;
+		--accent-foreground: 35 60% 18%;
+		--primary: 46 100% 50%;
+		--primary-foreground: 222.2 47.4% 11.2%;
+	}
+
+	.dark.theme-weather-sunny {
+		--background: 48 20% 12%;
+		--foreground: 210 40% 98%;
+		--accent: 50 90% 45%;
+		--accent-foreground: 210 40% 98%;
+		--primary: 46 100% 55%;
+		--primary-foreground: 222.2 47.4% 11.2%;
+	}
+
+	.theme-weather-rainy {
+		--background: 210 40% 96%;
+		--foreground: 220 30% 16%;
+		--accent: 205 90% 85%;
+		--accent-foreground: 220 30% 22%;
+		--primary: 205 80% 45%;
+		--primary-foreground: 210 40% 98%;
+	}
+
+	.dark.theme-weather-rainy {
+		--background: 215 25% 12%;
+		--foreground: 210 40% 98%;
+		--accent: 205 70% 40%;
+		--accent-foreground: 210 40% 98%;
+		--primary: 205 80% 50%;
+		--primary-foreground: 210 40% 98%;
+	}
+
+	.theme-weather-stormy {
+		--background: 230 15% 14%;
+		--foreground: 210 40% 98%;
+		--card: 230 15% 16%;
+		--accent: 260 60% 60%;
+		--accent-foreground: 230 30% 12%;
+		--primary: 260 70% 55%;
+		--primary-foreground: 210 40% 98%;
+	}
+
+	.dark.theme-weather-stormy {
+		--background: 230 15% 10%;
+		--foreground: 210 40% 98%;
+		--card: 230 15% 12%;
+		--accent: 260 55% 55%;
+		--accent-foreground: 210 40% 98%;
+		--primary: 260 70% 60%;
+		--primary-foreground: 210 40% 98%;
+	}
+
+	/* Named Themes: Sales Pipeline Health */
+	.theme-pipeline-healthy {
+		--background: 140 60% 97%;
+		--foreground: 150 30% 14%;
+		--accent: 142 76% 80%;
+		--accent-foreground: 150 35% 18%;
+		--primary: 142 76% 36%;
+		--primary-foreground: 355.7 100% 97.3%;
+	}
+
+	.dark.theme-pipeline-healthy {
+		--background: 150 20% 12%;
+		--foreground: 210 40% 98%;
+		--accent: 142 60% 35%;
+		--accent-foreground: 210 40% 98%;
+		--primary: 142 76% 40%;
+		--primary-foreground: 355.7 100% 97.3%;
+	}
+
+	.theme-pipeline-watch {
+		--background: 48 100% 97%;
+		--foreground: 35 60% 14%;
+		--accent: 48 100% 84%;
+		--accent-foreground: 35 60% 18%;
+		--primary: 38 92% 50%;
+		--primary-foreground: 222.2 47.4% 11.2%;
+	}
+
+	.dark.theme-pipeline-watch {
+		--background: 38 20% 12%;
+		--foreground: 210 40% 98%;
+		--accent: 48 90% 45%;
+		--accent-foreground: 210 40% 98%;
+		--primary: 38 92% 55%;
+		--primary-foreground: 222.2 47.4% 11.2%;
+	}
+
+	.theme-pipeline-risk {
+		--background: 0 100% 97%;
+		--foreground: 0 60% 20%;
+		--accent: 0 85% 80%;
+		--accent-foreground: 0 65% 20%;
+		--primary: 0 84.2% 42%;
+		--primary-foreground: 210 40% 98%;
+	}
+
+	.dark.theme-pipeline-risk {
+		--background: 0 20% 12%;
+		--foreground: 210 40% 98%;
+		--accent: 0 70% 40%;
+		--accent-foreground: 210 40% 98%;
+		--primary: 0 84.2% 48%;
+		--primary-foreground: 210 40% 98%;
+	}
+
+	/* Fallback for when custom theme replaces `.dark` class:
+	   Apply dark variants using media query so they work under System/Dark
+	   even if `.dark` is not present. */
+	@media (prefers-color-scheme: dark) {
+		.theme-mood-calm {
+			--background: 220 30% 12%;
+			--foreground: 210 40% 98%;
+			--accent: 200 60% 35%;
+			--accent-foreground: 210 40% 98%;
+			--primary: 200 70% 45%;
+			--primary-foreground: 210 40% 98%;
+		}
+		.theme-mood-energetic {
+			--background: 24 25% 12%;
+			--foreground: 210 40% 98%;
+			--accent: 24 90% 45%;
+			--accent-foreground: 210 40% 98%;
+			--primary: 24 95% 55%;
+			--primary-foreground: 210 40% 98%;
+		}
+		.theme-mood-focused {
+			--background: 255 35% 12%;
+			--foreground: 210 40% 98%;
+			--accent: 260 70% 45%;
+			--accent-foreground: 210 40% 98%;
+			--primary: 258 84% 56%;
+			--primary-foreground: 210 40% 98%;
+		}
+		.theme-weather-sunny {
+			--background: 48 20% 12%;
+			--foreground: 210 40% 98%;
+			--accent: 50 90% 45%;
+			--accent-foreground: 210 40% 98%;
+			--primary: 46 100% 55%;
+			--primary-foreground: 222.2 47.4% 11.2%;
+		}
+		.theme-weather-rainy {
+			--background: 215 25% 12%;
+			--foreground: 210 40% 98%;
+			--accent: 205 70% 40%;
+			--accent-foreground: 210 40% 98%;
+			--primary: 205 80% 50%;
+			--primary-foreground: 210 40% 98%;
+		}
+		.theme-weather-stormy {
+			--background: 230 15% 10%;
+			--foreground: 210 40% 98%;
+			--card: 230 15% 12%;
+			--accent: 260 55% 55%;
+			--accent-foreground: 210 40% 98%;
+			--primary: 260 70% 60%;
+			--primary-foreground: 210 40% 98%;
+		}
+		.theme-pipeline-healthy {
+			--background: 150 20% 12%;
+			--foreground: 210 40% 98%;
+			--accent: 142 60% 35%;
+			--accent-foreground: 210 40% 98%;
+			--primary: 142 76% 40%;
+			--primary-foreground: 355.7 100% 97.3%;
+		}
+		.theme-pipeline-watch {
+			--background: 38 20% 12%;
+			--foreground: 210 40% 98%;
+			--accent: 48 90% 45%;
+			--accent-foreground: 210 40% 98%;
+			--primary: 38 92% 55%;
+			--primary-foreground: 222.2 47.4% 11.2%;
+		}
+		.theme-pipeline-risk {
+			--background: 0 20% 12%;
+			--foreground: 210 40% 98%;
+			--accent: 0 70% 40%;
+			--accent-foreground: 210 40% 98%;
+			--primary: 0 84.2% 48%;
+			--primary-foreground: 210 40% 98%;
+		}
 	}
 }
 
