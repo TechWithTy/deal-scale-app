@@ -192,16 +192,6 @@ export default function CampaignCallTablePage({
 	return (
 		// ! Use full width with min-w-0 to prevent forcing layout wider than sidebar
 		<div className="w-full min-w-0 p-4">
-			<div className="mb-2 text-muted-foreground text-xs">Active: {tab}</div>
-			<div className="mb-3 flex items-center justify-between gap-3">
-				<h2 className="font-semibold text-xl">
-					{tab === "calls" && "Page: Calls Demo"}
-					{tab === "text" && "Page: Text Demo"}
-					{tab === "social" && "Page: Social Demo"}
-				</h2>
-				{/* Create Campaign button is rendered inside each example header to keep placement consistent */}
-			</div>
-
 			{/* Enhanced Tab Navigation with Feature Blocking */}
 			<div className="bg-muted flex gap-4 items-center justify-between mb-4 p-1 rounded-lg">
 				<div className="flex items-center gap-2">

@@ -209,21 +209,7 @@ export default function TextCampaignsDemoTable({
         // helpers moved to ./Phone/text/utils/helpers
 
         return (
-		<main className="container mx-auto max-w-7xl space-y-6 p-6">
-			<header className="space-y-1">
-				<div className="flex flex-wrap items-center justify-between gap-3">
-					<div>
-						<h1 className="font-semibold text-2xl tracking-tight">
-							Text Campaigns
-						</h1>
-						<p className="text-muted-foreground text-sm">
-							Search, selection, filtering, and details.
-						</p>
-					</div>
-					{/* Navigation and Create Campaign buttons removed - now handled globally */}
-				</div>
-			</header>
-
+		<main className="container mx-auto max-w-7xl space-y-4 p-6">
 			<SummaryCard
 				table={table}
 				campaignType={campaignType}

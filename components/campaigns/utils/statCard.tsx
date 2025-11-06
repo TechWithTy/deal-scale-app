@@ -1,6 +1,7 @@
 import { cn } from "@/lib/_utils";
 import { ArrowUpRight } from "lucide-react"; // You can use any icon library
 import type React from "react";
+import { useState, useEffect } from "react";
 
 interface StatCardProps {
 	title: string;
@@ -23,6 +24,12 @@ const StatCard: React.FC<StatCardProps> = ({
 	addedToday,
 	comingSoon,
 }) => {
+	const [mounted, setMounted] = useState(false);
+
+	useEffect(() => {
+		setMounted(true);
+	}, []);
+
 	return (
 		<div
 			className={cn(
@@ -46,7 +53,9 @@ const StatCard: React.FC<StatCardProps> = ({
 			}
 		>
 			<p>{title}</p>
-			<h2 className="py-1 text-3xl font-bold">{value}</h2>
+			<h2 className="py-1 text-3xl font-bold" suppressHydrationWarning>
+				{mounted ? value : 0}
+			</h2>
 
 			{/* Added today badge */}
 			{addedToday && (

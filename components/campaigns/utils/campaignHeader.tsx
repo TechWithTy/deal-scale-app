@@ -19,9 +19,6 @@ import {
 	mockUserProfile,
 } from "@/constants/_faker/profile/userProfile";
 
-import { campaignSteps } from "@/_tests/tours/campaignTour";
-import WalkThroughModal from "../../leadsSearch/search/WalkthroughModal";
-import { Heading } from "@/components/ui/heading";
 import { HelpCircle } from "lucide-react";
 const creditsRemaining =
 	mockUserProfile && "subscription" in mockUserProfile
@@ -33,15 +30,6 @@ const CampaignHeader: React.FC = () => {
 	const [activeIndex, setActiveIndex] = useState(0); // Track the currently animated card
 	const [animationComplete, setAnimationComplete] = useState(false); // Track if the animation is completed
 	const [activeFilter, setActiveFilter] = useState("all"); // Track the active filter
-	const [isModalOpen, setIsModalOpen] = useState(false); // State for modal visibility
-	// Zustand's setCampaignType and filterCampaignsByStatus functions
-	const [isTourOpen, setIsTourOpen] = useState(false);
-
-	const handleOpenModal = () => setIsModalOpen(true);
-	const handleCloseModal = () => setIsModalOpen(false);
-
-	const handleStartTour = () => setIsTourOpen(true);
-	const handleCloseTour = () => setIsTourOpen(false);
 
 	const setCampaignType = useCampaignStore((state) => state.setCampaignType);
 	const filterCampaignsByStatus = useCampaignStore(
@@ -155,7 +143,6 @@ const CampaignHeader: React.FC = () => {
 			title: "Total Campaigns",
 			value: totalCampaigns,
 			statType: "total",
-			colSpan: 2,
 			click: false,
 		},
 		{
@@ -172,12 +159,10 @@ const CampaignHeader: React.FC = () => {
 			click: true,
 			past24hours: past24HoursData.totalCalls,
 		},
-
 		{
 			title: "Total Text Campaigns",
 			value: totalTextCampaigns,
 			statType: "text",
-			colSpan: 2,
 			click: true,
 			past24hours: past24HoursData.totalTextCampaigns,
 		},
@@ -237,28 +222,39 @@ const CampaignHeader: React.FC = () => {
 
 	return (
 		<div className="p-4">
-			<div className="text-center">
-				<Heading
-					title={"Campaigns"}
-					description="View and segment your campaigns."
-				/>
+			<div className="mb-6 flex flex-col items-center gap-4 text-center sm:flex-row sm:items-start sm:justify-between sm:text-left">
+				<div className="flex-1 space-y-2">
+					<h1 className="text-3xl font-bold tracking-tight text-foreground">
+						Campaigns
+					</h1>
+					<p className="text-sm leading-relaxed text-muted-foreground">
+						Create, manage, and analyze multi-channel campaigns. View
+						performance metrics, segment audiences, and download leads.
+					</p>
+				</div>
+				<button
+					type="button"
+					onClick={() => {
+						if (typeof window !== "undefined") {
+							window.dispatchEvent(new Event("dealScale:helpFab:show"));
+						}
+					}}
+					className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border bg-background text-muted-foreground shadow-sm transition-all hover:border-primary/50 hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+					aria-label="Show help and demo"
+				>
+					<HelpCircle className="h-5 w-5" />
+				</button>
+			</div>
 
-				{/* Credits Remaining Text and Help Button */}
-				<div className="my-4 flex flex-col items-center justify-center space-y-4 sm:flex-row sm:space-x-4 sm:space-y-0 ">
-					{/* Credits Remaining */}
-					<div className="font-semibold text-foreground text-lg">
-						Credits Remaining: {creditsRemaining}
-					</div>
-
-					{/* Help Button (moves to new line on mobile) */}
-					<button
-						type="button"
-						onClick={handleOpenModal}
-						title="Get More help"
-						className="my-2 animate-bounce rounded-full bg-primary p-2 text-primary-foreground hover:animate-none"
-					>
-						<HelpCircle size={20} />
-					</button>
+			{/* Credits Remaining */}
+			<div className="mb-4 text-center sm:text-left">
+				<div className="inline-flex items-center gap-2 rounded-lg border bg-muted/50 px-4 py-2">
+					<span className="text-sm text-muted-foreground">
+						Credits Remaining:
+					</span>
+					<span className="font-semibold text-foreground text-lg">
+						{creditsRemaining}
+					</span>
 				</div>
 			</div>
 
@@ -297,40 +293,21 @@ const CampaignHeader: React.FC = () => {
 			</div>
 
 			{/* Statistics Grid */}
-			<div className="flex gap-4 overflow-x-auto md:grid md:grid-cols-4">
+			<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
 				{stats.map((stat, index) => (
-					<div
+					<StatCard
 						key={stat.title}
-						className={`min-w-[250px] md:min-w-0 ${
-							index < 2 ? "md:col-span-2" : ""
-						}`} // Ensure minimum width for mobile/tablet
-					>
-						<StatCard
-							title={stat.title}
-							addedToday={stat.past24hours}
-							value={stat.value}
-							onClick={() => handleCardClick(stat.statType)}
-							isActive={index === activeIndex}
-							click={stat.click}
-							animationComplete={animationComplete}
-							comingSoon={stat.comingSoon}
-						/>
-					</div>
+						title={stat.title}
+						addedToday={stat.past24hours}
+						value={stat.value}
+						onClick={() => handleCardClick(stat.statType)}
+						isActive={index === activeIndex}
+						click={stat.click}
+						animationComplete={animationComplete}
+						comingSoon={stat.comingSoon}
+					/>
 				))}
 			</div>
-
-			<WalkThroughModal
-				isOpen={isModalOpen}
-				onClose={handleCloseModal}
-				videoUrl="https://www.youtube.com/embed/example-video" // Example YouTube video URL
-				title="Welcome To Your Campaigns"
-				subtitle="Get help viewing and sorting through your campaigns."
-				// Add the following props to enable the tour
-				steps={campaignSteps} // Tour steps (array of objects with content and selectors)
-				isTourOpen={isTourOpen} // Boolean to track if the tour is currently open
-				onStartTour={handleStartTour} // Function to start the tour (triggered by button)
-				onCloseTour={handleCloseTour} // Function to close the tour
-			/>
 		</div>
 	);
 };
