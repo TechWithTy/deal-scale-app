@@ -127,22 +127,22 @@ export const VerticalStickyBanner = ({
 				{open && (
 					<motion.div
 						className={cn(
-							"absolute top-0 z-50 flex h-[100dvh] flex-col items-center justify-start rounded-r-lg border-l py-3 shadow-lg",
+							"sticky top-0 z-50 flex h-[100dvh] flex-col items-center justify-start self-start rounded-r-lg border-l py-3 shadow-lg",
 							styles.bg,
 							styles.border,
 							className,
 						)}
+						style={{
+							right: isSidebarMinimized ? "-32px" : "-56px",
+							width: isSidebarMinimized ? 32 : 56,
+						}}
 						initial={{
 							opacity: 0,
 							x: 100,
-							width: isSidebarMinimized ? 32 : 56,
-							left: isSidebarMinimized ? 72 : 288,
 						}}
 						animate={{
 							opacity: 1,
 							x: 0,
-							width: isSidebarMinimized ? 32 : 56,
-							left: isSidebarMinimized ? 72 : 288,
 						}}
 						exit={{
 							opacity: 0,
@@ -272,20 +272,20 @@ export const VerticalStickyBanner = ({
 				<motion.button
 					initial={{
 						opacity: 0,
-						width: isSidebarMinimized ? 24 : 32,
-						left: isSidebarMinimized ? 72 : 288,
 					}}
 					animate={{
 						opacity: 1,
-						width: isSidebarMinimized ? 24 : 32,
-						left: isSidebarMinimized ? 72 : 288,
 					}}
 					transition={{
 						duration: 0.5,
 						ease: "easeInOut",
 					}}
+					style={{
+						right: isSidebarMinimized ? "-24px" : "-32px",
+						width: isSidebarMinimized ? 24 : 32,
+					}}
 					className={cn(
-						"absolute top-20 z-50 flex h-16 items-center justify-center rounded-r-lg border-l shadow-lg hover:bg-accent",
+						"sticky top-20 z-50 flex h-16 items-center justify-center self-start rounded-r-lg border-l shadow-lg hover:bg-accent",
 						styles.bg,
 						styles.border,
 					)}
