@@ -212,6 +212,21 @@ export const navItems: NavItem[] = [
 		featureKey: "navigation.employee",
 	},
 	{
+		title: "Marketplace",
+		href: "/dashboard/marketplace",
+		icon: "store",
+		label: "Marketplace",
+		hasSaleItems: true,
+		saleLink: "https://dealscale.io/product/{id}",
+	},
+	{
+		title: "Support",
+		href: "https://dealscale.zohodesk.com/portal/en/home",
+		icon: "help",
+		label: "Support",
+		external: true,
+	},
+	{
 		title: "Logout",
 		href: "/",
 		icon: "logout",

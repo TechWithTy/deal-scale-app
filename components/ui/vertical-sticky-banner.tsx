@@ -1,7 +1,20 @@
 "use client";
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { cn } from "@/lib/_utils";
 import { AnimatePresence, motion } from "motion/react";
-import { type SVGProps, useState } from "react";
+import Link from "next/link";
+import {
+	useEffect,
+	type SVGProps,
+	useState,
+	Children,
+	isValidElement,
+} from "react";
 import type React from "react";
 
 type BannerVariant = "error" | "success" | "feature" | "sale" | "default";
@@ -54,28 +67,57 @@ export const VerticalStickyBanner = ({
 	children,
 	isSidebarMinimized = false,
 	variant = "default",
+	tooltipText,
+	link,
+	subtitleLink,
+	cacheKey,
 }: {
 	className?: string;
 	children: React.ReactNode;
 	isSidebarMinimized?: boolean;
 	variant?: BannerVariant;
+	tooltipText?: string;
+	link?: string;
+	subtitleLink?: string;
+	cacheKey?: string;
 }) => {
-	const [open, setOpen] = useState(true);
+	const storageKey = cacheKey ?? `vertical-sticky-banner-${variant}`;
+
+	const [open, setOpen] = useState<boolean>(() => {
+		if (typeof window === "undefined") return true;
+		try {
+			const stored = window.localStorage.getItem(storageKey);
+			if (!stored) return true;
+			return JSON.parse(stored) !== false;
+		} catch {
+			return true;
+		}
+	});
+
+	useEffect(() => {
+		if (typeof window === "undefined") return;
+		try {
+			window.localStorage.setItem(storageKey, JSON.stringify(open));
+		} catch {
+			// Ignore localStorage errors
+		}
+	}, [open, storageKey]);
 
 	const styles = variantStyles[variant];
 
 	const getVariantIcon = () => {
+		const iconSize = isSidebarMinimized ? "size-3" : "size-4";
 		switch (variant) {
 			case "error":
-				return <ErrorIcon className={cn("size-5", styles.iconColor)} />;
+				return <ErrorIcon className={cn(iconSize, styles.iconColor)} />;
 			case "success":
-				return <SuccessIcon className={cn("size-5", styles.iconColor)} />;
+				return <SuccessIcon className={cn(iconSize, styles.iconColor)} />;
 			case "feature":
-				return <FeatureIcon className={cn("size-5", styles.iconColor)} />;
+				return <FeatureIcon className={cn(iconSize, styles.iconColor)} />;
 			case "sale":
-				return <SaleIcon className={cn("size-5", styles.iconColor)} />;
+				return <SaleIcon className={cn(iconSize, styles.iconColor)} />;
 			default:
-				return <InfoIcon className={cn("size-5", styles.iconColor)} />;
+				return <InfoIcon className={cn(iconSize, styles.iconColor)} />;
 		}
 	};
 
@@ -85,29 +127,29 @@ export const VerticalStickyBanner = ({
 				{open && (
 					<motion.div
 						className={cn(
-							"absolute top-0 z-50 flex h-[100dvh] flex-col items-start justify-start rounded-r-lg border-l px-4 py-3 shadow-lg",
-							"w-64",
+							"absolute top-0 z-50 flex h-[100dvh] flex-col items-center justify-start rounded-r-lg border-l py-3 shadow-lg",
 							styles.bg,
 							styles.border,
 							className,
 						)}
-						style={{
-							left: isSidebarMinimized ? "72px" : "18rem",
-						}}
 						initial={{
 							opacity: 0,
 							x: 100,
+							width: isSidebarMinimized ? 32 : 160,
+							left: isSidebarMinimized ? 72 : 288,
 						}}
 						animate={{
 							opacity: 1,
 							x: 0,
+							width: isSidebarMinimized ? 32 : 160,
+							left: isSidebarMinimized ? 72 : 288,
 						}}
 						exit={{
 							opacity: 0,
 							x: 100,
 						}}
 						transition={{
-							duration: 0.3,
+							duration: 0.5,
 							ease: "easeInOut",
 						}}
 						onClick={(e) => e.stopPropagation()}
@@ -119,7 +161,7 @@ export const VerticalStickyBanner = ({
 							animate={{
 								scale: 1,
 							}}
-							className="absolute top-2 right-2 z-10 flex-shrink-0 cursor-pointer rounded-full p-1 transition-colors hover:bg-background/50"
+							className="absolute top-1 right-1 z-10 flex-shrink-0 cursor-pointer rounded-full p-0.5 transition-colors hover:bg-background/50"
 							onClick={(e) => {
 								e.stopPropagation();
 								setOpen(false);
@@ -127,39 +169,124 @@ export const VerticalStickyBanner = ({
 							aria-label="Close banner"
 						>
 							<CloseIcon
-								className="h-4 w-4 text-muted-foreground"
+								className="h-3 w-3 text-muted-foreground"
 								aria-label="Close"
 							>
 								<title>Close</title>
 							</CloseIcon>
 						</motion.button>
 
-						<div className="flex w-full flex-1 flex-col items-start gap-3 pt-10">
-							<div
-								className={cn(
-									"mb-2 flex size-12 flex-shrink-0 items-center justify-center rounded-full",
-									styles.iconBg,
-								)}
-							>
-								{getVariantIcon()}
-							</div>
-							<div className="flex w-full flex-col gap-2">{children}</div>
+						<div className="flex w-full flex-1 flex-col items-center gap-2 px-1 pt-8">
+							{isSidebarMinimized ? (
+								<TooltipProvider>
+									<Tooltip>
+										<TooltipTrigger asChild>
+											{link ? (
+												<Link
+													href={link}
+													className={cn(
+														"flex size-6 flex-shrink-0 items-center justify-center rounded-full transition-transform hover:scale-110",
+														styles.iconBg,
+													)}
+													onClick={(e) => e.stopPropagation()}
+												>
+													{getVariantIcon()}
+												</Link>
+											) : (
+												<button
+													type="button"
+													className={cn(
+														"flex size-6 flex-shrink-0 cursor-pointer items-center justify-center rounded-full transition-transform hover:scale-110",
+														styles.iconBg,
+													)}
+													onClick={(e) => {
+														e.stopPropagation();
+													}}
+												>
+													{getVariantIcon()}
+												</button>
+											)}
+										</TooltipTrigger>
+										<TooltipContent side="right" sideOffset={8}>
+											{tooltipText || "New Feature Available!"}
+										</TooltipContent>
+									</Tooltip>
+								</TooltipProvider>
+							) : (
+								<>
+									{link ? (
+										<Link
+											href={link}
+											className={cn(
+												"flex size-8 flex-shrink-0 items-center justify-center rounded-full transition-transform hover:scale-110",
+												styles.iconBg,
+											)}
+											onClick={(e) => e.stopPropagation()}
+										>
+											{getVariantIcon()}
+										</Link>
+									) : (
+										<div
+											className={cn(
+												"flex size-8 flex-shrink-0 items-center justify-center rounded-full",
+												styles.iconBg,
+											)}
+										>
+											{getVariantIcon()}
+										</div>
+									)}
+									<div className="flex w-full flex-col items-center gap-1 px-1">
+										<div className="flex flex-col items-center justify-center text-center">
+											{Children.map(children, (child, index) => {
+												// If it's the last child (subtitle) and subtitleLink is provided, wrap it in a Link
+												if (
+													subtitleLink &&
+													index === Children.count(children) - 1 &&
+													isValidElement(child)
+												) {
+													return (
+														<Link
+															href={subtitleLink}
+															target="_blank"
+															rel="noopener noreferrer"
+															onClick={(e) => e.stopPropagation()}
+															className="cursor-pointer transition-colors hover:underline"
+														>
+															{child}
+														</Link>
+													);
+												}
+												return child;
+											})}
+										</div>
+									</div>
+								</>
+							)}
 						</div>
 					</motion.div>
 				)}
 			</AnimatePresence>
 			{!open && (
 				<motion.button
-					initial={{ opacity: 0 }}
-					animate={{ opacity: 1 }}
+					initial={{
+						opacity: 0,
+						width: isSidebarMinimized ? 24 : 32,
+						left: isSidebarMinimized ? 72 : 288,
+					}}
+					animate={{
+						opacity: 1,
+						width: isSidebarMinimized ? 24 : 32,
+						left: isSidebarMinimized ? 72 : 288,
+					}}
+					transition={{
+						duration: 0.5,
+						ease: "easeInOut",
+					}}
 					className={cn(
-						"absolute top-20 z-50 flex h-20 w-8 items-center justify-center rounded-r-lg border-l shadow-lg transition-colors hover:bg-accent",
+						"absolute top-20 z-50 flex h-16 items-center justify-center rounded-r-lg border-l shadow-lg hover:bg-accent",
 						styles.bg,
 						styles.border,
 					)}
-					style={{
-						left: isSidebarMinimized ? "72px" : "18rem",
-					}}
 					onClick={(e) => {
 						e.stopPropagation();
 						setOpen(true);
@@ -167,7 +294,10 @@ export const VerticalStickyBanner = ({
 					aria-label="Open banner"
 				>
 					<svg
-						className="size-4 rotate-90 text-muted-foreground"
+						className={cn(
+							"rotate-90 text-muted-foreground",
+							isSidebarMinimized ? "size-3" : "size-4",
+						)}
 						fill="none"
 						stroke="currentColor"
 						viewBox="0 0 24 24"

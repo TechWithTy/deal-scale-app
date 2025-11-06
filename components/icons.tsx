@@ -28,6 +28,7 @@ import {
 	ScrollText,
 	Search,
 	Settings,
+	Store,
 	SunMedium,
 	Trash,
 	Twitter,
@@ -76,6 +77,7 @@ export const Icons = {
 	messageCircle: MessageCircle,
 	webhook: Webhook,
 	rss: Rss,
+	store: Store,
 	gitHub: ({ ...props }: LucideProps) => (
 		<svg
 			aria-hidden="true"

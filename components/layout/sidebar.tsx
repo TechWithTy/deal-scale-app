@@ -150,7 +150,7 @@ export default function SidebarClient({ user }: { user: UserProfile | null }) {
 							/>
 						</button>
 					</div>
-					<div className="space-y-4 py-4">
+					<div className="space-y-4 py-4 overflow-visible">
 						{/* Quick Start Section - Prominent and Standout */}
 						<div className="px-3 py-2">
 							<Link
@@ -185,8 +185,8 @@ export default function SidebarClient({ user }: { user: UserProfile | null }) {
 							</Link>
 						</div>
 
-						<div className="px-3 py-2">
-							<div className="mt-3 space-y-1">
+						<div className="px-3 py-2 overflow-visible">
+							<div className="mt-3 space-y-1 overflow-visible">
 								<DashboardNav
 									items={navItems}
 									isMinimized={isSidebarMinimized}
@@ -310,9 +310,14 @@ export default function SidebarClient({ user }: { user: UserProfile | null }) {
 			<VerticalStickyBanner
 				isSidebarMinimized={isSidebarMinimized}
 				variant="feature"
+				tooltipText="New Feature Available! Check out our latest updates"
+				link="/dashboard"
+				subtitleLink="/dashboard/updates"
 			>
-				<p className={cn("text-sm")}>New Feature Available!</p>
-				<p className={cn("text-xs")}>Check out our latest updates</p>
+				<p className={cn("text-[10px] font-semibold leading-tight")}>
+					New Feature Available!
+				</p>
+				<p className={cn("text-[9px] leading-tight")}>Check out updates</p>
 			</VerticalStickyBanner>
 		</div>
 	);
