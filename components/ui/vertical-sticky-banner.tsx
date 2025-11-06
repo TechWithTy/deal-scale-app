@@ -135,13 +135,13 @@ export const VerticalStickyBanner = ({
 						initial={{
 							opacity: 0,
 							x: 100,
-							width: isSidebarMinimized ? 32 : 160,
+							width: isSidebarMinimized ? 32 : 56,
 							left: isSidebarMinimized ? 72 : 288,
 						}}
 						animate={{
 							opacity: 1,
 							x: 0,
-							width: isSidebarMinimized ? 32 : 160,
+							width: isSidebarMinimized ? 32 : 56,
 							left: isSidebarMinimized ? 72 : 288,
 						}}
 						exit={{
@@ -249,8 +249,10 @@ export const VerticalStickyBanner = ({
 															href={subtitleLink}
 															target="_blank"
 															rel="noopener noreferrer"
-															onClick={(e) => e.stopPropagation()}
-															className="cursor-pointer transition-colors hover:underline"
+															onClick={(e) => {
+																e.stopPropagation();
+															}}
+															className="cursor-pointer text-primary underline-offset-4 transition-colors hover:text-primary/80 hover:underline"
 														>
 															{child}
 														</Link>
