@@ -54,6 +54,19 @@ export function DashboardNav({
 						return null;
 					}
 
+					// Handle separator
+					if (item.icon === "separator") {
+						return (
+							<div
+								key={`separator-${index}`}
+								className={cn(
+									"my-2 h-px bg-border",
+									isMinimized ? "mx-2" : "mx-3",
+								)}
+							/>
+						);
+					}
+
 					const Icon = Icons[item.icon || "arrowRight"];
 
 					const featureKey = item.featureKey;
@@ -109,6 +122,12 @@ export function DashboardNav({
 									{isMobileNav || (!isMinimized && !isMobileNav) ? (
 										<span className="mr-2 truncate">{item.title}</span>
 									) : null}
+									{/* Badge indicator */}
+									{item.badge && !isMinimized && (
+										<span className="ml-auto mr-2 rounded-full bg-primary px-2 py-0.5 text-[10px] font-semibold text-primary-foreground">
+											{item.badge}
+										</span>
+									)}
 									{/* Sale indicator with tooltip - only show when no featureKey (no tab blockers) to avoid overlap */}
 									{item.hasSaleItems && item.saleLink && !featureKey && (
 										<Tooltip>
@@ -153,6 +172,12 @@ export function DashboardNav({
 									{isMobileNav || (!isMinimized && !isMobileNav) ? (
 										<span className="mr-2 truncate">{item.title}</span>
 									) : null}
+									{/* Badge indicator */}
+									{item.badge && !isMinimized && (
+										<span className="ml-auto mr-2 rounded-full bg-primary px-2 py-0.5 text-[10px] font-semibold text-primary-foreground">
+											{item.badge}
+										</span>
+									)}
 									{/* Sale indicator with tooltip - only show when no featureKey (no tab blockers) to avoid overlap */}
 									{item.hasSaleItems && item.saleLink && !featureKey && (
 										<Tooltip>
