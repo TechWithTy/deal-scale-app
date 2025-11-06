@@ -40,28 +40,45 @@ const HashtagInput: React.FC<HashtagInputProps> = ({
 		form.setValue("socialMediatags", updatedHashtags); // Set the form state
 	};
 
-	// Handle adding a hashtag
+	// Handle adding hashtag(s) - supports comma-separated values
 	const handleAddHashtag = () => {
-		let trimmedValue = inputValue.trim();
+		const rawInput = inputValue.trim();
+		if (!rawInput) return;
 
-		// Remove all extra leading hashes, keeping just one
-		trimmedValue = trimmedValue.replace(/^#+/, "");
+		// Split by comma to support CSV input
+		const inputTags = rawInput.split(",").map((tag) => tag.trim());
 
-		// Ensure the hashtag starts with a single '#'
-		trimmedValue = `#${trimmedValue}`;
+		const newHashtags: string[] = [];
 
-		// Prevent adding empty, duplicate, or invalid hashtags (like spaces)
-		if (
-			!trimmedValue ||
-			hashtags.includes(trimmedValue) || // Prevent duplicates
-			trimmedValue.includes(" ") // Prevent hashtags with spaces
-		) {
-			return;
+		for (let tag of inputTags) {
+			// Remove all extra leading hashes, keeping just one
+			tag = tag.replace(/^#+/, "");
+
+			// Ensure the hashtag starts with a single '#'
+			tag = `#${tag}`;
+
+			// Skip empty, duplicate, or invalid hashtags (like spaces)
+			if (
+				!tag ||
+				tag === "#" ||
+				hashtags.includes(tag) ||
+				newHashtags.includes(tag) || // Prevent duplicates within this batch
+				tag.includes(" ") // Prevent hashtags with spaces
+			) {
+				continue;
+			}
+
+			// Add hashtag only if limit is not reached
+			if (hashtags.length + newHashtags.length < maxHashtags) {
+				newHashtags.push(tag);
+			} else {
+				break; // Stop adding once limit is reached
+			}
 		}
 
-		// Add hashtag only if limit is not reached
-		if (hashtags.length < maxHashtags) {
-			const updatedHashtags = [...hashtags, trimmedValue];
+		// Update hashtags if any valid tags were found
+		if (newHashtags.length > 0) {
+			const updatedHashtags = [...hashtags, ...newHashtags];
 			updateFormHashtags(updatedHashtags);
 			setInputValue(""); // Reset input after adding
 		}
@@ -79,6 +96,11 @@ const HashtagInput: React.FC<HashtagInputProps> = ({
 			e.preventDefault();
 			handleAddHashtag();
 		}
+		// Support backspace to delete last tag when input is empty
+		if (e.key === "Backspace" && inputValue === "" && hashtags.length > 0) {
+			e.preventDefault();
+			handleRemoveHashtag(hashtags[hashtags.length - 1]);
+		}
 	};
 
 	return (
@@ -95,24 +117,30 @@ const HashtagInput: React.FC<HashtagInputProps> = ({
 					</FormLabel>
 
 					{/* Hashtag Input & Button */}
-					<div className="flex items-center gap-2">
-						<input
-							type="text"
-							placeholder="Type a hashtag and press Enter"
-							value={inputValue}
-							onChange={(e) => setInputValue(e.target.value)}
-							onKeyPress={handleKeyPress}
-							disabled={loading || hashtags.length >= maxHashtags}
-							className="block w-full rounded border border-gray-300 px-3 py-2 text-gray-700 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300"
-						/>
-						<button
-							type="button"
-							onClick={handleAddHashtag}
-							disabled={loading || hashtags.length >= maxHashtags}
-							className="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:opacity-50 dark:bg-blue-500 dark:hover:bg-blue-600"
-						>
-							+
-						</button>
+					<div className="space-y-2">
+						<div className="flex items-center gap-2">
+							<input
+								type="text"
+								placeholder="Type hashtags (comma-separated or press Enter)"
+								value={inputValue}
+								onChange={(e) => setInputValue(e.target.value)}
+								onKeyDown={handleKeyPress}
+								disabled={loading || hashtags.length >= maxHashtags}
+								className="block w-full rounded border border-gray-300 px-3 py-2 text-gray-700 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300"
+							/>
+							<button
+								type="button"
+								onClick={handleAddHashtag}
+								disabled={loading || hashtags.length >= maxHashtags}
+								className="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:opacity-50 dark:bg-blue-500 dark:hover:bg-blue-600"
+							>
+								+
+							</button>
+						</div>
+						<p className="text-muted-foreground text-xs">
+							💡 Tip: Enter multiple hashtags separated by commas (e.g.
+							"RealEstate, Investing, Wholesale")
+						</p>
 					</div>
 
 					{/* Display hashtags */}

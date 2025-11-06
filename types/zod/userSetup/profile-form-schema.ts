@@ -326,6 +326,11 @@ export const profileSchema = z.object({
 			}),
 		)
 		.optional(),
+	searchTerms: z
+		.array(z.string().min(1, { message: "Search term cannot be empty." }))
+		.min(3, { message: "You must add at least 3 search terms." })
+		.max(15, { message: "You can add a maximum of 15 search terms." })
+		.optional(), // Google search terms / SEO keywords
 });
 
 // Export the inferred form values type for use in React Hook Form

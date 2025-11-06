@@ -1,22 +1,23 @@
 import type React from "react";
+import { useFormContext } from "react-hook-form";
+import { OAuthSetup } from "./OAuthSetup";
+import type { ProfileFormValues } from "@/types/zod/userSetup/profile-form-schema";
+import type { InitialOauthSetupData } from "../../../utils/const/connectedAccounts";
 
 interface OAuthMainProps {
 	loading: boolean;
-	initialData: unknown; // You can replace 'any' with a more specific type if available
+	initialData?: InitialOauthSetupData;
 }
 
 export const OAuthMain: React.FC<OAuthMainProps> = ({
 	loading,
 	initialData,
 }) => {
+	const form = useFormContext<ProfileFormValues>();
+
 	return (
-		<div className="flex w-full flex-col items-center p-4">
-			<div className="rounded-lg bg-gray-100 p-8 text-center dark:bg-gray-800">
-				<h2 className="font-semibold text-xl">Social Connections</h2>
-				<p className="mt-2 text-muted-foreground">
-					This feature is not available right now.
-				</p>
-			</div>
+		<div className="w-full">
+			<OAuthSetup form={form} loading={loading} initialData={initialData} />
 		</div>
 	);
 };

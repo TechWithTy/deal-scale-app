@@ -4,6 +4,8 @@ import type {
 	InstagramOAuthData,
 	LinkedInOAuthData,
 	TwitterOAuthData,
+	GoHighLevelOAuthData,
+	LoftyCRMOAuthData,
 } from "@/types/userProfile/connectedAccounts";
 
 // CompanyInfo interface to include social media tags
@@ -18,6 +20,8 @@ export interface InitialOauthSetupData {
 		instagram?: InstagramOAuthData | null;
 		linkedIn?: LinkedInOAuthData | null;
 		twitter?: TwitterOAuthData | null;
+		goHighLevel?: GoHighLevelOAuthData | null;
+		loftyCRM?: LoftyCRMOAuthData | null;
 	};
 	socialMediaTags: string[]; // Social media tags associated with the company's campaigns
 }
@@ -32,6 +36,8 @@ export const extractOAuthDataFromUserProfile = (
 			instagram: profile?.connectedAccounts?.instagram || null,
 			twitter: profile?.connectedAccounts?.twitter || null,
 			linkedIn: profile?.connectedAccounts?.linkedIn || null,
+			goHighLevel: profile?.connectedAccounts?.goHighLevel || null,
+			loftyCRM: profile?.connectedAccounts?.loftyCRM || null,
 		},
 		socialMediaTags: profile?.companyInfo?.socialMediaTags || [], // Extract social media tags, or use an empty array if not available
 	};
