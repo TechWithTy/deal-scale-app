@@ -51,7 +51,7 @@ export const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
 	);
 
 	return (
-		<div className="space-y-2">
+		<div className="space-y-2 md:space-y-3">
 			<AnimatePresence mode="popLayout">
 				{shown.map((player, index) => (
 					<motion.div

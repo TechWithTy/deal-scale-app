@@ -26,6 +26,8 @@ export interface Player {
 	reputationDelta?: -1 | 0 | 1; // most recent rating direction
 	// Backend-provided credit type for requests
 	creditType?: "skip" | "ai" | "lead";
+	// Deal tracking for commission calculation
+	dealsCount?: number;
 }
 
 interface LeaderboardData {
@@ -117,6 +119,24 @@ const generateMockPlayers = (count: number): Player[] => {
 		creditType: (["skip", "ai", "lead"] as const)[
 			Math.floor(Math.random() * 3)
 		],
+		/**
+		 * Generate realistic deal counts based on rank
+		 * Top players (#1-10): 80-150 deals/year
+		 * Mid-tier (#11-50): 40-80 deals/year  
+		 * Lower ranks: 10-40 deals/year
+		 */
+		dealsCount: (() => {
+			if (i < 10) {
+				// Top 10: 80-150 deals
+				return Math.floor(80 + Math.random() * 70);
+			} else if (i < 50) {
+				// Top 50: 40-80 deals
+				return Math.floor(40 + Math.random() * 40);
+			} else {
+				// Everyone else: 10-40 deals
+				return Math.floor(10 + Math.random() * 30);
+			}
+		})(),
 	}));
 };
 

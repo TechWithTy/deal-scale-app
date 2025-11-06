@@ -283,8 +283,8 @@ export const LeaderboardContainer = () => {
 	}, []);
 
 	return (
-		<div className="min-h-screen bg-gradient-bg p-4 md:p-6 lg:p-8">
-			<div className="mx-auto max-w-4xl space-y-6">
+		<div className="min-h-screen bg-gradient-bg p-2 sm:p-4 md:p-6 lg:p-8">
+			<div className="mx-auto max-w-4xl space-y-3 sm:space-y-4 md:space-y-6">
 				{/* Header */}
 				<LeaderboardHeader
 					animationEnabled={animationEnabled}
@@ -314,6 +314,9 @@ export const LeaderboardContainer = () => {
 				onTimePeriodChange={setTimePeriod}
 				leaderboardType={leaderboardType}
 				onLeaderboardTypeChange={setLeaderboardType}
+				currentUserRank={myRank}
+				currentUserId="current-user"
+				currentUserName="You"
 			/>
 
 			<LeaderboardSettingsPanel

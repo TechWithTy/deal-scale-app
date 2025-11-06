@@ -10,12 +10,12 @@ export default function LeaderboardModal() {
 
 	return (
 		<Dialog open={isLeaderboardModalOpen} onOpenChange={closeLeaderboardModal}>
-			<DialogContent className="max-h-[90vh] max-w-5xl overflow-y-auto p-0">
+			<DialogContent className="max-h-[90vh] max-w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl overflow-y-auto p-0">
 				<DialogTitle className="sr-only">Leaderboard</DialogTitle>
 				<div className="relative">
 					{/* Leaderboard content with WebSocket provider */}
 					<WebSocketProvider>
-						<div className="p-4">
+						<div className="p-2 sm:p-4">
 							<LeaderboardContainer />
 						</div>
 					</WebSocketProvider>

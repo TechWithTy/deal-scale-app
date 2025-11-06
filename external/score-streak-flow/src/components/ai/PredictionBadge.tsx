@@ -40,7 +40,7 @@ export const PredictionBadge: React.FC<PredictionBadgeProps> = ({
 	return (
 		<Badge
 			variant={getVariant()}
-			className="flex animate-fade-in items-center gap-1 font-medium text-green-500 text-xs"
+			className="flex animate-fade-in items-center gap-1 font-medium text-xs"
 		>
 			{getIcon()}
 			{getText()}
