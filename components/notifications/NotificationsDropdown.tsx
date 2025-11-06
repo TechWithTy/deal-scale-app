@@ -59,6 +59,55 @@ export default function NotificationsDropdown() {
 					onDeny: () => console.log("Campaign denied"),
 				},
 			} as any);
+			// Credit offer notification
+			const dueDate = new Date();
+			dueDate.setDate(dueDate.getDate() + 30);
+			const dueDateStr = dueDate.toLocaleDateString("en-US", {
+				month: "short",
+				day: "numeric",
+				year: "numeric",
+			});
+
+			add({
+				title: "Credit Offer from Top Leader",
+				description: (
+					<div className="space-y-1.5">
+						<div className="text-sm leading-relaxed break-words">
+							100 AI credits • 5% monthly • Net 30
+						</div>
+						<div className="text-xs text-muted-foreground">
+							Due: {dueDateStr}
+						</div>
+						<a
+							href="https://dealscale.io/credit-terms"
+							target="_blank"
+							rel="noopener noreferrer"
+							className="inline-flex items-center text-xs text-primary hover:underline"
+							onClick={(e) => e.stopPropagation()}
+						>
+							View terms & conditions →
+						</a>
+					</div>
+				) as any,
+				icon: "💳",
+				colorHsl: "280 70% 50%",
+				// @ts-expect-error extend action via duck typing
+				action: {
+					approveLabel: "Accept Offer",
+					denyLabel: "Decline",
+					onApprove: () => {
+						console.log("Credit offer accepted");
+						// Show success notification
+						add({
+							title: "Credit offer accepted!",
+							description: "100 AI credits added to your account",
+							icon: "✅",
+							colorHsl: "142 76% 36%",
+						});
+					},
+					onDeny: () => console.log("Credit offer declined"),
+				},
+			} as any);
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);

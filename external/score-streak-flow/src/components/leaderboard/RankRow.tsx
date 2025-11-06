@@ -26,6 +26,8 @@ import { CreditRequestPopover } from "./CreditRequestPopover";
 import { DonationPopover } from "./DonationPopover";
 import { buildTopRowExtras } from "./utils";
 import { BorderBeam } from "@root/components/magicui/border-beam";
+import { useState } from "react";
+import { ChevronDown, ChevronUp } from "lucide-react";
 
 interface RankRowProps {
 	player: Player;
@@ -34,6 +36,7 @@ interface RankRowProps {
 
 export const RankRow = ({ player, isCurrentUser = false }: RankRowProps) => {
 	const MotionDiv = motion.div;
+	const [isExpanded, setIsExpanded] = useState(false);
 	const hasRankChanged =
 		player.previousRank && player.previousRank !== player.rank;
 	const rankImproved = player.previousRank && player.rank < player.previousRank;
@@ -322,6 +325,62 @@ export const RankRow = ({ player, isCurrentUser = false }: RankRowProps) => {
 					dealsCount={player.dealsCount}
 				/>
 			</div>
+
+			{/* Champion Video Showcase - Only for #1 */}
+			{isChampion && (
+				<div className="w-full mt-3 md:mt-4">
+					<Button
+						type="button"
+						variant="ghost"
+						size="sm"
+						onClick={() => setIsExpanded(!isExpanded)}
+						className="flex w-full items-center justify-center gap-2 text-xs font-medium text-muted-foreground hover:text-foreground"
+					>
+						{isExpanded ? (
+							<>
+								<ChevronUp className="h-4 w-4" />
+								Hide Champion Showcase
+							</>
+						) : (
+							<>
+								<ChevronDown className="h-4 w-4" />
+								View Champion Showcase
+							</>
+						)}
+					</Button>
+					
+					{isExpanded && (
+						<motion.div
+							initial={{ opacity: 0, height: 0 }}
+							animate={{ opacity: 1, height: "auto" }}
+							exit={{ opacity: 0, height: 0 }}
+							transition={{ duration: 0.3 }}
+							className="mt-3 overflow-hidden"
+						>
+							<div className="rounded-lg border border-border bg-card/50 p-3">
+								<div className="mb-2 flex items-center justify-between">
+									<h4 className="font-semibold text-sm text-foreground">
+										🏆 Champion's Success Story
+									</h4>
+									<span className="text-xs text-muted-foreground">90s highlight</span>
+								</div>
+								<div className="relative aspect-[9/16] w-full max-w-[300px] mx-auto overflow-hidden rounded-md bg-black">
+									<iframe
+										src="https://www.youtube.com/embed/dQw4w9WgXcQ?controls=1&modestbranding=1&rel=0"
+										title="Champion Showcase"
+										allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+										allowFullScreen
+										className="absolute inset-0 h-full w-full"
+									/>
+								</div>
+								<p className="mt-2 text-center text-xs text-muted-foreground italic">
+									"See how {player.username} reached #1"
+								</p>
+							</div>
+						</motion.div>
+					)}
+				</div>
+			)}
 		</MotionDiv>
 	);
 };
