@@ -11,6 +11,7 @@ export type QuickStartActionHandlerKey =
 	| "onSelectList"
 	| "onConfigureConnections"
 	| "onCampaignCreate"
+	| "onCreateAbTest"
 	| "onViewTemplates"
 	| "onBrowserExtension"
 	| "onStartNewSearch"

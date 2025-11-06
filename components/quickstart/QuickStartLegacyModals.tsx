@@ -28,6 +28,8 @@ interface QuickStartLegacyModalsProps {
 	readonly showCampaignModal: boolean;
 	readonly onCampaignModalToggle: (open: boolean) => void;
 	readonly campaignModalContext: QuickStartCampaignContext | null;
+	readonly variantCampaignData?: any;
+	readonly isVariantMode?: boolean;
 	readonly savedSearchModalOpen: boolean;
 	readonly onCloseSavedSearches: () => void;
 	readonly savedSearches: SavedSearch[];
@@ -60,6 +62,8 @@ const QuickStartLegacyModals: FC<QuickStartLegacyModalsProps> = ({
 	showCampaignModal,
 	onCampaignModalToggle,
 	campaignModalContext,
+	variantCampaignData,
+	isVariantMode = false,
 	savedSearchModalOpen,
 	onCloseSavedSearches,
 	savedSearches,
@@ -98,6 +102,8 @@ const QuickStartLegacyModals: FC<QuickStartLegacyModalsProps> = ({
 			initialLeadListName={campaignModalContext?.leadListName}
 			initialLeadCount={campaignModalContext?.leadCount ?? 0}
 			initialStep={0}
+			initialCampaignData={variantCampaignData}
+			isVariantMode={isVariantMode}
 			defaultChannel={defaultChannel}
 			onCampaignLaunched={onCampaignLaunched}
 		/>

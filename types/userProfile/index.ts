@@ -48,6 +48,7 @@ export interface SavedSearch {
 	createdAt: Date; // Date the search was saved
 	updatedAt: Date;
 	priority?: boolean;
+	lookalikeConfig?: any; // Optional lookalike audience configuration
 }
 
 export interface Integration {

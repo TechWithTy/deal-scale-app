@@ -26,6 +26,7 @@ export interface QuickStartActionConfig {
 	readonly variant?: "default" | "outline";
 	readonly className?: string;
 	readonly onClick: () => void;
+	readonly isRoute?: boolean; // Indicates this action is a navigation/redirect
 }
 
 export interface QuickStartWizardPreset {

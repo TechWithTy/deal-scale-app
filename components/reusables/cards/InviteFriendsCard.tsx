@@ -35,6 +35,8 @@ import {
 	Gift,
 	TrendingUp,
 	Edit2,
+	ChevronDown,
+	ChevronUp,
 } from "lucide-react";
 
 /**
@@ -117,6 +119,7 @@ export const InviteFriendsCard: React.FC<InviteFriendsCardProps> = ({
 	const [copied, setCopied] = useState(false);
 	const [isEditingMessage, setIsEditingMessage] = useState(false);
 	const [message, setMessage] = useState(customMessage || DEFAULT_MESSAGE);
+	const [showTerms, setShowTerms] = useState(false);
 
 	/**
 	 * Copy referral link to clipboard
@@ -428,6 +431,139 @@ export const InviteFriendsCard: React.FC<InviteFriendsCardProps> = ({
 						</div>
 					</div>
 				)}
+
+				{/* Credit Breakdown & Terms */}
+				<div className="mt-6 rounded-md border border-muted bg-card">
+					<button
+						type="button"
+						onClick={() => setShowTerms(!showTerms)}
+						className="flex w-full items-center justify-between p-3 text-left transition-colors hover:bg-muted/50"
+					>
+						<span className="font-semibold text-xs">
+							💰 Credit Breakdown & Terms
+						</span>
+						{showTerms ? (
+							<ChevronUp className="h-4 w-4 text-muted-foreground" />
+						) : (
+							<ChevronDown className="h-4 w-4 text-muted-foreground" />
+						)}
+					</button>
+
+					{showTerms && (
+						<div className="space-y-3 border-t border-muted p-3">
+							{/* Credit Distribution */}
+							<div>
+								<h4 className="mb-2 font-semibold text-xs">
+									📊 {rewardAmount} Credit Distribution (Per Successful
+									Referral)
+								</h4>
+								<div className="space-y-2">
+									<div className="flex items-center justify-between rounded border border-blue-200 bg-blue-50/30 p-2 dark:border-blue-800 dark:bg-blue-950/30">
+										<span className="text-xs">🤖 AI Credits</span>
+										<span className="font-bold text-blue-600 text-xs dark:text-blue-400">
+											20 credits
+										</span>
+									</div>
+									<div className="flex items-center justify-between rounded border border-green-200 bg-green-50/30 p-2 dark:border-green-800 dark:bg-green-950/30">
+										<span className="text-xs">👥 Lead Credits</span>
+										<span className="font-bold text-green-600 text-xs dark:text-green-400">
+											20 credits
+										</span>
+									</div>
+									<div className="flex items-center justify-between rounded border border-purple-200 bg-purple-50/30 p-2 dark:border-purple-800 dark:bg-purple-950/30">
+										<span className="text-xs">🔍 Skip Trace Credits</span>
+										<span className="font-bold text-purple-600 text-xs dark:text-purple-400">
+											10 credits
+										</span>
+									</div>
+									<div className="flex items-center justify-between rounded border border-primary bg-primary/10 p-2">
+										<span className="font-semibold text-xs">Total Value</span>
+										<span className="font-bold text-primary text-xs">
+											{rewardAmount} credits (${rewardAmount} value)
+										</span>
+									</div>
+								</div>
+							</div>
+
+							{/* Terms & Conditions */}
+							<div className="border-t border-muted pt-3">
+								<h4 className="mb-2 font-semibold text-xs">
+									📋 Terms & Conditions
+								</h4>
+								<div className="space-y-2 text-muted-foreground text-xs leading-relaxed">
+									<div className="flex gap-2">
+										<span className="shrink-0">•</span>
+										<p>
+											<span className="font-semibold">Eligibility:</span>{" "}
+											Credits are awarded only when your referred friend
+											completes their profile setup and verifies their email
+											address.
+										</p>
+									</div>
+									<div className="flex gap-2">
+										<span className="shrink-0">•</span>
+										<p>
+											<span className="font-semibold">
+												Credit Distribution:
+											</span>{" "}
+											Both you and your friend receive the same credit split (20
+											AI, 20 Lead, 10 Skip Trace).
+										</p>
+									</div>
+									<div className="flex gap-2">
+										<span className="shrink-0">•</span>
+										<p>
+											<span className="font-semibold">Processing Time:</span>{" "}
+											Credits are typically applied within 24-48 hours of
+											successful referral completion.
+										</p>
+									</div>
+									<div className="flex gap-2">
+										<span className="shrink-0">•</span>
+										<p>
+											<span className="font-semibold">Expiration:</span> Credits
+											do not expire and can be used anytime for their designated
+											purposes.
+										</p>
+									</div>
+									<div className="flex gap-2">
+										<span className="shrink-0">•</span>
+										<p>
+											<span className="font-semibold">Fraud Prevention:</span>{" "}
+											DealScale reserves the right to revoke credits earned
+											through fraudulent or suspicious activity, including
+											self-referrals or fake accounts.
+										</p>
+									</div>
+									<div className="flex gap-2">
+										<span className="shrink-0">•</span>
+										<p>
+											<span className="font-semibold">Referral Limits:</span> No
+											limit on the number of friends you can refer. Earn
+											unlimited credits!
+										</p>
+									</div>
+									<div className="flex gap-2">
+										<span className="shrink-0">•</span>
+										<p>
+											<span className="font-semibold">Credit Value:</span> Each
+											credit represents approximately $1 in platform value.
+											Credits cannot be exchanged for cash.
+										</p>
+									</div>
+									<div className="flex gap-2">
+										<span className="shrink-0">•</span>
+										<p>
+											<span className="font-semibold">Program Changes:</span>{" "}
+											DealScale may modify or terminate this referral program at
+											any time with 30 days notice to active participants.
+										</p>
+									</div>
+								</div>
+							</div>
+						</div>
+					)}
+				</div>
 			</CardContent>
 		</Card>
 	);

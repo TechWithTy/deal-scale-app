@@ -165,16 +165,348 @@ export const generateMockUserProfile = (): UserProfile => {
 			maxBudget: faker.number.int({ min: 1000, max: 10000 }),
 		},
 		savedSearches: [
+			// ⭐ PRIORITY 1: Real Estate Investors (High-Intent Buyers)
 			{
-				id: faker.string.uuid(),
-				name: "High-Quality Leads", // Static or faker.commerce.productName()
-				searchCriteria: {
-					quality: "high",
-					location: faker.location.city(),
+				id: "lookalike_priority_1",
+				name: "💰 Cash Investors - High Intent",
+				searchCriteria: {},
+				createdAt: new Date("2024-10-01"),
+				updatedAt: new Date("2024-11-05"),
+				priority: true, // ⭐ Favorited
+				lookalikeConfig: {
+					seedListId: safeLeadLists[0]?.id || "seed_investors_1",
+					seedListName: safeLeadLists[0]?.listName || "Louisville - On Market / 3+ Beds",
+					seedLeadCount: safeLeadLists[0]?.records || 720,
+					similarityThreshold: 85,
+					targetSize: 500,
+					salesTargeting: {
+						buyerPersona: ["investor"],
+						motivationLevel: ["hot"],
+						investmentExperience: "professional",
+						budgetRange: {
+							min: 100000,
+							max: 2000000,
+						},
+						creditScoreRange: {
+							min: 700,
+						},
+						cashBuyerOnly: true,
+						portfolioSize: "20-50",
+					},
+					propertyFilters: {
+						propertyTypes: ["single-family", "multi-family"],
+						propertyStatus: ["off-market"],
+						priceRange: {
+							min: 75000,
+							max: 750000,
+						},
+					},
+					geoFilters: {
+						states: ["FL", "TX", "AZ", "GA", "NC"],
+					},
+					generalOptions: {
+						dncCompliance: true,
+						tcpaOptInRequired: true,
+						requirePhone: true,
+						requireEmail: true,
+						enrichmentLevel: "premium",
+						enrichmentRequired: true,
+					},
 				},
-				createdAt: faker.date.recent(),
-				updatedAt: faker.date.recent(),
-				priority: faker.datatype.boolean(),
+			},
+			// ⭐ PRIORITY 2: Wholesalers (Deal Hunters)
+			{
+				id: "lookalike_priority_2",
+				name: "🏚️ Wholesalers - Distressed Properties",
+				searchCriteria: {},
+				createdAt: new Date("2024-10-05"),
+				updatedAt: new Date("2024-11-04"),
+				priority: true, // ⭐ Favorited
+				lookalikeConfig: {
+					seedListId: safeLeadLists[1]?.id || "seed_wholesalers_1",
+					seedListName: safeLeadLists[1]?.listName || "New York - Notice Of Default / Lis Pendens",
+					seedLeadCount: safeLeadLists[1]?.records || 899,
+					similarityThreshold: 75,
+					targetSize: 1000,
+					salesTargeting: {
+						buyerPersona: ["wholesaler"],
+						motivationLevel: ["hot", "warm"],
+						purchaseTimeline: "0-3months",
+						budgetRange: {
+							min: 25000,
+							max: 300000,
+						},
+						cashBuyerOnly: true,
+					},
+					propertyFilters: {
+						propertyTypes: ["single-family", "multi-family"],
+						propertyStatus: ["pre-foreclosure", "foreclosure"],
+						distressedSignals: ["pre-foreclosure", "tax-lien", "vacant"],
+						equityPosition: ["<20%", "20-50%"],
+						priceRange: {
+							max: 300000,
+						},
+					},
+					geoFilters: {
+						states: ["OH", "MI", "IN", "PA", "IL"],
+					},
+					generalOptions: {
+						dncCompliance: true,
+						tcpaOptInRequired: true,
+						requirePhone: true,
+						enrichmentLevel: "hybrid",
+					},
+				},
+			},
+			// ⭐ PRIORITY 3: Agents & Brokers (Sphere Building)
+			{
+				id: "lookalike_priority_3",
+				name: "🏡 Agents/Brokers - Sphere Expansion",
+				searchCriteria: {},
+				createdAt: new Date("2024-10-10"),
+				updatedAt: new Date("2024-11-03"),
+				priority: true, // ⭐ Favorited
+				lookalikeConfig: {
+					seedListId: safeLeadLists[2]?.id || "seed_agents_1",
+					seedListName: safeLeadLists[2]?.listName || "Seattle - Probate / Inheritance Only",
+					seedLeadCount: safeLeadLists[2]?.records || 992,
+					similarityThreshold: 70,
+					targetSize: 2000,
+					salesTargeting: {
+						buyerPersona: ["agent", "owner-occupant"],
+						motivationLevel: ["warm", "hot"],
+						purchaseTimeline: "3-6months",
+						budgetRange: {
+							min: 200000,
+							max: 800000,
+						},
+						creditScoreRange: {
+							min: 650,
+						},
+					},
+					propertyFilters: {
+						propertyTypes: ["single-family", "condo"],
+						propertyStatus: ["active", "off-market"],
+						priceRange: {
+							min: 200000,
+							max: 800000,
+						},
+						bedrooms: {
+							min: 3,
+							max: 5,
+						},
+					},
+					geoFilters: {
+						states: ["WA", "OR", "CA", "CO", "TX"],
+					},
+					generalOptions: {
+						dncCompliance: true,
+						tcpaOptInRequired: true,
+						requirePhone: true,
+						requireEmail: true,
+						enrichmentLevel: "premium",
+						dataRecencyDays: 30,
+					},
+				},
+			},
+			{
+				id: "lookalike_template_1",
+				name: "🎯 High-Value Investors",
+				searchCriteria: {},
+				createdAt: new Date("2024-01-15"),
+				updatedAt: new Date("2024-01-15"),
+				priority: false,
+				lookalikeConfig: {
+					seedListId: safeLeadLists[0]?.id || "seed_default_1",
+					seedListName: safeLeadLists[0]?.listName || "Louisville - On Market / 3+ Beds",
+					seedLeadCount: safeLeadLists[0]?.records || 720,
+					similarityThreshold: 85,
+					targetSize: 500,
+					salesTargeting: {
+						buyerPersona: ["investor"],
+						motivationLevel: ["hot"],
+						investmentExperience: "experienced",
+						budgetRange: {
+							min: 100000,
+							max: 1000000,
+						},
+						creditScoreRange: {
+							min: 700,
+						},
+						cashBuyerOnly: true,
+					},
+					propertyFilters: {
+						propertyTypes: ["single-family", "multi-family"],
+						priceRange: {
+							min: 50000,
+							max: 500000,
+						},
+					},
+					geoFilters: {},
+					generalOptions: {
+						dncCompliance: true,
+						tcpaOptInRequired: true,
+						requirePhone: true,
+						enrichmentLevel: "premium",
+						enrichmentRequired: true,
+					},
+				},
+			},
+			{
+				id: "lookalike_template_2",
+				name: "🏘️ Distressed Property Buyers",
+				searchCriteria: {},
+				createdAt: new Date("2024-01-20"),
+				updatedAt: new Date("2024-01-20"),
+				priority: false,
+				lookalikeConfig: {
+					seedListId: safeLeadLists[1]?.id || "seed_default_2",
+					seedListName: safeLeadLists[1]?.listName || "New York - Notice Of Default",
+					seedLeadCount: safeLeadLists[1]?.records || 899,
+					similarityThreshold: 75,
+					targetSize: 1000,
+					salesTargeting: {
+						buyerPersona: ["wholesaler"],
+						motivationLevel: ["warm", "hot"],
+						purchaseTimeline: "0-3months",
+					},
+					propertyFilters: {
+						propertyTypes: ["single-family"],
+						distressedSignals: ["pre-foreclosure", "tax-lien", "code-violation"],
+						equityPosition: ["<20%", "20-50%"],
+					},
+					geoFilters: {},
+					generalOptions: {
+						dncCompliance: true,
+						tcpaOptInRequired: true,
+						requirePhone: true,
+						enrichmentLevel: "none",
+					},
+				},
+			},
+			{
+				id: "lookalike_template_3",
+				name: "💰 First-Time Home Buyers",
+				searchCriteria: {},
+				createdAt: new Date("2024-02-01"),
+				updatedAt: new Date("2024-02-01"),
+				priority: false,
+				lookalikeConfig: {
+					seedListId: safeLeadLists[2]?.id || "seed_default_3",
+					seedListName: safeLeadLists[2]?.listName || "Seattle - Probate / Inheritance Only",
+					seedLeadCount: safeLeadLists[2]?.records || 992,
+					similarityThreshold: 70,
+					targetSize: 2000,
+					salesTargeting: {
+						buyerPersona: ["owner-occupant"],
+						motivationLevel: ["warm"],
+						investmentExperience: "first-time",
+						budgetRange: {
+							min: 150000,
+							max: 400000,
+						},
+						creditScoreRange: {
+							min: 650,
+						},
+					},
+					propertyFilters: {
+						propertyTypes: ["single-family", "condo"],
+						priceRange: {
+							min: 150000,
+							max: 400000,
+						},
+						bedrooms: {
+							min: 2,
+							max: 4,
+						},
+					},
+					geoFilters: {},
+					generalOptions: {
+						dncCompliance: true,
+						tcpaOptInRequired: true,
+						requirePhone: true,
+						enrichmentLevel: "premium",
+						enrichmentRequired: true,
+					},
+				},
+			},
+			{
+				id: "lookalike_template_4",
+				name: "🏢 Commercial Real Estate Investors",
+				searchCriteria: {},
+				createdAt: new Date("2024-02-10"),
+				updatedAt: new Date("2024-02-10"),
+				priority: false,
+				lookalikeConfig: {
+					seedListId: safeLeadLists[3]?.id || "seed_default_4",
+					seedListName: safeLeadLists[3]?.listName || "Cleveland - 2+ Units / VA Or FHA Loan",
+					seedLeadCount: safeLeadLists[3]?.records || 1100,
+					similarityThreshold: 80,
+					targetSize: 300,
+					salesTargeting: {
+						buyerPersona: ["investor"],
+						motivationLevel: ["hot"],
+						investmentExperience: "professional",
+						budgetRange: {
+							min: 500000,
+						},
+						cashBuyerOnly: true,
+						portfolioSize: "50+",
+					},
+					propertyFilters: {
+						propertyTypes: ["multi-family", "commercial"],
+						priceRange: {
+							min: 500000,
+						},
+					},
+					geoFilters: {},
+					generalOptions: {
+						dncCompliance: true,
+						tcpaOptInRequired: true,
+						requirePhone: true,
+						enrichmentLevel: "premium",
+						enrichmentRequired: true,
+					},
+				},
+			},
+			{
+				id: "lookalike_template_5",
+				name: "🌴 Vacation Home Seekers",
+				searchCriteria: {},
+				createdAt: new Date("2024-02-15"),
+				updatedAt: new Date("2024-02-15"),
+				priority: false,
+				lookalikeConfig: {
+					seedListId: safeLeadLists[4]?.id || "seed_default_5",
+					seedListName: safeLeadLists[4]?.listName || "Phoenix - Luxury Properties",
+					seedLeadCount: safeLeadLists[4]?.records || 450,
+					similarityThreshold: 75,
+					targetSize: 750,
+					salesTargeting: {
+						buyerPersona: ["owner-occupant"],
+						motivationLevel: ["warm"],
+						budgetRange: {
+							min: 250000,
+							max: 800000,
+						},
+					},
+					propertyFilters: {
+						propertyTypes: ["single-family", "condo"],
+						priceRange: {
+							min: 250000,
+							max: 800000,
+						},
+					},
+					geoFilters: {
+						states: ["FL", "CA", "AZ", "HI"],
+					},
+					generalOptions: {
+						dncCompliance: true,
+						tcpaOptInRequired: true,
+						requirePhone: true,
+						enrichmentLevel: "none",
+					},
+				},
 			},
 		],
 		notificationPreferences: {

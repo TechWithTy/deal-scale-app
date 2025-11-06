@@ -135,6 +135,15 @@ export const OAuthSetup: React.FC<OAuthSetupProps> = ({
 		loftyCRM: null,
 	});
 
+	// Generate referral URL client-side only to avoid hydration mismatch
+	const [referralUrl, setReferralUrl] = useState("");
+
+	// Generate referral URL on client side only
+	useEffect(() => {
+		const code = Math.random().toString(36).substring(2, 9).toUpperCase();
+		setReferralUrl(`https://dealscale.app/ref/${code}`);
+	}, []);
+
 	// ! Extract initial OAuth data from the profile
 	useEffect(() => {
 		if (initialData) {
@@ -402,23 +411,76 @@ export const OAuthSetup: React.FC<OAuthSetupProps> = ({
 
 			{/* Invite Friends Section */}
 			<div className="mt-8">
-				<InviteFriendsCard
-					referralUrl={`https://dealscale.app/ref/${Math.random().toString(36).substring(2, 9).toUpperCase()}`}
-					userName="DealScale User"
-					rewardType="credits"
-					rewardAmount={50}
-					showStats={true}
-					stats={{
-						totalInvitesSent: 0,
-						pendingSignups: 0,
-						successfulReferrals: 0,
-						rewardsEarned: 0,
-					}}
-					onShare={(platform) => {
-						console.log(`Shared via ${platform}`);
-						// TODO: Track analytics
-					}}
-				/>
+				<div className="mb-4 rounded-lg border border-primary/20 bg-gradient-to-r from-primary/5 to-primary/10 p-4">
+					<h3 className="mb-2 font-semibold text-base">
+						🎉 Refer Friends & Earn Rewards
+					</h3>
+					<div className="space-y-3 text-sm">
+						<p className="text-foreground/80">
+							Share DealScale with your network and earn{" "}
+							<span className="font-bold text-primary">50 credits</span> for
+							each successful referral!
+						</p>
+						<div className="grid gap-2 md:grid-cols-3">
+							<div className="rounded-md border border-blue-200 bg-blue-50/50 p-3 dark:border-blue-800 dark:bg-blue-950/50">
+								<p className="mb-1 flex items-center gap-1 font-semibold text-blue-600 text-xs dark:text-blue-400">
+									🤖 AI Credits
+								</p>
+								<p className="text-muted-foreground text-xs leading-relaxed">
+									For AI voice calls, smart responses, lead nurturing, and
+									automated conversations.
+								</p>
+							</div>
+							<div className="rounded-md border border-green-200 bg-green-50/50 p-3 dark:border-green-800 dark:bg-green-950/50">
+								<p className="mb-1 flex items-center gap-1 font-semibold text-green-600 text-xs dark:text-green-400">
+									👥 Lead Credits
+								</p>
+								<p className="text-muted-foreground text-xs leading-relaxed">
+									For accessing verified leads, contact data, and building your
+									pipeline.
+								</p>
+							</div>
+							<div className="rounded-md border border-purple-200 bg-purple-50/50 p-3 dark:border-purple-800 dark:bg-purple-950/50">
+								<p className="mb-1 flex items-center gap-1 font-semibold text-purple-600 text-xs dark:text-purple-400">
+									🔍 Skip Trace Credits
+								</p>
+								<p className="text-muted-foreground text-xs leading-relaxed">
+									For finding property owner info, phone numbers, and contact
+									details.
+								</p>
+							</div>
+						</div>
+						<div className="rounded-md bg-white/50 p-3 dark:bg-gray-900/50">
+							<p className="mb-1 font-semibold text-primary text-xs">
+								🎯 How it Works
+							</p>
+							<p className="text-muted-foreground text-xs leading-relaxed">
+								Your friend signs up → Completes profile setup → You both get{" "}
+								<span className="font-semibold">50 credits split</span> across
+								all three types! No limits on referrals.
+							</p>
+						</div>
+					</div>
+				</div>
+				{referralUrl && (
+					<InviteFriendsCard
+						referralUrl={referralUrl}
+						userName="DealScale User"
+						rewardType="credits"
+						rewardAmount={50}
+						showStats={true}
+						stats={{
+							totalInvitesSent: 0,
+							pendingSignups: 0,
+							successfulReferrals: 0,
+							rewardsEarned: 0,
+						}}
+						onShare={(platform) => {
+							console.log(`Shared via ${platform}`);
+							// TODO: Track analytics
+						}}
+					/>
+				)}
 			</div>
 		</div>
 	);
