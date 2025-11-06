@@ -261,11 +261,11 @@ export const makeData = (count = 123): DemoRow[] => {
 	const rows = Array.from({ length: count }, (_, i) => makeRow(i));
 
 	// Debug log
-	if (typeof window !== "undefined" && rows.length > 0) {
-		console.log(`📊 makeData called:`, {
+	if (typeof window !== "undefined" && rows.length > 0 && rows[0]) {
+		console.log("📊 makeData called:", {
 			totalRows: rows.length,
-			firstRowHasLeads: rows[0]?.leads?.length > 0,
-			firstLeadInFirstRow: rows[0]?.leads?.[0],
+			firstRowHasLeads: rows[0].leads?.length > 0,
+			firstLeadInFirstRow: rows[0].leads?.[0],
 		});
 	}
 

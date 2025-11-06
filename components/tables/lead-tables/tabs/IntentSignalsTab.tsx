@@ -7,6 +7,7 @@
  * grouped timeline view, and filtering options.
  */
 
+import React from "react";
 import { IntentScoreWidget } from "./IntentScoreWidget";
 import { IntentSignalCard } from "./IntentSignalCard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -97,6 +98,8 @@ function SignalList({
 }
 
 export function IntentSignalsTab({ signals, score }: IntentSignalsTabProps) {
+	const [activeTab, setActiveTab] = React.useState("all");
+
 	// Show empty state if no signals
 	if (!signals || signals.length === 0) {
 		return <EmptyState />;
@@ -116,7 +119,7 @@ export function IntentSignalsTab({ signals, score }: IntentSignalsTabProps) {
 			<IntentScoreWidget score={score} showBreakdown={true} />
 
 			{/* Tabbed View of Signals */}
-			<Tabs defaultValue="all" className="w-full">
+			<Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
 				<TabsList className="grid w-full grid-cols-4">
 					<TabsTrigger value="all">All ({signals.length})</TabsTrigger>
 					<TabsTrigger value="engagement">

@@ -114,12 +114,14 @@ export function generateMockLeads(count: number): LeadTypeGlobal[] {
 		// Enrich leads with intent signals based on their status
 		// Only enrich every 3rd lead to improve performance (lazy load the rest)
 		const shouldEnrich = i % 3 === 0; // 33% of leads get signals immediately
-		
+
 		if (shouldEnrich) {
-			const intentProfile = 
-				lead.status === "Closed" ? "high" :
-				lead.status === "Contacted" ? "medium" :
-				"low";
+			const intentProfile =
+				lead.status === "Closed"
+					? "high"
+					: lead.status === "Contacted"
+						? "medium"
+						: "low";
 			const enrichedLead = enrichLeadWithIntentSignals(lead, intentProfile);
 			leads.push(enrichedLead);
 		} else {
