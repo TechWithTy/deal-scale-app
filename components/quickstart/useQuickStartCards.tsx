@@ -16,6 +16,7 @@ interface UseQuickStartCardsParams {
 	readonly onSelectList: () => void;
 	readonly onConfigureConnections: () => void;
 	readonly onCampaignCreate: () => void;
+	readonly onCreateAbTest: () => void;
 	readonly onViewTemplates: () => void;
 	readonly onOpenWebhookModal: (stage: WebhookStage) => void;
 	readonly onBrowserExtension: () => void;
@@ -49,6 +50,7 @@ export const useQuickStartCards = ({
 	onSelectList,
 	onConfigureConnections,
 	onCampaignCreate,
+	onCreateAbTest,
 	onViewTemplates,
 	onOpenWebhookModal,
 	onBrowserExtension,
@@ -63,6 +65,7 @@ export const useQuickStartCards = ({
 			onSelectList,
 			onConfigureConnections,
 			onCampaignCreate,
+			onCreateAbTest,
 			onViewTemplates,
 			onBrowserExtension,
 			onStartNewSearch,
@@ -82,19 +85,24 @@ export const useQuickStartCards = ({
 				const handler = handlerMap[descriptor.handler];
 				if (!handler) {
 					logMissingHandler(descriptor.id);
-					return { ...base, onClick: () => {} };
+					return { ...base, onClick: () => {}, isRoute: false };
 				}
 
-				return { ...base, onClick: handler };
+				return { ...base, onClick: handler, isRoute: false };
 			}
 
 			if (descriptor.kind === "route") {
-				return { ...base, onClick: createRouterPush(descriptor.href) };
+				return {
+					...base,
+					onClick: createRouterPush(descriptor.href),
+					isRoute: true, // Mark as route action for visual indicator
+				};
 			}
 
 			return {
 				...base,
 				onClick: () => onOpenWebhookModal(descriptor.stage),
+				isRoute: false,
 			};
 		};
 
@@ -118,6 +126,7 @@ export const useQuickStartCards = ({
 		onSelectList,
 		onConfigureConnections,
 		onCampaignCreate,
+		onCreateAbTest,
 		onViewTemplates,
 		onOpenWebhookModal,
 		onBrowserExtension,

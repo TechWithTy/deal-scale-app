@@ -14,7 +14,7 @@
 - Synchronous updates (toasts, router.push) during boundary transitions.
 - CampaignModalMain auto-pushed to campaigns when `onCampaignLaunched` missing.
 - Toaster mounted in server layout contributed to updates during boundaries.
-- Route mismatch (`/dashboard/lead-lists` invalid).
+- Route mismatch (`/dashboard/lead-list` invalid).
 - Some stores using `create` emitted deprecation warning and extra churn.
 
 **Changes Applied**
@@ -38,7 +38,7 @@
 
 **What Didn’t Work**
 - Only deferring router pushes — still redirected when `onCampaignLaunched` wasn’t wired.
-- Using `/dashboard/lead-lists` — route not found; caused boundary loop.
+- Using `/dashboard/lead-list` — route not found; caused boundary loop.
 - Treating source map 404s as root cause — they are unrelated.
 
 **Current Behavior**

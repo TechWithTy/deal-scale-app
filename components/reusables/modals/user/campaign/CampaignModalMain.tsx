@@ -49,6 +49,8 @@ interface CampaignModalMainProps {
 		campaignId: string;
 		channelType: string;
 	}) => void;
+	initialCampaignData?: CallCampaign | EmailCampaign | DirectMailCampaign;
+	isVariantMode?: boolean;
 }
 
 const allChannels: ("directmail" | "call" | "text" | "social")[] = [
@@ -134,12 +136,16 @@ const CampaignModalMain: FC<CampaignModalMainProps> = ({
 	initialStep = 0,
 	defaultChannel,
 	onCampaignLaunched,
+	initialCampaignData,
+	isVariantMode = false,
 }) => {
 	console.log("🔧 CAMPAIGN MODAL DEBUG - Component rendering", {
 		isOpen,
 		initialStep,
 		defaultChannel,
 		hasOnCampaignLaunched: !!onCampaignLaunched,
+		isVariantMode,
+		hasInitialCampaignData: !!initialCampaignData,
 	});
 
 	const registerLaunchedCampaign = useCampaignStore(
@@ -322,6 +328,44 @@ const CampaignModalMain: FC<CampaignModalMainProps> = ({
 			});
 		}
 	});
+
+	// Pre-fill campaign data when in variant mode
+	useEffect(() => {
+		if (!isOpen || !isVariantMode || !initialCampaignData) return;
+
+		campaignDebugLog("variant-mode-prefill", {
+			campaignId: initialCampaignData.id,
+			campaignName: initialCampaignData.name,
+		});
+
+		// Enable A/B testing
+		setAbTestingEnabled(true);
+
+		// Set campaign name with variant suffix
+		const baseName = initialCampaignData.name
+			.replace(/\s*\(Variant[^)]*\)$/i, "")
+			.trim();
+		setCampaignName(`${baseName} (Variant B)`);
+
+		// Set channel based on campaign type
+		if ("callInformation" in initialCampaignData) {
+			setPrimaryChannel("call");
+		} else if ("emails" in initialCampaignData) {
+			setPrimaryChannel("email");
+		} else if (
+			"sentCount" in initialCampaignData &&
+			"listCount" in initialCampaignData
+		) {
+			setPrimaryChannel("directmail");
+		} else {
+			setPrimaryChannel("social");
+		}
+
+		// Set step to 1 (customization) to skip channel selection
+		setStep(1);
+
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [isOpen, isVariantMode, initialCampaignData]);
 
 	useEffect(() => {
 		if (!campaignModalDebugEnabled) return;
@@ -1193,7 +1237,7 @@ const CampaignModalMain: FC<CampaignModalMainProps> = ({
 	return (
 		<Dialog open={isOpen} onOpenChange={handleDialogOpenChange}>
 			<DialogContent className="-translate-x-1/2 -translate-y-1/2 fixed top-1/2 left-1/2 z-50 flex h-[85vh] max-h-[85vh] min-h-0 w-full max-w-xl flex-col gap-0 overflow-hidden rounded-xl border bg-background p-0 text-foreground shadow-lg outline-none">
-				<div className="min-h-0 flex-1 overflow-y-auto bg-card px-6 pr-7 pb-6 text-card-foreground">
+				<div className="min-h-0 flex-1 overflow-y-auto bg-card px-6 pt-6 pb-6 text-card-foreground">
 					{step === 0 && (
 						<ChannelSelectionStep
 							onNext={nextStep}
@@ -1228,10 +1272,12 @@ const CampaignModalMain: FC<CampaignModalMainProps> = ({
 					)}
 
 					{/* Debug Log - Shows all selected campaign settings */}
-					<CampaignSettingsDebug
-						formData={watchedCustomizationValues}
-						campaignCost={campaignCost}
-					/>
+					{campaignModalDebugEnabled && (
+						<CampaignSettingsDebug
+							formData={watchedCustomizationValues}
+							campaignCost={campaignCost}
+						/>
+					)}
 				</div>
 			</DialogContent>
 			<EvaluationReportModal

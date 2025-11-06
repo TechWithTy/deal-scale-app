@@ -6,6 +6,7 @@ import type {
 } from "@/components/quickstart/types";
 import { useQuickStartCards } from "@/components/quickstart/useQuickStartCards";
 import type { WebhookStage } from "@/lib/stores/dashboard";
+import { Sparkles } from "lucide-react";
 
 interface QuickStartCardViewModelParams {
 	readonly bulkCsvFile: File | null;
@@ -14,6 +15,7 @@ interface QuickStartCardViewModelParams {
 	readonly onSelectList: () => void;
 	readonly onConfigureConnections: () => void;
 	readonly onCampaignCreate: () => void;
+	readonly onCreateAbTest: () => void;
 	readonly onViewTemplates: () => void;
 	readonly onOpenWebhookModal: (stage: WebhookStage) => void;
 	readonly onBrowserExtension: () => void;
@@ -41,30 +43,29 @@ const enhanceCard = (
 			<div className="text-center text-muted-foreground text-sm">
 				<p className="font-medium">{bulkCsvFile.name}</p>
 				<p className="text-xs">{bulkCsvHeaders.length} columns detected</p>
-				<p className="text-xs">We’ll open the list wizard to finish setup.</p>
+				<p className="text-xs">We'll open the list wizard to finish setup.</p>
 			</div>
 		) : (
 			card.footer
 		);
 
-	if (!card.wizardPreset) {
-		return { ...card, footer };
+	// Only add "Guided Setup" button to the main wizard card
+	if (card.key === "wizard") {
+		const actions = [
+			{
+				label: "Guided Setup",
+				icon: Sparkles,
+				variant: "default" as const,
+				onClick: () => {
+					onLaunchWizard(card.wizardPreset, () => {});
+				},
+			},
+		];
+		return { ...card, footer, actions };
 	}
 
-	const actions = card.actions.map((action, index) => {
-		if (index !== 0) {
-			return action;
-		}
-
-		return {
-			...action,
-			onClick: () => {
-				onLaunchWizard(card.wizardPreset, action.onClick);
-			},
-		};
-	});
-
-	return { ...card, footer, actions };
+	// For all other cards, return unchanged (no "Guided Setup" button)
+	return { ...card, footer };
 };
 
 export const useQuickStartCardViewModel = (
@@ -75,6 +76,7 @@ export const useQuickStartCardViewModel = (
 		onSelectList: params.onSelectList,
 		onConfigureConnections: params.onConfigureConnections,
 		onCampaignCreate: params.onCampaignCreate,
+		onCreateAbTest: params.onCreateAbTest,
 		onViewTemplates: params.onViewTemplates,
 		onOpenWebhookModal: params.onOpenWebhookModal,
 		onBrowserExtension: params.onBrowserExtension,
