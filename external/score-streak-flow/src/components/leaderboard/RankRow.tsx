@@ -25,6 +25,7 @@ import { ScoreBlock } from "./ScoreBlock";
 import { CreditRequestPopover } from "./CreditRequestPopover";
 import { DonationPopover } from "./DonationPopover";
 import { buildTopRowExtras } from "./utils";
+import { BorderBeam } from "@root/components/magicui/border-beam";
 
 interface RankRowProps {
 	player: Player;
@@ -51,7 +52,7 @@ export const RankRow = ({ player, isCurrentUser = false }: RankRowProps) => {
 			exit={{ opacity: 0, y: -10 }}
 			transition={{ duration: 0.3, ease: "easeInOut" }}
 			className={cn(
-				"relative flex items-center gap-4 rounded-lg border p-4 transition-all duration-smooth",
+				"relative flex flex-col gap-2 rounded-lg border px-4 py-2 transition-all duration-smooth sm:px-3 sm:py-3 md:flex-row md:items-center md:gap-4 md:p-4",
 				"group cursor-pointer hover:shadow-card",
 				isCurrentUser && "border-primary bg-primary/5 ring-1 ring-primary/20",
 				hasRankChanged && rankImproved && "animate-rank-up",
@@ -64,52 +65,67 @@ export const RankRow = ({ player, isCurrentUser = false }: RankRowProps) => {
 			)}
 		>
 			{isChampion && (
-				<div className="pointer-events-none absolute top-0 right-0 left-0 h-0.5 animate-pulse bg-gradient-to-r from-transparent via-destructive/70 to-transparent" />
+				<>
+					<BorderBeam
+						size={250}
+						duration={8}
+						delay={0}
+						colorFrom="#fbbf24"
+						colorTo="#f59e0b"
+					/>
+					<div className="pointer-events-none absolute top-0 right-0 left-0 h-0.5 animate-pulse bg-gradient-to-r from-transparent via-destructive/70 to-transparent" />
+				</>
 			)}
 			{isChampion && (
-				<div className="-top-2 -right-2 absolute rounded bg-destructive px-2 py-0.5 text-[10px] text-destructive-foreground shadow-md">
+				<div className="-top-2 -right-2 absolute hidden rounded-md border-2 border-yellow-600 bg-gradient-to-r from-yellow-500 to-yellow-600 px-2 py-1 text-xs font-bold text-white shadow-lg md:block dark:border-yellow-500 dark:from-yellow-600 dark:to-yellow-700 dark:text-white">
 					#1 Champion 🏆
 				</div>
 			)}
-			{/* Rank Badge */}
-			<RankHighlight
-				rank={player.rank}
-				isCurrentUser={isCurrentUser}
-				className="shrink-0"
-			/>
+			{/* Mobile: Rank + Avatar + Info in a row, Score below */}
+			{/* Desktop: Rank + Avatar + Info + Score in a row */}
+			<div className="flex w-full flex-col items-center gap-2 md:w-auto md:flex-1 md:flex-row md:items-start md:gap-3">
+				{/* Rank + Avatar row on mobile, inline on desktop */}
+				<div className="flex items-center gap-2 md:contents">
+				{/* Rank Badge */}
+				<RankHighlight
+					rank={player.rank}
+					isCurrentUser={isCurrentUser}
+					className="h-10 w-14 shrink-0 sm:h-8 sm:w-12"
+				/>
 
-			{/* Player Avatar */}
-			<Avatar
-				className={cn(
-					"relative shrink-0 border-2 transition-colors duration-smooth",
-					isChampion
-						? "scale-110 border-destructive shadow-destructive/30 shadow-md"
-						: isTop3
-							? "border-primary shadow-md shadow-primary/20"
-							: "border-border group-hover:border-primary/30",
-				)}
-			>
-				<AvatarImage src={player.avatar} alt={`${player.username}'s avatar`} />
-				<AvatarFallback className="bg-gradient-primary font-semibold text-primary-foreground">
-					{player.username.substring(0, 2).toUpperCase()}
-				</AvatarFallback>
-				{isChampion && (
-					<>
-						<div
-							className="-inset-1 absolute rounded-full bg-destructive/15 blur-md"
-							aria-hidden="true"
-						/>
-						<Crown
-							className="-top-2 -left-2 absolute h-4 w-4 text-destructive drop-shadow"
-							aria-hidden="true"
-						/>
-					</>
-				)}
-			</Avatar>
+				{/* Player Avatar */}
+				<Avatar
+					className={cn(
+						"relative h-12 w-12 shrink-0 border-2 transition-colors duration-smooth sm:h-12 sm:w-12",
+						isChampion
+							? "scale-110 border-destructive shadow-destructive/30 shadow-md"
+							: isTop3
+								? "border-primary shadow-md shadow-primary/20"
+								: "border-border group-hover:border-primary/30",
+					)}
+				>
+					<AvatarImage src={player.avatar} alt={`${player.username}'s avatar`} />
+					<AvatarFallback className="bg-gradient-primary font-semibold text-primary-foreground">
+						{player.username.substring(0, 2).toUpperCase()}
+					</AvatarFallback>
+					{isChampion && (
+						<>
+							<div
+								className="-inset-1 absolute rounded-full bg-destructive/15 blur-md"
+								aria-hidden="true"
+							/>
+							<Crown
+								className="-top-2 -left-2 absolute h-4 w-4 text-destructive drop-shadow"
+								aria-hidden="true"
+							/>
+						</>
+					)}
+				</Avatar>
+				</div>
 
-			{/* Player Info */}
-			<div className="min-w-0 flex-1">
-				<div className="mb-1 flex items-center gap-2">
+				{/* Player Info */}
+				<div className="w-full min-w-0 text-center md:w-auto md:flex-1 md:text-left">
+				<div className="mb-0.5 flex flex-wrap items-center justify-center gap-2 md:mb-1 md:justify-start md:gap-3">
 					<PlayerTitle
 						player={player}
 						isCurrentUser={isCurrentUser}
@@ -118,56 +134,55 @@ export const RankRow = ({ player, isCurrentUser = false }: RankRowProps) => {
 					{isTop3 &&
 						(isChampion ? (
 							<Badge
-								variant="destructive"
-								className="flex items-center gap-1 px-2.5 py-0.5 text-[11px]"
+								className="flex items-center gap-1 border-2 border-yellow-600 bg-gradient-to-r from-yellow-500 to-yellow-600 px-2 py-1 text-xs font-bold text-white shadow-lg sm:gap-1.5 sm:px-3 sm:text-sm dark:border-yellow-500 dark:from-yellow-600 dark:to-yellow-700 dark:text-white"
 							>
-								<Medal className="h-3.5 w-3.5" />
+								<Medal className="h-4 w-4 sm:h-4 sm:w-4" />
 								Champion
 							</Badge>
 						) : (
-							<Badge variant="secondary" className="flex items-center gap-1">
-								<Medal
-									className={cn(
-										"h-3.5 w-3.5",
-										player.rank === 2 && "text-gray-400",
-										player.rank === 3 && "text-amber-700",
-									)}
-								/>
+							<Badge className={cn(
+								"flex items-center gap-1 border-2 px-2 py-1 text-xs font-semibold text-white shadow-md sm:gap-1.5 sm:text-sm dark:text-white",
+								player.rank === 2 && "border-gray-400 bg-gradient-to-r from-gray-400 to-gray-500 dark:border-gray-500 dark:from-gray-600 dark:to-gray-700",
+								player.rank === 3 && "border-orange-600 bg-gradient-to-r from-orange-600 to-orange-700 dark:border-orange-500 dark:from-orange-600 dark:to-orange-700"
+							)}>
+								<Medal className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
 								{player.rank === 2 ? "Silver" : "Bronze"}
 							</Badge>
 						))}
 					{!isTop3 && isTop10 && (
-						<Badge variant="outline" className="text-xs">
+						<Badge className="border-2 border-purple-600 bg-gradient-to-r from-purple-600 to-purple-700 px-2 py-1 text-xs font-semibold text-white shadow-md sm:text-sm dark:border-purple-500 dark:from-purple-600 dark:to-purple-700 dark:text-white">
 							Top 10
 						</Badge>
 					)}
 
 					{/* Online Status */}
 					<OnlineStatus isOnline={player.isOnline} />
-				</div>
 
-				{(player.city || player.state || player.company) && (
-					<div
-						className="mb-2 truncate text-muted-foreground text-xs"
-						aria-label="Location and company"
-					>
-						<span>
+					{/* Location & Company - Now inline */}
+					{(player.city || player.state || player.company) && (
+						<span className="truncate text-muted-foreground text-xs">
 							{player.city ? `${player.city}` : ""}
 							{player.city && player.state ? ", " : ""}
 							{player.state ?? ""}
+							{(player.city || player.state) && player.company ? " • " : ""}
+							{player.company ?? ""}
 						</span>
-						{(player.city || player.state) && player.company ? " • " : ""}
-						<span>{player.company ?? ""}</span>
-					</div>
-				)}
+					)}
+				</div>
+				{/* Champion Message - mobile only, inline on desktop */}
 				{isChampion && (
-					<div className="mb-2 text-destructive text-xs">
-						You're #1 — others are closing in. Hold the lead!
+					<div className="mt-1 text-destructive text-xs font-medium md:mt-0 md:hidden">
+						You're #1 — others are closing in!
 					</div>
 				)}
 
 				{/* Row 1: Prediction + Reputation */}
-				<div className="flex items-center gap-2">
+				<div className="mt-1 flex flex-wrap items-center justify-center gap-2 md:mt-0 md:justify-start md:gap-3">
+					{isChampion && (
+						<span className="hidden text-destructive text-xs font-medium md:inline">
+							You're #1 — others are closing in!
+						</span>
+					)}
 					<PredictionBadge
 						currentRank={player.rank}
 						predictedRank={player.prediction}
@@ -197,11 +212,11 @@ export const RankRow = ({ player, isCurrentUser = false }: RankRowProps) => {
 								className={cn(
 									"inline-flex items-center justify-center rounded-sm border px-1.5 py-0.5 text-[10px] leading-none",
 									player.reputationDelta === 1 &&
-										"border-green-200 text-green-600",
+										"border-green-200 bg-green-50 text-green-600 dark:bg-green-950/30",
 									player.reputationDelta === -1 &&
-										"border-red-200 text-red-600",
+										"border-red-200 bg-red-50 text-red-600 dark:bg-red-950/30",
 									player.reputationDelta === 0 &&
-										"border-muted text-muted-foreground",
+										"border-muted bg-muted/30 text-muted-foreground",
 								)}
 								title={
 									player.reputationDelta === 1
@@ -224,10 +239,10 @@ export const RankRow = ({ player, isCurrentUser = false }: RankRowProps) => {
 					</div>
 				</div>
 
-				{/* Row 2: Outbound icons */}
+				{/* Row 2: Outbound icons + Request/Donation chips (all inline) */}
 				<div
-					className="mt-2 flex items-center gap-2"
-					aria-label="Outbound actions"
+					className="mt-1.5 flex w-full flex-wrap items-center justify-center gap-2 md:mt-1 md:w-auto md:justify-start md:gap-3"
+					aria-label="Actions"
 				>
 					{/* Chat */}
 					<Button
@@ -235,7 +250,7 @@ export const RankRow = ({ player, isCurrentUser = false }: RankRowProps) => {
 						asChild
 						variant="ghost"
 						size="icon"
-						className="h-8 w-8"
+						className="h-9 w-9 sm:h-8 sm:w-8"
 						title="Open chat in new tab"
 					>
 						<a
@@ -253,7 +268,7 @@ export const RankRow = ({ player, isCurrentUser = false }: RankRowProps) => {
 						asChild
 						variant="ghost"
 						size="icon"
-						className="h-8 w-8"
+						className="h-9 w-9 sm:h-8 sm:w-8"
 						title="Start video call in new tab"
 					>
 						<a
@@ -271,7 +286,7 @@ export const RankRow = ({ player, isCurrentUser = false }: RankRowProps) => {
 						asChild
 						variant="ghost"
 						size="icon"
-						className="h-8 w-8"
+						className="h-9 w-9 sm:h-8 sm:w-8"
 						title="Add friend"
 					>
 						<a
@@ -283,20 +298,16 @@ export const RankRow = ({ player, isCurrentUser = false }: RankRowProps) => {
 							<UserPlus className="h-4 w-4" />
 						</a>
 					</Button>
-				</div>
-
-				{/* Row 3: Request/Donation chips */}
-				<div
-					className="mt-2 flex items-center gap-2"
-					aria-label="Credit actions"
-				>
+					
+					{/* Credit actions inline with other buttons */}
 					{canRequestCredits && <CreditRequestPopover player={player} />}
 					{!isTop10 && <DonationPopover player={player} />}
 				</div>
+				</div>
 			</div>
 
-			{/* Score */}
-			<div className={cn(isChampion && "scale-[1.05] drop-shadow-sm")}>
+			{/* Score - Mobile: below player info with reduced spacing, Desktop: right side */}
+			<div className={cn("mt-1 md:mt-0 md:shrink-0", isChampion && "md:scale-[1.05] md:drop-shadow-sm")}>
 				<ScoreBlock
 					score={player.score}
 					hasRankChanged={!!hasRankChanged}
@@ -307,6 +318,8 @@ export const RankRow = ({ player, isCurrentUser = false }: RankRowProps) => {
 							? player.rank - player.previousRank
 							: undefined
 					}
+					city={player.city}
+					dealsCount={player.dealsCount}
 				/>
 			</div>
 		</MotionDiv>

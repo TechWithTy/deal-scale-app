@@ -30,14 +30,15 @@ export const LeaderboardSettingsPanel = ({
 			<summary className="cursor-pointer font-medium text-sm">
 				Customize Settings
 			</summary>
-			<div className="mt-2 grid grid-cols-2 gap-4 rounded bg-muted p-4">
-				<div className="col-span-2 flex items-center gap-2">
+			<div className="mt-2 grid grid-cols-1 gap-3 rounded bg-muted p-3 sm:grid-cols-2 sm:gap-4 sm:p-4">
+				<div className="flex items-center gap-2 sm:col-span-2">
 					{animationEnabled ? (
 						<Button
 							type="button"
 							size="sm"
 							variant="destructive"
 							onClick={() => setAnimationEnabled(false)}
+							className="flex-1 sm:flex-initial"
 						>
 							<Square className="mr-2 h-4 w-4" /> Stop
 						</Button>
@@ -47,6 +48,7 @@ export const LeaderboardSettingsPanel = ({
 							size="sm"
 							variant="default"
 							onClick={() => setAnimationEnabled(true)}
+							className="flex-1 sm:flex-initial"
 						>
 							<Play className="mr-2 h-4 w-4" /> Play
 						</Button>

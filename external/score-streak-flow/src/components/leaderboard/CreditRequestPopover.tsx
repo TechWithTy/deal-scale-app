@@ -20,6 +20,7 @@ export const CreditRequestPopover = ({ player }: CreditRequestPopoverProps) => {
 	const [open, setOpen] = React.useState(false);
 	const [creditsRequested, setCreditsRequested] = React.useState<string>("");
 	const [markupPercentage, setMarkupPercentage] = React.useState<string>("");
+	const [netTerms, setNetTerms] = React.useState<string>("30");
 	const [paybackDate, setPaybackDate] = React.useState<string>("");
 	const [termsLink, setTermsLink] = React.useState<string>("");
 
@@ -31,24 +32,24 @@ export const CreditRequestPopover = ({ player }: CreditRequestPopoverProps) => {
 		// creditType provided by backend via player.creditType; no selection required in UI
 		if (!Number.isFinite(amount) || amount <= 0) {
 			toast({
-				title: "Invalid amount",
-				description: "Please enter a valid Credits Requested amount (> 0).",
+				title: "Invalid credit amount",
+				description: "Enter a valid amount greater than 0.",
 				variant: "destructive",
 			});
 			return;
 		}
 		if (!Number.isFinite(markup) || markup <= 0) {
 			toast({
-				title: "Markup must be greater than 0",
-				description: "Please enter a markup percentage greater than 0.",
+				title: "Invalid interest rate",
+				description: "Enter an interest rate greater than 0%.",
 				variant: "destructive",
 			});
 			return;
 		}
 		if (!paybackDate) {
 			toast({
-				title: "Payback Date required",
-				description: "Please select a payback date.",
+				title: "Due date required",
+				description: "Select a due date for payback.",
 				variant: "destructive",
 			});
 			return;
@@ -64,6 +65,7 @@ export const CreditRequestPopover = ({ player }: CreditRequestPopoverProps) => {
 				creditType: player.creditType ?? null,
 				creditsRequested: amount,
 				markupPercentage: markup,
+				netTerms: Number(netTerms),
 				paybackDate: paybackDate || null,
 				termsLink: termsLink || null,
 				createdAt: new Date().toISOString(),
@@ -72,18 +74,19 @@ export const CreditRequestPopover = ({ player }: CreditRequestPopoverProps) => {
 			window.localStorage.setItem(key, JSON.stringify(existing));
 
 			toast({
-				title: "Your request has been submitted",
-				description: `Saved under ${player.username}.`,
+				title: "Credit offer submitted",
+				description: `Your ${player.creditType ?? "credit"} offer has been saved.`,
 			});
 			setOpen(false);
 			setCreditsRequested("");
 			setMarkupPercentage("");
+			setNetTerms("30");
 			setPaybackDate("");
 			setTermsLink("");
 		} catch (e) {
 			toast({
-				title: "Unable to save request",
-				description: "Please try again later.",
+				title: "Unable to save offer",
+				description: "Please try again.",
 				variant: "destructive",
 			});
 		}
@@ -105,17 +108,20 @@ export const CreditRequestPopover = ({ player }: CreditRequestPopoverProps) => {
 			</PopoverTrigger>
 			<PopoverContent className="w-80" align="end">
 				<div className="space-y-3">
-					<p className="text-muted-foreground text-xs">
-						Leaders are requesting credits. Fill in the details below to submit
-						your request.
-					</p>
+					<div>
+						<h3 className="font-semibold text-base text-foreground">Credits Offered</h3>
+						<p className="mt-1 text-muted-foreground text-sm">
+							Offer credits with interest terms below.
+						</p>
+					</div>
 					{/* Credit Type UI removed per spec; button label shows type */}
 					<div>
-						<Label htmlFor={`credits-${player.id}`}>Credits Requested</Label>
+						<Label htmlFor={`credits-${player.id}`}>Credit Amount</Label>
 						<Input
 							id={`credits-${player.id}`}
 							type="number"
 							inputMode="numeric"
+							placeholder="e.g., 100"
 							value={creditsRequested}
 							onChange={(e: {
 								target: { value: React.SetStateAction<string> };
@@ -123,23 +129,36 @@ export const CreditRequestPopover = ({ player }: CreditRequestPopoverProps) => {
 						/>
 					</div>
 					<div>
-						<Label htmlFor={`markup-${player.id}`}>Markup Percentage</Label>
+						<Label htmlFor={`markup-${player.id}`}>Interest Rate (%)</Label>
 						<Input
 							id={`markup-${player.id}`}
 							type="number"
 							inputMode="numeric"
-							step="0.01"
+							step="0.1"
+							placeholder="e.g., 5.0"
 							value={markupPercentage}
 							onChange={(e: {
 								target: { value: React.SetStateAction<string> };
 							}) => setMarkupPercentage(e.target.value)}
 						/>
-						<p className="mt-1 text-muted-foreground text-xs">
-							Must be greater than 0
-						</p>
 					</div>
 					<div>
-						<Label htmlFor={`payback-${player.id}`}>Payback Date</Label>
+						<Label htmlFor={`net-terms-${player.id}`}>Net Terms (Days)</Label>
+						<select
+							id={`net-terms-${player.id}`}
+							value={netTerms}
+							onChange={(e) => setNetTerms(e.target.value)}
+							className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+						>
+							<option value="15">Net 15</option>
+							<option value="30">Net 30</option>
+							<option value="45">Net 45</option>
+							<option value="60">Net 60</option>
+							<option value="90">Net 90</option>
+						</select>
+					</div>
+					<div>
+						<Label htmlFor={`payback-${player.id}`}>Due Date</Label>
 						<Input
 							id={`payback-${player.id}`}
 							type="date"
@@ -150,11 +169,11 @@ export const CreditRequestPopover = ({ player }: CreditRequestPopoverProps) => {
 						/>
 					</div>
 					<div>
-						<Label htmlFor={`terms-${player.id}`}>Terms (optional link)</Label>
+						<Label htmlFor={`terms-${player.id}`}>Terms Link (optional)</Label>
 						<Input
 							id={`terms-${player.id}`}
 							type="url"
-							placeholder="https://example.com/terms"
+							placeholder="https://terms-link.com"
 							value={termsLink}
 							onChange={(e: {
 								target: { value: React.SetStateAction<string> };
