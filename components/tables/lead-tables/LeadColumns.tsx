@@ -105,6 +105,47 @@ export const leadListColumns: ColumnDef<LeadTypeGlobal>[] = [
 		},
 	},
 	{
+		id: "intentScore",
+		header: "Intent",
+		accessorFn: (row) => (row as LeadTypeGlobal).intentScore?.total ?? 0,
+		cell: ({ row }: { row: Row<LeadTypeGlobal> }) => {
+			const score = row.original.intentScore;
+			if (!score || score.total === 0) {
+				return (
+					<Badge variant="outline" className="text-xs">
+						No Data
+					</Badge>
+				);
+			}
+
+			const getVariant = ():
+				| "default"
+				| "secondary"
+				| "outline"
+				| "destructive" => {
+				if (score.level === "high") return "default";
+				if (score.level === "medium") return "secondary";
+				return "outline";
+			};
+
+			const getColor = () => {
+				if (score.level === "high") return "text-green-600 dark:text-green-400";
+				if (score.level === "medium")
+					return "text-yellow-600 dark:text-yellow-400";
+				return "text-gray-600 dark:text-gray-400";
+			};
+
+			return (
+				<div className="flex items-center gap-2">
+					<span className={`font-semibold ${getColor()}`}>{score.total}</span>
+					<Badge variant={getVariant()} className="capitalize text-xs">
+						{score.level}
+					</Badge>
+				</div>
+			);
+		},
+	},
+	{
 		accessorKey: "download",
 		header: "Download",
 		cell: EmailDownloadCell,

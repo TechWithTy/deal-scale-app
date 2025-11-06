@@ -91,6 +91,11 @@ export type LeadTypeGlobal = {
 	domain?: string;
 	birthday?: string;
 	anniversary?: string;
+	// Intent signal tracking
+	intentSignals?: import("./intentSignals").IntentSignal[];
+	intentScore?: import("./intentSignals").IntentScore;
+	/** ISO timestamp of last intent signal activity */
+	lastIntentActivity?: string;
 };
 
 // Lead List Types
