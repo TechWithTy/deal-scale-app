@@ -100,13 +100,42 @@ export default function LeadsDemoTable({
 
 	return (
 		<main className="container mx-auto max-w-7xl space-y-6 p-6">
-			<header className="space-y-1">
-				<h1 className="font-semibold text-2xl tracking-tight">
-					External Table Demo
-				</h1>
-				<p className="text-muted-foreground text-sm">
-					Sorting, global search, and pagination using TanStack Table.
-				</p>
+			<header className="flex flex-col items-center gap-4 text-center sm:flex-row sm:items-start sm:justify-between sm:text-left">
+				<div className="flex-1 space-y-2">
+					<h1 className="text-3xl font-bold tracking-tight text-foreground">
+						Lead Lists
+					</h1>
+					<p className="text-sm leading-relaxed text-muted-foreground">
+						Manage lead data, run A/B tests, download lists, and launch campaigns
+						with advanced sorting and search.
+					</p>
+				</div>
+				<button
+					type="button"
+					onClick={() => {
+						if (typeof window !== "undefined") {
+							window.dispatchEvent(new Event("dealScale:helpFab:show"));
+						}
+					}}
+					className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border bg-background text-muted-foreground shadow-sm transition-all hover:border-primary/50 hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+					aria-label="Show help and demo"
+				>
+					<svg
+						xmlns="http://www.w3.org/2000/svg"
+						width="20"
+						height="20"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						strokeWidth="2"
+						strokeLinecap="round"
+						strokeLinejoin="round"
+					>
+						<circle cx="12" cy="12" r="10" />
+						<path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+						<path d="M12 17h.01" />
+					</svg>
+				</button>
 			</header>
 
 			<DataTable<DemoRow>

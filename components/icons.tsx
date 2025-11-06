@@ -1,6 +1,7 @@
 import {
 	AlertTriangle,
 	ArrowRight,
+	BarChart3,
 	Bot,
 	Check,
 	ChevronLeft,
@@ -21,6 +22,7 @@ import {
 	MessageCircle,
 	type LucideIcon,
 	type LucideProps,
+	Minus,
 	Moon,
 	MoreVertical,
 	Pizza,
@@ -28,9 +30,11 @@ import {
 	ScrollText,
 	Search,
 	Settings,
+	Store,
 	SunMedium,
 	Trash,
 	Twitter,
+	Users,
 	Webhook,
 	Unplug,
 	User2Icon,
@@ -76,6 +80,10 @@ export const Icons = {
 	messageCircle: MessageCircle,
 	webhook: Webhook,
 	rss: Rss,
+	store: Store,
+	chart: BarChart3,
+	users: Users,
+	separator: Minus,
 	gitHub: ({ ...props }: LucideProps) => (
 		<svg
 			aria-hidden="true"

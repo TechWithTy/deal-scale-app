@@ -1,7 +1,9 @@
 import ThemeToggle from "@/components/layout/ThemeToggle/theme-toggle";
+import NotificationsDropdown from "@/components/notifications/NotificationsDropdown";
+import LeaderboardDropdown from "@/components/navbar/LeaderboardDropdown";
+import WheelSpinnerDropdown from "@/components/navbar/WheelSpinnerDropdown";
 import { mockSubscriptions } from "@/constants/_faker/profile/userSubscription";
 import { cn } from "@/lib/_utils";
-import { SecurityModal } from "../reusables/modals/user/security";
 import { UpgradeButton } from "../reusables/modals/user/usage/UpgradeModalButton";
 import { MobileSidebar } from "./mobile-sidebar";
 import { UserNav } from "./user-nav";
@@ -18,8 +20,10 @@ export default function Header() {
 						<UpgradeButton currentMembership={currentMembership} />
 					)}
 					<UserNav />
+					<LeaderboardDropdown />
+					<WheelSpinnerDropdown />
+					<NotificationsDropdown />
 					<ThemeToggle />
-					<SecurityModal />
 				</div>
 				<div className={cn("lg:!hidden mx-5 block")}>
 					<MobileSidebar />

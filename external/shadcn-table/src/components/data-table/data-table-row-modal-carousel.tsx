@@ -318,6 +318,59 @@ export function DataTableRowModalCarousel<TData>(
                         : fallbackActivityContent;
 
         const showActivityTab = Boolean(resolvedActivityContent);
+        
+        // Check if lead has intent signals (for IntentSignalsTab)
+        // IMPORTANT: row.original might be a DemoRow (with leads array) or a direct Lead object
+        const rowData = row?.original as any;
+        
+        // Check if this is a DemoRow (has leads array) or a direct Lead
+        const isDemoRow = rowData && Array.isArray(rowData.leads);
+        let leadData = rowData;
+        
+        // If it's a DemoRow, extract the current lead from the leads array
+        // The lead index should be in the modal state or we default to first lead
+        if (isDemoRow && rowData.leads && rowData.leads.length > 0) {
+            // Try to get leadIndex from custom counter prop or use first lead
+            leadData = rowData.leads[0]; // Default to first lead in the row
+        }
+        
+        // Lazy enrich if needed (performance optimization)
+        if (leadData?._needsIntentEnrichment && typeof window !== 'undefined') {
+            try {
+                const { lazyEnrichLead } = require("@/lib/helpers/lazyEnrichIntentSignals");
+                leadData = lazyEnrichLead(leadData);
+            } catch (err) {
+                // Fallback if enrichment fails
+                console.warn("Failed to lazy enrich lead:", err);
+            }
+        }
+        
+        const hasIntentSignals = Boolean(
+            leadData?.intentSignals && 
+            Array.isArray(leadData.intentSignals) && 
+            leadData.intentSignals.length > 0
+        );
+        const showIntentSignalsTab = hasIntentSignals && leadData?.intentScore;
+        
+        // Debug logging
+        if (row && typeof window !== 'undefined') {
+            console.log("🔍 Modal Debug:", {
+                isDemoRow,
+                rowId: rowData?.id,
+                hasLeadsArray: isDemoRow,
+                leadsArrayLength: isDemoRow ? rowData?.leads?.length : "N/A",
+                extractedLeadName: leadData?.name || leadData?.contactInfo?.firstName,
+                hasIntentSignals,
+                signalCount: leadData?.intentSignals?.length || 0,
+                hasIntentScore: !!leadData?.intentScore,
+                scoreTotal: leadData?.intentScore?.total,
+                showIntentSignalsTab,
+            });
+        }
+        
+        // Calculate grid columns based on visible tabs
+        const tabCount = 1 + (showActivityTab ? 1 : 0) + (showIntentSignalsTab ? 1 : 0);
+        const gridCols = tabCount === 3 ? "grid-cols-3" : tabCount === 2 ? "grid-cols-2" : "grid-cols-1";
 
         return (
                 <Dialog open={open} onOpenChange={onOpenChange}>
@@ -334,14 +387,13 @@ export function DataTableRowModalCarousel<TData>(
 				</DialogHeader>
 				<div className="flex-1 overflow-y-auto px-6 py-4">
                                         <Tabs defaultValue="details" className="h-full">
-                                                <TabsList
-                                                        className={`grid w-full ${
-                                                                showActivityTab ? "grid-cols-2" : "grid-cols-1"
-                                                        }`}
-                                                >
+                                                <TabsList className={`grid w-full ${gridCols}`}>
                                                         <TabsTrigger value="details">Lead Details</TabsTrigger>
                                                         {showActivityTab ? (
                                                                 <TabsTrigger value="activity">Activity</TabsTrigger>
+                                                        ) : null}
+                                                        {showIntentSignalsTab ? (
+                                                                <TabsTrigger value="intent-signals">Intent Signals</TabsTrigger>
                                                         ) : null}
                                                 </TabsList>
 
@@ -362,6 +414,21 @@ export function DataTableRowModalCarousel<TData>(
                                                 {showActivityTab ? (
                                                         <TabsContent value="activity" className="mt-4">
                                                                 {resolvedActivityContent}
+                                                        </TabsContent>
+                                                ) : null}
+                                                
+                                                {showIntentSignalsTab ? (
+                                                        <TabsContent value="intent-signals" className="mt-4">
+                                                                {(() => {
+                                                                    // Dynamically import and render IntentSignalsTab
+                                                                    const IntentSignalsTab = require("@/components/tables/lead-tables/tabs/IntentSignalsTab").IntentSignalsTab;
+                                                                    return (
+                                                                        <IntentSignalsTab 
+                                                                            signals={leadData.intentSignals} 
+                                                                            score={leadData.intentScore}
+                                                                        />
+                                                                    );
+                                                                })()}
                                                         </TabsContent>
                                                 ) : null}
 					</Tabs>

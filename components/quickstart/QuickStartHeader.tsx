@@ -15,7 +15,11 @@ const QuickStartHeader: FC<QuickStartHeaderProps> = ({ onOpenWalkthrough }) => (
 		</p>
 		<button
 			type="button"
-			onClick={onOpenWalkthrough}
+			onClick={() => {
+				if (typeof window !== "undefined") {
+					window.dispatchEvent(new Event("dealScale:helpFab:show"));
+				}
+			}}
 			className="absolute top-0 right-0 flex h-10 w-10 items-center justify-center rounded-full border border-transparent text-muted-foreground transition hover:bg-muted"
 		>
 			<HelpCircle className="h-5 w-5" />

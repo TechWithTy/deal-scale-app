@@ -48,29 +48,11 @@ const ChannelSelectionStep: FC<ChannelSelectionStepProps> = ({
 	};
 
 	return (
-		<div
-			className={`mx-auto w-full max-w-md ${
-				typeof window !== "undefined" && window.innerWidth < 640
-					? "px-2"
-					: "px-4"
-			}`}
-		>
-			<h2
-				className={`mb-4 font-semibold ${
-					typeof window !== "undefined" && window.innerWidth < 640
-						? "text-base"
-						: "text-lg"
-				}`}
-			>
+		<div className="mx-auto w-full max-w-md">
+			<h2 className="mb-6 font-semibold text-xl">
 				Select Primary Channel
 			</h2>
-			<div
-				className={`mb-4 flex flex-col gap-3 ${
-					typeof window !== "undefined" && window.innerWidth < 640
-						? "gap-2"
-						: "gap-3"
-				}`}
-			>
+			<div className="mb-6 flex flex-col gap-3">
 				{allChannels.map((channel) => {
 					// Normalize store channel (which uses 'email' for direct mail) to UI channel label
 					type StoreChannel = "email" | "call" | "text" | "social";
@@ -157,33 +139,17 @@ const ChannelSelectionStep: FC<ChannelSelectionStepProps> = ({
 					);
 				})}
 			</div>
-			<div
-				className={`flex justify-end gap-2 ${
-					typeof window !== "undefined" && window.innerWidth < 640
-						? "gap-1"
-						: "gap-2"
-				}`}
-			>
+			<div className="mt-8 flex justify-end gap-3">
 				<Button
 					onClick={onClose}
 					variant="ghost"
 					type="button"
-					className={
-						typeof window !== "undefined" && window.innerWidth < 640
-							? "px-3 py-1 text-sm"
-							: ""
-					}
 				>
 					Cancel
 				</Button>
 				<Button
 					onClick={handleNextStep}
 					type="button"
-					className={
-						typeof window !== "undefined" && window.innerWidth < 640
-							? "px-3 py-1 text-sm"
-							: ""
-					}
 				>
 					Next
 				</Button>

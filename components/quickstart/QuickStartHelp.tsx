@@ -23,9 +23,9 @@ const QuickStartHelp = () => (
 					}}
 				>
 					<iframe
-						src="https://app.supademo.com/embed/cmgpmix8616ou12sxl6bxk80s?embed_v=2&utm_source=embed"
+						src="https://app.supademo.com/embed/cmhjlwt7i0jk4u1hm0scmf39w?embed_v=2&utm_source=embed"
 						loading="lazy"
-						title="Supademo Demo"
+						title="Set Up and Launch Your Sales Campaign on DealScale"
 						allow="clipboard-write"
 						frameBorder="0"
 						allowFullScreen

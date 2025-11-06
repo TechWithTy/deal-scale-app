@@ -4,6 +4,7 @@ import { createWithEqualityFn } from "zustand/traditional";
 import { withAnalytics } from "./_middleware/analytics";
 
 export type WebhookStage = "incoming" | "outgoing" | "feeds";
+export type WebhookCategory = "leads" | "campaigns" | "skiptracing";
 
 interface ModalState {
 	isUsageModalOpen: boolean;
@@ -24,8 +25,10 @@ interface ModalState {
 
 	isWebhookModalOpen: boolean;
 	webhookStage: WebhookStage;
-	openWebhookModal: (stage?: WebhookStage) => void;
+	webhookCategory: WebhookCategory;
+	openWebhookModal: (stage?: WebhookStage, category?: WebhookCategory) => void;
 	setWebhookStage: (stage: WebhookStage) => void;
+	setWebhookCategory: (category: WebhookCategory) => void;
 	closeWebhookModal: () => void;
 
 	isUpgradeModalOpen: boolean;
@@ -35,6 +38,14 @@ interface ModalState {
 	isEmployeeModalOpen: boolean;
 	openEmployeeModal: () => void;
 	closeEmployeeModal: () => void;
+
+	isLeaderboardModalOpen: boolean;
+	openLeaderboardModal: () => void;
+	closeLeaderboardModal: () => void;
+
+	isWheelSpinnerModalOpen: boolean;
+	openWheelSpinnerModal: () => void;
+	closeWheelSpinnerModal: () => void;
 }
 
 export const useModalStore = createWithEqualityFn<ModalState>(
@@ -59,12 +70,15 @@ export const useModalStore = createWithEqualityFn<ModalState>(
 		// Webhook Modal - Correctly tied to isWebhookModalOpen state
 		isWebhookModalOpen: false,
 		webhookStage: "incoming",
-		openWebhookModal: (stage = "incoming") =>
+		webhookCategory: "leads",
+		openWebhookModal: (stage = "incoming", category = "leads") =>
 			set({
 				isWebhookModalOpen: true,
 				webhookStage: stage,
+				webhookCategory: category,
 			}),
 		setWebhookStage: (stage) => set({ webhookStage: stage }),
+		setWebhookCategory: (category) => set({ webhookCategory: category }),
 		closeWebhookModal: () => set({ isWebhookModalOpen: false }),
 
 		isUpgradeModalOpen: false,
@@ -74,6 +88,14 @@ export const useModalStore = createWithEqualityFn<ModalState>(
 		isEmployeeModalOpen: false,
 		openEmployeeModal: () => set({ isEmployeeModalOpen: true }),
 		closeEmployeeModal: () => set({ isEmployeeModalOpen: false }),
+
+		isLeaderboardModalOpen: false,
+		openLeaderboardModal: () => set({ isLeaderboardModalOpen: true }),
+		closeLeaderboardModal: () => set({ isLeaderboardModalOpen: false }),
+
+		isWheelSpinnerModalOpen: false,
+		openWheelSpinnerModal: () => set({ isWheelSpinnerModalOpen: true }),
+		closeWheelSpinnerModal: () => set({ isWheelSpinnerModalOpen: false }),
 	})),
 	Object.is,
 );

@@ -1,5 +1,12 @@
 import React from "react";
-import { Database, Download, Home, List, Settings, Target } from "lucide-react";
+import {
+	Database,
+	Download,
+	List,
+	Settings,
+	Target,
+	Users,
+} from "lucide-react";
 
 import {
 	greenCardStyles,
@@ -32,22 +39,15 @@ export const secondaryQuickStartCards: readonly QuickStartCardDescriptor[] = [
 				id: "control-download",
 				label: "Download Leads",
 				icon: Download,
-				href: "/dashboard/lead-lists?download=true",
-			}),
-			routeAction({
-				id: "control-abtest",
-				label: "Create A/B Test",
-				icon: List,
-				href: "/dashboard/lead-lists?abtest=true&listname=ai-optimized-leads",
-				variant: "outline",
-				className: outlinePrimary,
+				href: "/dashboard/lead-list?download=true",
 			}),
 			routeAction({
 				id: "control-manage",
 				label: "Manage Leads",
 				icon: Settings,
-				href: "/dashboard/lead-lists",
+				href: "/dashboard/lead-list",
 				variant: "outline",
+				className: outlinePrimary,
 			}),
 		],
 		...primaryCardStyles,
@@ -85,20 +85,20 @@ export const secondaryQuickStartCards: readonly QuickStartCardDescriptor[] = [
 		id: "market-deals",
 		enabled: true,
 		order: 60,
-		title: "Source of Market Deals",
+		title: "Generate Look-Alike Audiences",
 		description:
-			"Find distressed properties and motivated sellers - why some deals spread like wildfire in real estate",
-		icon: Target,
+			"Build targeted audiences by finding people similar to your best customers and leads",
+		icon: Users,
 		featureChips: [
-			{ label: "Distress Signals", tone: "warning" },
+			{ label: "AI Matching", tone: "primary" },
 			{ label: "Geo Targeting", tone: "accent" },
-			{ label: "Off-Market Alerts", tone: "success" },
+			{ label: "People Search", tone: "success" },
 		],
 		actions: [
 			handlerAction({
 				id: "market-start",
-				label: "Start New Search",
-				icon: Target,
+				label: "Generate Look-Alike Audience",
+				icon: Users,
 				handler: "onStartNewSearch",
 			}),
 			handlerAction({
@@ -106,14 +106,6 @@ export const secondaryQuickStartCards: readonly QuickStartCardDescriptor[] = [
 				label: "Saved Searches",
 				icon: List,
 				handler: "onOpenSavedSearches",
-				variant: "outline",
-				className: outlineGreen,
-			}),
-			routeAction({
-				id: "market-distressed",
-				label: "Find Distressed Properties",
-				icon: Home,
-				href: "/dashboard?distressed=true&foreclosure=true",
 				variant: "outline",
 				className: outlineGreen,
 			}),

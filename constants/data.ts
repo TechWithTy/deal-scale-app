@@ -10,6 +10,7 @@ import type {
 	LeadTypeGlobal,
 	SocialLinks,
 } from "@/types/_dashboard/leads";
+import { enrichLeadWithIntentSignals } from "@/lib/helpers/enrichLeadsWithIntentSignals";
 
 //
 // Configuration
@@ -110,14 +111,40 @@ export function generateMockLeads(count: number): LeadTypeGlobal[] {
 						: "DM Opt-out";
 		}
 
-		leads.push(lead);
+		// Enrich leads with intent signals based on their status
+		// Only enrich every 3rd lead to improve performance (lazy load the rest)
+		const shouldEnrich = i % 3 === 0; // 33% of leads get signals immediately
+
+		if (shouldEnrich) {
+			const intentProfile =
+				lead.status === "Closed"
+					? "high"
+					: lead.status === "Contacted"
+						? "medium"
+						: "low";
+			const enrichedLead = enrichLeadWithIntentSignals(lead, intentProfile);
+			leads.push(enrichedLead);
+		} else {
+			// Store a flag for lazy enrichment on first view
+			leads.push({ ...lead, _needsIntentEnrichment: true } as LeadTypeGlobal);
+		}
 	}
 
 	return leads;
 }
 
+// Cache generated leads to avoid regenerating on every import
+let _cachedMockLeads: LeadTypeGlobal[] | null = null;
+
+function getMockGeneratedLeads(): LeadTypeGlobal[] {
+	if (!_cachedMockLeads) {
+		_cachedMockLeads = generateMockLeads(50); // Reduced from 100 to 50 for faster load
+	}
+	return _cachedMockLeads;
+}
+
 export const mockGeneratedLeads = NEXT_PUBLIC_APP_TESTING_MODE
-	? generateMockLeads(100)
+	? getMockGeneratedLeads()
 	: [];
 
 //
@@ -205,11 +232,48 @@ export const navItems: NavItem[] = [
 		featureKey: "navigation.connections",
 	},
 	{
+		title: "Analytics",
+		href: "/dashboard/charts",
+		icon: "chart",
+		label: "Analytics",
+		featureKey: "navigation.charts",
+	},
+	{
 		title: "Employee",
 		href: "/dashboard/employee",
 		icon: "employee",
 		label: "Employees",
 		featureKey: "navigation.employee",
+	},
+	{
+		title: "separator",
+		href: "#",
+		icon: "separator",
+		label: "separator",
+	},
+	{
+		title: "Community",
+		href: "https://discord.gg/BNrsYRPtFN",
+		icon: "users",
+		label: "Community",
+		external: true,
+		badge: "new",
+	},
+	{
+		title: "Marketplace",
+		href: "https://www.dealscale.io/products",
+		icon: "store",
+		label: "Marketplace",
+		external: true,
+		hasSaleItems: true,
+		saleLink: "https://dealscale.io/product/{id}",
+	},
+	{
+		title: "Support",
+		href: "https://dealscale.zohodesk.com/portal/en/home",
+		icon: "help",
+		label: "Support",
+		external: true,
 	},
 	{
 		title: "Logout",

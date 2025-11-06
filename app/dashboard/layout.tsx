@@ -9,6 +9,8 @@ import AiUsageModal from "@/components/reusables/modals/user/usage";
 import { UpgradeModal } from "@/components/reusables/modals/user/usage/UpgradeModal";
 import { WebhookModal } from "@/components/reusables/modals/user/webhooks/WebHookMain";
 import { InviteEmployeeModal } from "@/components/tables/employee-tables/utils/addEmployee";
+import LeaderboardModal from "@/components/reusables/modals/user/leaderboard/LeaderboardModal";
+import WheelSpinnerModal from "@/components/reusables/modals/user/wheel/WheelSpinnerModal";
 import dynamic from "next/dynamic";
 import {
 	MockUserProfile,
@@ -70,6 +72,8 @@ export default async function DashboardLayout({
 			<SecurityModal />
 			<WebhookModal />
 			<UpgradeModal trial={false} />
+			<LeaderboardModal />
+			<WheelSpinnerModal />
 			<SkipTraceDialog />
 		</div>
 	);

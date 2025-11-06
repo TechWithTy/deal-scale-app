@@ -28,7 +28,12 @@ const DialogOverlay = React.forwardRef<
 			// Check if click target is within a toast - if so, don't let overlay handle it
 			const target = e.target as HTMLElement;
 			// Check using composedPath for shadow DOM compatibility
-			const composedPath = e.composedPath() as HTMLElement[];
+			const nativeEvent = e.nativeEvent || e;
+			const composedPath = (
+				typeof nativeEvent.composedPath === "function"
+					? nativeEvent.composedPath()
+					: [target]
+			) as HTMLElement[];
 
 			// Check if any element in the event path is a toast
 			for (const element of composedPath) {
@@ -99,7 +104,12 @@ const DialogOverlay = React.forwardRef<
 		onClick={(e) => {
 			// Same check for onClick - stop propagation to prevent modal close
 			const target = e.target as HTMLElement;
-			const composedPath = e.composedPath() as HTMLElement[];
+			const nativeEvent = e.nativeEvent || e;
+			const composedPath = (
+				typeof nativeEvent.composedPath === "function"
+					? nativeEvent.composedPath()
+					: [target]
+			) as HTMLElement[];
 
 			// Check if any element in the event path is a toast
 			for (const element of composedPath) {
@@ -187,7 +197,12 @@ const DialogContent = React.forwardRef<
 			onInteractOutside={(e) => {
 				// Don't close modal if clicking on toast
 				const target = e.target as HTMLElement;
-				const composedPath = e.composedPath() as HTMLElement[];
+				const nativeEvent = e.nativeEvent || e;
+				const composedPath = (
+					typeof nativeEvent.composedPath === "function"
+						? nativeEvent.composedPath()
+						: [target]
+				) as HTMLElement[];
 
 				// Check if any element in the event path is a toast
 				for (const element of composedPath) {

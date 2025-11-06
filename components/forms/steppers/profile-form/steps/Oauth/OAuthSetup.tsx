@@ -1,3 +1,12 @@
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+	Card,
+	CardContent,
+	CardDescription,
+	CardHeader,
+	CardTitle,
+} from "@/components/ui/card";
 import {
 	FormControl,
 	FormField,
@@ -5,24 +14,22 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/ui/form";
+import type { OAuthData } from "@/types/userProfile/connectedAccounts";
 import type { ProfileFormValues } from "@/types/zod/userSetup/profile-form-schema";
+import {
+	Building2,
+	CheckCircle2,
+	Circle,
+	Facebook,
+	Linkedin,
+} from "lucide-react";
 import type React from "react";
 import { useEffect, useState } from "react";
 import type { UseFormReturn } from "react-hook-form";
-import {
-	FacebookLoginButton,
-	InstagramLoginButton,
-	LinkedInLoginButton,
-	TwitterLoginButton,
-} from "react-social-login-buttons";
 import type { InitialOauthSetupData } from "../../../utils/const/connectedAccounts";
 import HashtagInput from "../../../utils/socials/hashtags";
-
-// * OAuth Setup Step
-// ! This component manages OAuth state for all supported social login providers.
-// * Follows DRY and type-safe patterns (see user rules).
-// * Imports shared OAuthData type for consistency across codebase.
-import type { OAuthData } from "@/types/userProfile/connectedAccounts";
+import SearchTermsInput from "../../../utils/socials/searchTerms";
+import { InviteFriendsCard } from "@/components/reusables/cards/InviteFriendsCard";
 
 /**
  * OAuth Setup Props
@@ -44,6 +51,69 @@ const defaultOAuthData: OAuthData = {
 	refreshToken: "",
 };
 
+interface OAuthProvider {
+	id: string;
+	name: string;
+	description: string;
+	icon: React.ReactNode;
+	color: string;
+	bgColor: string;
+	borderColor: string;
+}
+
+const oauthProviders: OAuthProvider[] = [
+	{
+		id: "meta",
+		name: "Meta (Facebook)",
+		description:
+			"Connect your Facebook business account for social media campaigns",
+		icon: <Facebook className="h-6 w-6" />,
+		color: "text-blue-600",
+		bgColor: "bg-blue-50 dark:bg-blue-950",
+		borderColor: "border-blue-200 dark:border-blue-800",
+	},
+	{
+		id: "linkedIn",
+		name: "LinkedIn",
+		description:
+			"Sync with LinkedIn for professional networking and lead generation",
+		icon: <Linkedin className="h-6 w-6" />,
+		color: "text-blue-700",
+		bgColor: "bg-blue-50 dark:bg-blue-950",
+		borderColor: "border-blue-300 dark:border-blue-800",
+	},
+	{
+		id: "goHighLevel",
+		name: "GoHighLevel",
+		description:
+			"Integrate with GoHighLevel CRM for automated workflows and campaigns",
+		icon: (
+			<svg
+				className="h-6 w-6"
+				viewBox="0 0 24 24"
+				fill="currentColor"
+				aria-label="GoHighLevel icon"
+			>
+				<title>GoHighLevel</title>
+				<path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z" />
+			</svg>
+		),
+		color: "text-green-600",
+		bgColor: "bg-green-50 dark:bg-green-950",
+		borderColor: "border-green-200 dark:border-green-800",
+	},
+	{
+		id: "loftyCRM",
+		name: "Lofty CRM",
+		description:
+			"Connect Lofty CRM for real estate lead management and automation",
+		icon: <Building2 className="h-6 w-6" />,
+		color: "text-purple-600",
+		bgColor: "bg-purple-50 dark:bg-purple-950",
+		borderColor: "border-purple-200 dark:border-purple-800",
+	},
+];
+
 /**
  * OAuth Setup Component
  *
@@ -56,41 +126,43 @@ export const OAuthSetup: React.FC<OAuthSetupProps> = ({
 	initialData,
 }) => {
 	// * State for each provider's OAuth data
-	const [metaData, setMetaData] = useState<OAuthData | null>(null); // * Meta (Facebook) OAuth data
-	const [instagramData, setInstagramData] = useState<OAuthData | null>(null); // * Instagram OAuth data
-	const [twitterData, setTwitterData] = useState<OAuthData | null>(null); // * Twitter OAuth data
-	const [linkedInData, setLinkedInData] = useState<OAuthData | null>(null); // * LinkedIn OAuth data
+	const [oauthStates, setOauthStates] = useState<
+		Record<string, OAuthData | null>
+	>({
+		meta: null,
+		linkedIn: null,
+		goHighLevel: null,
+		loftyCRM: null,
+	});
 
-	// ! Extract initial OAuth and social media tag data from the profile
+	// Generate referral URL client-side only to avoid hydration mismatch
+	const [referralUrl, setReferralUrl] = useState("");
+
+	// Generate referral URL on client side only
+	useEffect(() => {
+		const code = Math.random().toString(36).substring(2, 9).toUpperCase();
+		setReferralUrl(`https://dealscale.app/ref/${code}`);
+	}, []);
+
+	// ! Extract initial OAuth data from the profile
 	useEffect(() => {
 		if (initialData) {
-			setMetaData(initialData.connectedAccounts.facebook ?? null);
-			setInstagramData(initialData.connectedAccounts.instagram ?? null);
-			setTwitterData(initialData.connectedAccounts.twitter ?? null);
-			setLinkedInData(initialData.connectedAccounts.linkedIn ?? null);
+			setOauthStates({
+				meta: initialData.connectedAccounts.facebook ?? null,
+				linkedIn: initialData.connectedAccounts.linkedIn ?? null,
+				goHighLevel: null, // TODO: Add to initialData type
+				loftyCRM: null, // TODO: Add to initialData type
+			});
 		}
 	}, [initialData]);
 
 	// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
 	useEffect(() => {
 		if (initialData) {
-			setMetaData(initialData.connectedAccounts.facebook ?? null);
-			setInstagramData(initialData.connectedAccounts.instagram ?? null);
-			setTwitterData(initialData.connectedAccounts.twitter ?? null);
-			setLinkedInData(initialData.connectedAccounts.linkedIn ?? null);
-
 			// * Set the form values for connected accounts and social media tags
 			form.setValue(
 				"socialMediaCampaignAccounts.oauthData.facebook",
 				initialData.connectedAccounts.facebook ?? defaultOAuthData,
-			);
-			form.setValue(
-				"socialMediaCampaignAccounts.oauthData.instagram",
-				initialData.connectedAccounts.instagram ?? defaultOAuthData,
-			);
-			form.setValue(
-				"socialMediaCampaignAccounts.oauthData.twitter",
-				initialData.connectedAccounts.twitter ?? defaultOAuthData,
 			);
 			form.setValue(
 				"socialMediaCampaignAccounts.oauthData.linkedIn",
@@ -100,143 +172,316 @@ export const OAuthSetup: React.FC<OAuthSetupProps> = ({
 		}
 	}, [initialData]);
 
-	// ! Simulate OAuth login flow for different services
-	const handleOAuthLogin = (service: string) => {
+	// ! Handle OAuth login flow for different services
+	const handleOAuthLogin = (providerId: string) => {
 		const simulatedOAuthData: OAuthData = {
-			accessToken: "abc123",
-			refreshToken: "def456",
+			accessToken: `${providerId}_access_token_${Date.now()}`,
+			refreshToken: `${providerId}_refresh_token_${Date.now()}`,
 			expiresIn: 3600,
 			tokenType: "Bearer",
-			scope: "user_profile",
+			scope: "user_profile,email",
 		};
 
-		switch (service) {
+		// Update state
+		setOauthStates((prev) => ({
+			...prev,
+			[providerId]: simulatedOAuthData,
+		}));
+
+		// Update form values based on provider
+		switch (providerId) {
 			case "meta":
-				setMetaData(simulatedOAuthData);
 				form.setValue(
 					"socialMediaCampaignAccounts.oauthData.facebook",
 					simulatedOAuthData,
-				); // * Set the form value for Meta (Facebook) OAuth
-				break;
-			case "instagram":
-				setInstagramData(simulatedOAuthData);
-				form.setValue(
-					"socialMediaCampaignAccounts.oauthData.instagram",
-					simulatedOAuthData,
-				); // * Set the form value for Instagram OAuth
-				break;
-			case "twitter":
-				setTwitterData(simulatedOAuthData);
-				form.setValue(
-					"socialMediaCampaignAccounts.oauthData.twitter",
-					simulatedOAuthData,
-				); // * Set the form value for Twitter OAuth
+				);
 				break;
 			case "linkedIn":
-				setLinkedInData(simulatedOAuthData);
 				form.setValue(
 					"socialMediaCampaignAccounts.oauthData.linkedIn",
 					simulatedOAuthData,
-				); // * Set the form value for LinkedIn OAuth
+				);
+				break;
+			// TODO: Add form fields for GoHighLevel and Lofty CRM
+			default:
+				break;
+		}
+	};
+
+	// ! Handle disconnect
+	const handleDisconnect = (providerId: string) => {
+		setOauthStates((prev) => ({
+			...prev,
+			[providerId]: null,
+		}));
+
+		// Clear form values
+		switch (providerId) {
+			case "meta":
+				form.setValue(
+					"socialMediaCampaignAccounts.oauthData.facebook",
+					defaultOAuthData,
+				);
+				break;
+			case "linkedIn":
+				form.setValue(
+					"socialMediaCampaignAccounts.oauthData.linkedIn",
+					defaultOAuthData,
+				);
 				break;
 			default:
 				break;
 		}
 	};
 
-	// * Type-safe union for OAuth field names
-	type OAuthFieldName =
-		| "socialMediaCampaignAccounts.oauthData.facebook"
-		| "socialMediaCampaignAccounts.oauthData.instagram"
-		| "socialMediaCampaignAccounts.oauthData.twitter"
-		| "socialMediaCampaignAccounts.oauthData.linkedIn";
-
-	// * Render OAuth buttons with "Refresh Login" if logged in
-	const renderOAuthButton = (
-		serviceData: OAuthData | null,
-		fieldName: OAuthFieldName,
-		buttonComponent: JSX.Element,
-		provider: "meta" | "instagram" | "twitter" | "linkedIn",
-	) => (
-		<FormField
-			control={form.control}
-			name={fieldName}
-			render={({ field, fieldState: { error } }) => (
-				<FormItem>
-					<FormLabel>
-						{provider.charAt(0).toUpperCase() + provider.slice(1)} Login
-					</FormLabel>
-					{serviceData ? (
-						// * If user is already logged in, show Refresh Login button
-						<div className="flex flex-col items-center justify-center">
-							<p className="text-gray-600 text-sm dark:text-gray-300">
-								You are logged in.
-							</p>
-							<button
-								onClick={() => handleOAuthLogin(provider)}
-								type="button"
-								className="mt-2 rounded-lg bg-blue-500 px-4 py-2 font-semibold text-white shadow-md transition-colors duration-300 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 dark:bg-blue-400 dark:focus:ring-blue-300 dark:hover:bg-blue-500"
-							>
-								Refresh Login
-							</button>
-						</div>
-					) : (
-						buttonComponent
-					)}
-					<FormMessage>{error?.message}</FormMessage>
-				</FormItem>
-			)}
-		/>
-	);
-
-	// * Render all OAuth buttons and hashtag input
 	return (
-		<>
-			{/* Facebook/Meta OAuth */}
-			{renderOAuthButton(
-				metaData,
-				"socialMediaCampaignAccounts.oauthData.facebook",
-				<FacebookLoginButton onClick={() => handleOAuthLogin("meta")} />,
-				"meta",
-			)}
-			{/* Instagram OAuth */}
-			{renderOAuthButton(
-				instagramData,
-				"socialMediaCampaignAccounts.oauthData.instagram",
-				<InstagramLoginButton onClick={() => handleOAuthLogin("instagram")} />,
-				"instagram",
-			)}
-			{/* Twitter OAuth */}
-			{renderOAuthButton(
-				twitterData,
-				"socialMediaCampaignAccounts.oauthData.twitter",
-				<TwitterLoginButton onClick={() => handleOAuthLogin("twitter")} />,
-				"twitter",
-			)}
-			{/* LinkedIn OAuth */}
-			{renderOAuthButton(
-				linkedInData,
-				"socialMediaCampaignAccounts.oauthData.linkedIn",
-				<LinkedInLoginButton onClick={() => handleOAuthLogin("linkedIn")} />,
-				"linkedIn",
-			)}
-			{/* Hashtag Input */}
-			<FormField
-				control={form.control}
-				name="socialMediatags"
-				render={({ field, fieldState: { error } }) => (
-					<FormItem>
-						<HashtagInput
-							form={form}
-							loading={loading}
-							minHashtags={5}
-							maxHashtags={10}
-							required={false}
-						/>
-						<FormMessage>{error?.message}</FormMessage>
-					</FormItem>
+		<div className="space-y-6">
+			<div>
+				<h3 className="mb-2 font-semibold text-lg">Connected Accounts</h3>
+				<p className="text-muted-foreground text-sm">
+					Connect your business accounts to enable automated campaigns, lead
+					management, and social media integration.
+				</p>
+			</div>
+
+			<div className="grid gap-4 md:grid-cols-2">
+				{oauthProviders.map((provider) => {
+					const isConnected = !!oauthStates[provider.id];
+
+					return (
+						<Card
+							key={provider.id}
+							className={`transition-all ${
+								isConnected
+									? `border-2 shadow-lg hover:shadow-xl ${provider.bgColor} ${provider.borderColor}`
+									: "border-2 border-muted-foreground/20 border-dashed bg-muted/20 hover:border-muted-foreground/40 hover:shadow-md"
+							}`}
+						>
+							<CardHeader className="pb-3">
+								<div className="flex items-start justify-between">
+									<div className="flex flex-1 items-center gap-3">
+										<div
+											className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-lg transition-all ${
+												isConnected
+													? `${provider.color} ${provider.borderColor} border-2 bg-white dark:bg-gray-900`
+													: `${provider.bgColor} ${provider.color} opacity-50`
+											}`}
+										>
+											{provider.icon}
+										</div>
+										<div className="min-w-0 flex-1">
+											<CardTitle className="mb-1 flex items-center gap-2 text-base">
+												{provider.name}
+											</CardTitle>
+											{isConnected && (
+												<Badge
+													variant="default"
+													className="bg-green-600 hover:bg-green-700"
+												>
+													<CheckCircle2 className="mr-1 h-3 w-3" />
+													Connected
+												</Badge>
+											)}
+										</div>
+									</div>
+								</div>
+								<CardDescription
+									className={`mt-2 text-xs leading-relaxed ${
+										isConnected ? "text-foreground/70" : "text-muted-foreground"
+									}`}
+								>
+									{provider.description}
+								</CardDescription>
+							</CardHeader>
+							<CardContent className="pt-0">
+								{isConnected ? (
+									<div className="space-y-3">
+										<div className="rounded-lg border-2 border-green-200 bg-green-50 p-3 dark:border-green-800 dark:bg-green-950">
+											<div className="flex items-center gap-2 text-xs">
+												<CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400" />
+												<span className="font-semibold text-green-900 dark:text-green-100">
+													Active Connection
+												</span>
+											</div>
+											<p className="mt-1 text-green-700 text-xs dark:text-green-300">
+												Connected on{" "}
+												{new Date().toLocaleDateString("en-US", {
+													month: "short",
+													day: "numeric",
+													year: "numeric",
+												})}
+											</p>
+										</div>
+										<div className="flex gap-2">
+											<Button
+												type="button"
+												variant="outline"
+												size="sm"
+												onClick={() => handleOAuthLogin(provider.id)}
+												disabled={loading}
+												className="flex-1"
+											>
+												🔄 Refresh
+											</Button>
+											<Button
+												type="button"
+												variant="destructive"
+												size="sm"
+												onClick={() => handleDisconnect(provider.id)}
+												disabled={loading}
+												className="flex-1"
+											>
+												✕ Disconnect
+											</Button>
+										</div>
+									</div>
+								) : (
+									<div className="space-y-3">
+										<div className="rounded-lg border border-muted-foreground/30 border-dashed bg-muted/50 p-3 text-center">
+											<Circle className="mx-auto mb-2 h-8 w-8 text-muted-foreground/50" />
+											<p className="font-medium text-muted-foreground text-xs">
+												Not Connected
+											</p>
+										</div>
+										<Button
+											type="button"
+											className="w-full"
+											onClick={() => handleOAuthLogin(provider.id)}
+											disabled={loading}
+										>
+											Connect {provider.name}
+										</Button>
+									</div>
+								)}
+							</CardContent>
+						</Card>
+					);
+				})}
+			</div>
+
+			{/* Social Media Configuration */}
+			<div className="mt-8 space-y-6">
+				<div>
+					<h3 className="mb-1 font-semibold text-base">
+						Social Media & Campaign Settings
+					</h3>
+					<p className="text-muted-foreground text-sm">
+						Configure hashtags and search terms for automated campaigns and SEO
+						optimization
+					</p>
+				</div>
+
+				{/* Hashtag Input */}
+				<FormField
+					control={form.control}
+					name="socialMediatags"
+					render={({ field, fieldState: { error } }) => (
+						<FormItem>
+							<HashtagInput
+								form={form}
+								loading={loading}
+								minHashtags={5}
+								maxHashtags={10}
+								required={false}
+							/>
+							<FormMessage>{error?.message}</FormMessage>
+						</FormItem>
+					)}
+				/>
+
+				{/* Search Terms Input */}
+				<FormField
+					control={form.control}
+					name="searchTerms"
+					render={({ field, fieldState: { error } }) => (
+						<FormItem>
+							<SearchTermsInput
+								form={form}
+								loading={loading}
+								minTerms={3}
+								maxTerms={15}
+								required={false}
+								fieldName="searchTerms"
+							/>
+							<FormMessage>{error?.message}</FormMessage>
+						</FormItem>
+					)}
+				/>
+			</div>
+
+			{/* Invite Friends Section */}
+			<div className="mt-8">
+				<div className="mb-4 rounded-lg border border-primary/20 bg-gradient-to-r from-primary/5 to-primary/10 p-4">
+					<h3 className="mb-2 font-semibold text-base">
+						🎉 Refer Friends & Earn Rewards
+					</h3>
+					<div className="space-y-3 text-sm">
+						<p className="text-foreground/80">
+							Share DealScale with your network and earn{" "}
+							<span className="font-bold text-primary">50 credits</span> for
+							each successful referral!
+						</p>
+						<div className="grid gap-2 md:grid-cols-3">
+							<div className="rounded-md border border-blue-200 bg-blue-50/50 p-3 dark:border-blue-800 dark:bg-blue-950/50">
+								<p className="mb-1 flex items-center gap-1 font-semibold text-blue-600 text-xs dark:text-blue-400">
+									🤖 AI Credits
+								</p>
+								<p className="text-muted-foreground text-xs leading-relaxed">
+									For AI voice calls, smart responses, lead nurturing, and
+									automated conversations.
+								</p>
+							</div>
+							<div className="rounded-md border border-green-200 bg-green-50/50 p-3 dark:border-green-800 dark:bg-green-950/50">
+								<p className="mb-1 flex items-center gap-1 font-semibold text-green-600 text-xs dark:text-green-400">
+									👥 Lead Credits
+								</p>
+								<p className="text-muted-foreground text-xs leading-relaxed">
+									For accessing verified leads, contact data, and building your
+									pipeline.
+								</p>
+							</div>
+							<div className="rounded-md border border-purple-200 bg-purple-50/50 p-3 dark:border-purple-800 dark:bg-purple-950/50">
+								<p className="mb-1 flex items-center gap-1 font-semibold text-purple-600 text-xs dark:text-purple-400">
+									🔍 Skip Trace Credits
+								</p>
+								<p className="text-muted-foreground text-xs leading-relaxed">
+									For finding property owner info, phone numbers, and contact
+									details.
+								</p>
+							</div>
+						</div>
+						<div className="rounded-md bg-white/50 p-3 dark:bg-gray-900/50">
+							<p className="mb-1 font-semibold text-primary text-xs">
+								🎯 How it Works
+							</p>
+							<p className="text-muted-foreground text-xs leading-relaxed">
+								Your friend signs up → Completes profile setup → You both get{" "}
+								<span className="font-semibold">50 credits split</span> across
+								all three types! No limits on referrals.
+							</p>
+						</div>
+					</div>
+				</div>
+				{referralUrl && (
+					<InviteFriendsCard
+						referralUrl={referralUrl}
+						userName="DealScale User"
+						rewardType="credits"
+						rewardAmount={50}
+						showStats={true}
+						stats={{
+							totalInvitesSent: 0,
+							pendingSignups: 0,
+							successfulReferrals: 0,
+							rewardsEarned: 0,
+						}}
+						onShare={(platform) => {
+							console.log(`Shared via ${platform}`);
+							// TODO: Track analytics
+						}}
+					/>
 				)}
-			/>
-		</>
+			</div>
+		</div>
 	);
 };

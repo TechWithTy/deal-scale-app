@@ -22,19 +22,19 @@ export const YourRankCard = ({ rank, totalPlayers }: YourRankCardProps) => {
 			transition={{ duration: 0.4, ease: "easeOut" }}
 			className="sticky top-4 z-10"
 		>
-			<Card className="border-primary/30 bg-gradient-primary shadow-glow">
+			<Card className="border-2 border-primary/40 bg-gradient-to-br from-primary/10 via-primary/5 to-background shadow-lg">
 				<CardContent className="p-4">
 					<div className="flex items-center justify-between">
 						<div className="flex items-center gap-3">
-							<div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-foreground/10">
-								<Trophy className="h-5 w-5 text-primary-foreground" />
+							<div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/20">
+								<Trophy className="h-5 w-5 text-primary" />
 							</div>
 
 							<div>
-								<h3 className="font-semibold text-primary-foreground">
+								<h3 className="font-semibold text-foreground">
 									Your Rank
 								</h3>
-								<p className="text-primary-foreground/70 text-sm">
+								<p className="text-muted-foreground text-sm">
 									Top {percentage}% of players
 								</p>
 							</div>
@@ -48,7 +48,7 @@ export const YourRankCard = ({ rank, totalPlayers }: YourRankCardProps) => {
 								transition={{ duration: 0.6 }}
 								className="flex items-center gap-2"
 							>
-								<span className="font-bold text-2xl text-primary-foreground">
+								<span className="font-bold text-2xl text-foreground">
 									#{rank.toLocaleString()}
 								</span>
 							</motion.div>
@@ -57,14 +57,14 @@ export const YourRankCard = ({ rank, totalPlayers }: YourRankCardProps) => {
 								{isTopTier && (
 									<Badge
 										variant="secondary"
-										className="bg-success text-success-foreground text-xs"
+										className="bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 text-xs border-emerald-500/30"
 									>
 										<TrendingUp className="mr-1 h-3 w-3" />
 										Elite
 									</Badge>
 								)}
 
-								<span className="text-primary-foreground/70 text-xs">
+								<span className="text-muted-foreground text-xs">
 									of {totalPlayers.toLocaleString()}
 								</span>
 							</div>

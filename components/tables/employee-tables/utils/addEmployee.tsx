@@ -17,6 +17,8 @@ import { useEffect, useState } from "react";
 import { Controller, FormProvider, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
+import { useRouter } from "next/navigation";
+import { Settings } from "lucide-react";
 
 // Define the form schema with Zod
 const formSchema = z.object({
@@ -130,6 +132,7 @@ export const InviteEmployeeModal = () => {
 	// const { theme } = useTheme();
 	const { isEmployeeModalOpen, closeEmployeeModal } = useModalStore();
 	const [isSubmitting, setIsSubmitting] = useState(false);
+	const router = useRouter();
 
 	// Use react-hook-form for form management
 	const methods = useForm<FormValues>({
@@ -161,6 +164,12 @@ export const InviteEmployeeModal = () => {
 			toast.error("An error occurred. Please try again.");
 			setIsSubmitting(false);
 		}
+	};
+
+	/** Navigate to employee dashboard page for advanced settings */
+	const handleAdvanced = () => {
+		closeEmployeeModal();
+		router.push("/dashboard/employee");
 	};
 
 	useEffect(() => {
@@ -253,20 +262,32 @@ export const InviteEmployeeModal = () => {
 							</div>
 
 							{/* Footer with action buttons */}
-							<div className="mt-6 flex justify-end gap-4">
+							<div className="mt-6 flex items-center justify-between gap-4">
 								<Button
-									variant="secondary"
-									onClick={() => {
-										reset();
-										closeEmployeeModal();
-									}}
+									type="button"
+									variant="outline"
+									onClick={handleAdvanced}
 									disabled={isSubmitting}
+									className="gap-2"
 								>
-									Cancel
+									<Settings className="h-4 w-4" />
+									Advanced
 								</Button>
-								<Button type="submit" disabled={isSubmitting}>
-									{isSubmitting ? "Inviting..." : "Invite"}
-								</Button>
+								<div className="flex gap-4">
+									<Button
+										variant="secondary"
+										onClick={() => {
+											reset();
+											closeEmployeeModal();
+										}}
+										disabled={isSubmitting}
+									>
+										Cancel
+									</Button>
+									<Button type="submit" disabled={isSubmitting}>
+										{isSubmitting ? "Inviting..." : "Invite"}
+									</Button>
+								</div>
 							</div>
 						</form>
 					</FormProvider>

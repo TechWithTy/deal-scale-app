@@ -11,6 +11,9 @@ export interface NavItem {
 	featureKey?: string;
 	variant?: "default" | "primary";
 	onlyMobile?: boolean;
+	hasSaleItems?: boolean;
+	saleLink?: string;
+	badge?: string;
 }
 
 export interface NavItemWithChildren extends NavItem {

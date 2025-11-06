@@ -18,6 +18,7 @@ import { useUserProfileStore } from "@/lib/stores/user/userProfile";
 import { useSessionStore } from "@/lib/stores/user/useSessionStore";
 import { signOut } from "next-auth/react"; // Still needed for logging out
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 void React;
 
@@ -27,11 +28,38 @@ export function UserNav() {
 	const { userProfile } = useUserProfileStore();
 	const {
 		openUsageModal,
-		openBillingModal,
 		openSecurityModal,
 		openWebhookModal,
 		openEmployeeModal,
 	} = useModalStore();
+
+	/**
+	 * Opens Stripe Customer Portal in a new tab
+	 * TODO: Replace with actual API endpoint that creates a Stripe billing portal session
+	 */
+	const handleBillingClick = async () => {
+		try {
+			// TODO: Call API endpoint to create Stripe billing portal session
+			// const response = await fetch('/api/stripe/create-portal-session', {
+			//   method: 'POST',
+			//   headers: { 'Content-Type': 'application/json' },
+			// });
+			// const { url } = await response.json();
+			// window.open(url, '_blank');
+
+			// Placeholder: Open Stripe dashboard or configured portal URL
+			const stripePortalUrl =
+				process.env.NEXT_PUBLIC_STRIPE_PORTAL_URL || "/api/stripe/portal";
+
+			// Open in new tab
+			window.open(stripePortalUrl, "_blank", "noopener,noreferrer");
+
+			toast.success("Opening billing portal in new tab");
+		} catch (error) {
+			console.error("Error opening billing portal:", error);
+			toast.error("Failed to open billing portal. Please try again.");
+		}
+	};
 
 	if (!sessionUser && !userProfile) return null;
 
@@ -90,7 +118,7 @@ export function UserNav() {
 					</DropdownMenuItem>
 					<DropdownMenuItem
 						className="cursor-pointer"
-						onClick={openBillingModal}
+						onClick={handleBillingClick}
 					>
 						Billing
 						<DropdownMenuShortcut>⌘B</DropdownMenuShortcut>
@@ -104,7 +132,7 @@ export function UserNav() {
 					</DropdownMenuItem>
 					<DropdownMenuItem
 						className="cursor-pointer"
-						onClick={openWebhookModal}
+						onClick={() => openWebhookModal("incoming", "leads")}
 					>
 						Webhooks
 						<DropdownMenuShortcut>⌘W</DropdownMenuShortcut>

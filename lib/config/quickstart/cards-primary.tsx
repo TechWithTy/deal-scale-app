@@ -35,19 +35,12 @@ export const primaryQuickStartCards: readonly QuickStartCardDescriptor[] = [
 			{ label: "Prefilled Templates", tone: "accent" },
 			{ label: "State Persistence", tone: "success" },
 		],
-		actions: [
-			handlerAction({
-				id: "wizard-launch",
-				label: "Launch Guided Setup",
-				icon: PlayCircle,
-				handler: "onLaunchQuickStartFlow",
-			}),
-		],
+		actions: [],
 		wizardPreset: {},
 		...primaryCardStyles,
 		cardClassName: cn(
 			primaryCardStyles.cardClassName,
-			"md:row-span-2 md:col-span-2 md:max-w-none xl:row-span-2",
+			"md:col-span-2 md:row-span-2 xl:col-span-2 xl:row-span-2",
 		),
 	},
 	{
@@ -80,11 +73,11 @@ export const primaryQuickStartCards: readonly QuickStartCardDescriptor[] = [
 				variant: "outline",
 				className: outlinePrimary,
 			}),
-			handlerAction({
+			routeAction({
 				id: "import-configure",
 				label: "Configure Connections",
 				icon: Settings,
-				handler: "onConfigureConnections",
+				href: "/dashboard/profile#oauth",
 				variant: "outline",
 				className: outlinePrimary,
 			}),
@@ -122,11 +115,12 @@ export const primaryQuickStartCards: readonly QuickStartCardDescriptor[] = [
 				handler: "onCampaignCreate",
 			}),
 			handlerAction({
-				id: "campaign-view-templates",
-				label: "View Templates",
+				id: "campaign-abtest",
+				label: "Create A/B Test",
 				icon: List,
-				handler: "onViewTemplates",
+				handler: "onCreateAbTest",
 				variant: "outline",
+				className: outlinePrimary,
 			}),
 			routeAction({
 				id: "campaign-view",

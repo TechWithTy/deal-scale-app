@@ -43,6 +43,7 @@ import {
 	type FinalizeCampaignForm,
 } from "@/types/zod/campaign-finalize-schema";
 import { toast } from "sonner";
+import AllRecipientDropdown from "@/external/ai-avatar-dropdown/AllRecipientDropdown";
 
 interface FinalizeCampaignStepProps {
 	estimatedCredits: number;
@@ -329,32 +330,17 @@ const FinalizeCampaignStep: FC<FinalizeCampaignStepProps> = ({
 									</Tooltip>
 								</TooltipProvider>
 							</FormLabel>
-							<Select onValueChange={field.onChange} defaultValue={field.value}>
-								<FormControl>
-									<SelectTrigger>
-										<SelectValue placeholder="Select an agent" />
-									</SelectTrigger>
-								</FormControl>
-								<SelectContent>
-									{availableAgents.map((agent) => (
-										<SelectItem key={agent.id} value={agent.id}>
-											<div className="flex items-center gap-2">
-												<span>{agent.name}</span>
-												<span
-													className={`h-2 w-2 rounded-full ${
-														agent.status === "active"
-															? "bg-green-500"
-															: agent.status === "away"
-																? "bg-yellow-500"
-																: "bg-gray-400"
-													}`}
-													title={agent.status}
-												/>
-											</div>
-										</SelectItem>
-									))}
-								</SelectContent>
-							</Select>
+							<FormControl>
+								<AllRecipientDropdown
+									value={field.value}
+									onChange={(val) => {
+										field.onChange(val);
+										setSelectedAgentId(val);
+									}}
+									availablePeople={availableAgents}
+									placeholderAgent="Select an agent"
+								/>
+							</FormControl>
 							<FormMessage />
 						</FormItem>
 					)}

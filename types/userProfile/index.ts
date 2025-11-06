@@ -48,6 +48,7 @@ export interface SavedSearch {
 	createdAt: Date; // Date the search was saved
 	updatedAt: Date;
 	priority?: boolean;
+	lookalikeConfig?: any; // Optional lookalike audience configuration
 }
 
 export interface Integration {
@@ -84,6 +85,20 @@ export interface NotificationPreferences {
 	notifyForNewLeads: boolean; // Notify when new leads are available
 	notifyForCampaignUpdates: boolean; // Notify when campaigns are updated
 }
+// Platform Integration Settings for team collaboration
+export interface PlatformIntegrationSettings {
+	callTransferBufferTime: number; // Buffer time in seconds before member receives transferred calls
+	textBufferPeriod: number; // Buffer period in minutes before member receives text notifications
+	autoResponseEnabled: boolean; // Enable/disable auto-responses
+	workingHoursStart: string; // Start time in HH:mm format (e.g., "09:00")
+	workingHoursEnd: string; // End time in HH:mm format (e.g., "17:00")
+	timezone: string; // Timezone identifier (e.g., "America/New_York")
+	maxConcurrentConversations: number; // Maximum concurrent conversations
+	enableCallRecording: boolean; // Enable/disable call recording for this member
+	enableTextNotifications: boolean; // Enable/disable text notifications
+	enableEmailNotifications: boolean; // Enable/disable email notifications
+}
+
 // Team Member Type
 export interface TeamMember {
 	id: string; // Unique identifier for the team member
@@ -96,6 +111,7 @@ export interface TeamMember {
 	NotificationPreferences?: NotificationPreferences;
 	twoFactorAuth?: TwoFactorAuth;
 	activityLog?: ActivityLog;
+	platformIntegration?: PlatformIntegrationSettings; // Platform integration settings for coworker collaboration
 }
 
 // Campaigns for Company
