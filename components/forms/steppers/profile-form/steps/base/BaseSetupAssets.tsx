@@ -22,42 +22,40 @@ export const BaseSetupAssets: React.FC<BaseSetupAssetsProps> = ({
 	const { control, setValue, trigger } = useFormContext<ProfileFormValues>();
 
 	return (
-		<div className="flex w-full flex-col items-center">
-			<div className="w-full max-w-xl space-y-8">
-				<FormField
-					control={control}
-					name="companyLogo"
-					render={({ field }) => (
-						<FormItem>
-							<FormControl>
-								<LogoUploader
-									value={field.value}
-									onChange={async (file) => {
-										setValue("companyLogo", file);
-										await trigger("companyLogo");
-									}}
-								/>
-							</FormControl>
-							<FormMessage />
-						</FormItem>
-					)}
-				/>
-				<FormField
-					control={control}
-					name="companyAssets"
-					render={({ field }) => (
-						<FormItem>
-							<FormControl>
-								<AssetsUploader
-									value={field.value}
-									onChange={(files) => setValue("companyAssets", files)}
-								/>
-							</FormControl>
-							<FormMessage />
-						</FormItem>
-					)}
-				/>
-			</div>
+		<div className="w-full space-y-8">
+			<FormField
+				control={control}
+				name="companyLogo"
+				render={({ field }) => (
+					<FormItem>
+						<FormControl>
+							<LogoUploader
+								value={field.value}
+								onChange={async (file) => {
+									setValue("companyLogo", file);
+									await trigger("companyLogo");
+								}}
+							/>
+						</FormControl>
+						<FormMessage />
+					</FormItem>
+				)}
+			/>
+			<FormField
+				control={control}
+				name="companyAssets"
+				render={({ field }) => (
+					<FormItem>
+						<FormControl>
+							<AssetsUploader
+								value={field.value}
+								onChange={(files) => setValue("companyAssets", files)}
+							/>
+						</FormControl>
+						<FormMessage />
+					</FormItem>
+				)}
+			/>
 		</div>
 	);
 };

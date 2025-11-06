@@ -64,6 +64,15 @@ export const profileSchema = z.object({
 		.string()
 		.min(3, { message: "Company name must be at least 3 characters long." })
 		.max(50, { message: "Company name cannot exceed 50 characters." }),
+	companyWebsite: z
+		.string()
+		.url({ message: "Please enter a valid website URL." })
+		.max(200, { message: "Website URL cannot exceed 200 characters." })
+		.optional(),
+	profileType: z.enum(["investor", "wholesaler", "lender", "agent"], {
+		errorMap: () => ({ message: "Please select a profile type." }),
+	}),
+	profileGoal: z.string().min(1, { message: "Please select a primary goal." }),
 	companyLogo: z
 		.any()
 		.refine((file) => file === undefined || file instanceof File, {
@@ -133,6 +142,58 @@ export const profileSchema = z.object({
 		smsNotifications: z.boolean().optional(), // Whether the user wants SMS notifications
 		notifyForNewLeads: z.boolean().optional(), // Notify when new leads are available
 		notifyForCampaignUpdates: z.boolean().optional(), // Notify when campaigns are updated
+		textNotifications: z.boolean().optional(), // Receive SMS notifications for new leads
+		autoResponse: z.boolean().optional(), // Automatically respond to incoming messages
+		callRecording: z.boolean().optional(), // Record calls for quality assurance
+	}),
+
+	// User Permissions Schema
+	permissions: z
+		.object({
+			canGenerateLeads: z.boolean().default(false),
+			canStartCampaigns: z.boolean().default(false),
+			canViewReports: z.boolean().default(false),
+			canManageTeam: z.boolean().default(false),
+			canManageSubscription: z.boolean().default(false),
+			canAccessAI: z.boolean().default(false),
+			canMoveCompanyTasks: z.boolean().default(false),
+			canEditCompanyProfile: z.boolean().default(false),
+		})
+		.optional(),
+
+	// Platform Integration Settings
+	platformSettings: z.object({
+		callTransferBufferTime: z
+			.number()
+			.min(0, { message: "Buffer time must be at least 0 seconds." })
+			.max(300, { message: "Buffer time cannot exceed 300 seconds." })
+			.optional(),
+		textBufferPeriod: z
+			.number()
+			.min(0, { message: "Buffer period must be at least 0 minutes." })
+			.max(60, { message: "Buffer period cannot exceed 60 minutes." })
+			.optional(),
+		workingHoursStart: z
+			.string()
+			.regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, {
+				message: "Start time must be in HH:MM format.",
+			})
+			.min(1, { message: "Working hours start time is required." }),
+		workingHoursEnd: z
+			.string()
+			.regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, {
+				message: "End time must be in HH:MM format.",
+			})
+			.min(1, { message: "Working hours end time is required." }),
+		timezone: z.string().min(1, { message: "Timezone is required." }),
+		maxConcurrentConversations: z
+			.number()
+			.min(1, {
+				message: "Must allow at least 1 concurrent conversation.",
+			})
+			.max(50, {
+				message: "Cannot exceed 50 concurrent conversations.",
+			}),
 	}),
 
 	state: z

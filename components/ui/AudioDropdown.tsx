@@ -86,7 +86,7 @@ export const AudioDropdown: React.FC<AudioDropdownProps> = ({
 		<div ref={dropdownRef} className="relative w-full">
 			<button
 				type="button"
-				className="w-full rounded-md border bg-background px-3 py-2 text-left text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+				className="w-full rounded-md border border-input bg-background px-3 py-2 text-left text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
 				onClick={() => setOpen((prev) => !prev)}
 				disabled={disabled}
 			>
@@ -105,16 +105,16 @@ export const AudioDropdown: React.FC<AudioDropdownProps> = ({
 						{},
 					);
 					return (
-						<ul className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-background shadow-lg">
+						<ul className="absolute z-[100] mt-1 max-h-60 w-full overflow-auto rounded-md border border-border bg-white shadow-lg dark:bg-gray-800">
 							{Object.entries(grouped).map(([category, opts]) => (
 								<React.Fragment key={category}>
-									<li className="sticky top-0 z-10 bg-muted/40 px-3 py-1 font-semibold text-muted-foreground text-xs">
+									<li className="sticky top-0 z-10 bg-gray-100 px-3 py-1 font-semibold text-gray-600 text-xs dark:bg-gray-700 dark:text-gray-300">
 										{category}
 									</li>
 									{opts.map((opt) => (
 										<li
 											key={opt.value}
-											className={`flex cursor-pointer items-center justify-between px-3 py-2 hover:bg-primary/10 ${opt.value === value ? "bg-primary/20" : ""}`}
+											className={`flex cursor-pointer items-center justify-between bg-white px-3 py-2 text-gray-900 hover:bg-blue-50 dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700 ${opt.value === value ? "bg-blue-100 dark:bg-blue-900" : ""}`}
 											aria-selected={opt.value === value}
 											onClick={() => handleSelect(opt.value)}
 											onKeyDown={(e) => {

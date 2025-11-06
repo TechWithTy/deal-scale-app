@@ -11,6 +11,10 @@ import { PersonalInformationFormMain } from "./steps/personal_information/Person
 import type { AssistantVoice } from "@/types/vapiAi/api/assistant/create";
 import { useState, useEffect, useMemo } from "react";
 import { useRouter, usePathname } from "next/navigation";
+import { toast } from "sonner";
+import { useModalStore } from "@/lib/stores/dashboard";
+import { Shield } from "lucide-react";
+import { Button } from "@/components/ui/button";
 // * Step definitions: label and component for each step
 const stepHashes = [
 	"profile-info", // Step 0
@@ -29,18 +33,21 @@ const steps = [
 export const ProfileStepper: React.FC = () => {
 	const router = useRouter();
 	const pathname = usePathname();
+	const { openSecurityModal } = useModalStore();
 	const [currentStep, setCurrentStep] = useState(0);
 	// Force a fresh form instance on first mount to avoid stale values
 	const [formKey] = useState(() => `profile-form-${Date.now()}`);
-	// Debug toggle to bypass validation and enable free navigation
+	const [isSaving, setIsSaving] = useState(false);
 	const [bypassValidation, setBypassValidation] = useState(false);
 
 	// Helper to navigate to a step and update the hash
 	const goToStep = (stepIdx: number) => {
 		setCurrentStep(stepIdx);
 		const hash = stepHashes[stepIdx];
-		// Use shallow routing to update only the hash
-		router.replace(`${pathname}#${hash}`);
+		// Use window.history for hash navigation to avoid RSC fetch errors
+		if (typeof window !== "undefined") {
+			window.history.replaceState(null, "", `${pathname}#${hash}`);
+		}
 	};
 
 	// On mount, read the hash and set the step
@@ -62,6 +69,9 @@ export const ProfileStepper: React.FC = () => {
 				email: "",
 				personalNum: "",
 				companyName: "",
+				companyWebsite: "",
+				profileType: "" as any,
+				profileGoal: "",
 				companyLogo: undefined,
 				// outreachEmailAddress: "",
 				companyAssets: [],
@@ -81,6 +91,23 @@ export const ProfileStepper: React.FC = () => {
 				socialMediatags: [],
 				state: "",
 				city: "",
+				notifications: {
+					emailNotifications: false,
+					smsNotifications: false,
+					notifyForNewLeads: false,
+					notifyForCampaignUpdates: false,
+					textNotifications: false,
+					autoResponse: false,
+					callRecording: false,
+				},
+				platformSettings: {
+					callTransferBufferTime: undefined,
+					textBufferPeriod: undefined,
+					workingHoursStart: "",
+					workingHoursEnd: "",
+					timezone: "",
+					maxConcurrentConversations: 5,
+				},
 			}) as Partial<ProfileFormValues>,
 		[],
 	);
@@ -101,7 +128,18 @@ export const ProfileStepper: React.FC = () => {
 	// Only include required and rendered fields for each step
 	const stepFields: (keyof ProfileFormValues)[][] = [
 		["firstName", "lastName", "email", "personalNum", "state", "city"], // Step 0
-		["companyName", "companyLogo", "companyAssets", "leadForwardingNumber"], // Step 1
+		[
+			"profileType",
+			"profileGoal",
+			"companyName",
+			"companyLogo",
+			"companyAssets",
+			"leadForwardingNumber",
+			"platformSettings.workingHoursStart",
+			"platformSettings.workingHoursEnd",
+			"platformSettings.timezone",
+			"platformSettings.maxConcurrentConversations",
+		], // Step 1
 		["selectedVoice", "exampleSalesScript"], // Step 2 (adjust if any are optional)
 		[], // Step 3 (OAuth, add required fields if any)
 	];
@@ -112,7 +150,10 @@ export const ProfileStepper: React.FC = () => {
 		lastName: "Last Name",
 		email: "Email",
 		personalNum: "Personal Phone Number",
+		profileType: "Profile Type",
+		profileGoal: "Primary Goal",
 		companyName: "Company Name",
+		companyWebsite: "Company Website",
 		leadForwardingNumber: "Lead Forwarding Number",
 		companyLogo: "Company Logo",
 		// outreachEmailAddress: "Outreach Email Address",
@@ -127,73 +168,39 @@ export const ProfileStepper: React.FC = () => {
 		socialMediatags: "Social Media Tags",
 		state: "State",
 		city: "City",
+		"platformSettings.workingHoursStart": "Working Hours Start",
+		"platformSettings.workingHoursEnd": "Working Hours End",
+		"platformSettings.timezone": "Timezone",
+		"platformSettings.maxConcurrentConversations":
+			"Max Concurrent Conversations",
 	};
 
 	const StepperHeader = () => {
-		// Helper: check if all previous steps are valid
-		const allPrevStepsValid = (idx: number) => {
-			for (let i = 0; i < idx; i++) {
-				if (
-					!form.getFieldState(stepFields[i][0]).isTouched ||
-					!form.formState.isValid
-				) {
-					return false;
-				}
-			}
-			return true;
-		};
 		return (
-			<div className="mb-8 flex items-center">
+			<div className="mb-8 flex items-center overflow-x-auto">
 				{steps.map((step, idx) => {
-					let isDisabled = false;
-					// Disable future steps unless all previous steps are valid
-					isDisabled =
-						!bypassValidation && idx > currentStep && !allPrevStepsValid(idx);
+					const isCompleted = idx < currentStep;
+					const isCurrent = idx === currentStep;
 					return (
 						<button
 							key={step.label}
 							type="button"
-							className={`flex items-center ${idx === currentStep ? "font-bold text-blue-600" : "text-gray-400"} ${isDisabled ? "cursor-not-allowed opacity-40" : "cursor-pointer"}`}
-							onClick={async () => {
-								// Only allow navigation to previous or current step
-								if (idx <= currentStep) {
-									setStepError(null);
-									setCurrentStep(idx);
-								} else {
-									// Only allow navigating forward if all previous steps are valid
-									if (bypassValidation) {
-										setStepError(null);
-										setCurrentStep(idx);
-									} else {
-										let allPrevValid = true;
-										for (let i = 0; i < idx; i++) {
-											const valid = await form.trigger(stepFields[i]);
-											if (!valid) {
-												allPrevValid = false;
-												break;
-											}
-										}
-										if (allPrevValid) {
-											setStepError(null);
-											setCurrentStep(idx);
-										} else {
-											setStepError(
-												"Please complete all previous steps before proceeding.",
-											);
-										}
-									}
-								}
+							className={`flex items-center ${isCurrent ? "font-bold text-blue-600" : isCompleted ? "text-green-600" : "text-gray-400"} cursor-pointer`}
+							onClick={() => {
+								setStepError(null);
+								goToStep(idx);
 							}}
-							disabled={isDisabled}
 						>
 							<div
-								className={`flex h-8 w-8 items-center justify-center rounded-full border-2 ${idx === currentStep ? "border-blue-600" : "border-gray-300"}`}
+								className={`flex h-8 w-8 items-center justify-center rounded-full border-2 ${isCurrent ? "border-blue-600 bg-blue-50" : isCompleted ? "border-green-600 bg-green-50" : "border-gray-300"}`}
 							>
-								{idx + 1}
+								{isCompleted ? "✓" : idx + 1}
 							</div>
-							<span className="ml-2">{step.label}</span>
+							<span className="ml-2 whitespace-nowrap">{step.label}</span>
 							{idx < steps.length - 1 && (
-								<div className="mx-4 h-1 w-8 bg-gray-200" />
+								<div
+									className={`mx-4 h-1 w-8 ${isCompleted ? "bg-green-600" : "bg-gray-200"}`}
+								/>
 							)}
 						</button>
 					);
@@ -212,23 +219,56 @@ export const ProfileStepper: React.FC = () => {
 	const loading = false;
 	const initialData = undefined;
 
+	// Handle form submission
+	const onSubmit = async (data: ProfileFormValues) => {
+		setIsSaving(true);
+		try {
+			// Simulate API call
+			await new Promise((resolve) => setTimeout(resolve, 1500));
+			toast.success("Profile saved successfully!");
+			console.log("Profile data:", data);
+			// TODO: Replace with actual API call
+		} catch (error) {
+			toast.error("Failed to save profile. Please try again.");
+			console.error("Save error:", error);
+		} finally {
+			setIsSaving(false);
+		}
+	};
+
 	return (
 		<FormProvider key={formKey} {...form}>
-			<div className="flex flex-col gap-8 p-8">
+			<form
+				onSubmit={form.handleSubmit(onSubmit)}
+				className="flex flex-col gap-8 p-8"
+			>
 				<div className="mb-4 flex items-center justify-between">
-					<h2 className="font-bold text-xl">Profile Stepper</h2>
-					<button
-						type="button"
-						onClick={() => setBypassValidation((v) => !v)}
-						className={`rounded border px-3 py-1 text-sm ${
-							bypassValidation
-								? "bg-accent text-accent-foreground"
-								: "bg-muted text-muted-foreground"
-						} border-border`}
-						title="Toggle to bypass validation and freely navigate steps"
-					>
-						{bypassValidation ? "Bypass: ON" : "Bypass: OFF"}
-					</button>
+					<div>
+						<h2 className="font-bold text-xl">Profile Settings</h2>
+						<p className="text-gray-500 text-sm">
+							Configure your profile and platform settings
+						</p>
+					</div>
+					<div className="flex gap-2">
+						<Button
+							type="button"
+							variant="outline"
+							onClick={() => setBypassValidation((v) => !v)}
+							className={`gap-2 ${bypassValidation ? "bg-accent" : ""}`}
+							title="Toggle to bypass validation and freely navigate steps"
+						>
+							{bypassValidation ? "Bypass: ON" : "Bypass: OFF"}
+						</Button>
+						<Button
+							type="button"
+							variant="outline"
+							onClick={openSecurityModal}
+							className="gap-2"
+						>
+							<Shield className="h-4 w-4" />
+							Security Settings
+						</Button>
+					</div>
 				</div>
 				<StepperHeader />
 				{/* Show required fields for the current step at the top of the form */}
@@ -288,7 +328,7 @@ export const ProfileStepper: React.FC = () => {
 						>
 							Back
 						</button>
-						{/* --- Next button with strict step validation --- */}
+						{/* --- Next/Save button --- */}
 						{(() => {
 							const watchedFields = form.watch(stepFields[currentStep]);
 							const isCurrentStepValid =
@@ -309,32 +349,42 @@ export const ProfileStepper: React.FC = () => {
 								return state.error;
 							});
 
+							const isLastStep = currentStep === steps.length - 1;
+
 							return (
 								<div className="flex flex-col items-end">
-									<button
-										type="button"
-										className="rounded bg-blue-600 px-4 py-2 text-white disabled:opacity-50"
-										disabled={
-											currentStep === steps.length - 1 || !isCurrentStepValid
-										}
-										onClick={async () => {
-											setStepError(null);
-											if (!bypassValidation) {
-												const valid = await form.trigger(
-													stepFields[currentStep],
-												);
-												if (!valid) {
-													setStepError(
-														"Please fill in all required fields for this step.",
+									{isLastStep ? (
+										<button
+											type="submit"
+											className="rounded bg-green-600 px-6 py-2 text-white hover:bg-green-700 disabled:opacity-50"
+											disabled={isSaving}
+										>
+											{isSaving ? "Saving..." : "Save Profile"}
+										</button>
+									) : (
+										<button
+											type="button"
+											className="rounded bg-blue-600 px-4 py-2 text-white disabled:opacity-50"
+											disabled={!isCurrentStepValid}
+											onClick={async () => {
+												setStepError(null);
+												if (!bypassValidation) {
+													const valid = await form.trigger(
+														stepFields[currentStep],
 													);
-													return;
+													if (!valid) {
+														setStepError(
+															"Please fill in all required fields for this step.",
+														);
+														return;
+													}
 												}
-											}
-											goToStep(Math.min(steps.length - 1, currentStep + 1));
-										}}
-									>
-										Next
-									</button>
+												goToStep(Math.min(steps.length - 1, currentStep + 1));
+											}}
+										>
+											Next
+										</button>
+									)}
 									{/* Show invalid fields as a hint if Next is disabled */}
 									{!isCurrentStepValid && invalidFields.length > 0 && (
 										<div className="mt-2 text-right text-red-500 text-xs">
@@ -351,7 +401,7 @@ export const ProfileStepper: React.FC = () => {
 						})()}
 					</div>
 				</div>
-			</div>
+			</form>
 		</FormProvider>
 	);
 };
