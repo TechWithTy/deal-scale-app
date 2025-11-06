@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import ThemeNotificationsPanel from "@/components/notifications/ThemeNotificationsPanel";
 import { useNotificationsStore } from "@/lib/stores/notificationsStore";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 export default function NotificationsDropdown() {
 	const notifications = useNotificationsStore((s) => s.notifications);
@@ -17,9 +17,22 @@ export default function NotificationsDropdown() {
 	const hasUnread = useNotificationsStore((s) => s.hasUnread());
 	const markAllRead = useNotificationsStore((s) => s.markAllRead);
 
-	// Seed a couple demo notifications for first-time view
+	// Seed a couple demo notifications for first-time view (guarded against StrictMode double-invoke)
+	const seededRef = useRef(false);
 	useEffect(() => {
+		if (seededRef.current) return;
+		if (
+			typeof window !== "undefined" &&
+			sessionStorage.getItem("ds-notifs-seeded") === "true"
+		) {
+			seededRef.current = true;
+			return;
+		}
 		if (notifications.length === 0) {
+			seededRef.current = true;
+			try {
+				sessionStorage.setItem("ds-notifs-seeded", "true");
+			} catch {}
 			add({
 				title: "Welcome to Deal Scale",
 				description: "You're all set!",
