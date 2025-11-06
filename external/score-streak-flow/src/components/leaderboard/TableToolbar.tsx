@@ -18,7 +18,7 @@ export const TableToolbar: React.FC<Props> = ({
 }) => {
 	return (
 		<div className="flex flex-wrap items-center justify-between gap-2">
-			<h2 className="font-semibold text-lg text-foreground sm:text-xl md:text-2xl">{title}</h2>
+			<h2 className="font-semibold text-lg text-foreground sm:text-xl md:text-2xl lg:text-3xl">{title}</h2>
 			<div className="flex items-center gap-2 sm:gap-3">
 				<div className="flex items-center gap-1 sm:gap-2">
 					<label htmlFor="page-size" className="text-muted-foreground text-xs sm:text-sm">

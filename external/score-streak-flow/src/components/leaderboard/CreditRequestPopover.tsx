@@ -134,7 +134,7 @@ export const CreditRequestPopover = ({ player }: CreditRequestPopoverProps) => {
 						<div className="mt-2 space-y-1.5 rounded-md border border-emerald-500/20 bg-emerald-500/5 px-3 py-2 dark:bg-emerald-500/10">
 							<p className="text-xs text-foreground leading-relaxed">
 								<strong>Visibility:</strong> Your offer will be visible for 7 days.
-							</p>
+					</p>
 							<p className="text-xs text-muted-foreground leading-relaxed">
 								💰 Interest earnings credited upon payback
 							</p>
@@ -166,22 +166,22 @@ export const CreditRequestPopover = ({ player }: CreditRequestPopoverProps) => {
 
 					{/* Interest Rate & Period */}
 					<div className="grid grid-cols-2 gap-2">
-						<div>
+					<div>
 							<Label htmlFor={`markup-${player.id}`} className="text-xs">
 								Interest Rate (%)
 							</Label>
-							<Input
-								id={`markup-${player.id}`}
-								type="number"
-								inputMode="numeric"
+						<Input
+							id={`markup-${player.id}`}
+							type="number"
+							inputMode="numeric"
 								step="0.1"
 								placeholder="5.0"
 								min="0.1"
-								value={markupPercentage}
-								onChange={(e: {
-									target: { value: React.SetStateAction<string> };
-								}) => setMarkupPercentage(e.target.value)}
-							/>
+							value={markupPercentage}
+							onChange={(e: {
+								target: { value: React.SetStateAction<string> };
+							}) => setMarkupPercentage(e.target.value)}
+						/>
 						</div>
 						<div>
 							<Label htmlFor={`interest-period-${player.id}`} className="text-xs">
@@ -221,21 +221,21 @@ export const CreditRequestPopover = ({ player }: CreditRequestPopoverProps) => {
 									<SelectItem value="90">Net 90</SelectItem>
 								</SelectContent>
 							</Select>
-						</div>
-						<div>
+					</div>
+					<div>
 							<Label htmlFor={`payback-${player.id}`} className="text-xs">
 								Due Date
 							</Label>
-							<Input
-								id={`payback-${player.id}`}
-								type="date"
+						<Input
+							id={`payback-${player.id}`}
+							type="date"
 								className="h-9"
-								value={paybackDate}
-								onChange={(e: {
-									target: { value: React.SetStateAction<string> };
-								}) => setPaybackDate(e.target.value)}
-							/>
-						</div>
+							value={paybackDate}
+							onChange={(e: {
+								target: { value: React.SetStateAction<string> };
+							}) => setPaybackDate(e.target.value)}
+						/>
+					</div>
 					</div>
 
 					{/* Terms Link */}

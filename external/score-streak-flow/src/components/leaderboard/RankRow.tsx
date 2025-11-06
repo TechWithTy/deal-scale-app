@@ -55,8 +55,8 @@ export const RankRow = ({ player, isCurrentUser = false }: RankRowProps) => {
 			exit={{ opacity: 0, y: -10 }}
 			transition={{ duration: 0.3, ease: "easeInOut" }}
 			className={cn(
-				"relative flex flex-col gap-2 rounded-lg border px-4 py-2 transition-all duration-smooth sm:px-3 sm:py-3 md:flex-row md:items-center md:gap-4 md:p-4",
-				"group cursor-pointer hover:shadow-card",
+				"relative flex flex-col gap-2 rounded-lg border px-4 py-2 transition-all duration-smooth sm:px-3 sm:py-3 md:flex-row md:items-center md:gap-4 md:p-4 lg:gap-5 lg:p-5",
+				"group cursor-pointer hover:shadow-card lg:hover:shadow-lg lg:hover:scale-[1.01]",
 				isCurrentUser && "border-primary bg-primary/5 ring-1 ring-primary/20",
 				hasRankChanged && rankImproved && "animate-rank-up",
 				hasRankChanged && !rankImproved && "animate-rank-down",
@@ -86,20 +86,20 @@ export const RankRow = ({ player, isCurrentUser = false }: RankRowProps) => {
 			)}
 			{/* Mobile: Rank + Avatar + Info in a row, Score below */}
 			{/* Desktop: Rank + Avatar + Info + Score in a row */}
-			<div className="flex w-full flex-col items-center gap-2 md:w-auto md:flex-1 md:flex-row md:items-start md:gap-3">
+			<div className="flex w-full flex-col items-center gap-2 md:w-auto md:flex-1 md:flex-row md:items-start md:gap-3 lg:flex-col lg:items-center">
 				{/* Rank + Avatar row on mobile, inline on desktop */}
-				<div className="flex items-center gap-2 md:contents">
+				<div className="flex items-center gap-2 md:contents lg:flex lg:flex-col lg:items-center lg:gap-3">
 				{/* Rank Badge */}
 				<RankHighlight
 					rank={player.rank}
 					isCurrentUser={isCurrentUser}
-					className="h-10 w-14 shrink-0 sm:h-8 sm:w-12"
+					className="h-10 w-14 shrink-0 sm:h-8 sm:w-12 lg:h-10 lg:w-16"
 				/>
 
 				{/* Player Avatar */}
 				<Avatar
 					className={cn(
-						"relative h-12 w-12 shrink-0 border-2 transition-colors duration-smooth sm:h-12 sm:w-12",
+						"relative h-12 w-12 shrink-0 border-2 transition-colors duration-smooth sm:h-12 sm:w-12 lg:h-14 lg:w-14",
 						isChampion
 							? "scale-110 border-destructive shadow-destructive/30 shadow-md"
 							: isTop3
@@ -127,8 +127,9 @@ export const RankRow = ({ player, isCurrentUser = false }: RankRowProps) => {
 				</div>
 
 				{/* Player Info */}
-				<div className="w-full min-w-0 text-center md:w-auto md:flex-1 md:text-left">
-				<div className="mb-0.5 flex flex-wrap items-center justify-center gap-2 md:mb-1 md:justify-start md:gap-3">
+				<div className="w-full min-w-0 space-y-1 text-center md:w-auto md:flex-1 md:space-y-0 md:text-left lg:w-full lg:space-y-1 lg:text-center">
+				{/* Line 1: Name + Champion/Silver/Bronze badge */}
+				<div className="flex flex-wrap items-center justify-center gap-2 md:mb-1 md:justify-start md:gap-3 lg:justify-center">
 					<PlayerTitle
 						player={player}
 						isCurrentUser={isCurrentUser}
@@ -137,31 +138,34 @@ export const RankRow = ({ player, isCurrentUser = false }: RankRowProps) => {
 					{isTop3 &&
 						(isChampion ? (
 							<Badge
-								className="flex items-center gap-1 border-2 border-yellow-600 bg-gradient-to-r from-yellow-500 to-yellow-600 px-2 py-1 text-xs font-bold text-white shadow-lg sm:gap-1.5 sm:px-3 sm:text-sm dark:border-yellow-500 dark:from-yellow-600 dark:to-yellow-700 dark:text-white"
+								className="flex items-center gap-1 border-2 border-yellow-600 bg-gradient-to-r from-yellow-500 to-yellow-600 px-2 py-1 text-xs font-bold text-white shadow-lg sm:gap-1.5 sm:px-3 sm:text-sm lg:text-base dark:border-yellow-500 dark:from-yellow-600 dark:to-yellow-700 dark:text-white"
 							>
-								<Medal className="h-4 w-4 sm:h-4 sm:w-4" />
+								<Medal className="h-4 w-4 sm:h-4 sm:w-4 lg:h-5 lg:w-5" />
 								Champion
 							</Badge>
 						) : (
 							<Badge className={cn(
-								"flex items-center gap-1 border-2 px-2 py-1 text-xs font-semibold text-white shadow-md sm:gap-1.5 sm:text-sm dark:text-white",
+								"flex items-center gap-1 border-2 px-2 py-1 text-xs font-semibold text-white shadow-md sm:gap-1.5 sm:text-sm lg:text-base dark:text-white",
 								player.rank === 2 && "border-gray-400 bg-gradient-to-r from-gray-400 to-gray-500 dark:border-gray-500 dark:from-gray-600 dark:to-gray-700",
 								player.rank === 3 && "border-orange-600 bg-gradient-to-r from-orange-600 to-orange-700 dark:border-orange-500 dark:from-orange-600 dark:to-orange-700"
 							)}>
-								<Medal className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+								<Medal className="h-3.5 w-3.5 sm:h-4 sm:w-4 lg:h-5 lg:w-5" />
 								{player.rank === 2 ? "Silver" : "Bronze"}
 							</Badge>
 						))}
 					{!isTop3 && isTop10 && (
-						<Badge className="border-2 border-purple-600 bg-gradient-to-r from-purple-600 to-purple-700 px-2 py-1 text-xs font-semibold text-white shadow-md sm:text-sm dark:border-purple-500 dark:from-purple-600 dark:to-purple-700 dark:text-white">
+						<Badge className="border-2 border-purple-600 bg-gradient-to-r from-purple-600 to-purple-700 px-2 py-1 text-xs font-semibold text-white shadow-md sm:text-sm lg:text-base dark:border-purple-500 dark:from-purple-600 dark:to-purple-700 dark:text-white">
 							Top 10
 						</Badge>
 					)}
+				</div>
 
+				{/* Line 2: Status + Location & Company */}
+				<div className="flex flex-wrap items-center justify-center gap-2 md:justify-start md:gap-3 lg:justify-center">
 					{/* Online Status */}
 					<OnlineStatus isOnline={player.isOnline} />
 
-					{/* Location & Company - Now inline */}
+					{/* Location & Company */}
 					{(player.city || player.state || player.company) && (
 						<span className="truncate text-muted-foreground text-xs">
 							{player.city ? `${player.city}` : ""}
@@ -172,17 +176,17 @@ export const RankRow = ({ player, isCurrentUser = false }: RankRowProps) => {
 						</span>
 					)}
 				</div>
-				{/* Champion Message - mobile only, inline on desktop */}
+				{/* Champion Message - mobile only, inline on md, below name on lg */}
 				{isChampion && (
-					<div className="mt-1 text-destructive text-xs font-medium md:mt-0 md:hidden">
+					<div className="mt-1 text-destructive text-xs font-medium md:mt-0 md:hidden lg:mt-1 lg:block">
 						You're #1 — others are closing in!
 					</div>
 				)}
 
 				{/* Row 1: Prediction + Reputation */}
-				<div className="mt-1 flex flex-wrap items-center justify-center gap-2 md:mt-0 md:justify-start md:gap-3">
+				<div className="mt-1 flex flex-wrap items-center justify-center gap-2 md:mt-0 md:justify-start md:gap-3 lg:mt-2 lg:justify-center">
 					{isChampion && (
-						<span className="hidden text-destructive text-xs font-medium md:inline">
+						<span className="hidden text-destructive text-xs font-medium md:inline lg:hidden">
 							You're #1 — others are closing in!
 						</span>
 					)}
@@ -244,7 +248,7 @@ export const RankRow = ({ player, isCurrentUser = false }: RankRowProps) => {
 
 				{/* Row 2: Outbound icons + Request/Donation chips (all inline) */}
 				<div
-					className="mt-1.5 flex w-full flex-wrap items-center justify-center gap-2 md:mt-1 md:w-auto md:justify-start md:gap-3"
+					className="mt-1.5 flex w-full flex-wrap items-center justify-center gap-2 md:mt-1 md:w-auto md:justify-start md:gap-3 lg:mt-1.5 lg:w-full lg:justify-center"
 					aria-label="Actions"
 				>
 					{/* Chat */}
@@ -309,8 +313,8 @@ export const RankRow = ({ player, isCurrentUser = false }: RankRowProps) => {
 				</div>
 			</div>
 
-			{/* Score - Mobile: below player info with reduced spacing, Desktop: right side */}
-			<div className={cn("mt-1 md:mt-0 md:shrink-0", isChampion && "md:scale-[1.05] md:drop-shadow-sm")}>
+			{/* Score - Mobile: below player info with reduced spacing, Desktop: right side, Large: below and centered */}
+			<div className={cn("mt-1 md:mt-0 md:shrink-0 lg:mt-3 lg:w-full", isChampion && "md:scale-[1.05] md:drop-shadow-sm")}>
 				<ScoreBlock
 					score={player.score}
 					hasRankChanged={!!hasRankChanged}
