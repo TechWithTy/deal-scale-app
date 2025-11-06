@@ -10,6 +10,11 @@ import { LeaderboardHeader } from "./LeaderboardHeader";
 import { LeaderboardSettingsPanel } from "./LeaderboardSettingsPanel";
 import { TableToolbar } from "./TableToolbar";
 import { LeaderboardFooter } from "./LeaderboardFooter";
+import {
+	LeaderboardFilters,
+	type TimePeriod,
+	type LeaderboardType,
+} from "./LeaderboardFilters";
 
 function safeSetLocalStorage(key: string, value: string) {
 	try {
@@ -39,11 +44,103 @@ export const LeaderboardContainer = () => {
 	const [pageSize, setPageSize] = useState<number>(10);
 	const [visibleCount, setVisibleCount] = useState<number>(10);
 
+	// Filter states
+	const [timePeriod, setTimePeriod] = useState<TimePeriod>("week");
+	const [leaderboardType, setLeaderboardType] = useState<LeaderboardType>("individual");
+
 	// Throttled snapshot of live data, updated at settings.refreshIntervalMs
 	const [throttledPlayers, setThrottledPlayers] = useState(players);
 	const [throttledTotalPlayers, setThrottledTotalPlayers] =
 		useState(totalPlayers);
 	const [throttledLastUpdated, setThrottledLastUpdated] = useState(lastUpdated);
+
+	// Apply filters to players
+	const filteredPlayers = useMemo(() => {
+		let filtered = [...throttledPlayers];
+
+		// Filter by time period (mock: adjust scores based on period)
+		if (timePeriod === "today") {
+			// Show only recent high performers
+			filtered = filtered.filter((p) => p.score > 80000);
+		} else if (timePeriod === "week") {
+			// Default view - show all
+		} else if (timePeriod === "month") {
+			// Show top 50 for monthly
+			filtered = filtered.slice(0, 50);
+		}
+		// alltime shows everything
+
+		// Group by leaderboard type
+		if (leaderboardType === "team") {
+			// Group by company and sum scores
+			const teamScores = new Map<string, { score: number; players: typeof filtered }>();
+			
+			filtered.forEach((player) => {
+				const company = player.company || "Unknown";
+				const existing = teamScores.get(company);
+				if (existing) {
+					existing.score += player.score;
+					existing.players.push(player);
+				} else {
+					teamScores.set(company, { score: player.score, players: [player] });
+				}
+			});
+
+			// Convert to team leaderboard format (show best player from each team)
+			filtered = Array.from(teamScores.entries())
+				.map(([company, data]) => {
+					// Get the best player from this company
+					const bestPlayer = data.players.reduce((best, current) =>
+						current.score > best.score ? current : best
+					);
+					// Use the best player but represent the whole team
+					return {
+						...bestPlayer,
+						username: company,
+						score: data.score,
+					};
+				})
+				.sort((a, b) => b.score - a.score)
+				.slice(0, Math.min(settings.maxPlayers, 20)); // Show top 20 teams
+		} else if (leaderboardType === "regional") {
+			// Group by state
+			const regionalScores = new Map<string, { score: number; players: typeof filtered }>();
+			
+			filtered.forEach((player) => {
+				const region = player.state || "Unknown";
+				const existing = regionalScores.get(region);
+				if (existing) {
+					existing.score += player.score;
+					existing.players.push(player);
+				} else {
+					regionalScores.set(region, { score: player.score, players: [player] });
+				}
+			});
+
+			// Convert to regional leaderboard
+			filtered = Array.from(regionalScores.entries())
+				.map(([state, data]) => {
+					const bestPlayer = data.players.reduce((best, current) =>
+						current.score > best.score ? current : best
+					);
+					return {
+						...bestPlayer,
+						username: `${state} Region`,
+						score: data.score,
+						company: `${data.players.length} agents`,
+					};
+				})
+				.sort((a, b) => b.score - a.score)
+				.slice(0, Math.min(settings.maxPlayers, 20)); // Show top 20 regions
+		}
+
+		// Re-rank filtered players
+		filtered.forEach((player, index) => {
+			player.rank = index + 1;
+		});
+
+		return filtered;
+	}, [throttledPlayers, timePeriod, leaderboardType, settings.maxPlayers]);
 
 	const latestRef = React.useRef({ players, totalPlayers, lastUpdated });
 	React.useEffect(() => {
@@ -69,8 +166,8 @@ export const LeaderboardContainer = () => {
 
 	const displayedPlayers = useMemo(() => {
 		const limit = Math.min(settings.maxPlayers, visibleCount);
-		return throttledPlayers.slice(0, limit);
-	}, [throttledPlayers, settings.maxPlayers, visibleCount]);
+		return filteredPlayers.slice(0, limit);
+	}, [filteredPlayers, settings.maxPlayers, visibleCount]);
 
 	// Clamp visible count if data or max limit shrinks
 	React.useEffect(() => {
@@ -208,15 +305,23 @@ export const LeaderboardContainer = () => {
 					isOnline={isConnected}
 				/>
 
-				{/* AI Player to Watch Alert */}
-				<PlayerToWatchAlert players={players} />
+			{/* AI Player to Watch Alert */}
+			<PlayerToWatchAlert players={players} />
 
-				<LeaderboardSettingsPanel
-					animationEnabled={animationEnabled}
-					setAnimationEnabled={setAnimationEnabled}
-					settings={settings}
-					setSettings={setSettings}
-				/>
+			{/* Leaderboard Filters */}
+			<LeaderboardFilters
+				timePeriod={timePeriod}
+				onTimePeriodChange={setTimePeriod}
+				leaderboardType={leaderboardType}
+				onLeaderboardTypeChange={setLeaderboardType}
+			/>
+
+			<LeaderboardSettingsPanel
+				animationEnabled={animationEnabled}
+				setAnimationEnabled={setAnimationEnabled}
+				settings={settings}
+				setSettings={setSettings}
+			/>
 
 				{/* Leaderboard Table */}
 				<motion.div
@@ -228,13 +333,13 @@ export const LeaderboardContainer = () => {
 					}}
 					className="space-y-4"
 				>
-					<TableToolbar
-						title={`Top ${Math.min(Math.min(settings.maxPlayers, throttledTotalPlayers), visibleCount)} Players`}
-						displayedCount={displayedPlayers.length}
-						pageSize={pageSize}
-						setPageSize={setPageSize}
-						pageSizeOptions={pageSizeOptions}
-					/>
+				<TableToolbar
+					title={`Top ${Math.min(filteredPlayers.length, visibleCount)} ${leaderboardType === "team" ? "Teams" : leaderboardType === "regional" ? "Regions" : "Players"}`}
+					displayedCount={displayedPlayers.length}
+					pageSize={pageSize}
+					setPageSize={setPageSize}
+					pageSizeOptions={pageSizeOptions}
+				/>
 
 					<LeaderboardTable
 						players={displayedPlayers}
@@ -245,9 +350,9 @@ export const LeaderboardContainer = () => {
 					/>
 				</motion.div>
 
-				{/* Load More */}
-				{visibleCount <
-					Math.min(settings.maxPlayers, throttledPlayers.length) && (
+			{/* Load More */}
+			{visibleCount <
+				Math.min(settings.maxPlayers, filteredPlayers.length) && (
 					<div className="mt-4 flex justify-center">
 						<Button
 							type="button"

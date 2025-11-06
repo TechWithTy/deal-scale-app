@@ -38,6 +38,14 @@ interface ModalState {
 	isEmployeeModalOpen: boolean;
 	openEmployeeModal: () => void;
 	closeEmployeeModal: () => void;
+
+	isLeaderboardModalOpen: boolean;
+	openLeaderboardModal: () => void;
+	closeLeaderboardModal: () => void;
+
+	isWheelSpinnerModalOpen: boolean;
+	openWheelSpinnerModal: () => void;
+	closeWheelSpinnerModal: () => void;
 }
 
 export const useModalStore = createWithEqualityFn<ModalState>(
@@ -80,6 +88,14 @@ export const useModalStore = createWithEqualityFn<ModalState>(
 		isEmployeeModalOpen: false,
 		openEmployeeModal: () => set({ isEmployeeModalOpen: true }),
 		closeEmployeeModal: () => set({ isEmployeeModalOpen: false }),
+
+		isLeaderboardModalOpen: false,
+		openLeaderboardModal: () => set({ isLeaderboardModalOpen: true }),
+		closeLeaderboardModal: () => set({ isLeaderboardModalOpen: false }),
+
+		isWheelSpinnerModalOpen: false,
+		openWheelSpinnerModal: () => set({ isWheelSpinnerModalOpen: true }),
+		closeWheelSpinnerModal: () => set({ isWheelSpinnerModalOpen: false }),
 	})),
 	Object.is,
 );

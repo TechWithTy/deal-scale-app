@@ -1,5 +1,7 @@
 import ThemeToggle from "@/components/layout/ThemeToggle/theme-toggle";
 import NotificationsDropdown from "@/components/notifications/NotificationsDropdown";
+import LeaderboardDropdown from "@/components/navbar/LeaderboardDropdown";
+import WheelSpinnerDropdown from "@/components/navbar/WheelSpinnerDropdown";
 import { mockSubscriptions } from "@/constants/_faker/profile/userSubscription";
 import { cn } from "@/lib/_utils";
 import { UpgradeButton } from "../reusables/modals/user/usage/UpgradeModalButton";
@@ -18,6 +20,8 @@ export default function Header() {
 						<UpgradeButton currentMembership={currentMembership} />
 					)}
 					<UserNav />
+					<LeaderboardDropdown />
+					<WheelSpinnerDropdown />
 					<NotificationsDropdown />
 					<ThemeToggle />
 				</div>

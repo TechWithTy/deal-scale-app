@@ -131,7 +131,7 @@ export const PrizeWheelCore: FC<PrizeWheelProps> = ({
 		() => segmentPrizes.map((p) => p.icon),
 		[segmentPrizes],
 	);
-	// Always provide a single generic icon node centered in each wedge
+	// Use emoji icons from prize.icon, don't override with iconNodes unless prize has no icon
 	const iconSize = Math.max(16, Math.floor((theme?.size ?? 200) * 0.12));
 	const segmentIconNodes = useMemo(() => {
 		// Generate stable keys based on prize id and occurrence count to avoid array index keys
@@ -139,6 +139,14 @@ export const PrizeWheelCore: FC<PrizeWheelProps> = ({
 		return segmentPrizes.map((p) => {
 			const c = counts.get(p.id) ?? 0;
 			counts.set(p.id, c + 1);
+			
+			// If prize has an emoji icon, return null so SimpleWheel uses the icon string instead
+			// (emoji renders better as SVG text than as a React node)
+			if (p.icon) {
+				return null;
+			}
+			
+			// Fallback to generic icon only if no emoji icon
 			return (
 				<CircleDollarSign
 					key={`${p.id}-${c}`}
