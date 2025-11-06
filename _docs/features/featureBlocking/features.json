@@ -59,6 +59,20 @@
     "quickStart": {
       "requiredTier": "Basic",
       "mode": "none"
+    },
+    "charts": {
+      "requiredTier": "Basic",
+      "mode": "none"
+    }
+  },
+  "analytics": {
+    "advanced": {
+      "requiredTier": "Enterprise",
+      "mode": "overlay"
+    },
+    "aiAgents": {
+      "requiredTier": "Starter",
+      "mode": "overlay"
     }
   }
 }

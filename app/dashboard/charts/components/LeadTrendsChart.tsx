@@ -12,7 +12,6 @@ import {
 	Legend,
 	Line,
 	LineChart,
-	ResponsiveContainer,
 	Tooltip,
 	XAxis,
 	YAxis,
@@ -49,42 +48,43 @@ export function LeadTrendsChart({ data }: LeadTrendsChartProps) {
 				<CardDescription>Monitor lead acquisition over time</CardDescription>
 			</CardHeader>
 			<CardContent>
-				<ChartContainer config={chartConfig} className="h-[300px] w-full">
-					<ResponsiveContainer width="100%" height="100%">
-						<LineChart data={formattedData}>
-							<CartesianGrid strokeDasharray="3 3" vertical={false} />
-							<XAxis
-								dataKey="dateLabel"
-								tickLine={false}
-								axisLine={false}
-								tickMargin={8}
-								style={{ fontSize: "12px" }}
-							/>
-							<YAxis
-								tickLine={false}
-								axisLine={false}
-								style={{ fontSize: "12px" }}
-							/>
-							<Tooltip content={<ChartTooltipContent />} />
-							<Legend />
-							<Line
-								type="monotone"
-								dataKey="total"
-								stroke={chartConfig.total.color}
-								strokeWidth={2}
-								dot={false}
-								name={chartConfig.total.label}
-							/>
-							<Line
-								type="monotone"
-								dataKey="qualified"
-								stroke={chartConfig.qualified.color}
-								strokeWidth={2}
-								dot={false}
-								name={chartConfig.qualified.label}
-							/>
-						</LineChart>
-					</ResponsiveContainer>
+				<ChartContainer
+					config={chartConfig}
+					className="aspect-auto h-[300px] w-full"
+				>
+					<LineChart data={formattedData} width={500} height={300}>
+						<CartesianGrid strokeDasharray="3 3" vertical={false} />
+						<XAxis
+							dataKey="dateLabel"
+							tickLine={false}
+							axisLine={false}
+							tickMargin={8}
+							style={{ fontSize: "12px" }}
+						/>
+						<YAxis
+							tickLine={false}
+							axisLine={false}
+							style={{ fontSize: "12px" }}
+						/>
+						<Tooltip content={<ChartTooltipContent />} />
+						<Legend />
+						<Line
+							type="monotone"
+							dataKey="total"
+							stroke={chartConfig.total.color}
+							strokeWidth={2}
+							dot={false}
+							name={chartConfig.total.label}
+						/>
+						<Line
+							type="monotone"
+							dataKey="qualified"
+							stroke={chartConfig.qualified.color}
+							strokeWidth={2}
+							dot={false}
+							name={chartConfig.qualified.label}
+						/>
+					</LineChart>
 				</ChartContainer>
 			</CardContent>
 		</Card>
