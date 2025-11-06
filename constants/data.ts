@@ -225,18 +225,18 @@ export const navItems: NavItem[] = [
 		featureKey: "navigation.chat",
 	},
 	{
-		title: "Charts",
-		href: "/dashboard/charts",
-		icon: "chart",
-		label: "Analytics & Charts",
-		featureKey: "navigation.charts",
-	},
-	{
 		title: "Connections",
 		href: "/dashboard/connections",
 		icon: "webhook",
 		label: "Webhooks & Feeds",
 		featureKey: "navigation.connections",
+	},
+	{
+		title: "Analytics",
+		href: "/dashboard/charts",
+		icon: "chart",
+		label: "Analytics",
+		featureKey: "navigation.charts",
 	},
 	{
 		title: "Employee",
