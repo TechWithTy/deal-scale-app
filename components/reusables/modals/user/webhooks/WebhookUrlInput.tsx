@@ -1,6 +1,9 @@
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/_utils";
 import type React from "react";
+import { toast } from "sonner";
+import { Copy } from "lucide-react";
 
 interface WebhookUrlInputProps {
 	className?: string;
@@ -11,6 +14,7 @@ interface WebhookUrlInputProps {
 	readOnly?: boolean;
 	setWebhookUrl?: (url: string) => void;
 	webhookUrl: string | undefined;
+	showCopyButton?: boolean;
 }
 
 const WebhookUrlInput: React.FC<WebhookUrlInputProps> = ({
@@ -22,24 +26,57 @@ const WebhookUrlInput: React.FC<WebhookUrlInputProps> = ({
 	readOnly = false,
 	setWebhookUrl,
 	webhookUrl,
-}) => (
-	<div className={cn("mt-4", className)}>
-		<label htmlFor="webhookUrl" className="mb-1 block text-sm font-medium">
-			{label}
-		</label>
-		{description ? (
-			<p className="mb-2 text-xs text-muted-foreground">{description}</p>
-		) : null}
-		<Input
-			id="webhookUrl"
-			type="url"
-			placeholder={placeholder}
-			value={webhookUrl}
-			readOnly={readOnly}
-			onChange={(event) => setWebhookUrl?.(event.target.value)}
-			className={cn("font-mono", inputClassName)}
-		/>
-	</div>
-);
+	showCopyButton,
+}) => {
+	const handleCopy = async () => {
+		if (!webhookUrl) return;
+		try {
+			if (typeof navigator !== "undefined" && navigator.clipboard?.writeText) {
+				await navigator.clipboard.writeText(webhookUrl);
+				toast("URL copied to clipboard!");
+			} else {
+				throw new Error("clipboard unavailable");
+			}
+		} catch (error) {
+			toast.error("Unable to copy URL. Please copy manually.");
+		}
+	};
+
+	const shouldShowCopy = showCopyButton ?? readOnly;
+
+	return (
+		<div className={cn("mt-4", className)}>
+			<label htmlFor="webhookUrl" className="mb-1 block text-sm font-medium">
+				{label}
+			</label>
+			{description ? (
+				<p className="mb-2 text-xs text-muted-foreground">{description}</p>
+			) : null}
+			<div className="relative flex items-center gap-2">
+				<Input
+					id="webhookUrl"
+					type="url"
+					placeholder={placeholder}
+					value={webhookUrl}
+					readOnly={readOnly}
+					onChange={(event) => setWebhookUrl?.(event.target.value)}
+					className={cn("font-mono pr-10", inputClassName)}
+				/>
+				{shouldShowCopy && webhookUrl && (
+					<Button
+						variant="ghost"
+						size="sm"
+						onClick={handleCopy}
+						type="button"
+						className="absolute right-1 h-7 w-7 p-0"
+						aria-label="Copy URL"
+					>
+						<Copy className="h-4 w-4" />
+					</Button>
+				)}
+			</div>
+		</div>
+	);
+};
 
 export default WebhookUrlInput;

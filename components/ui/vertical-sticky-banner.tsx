@@ -83,25 +83,38 @@ export const VerticalStickyBanner = ({
 }) => {
 	const storageKey = cacheKey ?? `vertical-sticky-banner-${variant}`;
 
-	const [open, setOpen] = useState<boolean>(() => {
-		if (typeof window === "undefined") return true;
+	// Initialize to false to prevent hydration mismatch, then update in useEffect
+	const [open, setOpen] = useState<boolean>(false);
+	const [mounted, setMounted] = useState(false);
+
+	// Load from localStorage after mount to prevent hydration mismatch
+	useEffect(() => {
+		setMounted(true);
+		if (typeof window === "undefined") {
+			setOpen(true);
+			return;
+		}
 		try {
 			const stored = window.localStorage.getItem(storageKey);
-			if (!stored) return true;
-			return JSON.parse(stored) !== false;
+			if (!stored) {
+				setOpen(true);
+			} else {
+				setOpen(JSON.parse(stored) !== false);
+			}
 		} catch {
-			return true;
+			setOpen(true);
 		}
-	});
+	}, [storageKey]);
 
+	// Save to localStorage when state changes
 	useEffect(() => {
-		if (typeof window === "undefined") return;
+		if (!mounted || typeof window === "undefined") return;
 		try {
 			window.localStorage.setItem(storageKey, JSON.stringify(open));
 		} catch {
 			// Ignore localStorage errors
 		}
-	}, [open, storageKey]);
+	}, [open, storageKey, mounted]);
 
 	const styles = variantStyles[variant];
 
@@ -123,169 +136,168 @@ export const VerticalStickyBanner = ({
 
 	return (
 		<>
-			<AnimatePresence initial={false}>
-				{open && (
-					<motion.div
-						className={cn(
-							"absolute top-0 z-50 flex h-[100dvh] flex-col items-center justify-start rounded-r-lg border-l py-3 shadow-lg",
-							styles.bg,
-							styles.border,
-							className,
-						)}
-						initial={{
-							opacity: 0,
-							x: 100,
-							width: isSidebarMinimized ? 32 : 56,
-							left: isSidebarMinimized ? 72 : 288,
-						}}
-						animate={{
-							opacity: 1,
-							x: 0,
-							width: isSidebarMinimized ? 32 : 56,
-							left: isSidebarMinimized ? 72 : 288,
-						}}
-						exit={{
-							opacity: 0,
-							x: 100,
-						}}
-						transition={{
-							duration: 0.5,
-							ease: "easeInOut",
-						}}
-						onClick={(e) => e.stopPropagation()}
-					>
-						<motion.button
+			{/* Only render after mount to prevent hydration mismatch */}
+			{mounted && (
+				<AnimatePresence initial={false}>
+					{open && (
+						<motion.div
+							className={cn(
+								"sticky top-0 z-50 flex h-[100dvh] flex-col items-center justify-start rounded-r-lg border-l py-3 shadow-lg",
+								styles.bg,
+								styles.border,
+								className,
+							)}
 							initial={{
-								scale: 0,
+								opacity: 0,
+								x: 100,
+								width: isSidebarMinimized ? 32 : 56,
 							}}
 							animate={{
-								scale: 1,
+								opacity: 1,
+								x: 0,
+								width: isSidebarMinimized ? 32 : 56,
 							}}
-							className="absolute top-1 right-1 z-10 flex-shrink-0 cursor-pointer rounded-full p-0.5 transition-colors hover:bg-background/50"
-							onClick={(e) => {
-								e.stopPropagation();
-								setOpen(false);
+							exit={{
+								opacity: 0,
+								x: 100,
 							}}
-							aria-label="Close banner"
+							transition={{
+								duration: 0.5,
+								ease: "easeInOut",
+							}}
+							onClick={(e) => e.stopPropagation()}
 						>
-							<CloseIcon
-								className="h-3 w-3 text-muted-foreground"
-								aria-label="Close"
+							<motion.button
+								initial={{
+									scale: 0,
+								}}
+								animate={{
+									scale: 1,
+								}}
+								className="absolute top-1 right-1 z-10 flex-shrink-0 cursor-pointer rounded-full p-0.5 transition-colors hover:bg-background/50"
+								onClick={(e) => {
+									e.stopPropagation();
+									setOpen(false);
+								}}
+								aria-label="Close banner"
 							>
-								<title>Close</title>
-							</CloseIcon>
-						</motion.button>
+								<CloseIcon
+									className="h-3 w-3 text-muted-foreground"
+									aria-label="Close"
+								>
+									<title>Close</title>
+								</CloseIcon>
+							</motion.button>
 
-						<div className="flex w-full flex-1 flex-col items-center gap-2 px-1 pt-8">
-							{isSidebarMinimized ? (
-								<TooltipProvider>
-									<Tooltip>
-										<TooltipTrigger asChild>
-											{link ? (
-												<Link
-													href={link}
-													className={cn(
-														"flex size-6 flex-shrink-0 items-center justify-center rounded-full transition-transform hover:scale-110",
-														styles.iconBg,
-													)}
-													onClick={(e) => e.stopPropagation()}
-												>
-													{getVariantIcon()}
-												</Link>
-											) : (
-												<button
-													type="button"
-													className={cn(
-														"flex size-6 flex-shrink-0 cursor-pointer items-center justify-center rounded-full transition-transform hover:scale-110",
-														styles.iconBg,
-													)}
-													onClick={(e) => {
-														e.stopPropagation();
-													}}
-												>
-													{getVariantIcon()}
-												</button>
-											)}
-										</TooltipTrigger>
-										<TooltipContent side="right" sideOffset={8}>
-											{tooltipText || "New Feature Available!"}
-										</TooltipContent>
-									</Tooltip>
-								</TooltipProvider>
-							) : (
-								<>
-									{link ? (
-										<Link
-											href={link}
-											className={cn(
-												"flex size-8 flex-shrink-0 items-center justify-center rounded-full transition-transform hover:scale-110",
-												styles.iconBg,
-											)}
-											onClick={(e) => e.stopPropagation()}
-										>
-											{getVariantIcon()}
-										</Link>
-									) : (
-										<div
-											className={cn(
-												"flex size-8 flex-shrink-0 items-center justify-center rounded-full",
-												styles.iconBg,
-											)}
-										>
-											{getVariantIcon()}
+							<div className="flex w-full flex-1 flex-col items-center gap-2 px-1 pt-8">
+								{isSidebarMinimized ? (
+									<TooltipProvider>
+										<Tooltip>
+											<TooltipTrigger asChild>
+												{link ? (
+													<Link
+														href={link}
+														className={cn(
+															"flex size-6 flex-shrink-0 items-center justify-center rounded-full transition-transform hover:scale-110",
+															styles.iconBg,
+														)}
+														onClick={(e) => e.stopPropagation()}
+													>
+														{getVariantIcon()}
+													</Link>
+												) : (
+													<button
+														type="button"
+														className={cn(
+															"flex size-6 flex-shrink-0 cursor-pointer items-center justify-center rounded-full transition-transform hover:scale-110",
+															styles.iconBg,
+														)}
+														onClick={(e) => {
+															e.stopPropagation();
+														}}
+													>
+														{getVariantIcon()}
+													</button>
+												)}
+											</TooltipTrigger>
+											<TooltipContent side="right" sideOffset={8}>
+												{tooltipText || "New Feature Available!"}
+											</TooltipContent>
+										</Tooltip>
+									</TooltipProvider>
+								) : (
+									<>
+										{link ? (
+											<Link
+												href={link}
+												className={cn(
+													"flex size-8 flex-shrink-0 items-center justify-center rounded-full transition-transform hover:scale-110",
+													styles.iconBg,
+												)}
+												onClick={(e) => e.stopPropagation()}
+											>
+												{getVariantIcon()}
+											</Link>
+										) : (
+											<div
+												className={cn(
+													"flex size-8 flex-shrink-0 items-center justify-center rounded-full",
+													styles.iconBg,
+												)}
+											>
+												{getVariantIcon()}
+											</div>
+										)}
+										<div className="flex w-full flex-col items-center gap-1 px-1">
+											<div className="flex flex-col items-center justify-center text-center">
+												{Children.map(children, (child, index) => {
+													// If it's the last child (subtitle) and subtitleLink is provided, wrap it in a Link
+													if (
+														subtitleLink &&
+														index === Children.count(children) - 1 &&
+														isValidElement(child)
+													) {
+														return (
+															<Link
+																href={subtitleLink}
+																target="_blank"
+																rel="noopener noreferrer"
+																onClick={(e) => {
+																	e.stopPropagation();
+																}}
+																className="cursor-pointer text-primary underline-offset-4 transition-colors hover:text-primary/80 hover:underline"
+															>
+																{child}
+															</Link>
+														);
+													}
+													return child;
+												})}
+											</div>
 										</div>
-									)}
-									<div className="flex w-full flex-col items-center gap-1 px-1">
-										<div className="flex flex-col items-center justify-center text-center">
-											{Children.map(children, (child, index) => {
-												// If it's the last child (subtitle) and subtitleLink is provided, wrap it in a Link
-												if (
-													subtitleLink &&
-													index === Children.count(children) - 1 &&
-													isValidElement(child)
-												) {
-													return (
-														<Link
-															href={subtitleLink}
-															target="_blank"
-															rel="noopener noreferrer"
-															onClick={(e) => {
-																e.stopPropagation();
-															}}
-															className="cursor-pointer text-primary underline-offset-4 transition-colors hover:text-primary/80 hover:underline"
-														>
-															{child}
-														</Link>
-													);
-												}
-												return child;
-											})}
-										</div>
-									</div>
-								</>
-							)}
-						</div>
-					</motion.div>
-				)}
-			</AnimatePresence>
-			{!open && (
+									</>
+								)}
+							</div>
+						</motion.div>
+					)}
+				</AnimatePresence>
+			)}
+			{mounted && !open && (
 				<motion.button
 					initial={{
 						opacity: 0,
 						width: isSidebarMinimized ? 24 : 32,
-						left: isSidebarMinimized ? 72 : 288,
 					}}
 					animate={{
 						opacity: 1,
 						width: isSidebarMinimized ? 24 : 32,
-						left: isSidebarMinimized ? 72 : 288,
 					}}
 					transition={{
 						duration: 0.5,
 						ease: "easeInOut",
 					}}
 					className={cn(
-						"absolute top-20 z-50 flex h-16 items-center justify-center rounded-r-lg border-l shadow-lg hover:bg-accent",
+						"sticky top-20 z-50 flex h-16 items-center justify-center rounded-r-lg border-l shadow-lg hover:bg-accent",
 						styles.bg,
 						styles.border,
 					)}

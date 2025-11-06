@@ -7,11 +7,12 @@ import {
 } from "lucide-react";
 
 import type { ButtonProps } from "@/components/ui/button";
-import type { WebhookStage } from "@/lib/stores/dashboard";
+import type { WebhookCategory, WebhookStage } from "@/lib/stores/dashboard";
 
 export type ActivityRow = {
 	id: string;
 	stage: WebhookStage;
+	category?: WebhookCategory;
 	event: string;
 	endpoint: string;
 	status: number;
@@ -156,5 +157,23 @@ export const connectionStageCards: Record<WebhookStage, StageCardConfig> = {
 		buttonVariant: "outline",
 		footer:
 			"Feeds reuse outgoing signatures so subscribers can trust every broadcast event.",
+	},
+};
+
+export const categoryConfig: Record<
+	WebhookCategory,
+	{ label: string; description: string }
+> = {
+	leads: {
+		label: "Leads",
+		description: "Manage webhooks and feeds for lead integrations",
+	},
+	campaigns: {
+		label: "Campaigns",
+		description: "Manage webhooks and feeds for campaign integrations",
+	},
+	skiptracing: {
+		label: "Skip Tracing",
+		description: "Manage webhooks and feeds for skip tracing integrations",
 	},
 };
