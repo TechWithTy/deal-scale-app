@@ -7,8 +7,8 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-import { Zap, Clock, TrendingDown } from "lucide-react";
 import { cn } from "@/lib/_utils";
+import { Clock, TrendingDown, Zap } from "lucide-react";
 import type { PredictiveCloseMetrics } from "../../types/advanced-analytics";
 
 interface PredictiveCloseCardProps {
@@ -30,38 +30,38 @@ export function PredictiveCloseCard({ data }: PredictiveCloseCardProps) {
 			<CardContent>
 				{/* Main Acceleration Metric */}
 				<div className="mb-6 text-center">
-					<div className="flex items-center justify-center gap-2 mb-2">
+					<div className="mb-2 flex items-center justify-center gap-2">
 						<TrendingDown className="h-8 w-8 text-green-600 dark:text-green-500" />
 						<p className="font-bold text-5xl text-green-600 dark:text-green-500">
 							-{data.accelerationPercent}%
 						</p>
 					</div>
-					<p className="text-sm text-muted-foreground">
+					<p className="text-muted-foreground text-sm">
 						Faster deal cycles with AI
 					</p>
 				</div>
 
 				{/* Comparison */}
-				<div className="grid grid-cols-2 gap-4 mb-6">
-					<div className="rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-4 text-center">
-						<Clock className="h-5 w-5 mx-auto mb-2 text-red-600 dark:text-red-500" />
+				<div className="mb-6 grid grid-cols-2 gap-4">
+					<div className="rounded-lg border border-red-200 bg-red-50 p-4 text-center dark:border-red-800 dark:bg-red-900/20">
+						<Clock className="mx-auto mb-2 h-5 w-5 text-red-600 dark:text-red-500" />
 						<p className="font-bold text-3xl text-red-600 dark:text-red-500">
 							{data.avgDealCycleWithoutAI}d
 						</p>
-						<p className="text-xs text-muted-foreground mt-1">Without AI</p>
+						<p className="mt-1 text-muted-foreground text-xs">Without AI</p>
 					</div>
 
-					<div className="rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 p-4 text-center">
-						<Zap className="h-5 w-5 mx-auto mb-2 text-green-600 dark:text-green-500" />
+					<div className="rounded-lg border border-green-200 bg-green-50 p-4 text-center dark:border-green-800 dark:bg-green-900/20">
+						<Zap className="mx-auto mb-2 h-5 w-5 text-green-600 dark:text-green-500" />
 						<p className="font-bold text-3xl text-green-600 dark:text-green-500">
 							{data.avgDealCycleWithAI}d
 						</p>
-						<p className="text-xs text-muted-foreground mt-1">With AI</p>
+						<p className="mt-1 text-muted-foreground text-xs">With AI</p>
 					</div>
 				</div>
 
 				{/* Time Saved Breakdown */}
-				<div className="rounded-lg border p-4 space-y-3">
+				<div className="space-y-3 rounded-lg border p-4">
 					<p className="font-medium text-sm">Impact Analysis:</p>
 					<div className="space-y-2 text-sm">
 						<div className="flex justify-between">
@@ -88,7 +88,7 @@ export function PredictiveCloseCard({ data }: PredictiveCloseCardProps) {
 								{data.predictedNextMonthCycles}
 							</span>
 						</div>
-						<div className="h-px bg-border my-2" />
+						<div className="my-2 h-px bg-border" />
 						<div className="flex justify-between">
 							<span className="font-medium">
 								Total time savings next month:
@@ -105,7 +105,7 @@ export function PredictiveCloseCard({ data }: PredictiveCloseCardProps) {
 				</div>
 
 				{/* AI Insight */}
-				<div className="mt-4 rounded-lg bg-primary/10 p-3 text-xs text-muted-foreground">
+				<div className="mt-4 rounded-lg bg-primary/10 p-3 text-muted-foreground text-xs">
 					<p>
 						<strong>🧠 AI Insight:</strong> Your automation patterns are
 						reducing deal cycles by {data.accelerationPercent}%. Continue using

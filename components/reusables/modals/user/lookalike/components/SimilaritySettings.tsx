@@ -6,12 +6,12 @@
 
 "use client";
 
-import { UseFormReturn } from "react-hook-form";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Users, Loader2 } from "lucide-react";
+import { Loader2, Users } from "lucide-react";
+import type { UseFormReturn } from "react-hook-form";
 import type { FormValues } from "../types";
 
 interface SimilaritySettingsProps {
@@ -32,7 +32,7 @@ export function SimilaritySettings({
 	return (
 		<div className="space-y-4 rounded-lg border p-4">
 			<div className="flex items-center justify-between">
-				<Label className="text-base font-semibold">Similarity Settings</Label>
+				<Label className="font-semibold text-base">Similarity Settings</Label>
 				{estimatedSize !== null && (
 					<Badge variant="secondary" className="gap-2 whitespace-nowrap">
 						<Users className="h-3 w-3 shrink-0" />
@@ -40,7 +40,7 @@ export function SimilaritySettings({
 							~{estimatedSize.toLocaleString()} leads
 						</span>
 						{isEstimating && (
-							<Loader2 className="h-3 w-3 animate-spin shrink-0" />
+							<Loader2 className="h-3 w-3 shrink-0 animate-spin" />
 						)}
 					</Badge>
 				)}
@@ -62,7 +62,7 @@ export function SimilaritySettings({
 						}
 						className="mt-2"
 					/>
-					<p className="text-muted-foreground text-xs mt-1">
+					<p className="mt-1 text-muted-foreground text-xs">
 						Higher = more similar (fewer results), Lower = broader reach (more
 						results)
 					</p>

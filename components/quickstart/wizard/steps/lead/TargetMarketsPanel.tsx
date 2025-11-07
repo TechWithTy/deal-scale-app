@@ -78,7 +78,7 @@ const TargetMarketsPanel = () => {
 							{market}
 							<button
 								type="button"
-								className="rounded-full border px-1 text-[10px] font-semibold leading-none"
+								className="rounded-full border px-1 font-semibold text-[10px] leading-none"
 								onClick={() => removeTargetMarket(market)}
 								aria-label={`Remove ${market}`}
 							>

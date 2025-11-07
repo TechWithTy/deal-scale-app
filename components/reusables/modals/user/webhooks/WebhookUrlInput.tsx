@@ -1,9 +1,9 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/_utils";
+import { Copy } from "lucide-react";
 import type React from "react";
 import { toast } from "sonner";
-import { Copy } from "lucide-react";
 
 interface WebhookUrlInputProps {
 	className?: string;
@@ -46,11 +46,11 @@ const WebhookUrlInput: React.FC<WebhookUrlInputProps> = ({
 
 	return (
 		<div className={cn("mt-4", className)}>
-			<label htmlFor="webhookUrl" className="mb-1 block text-sm font-medium">
+			<label htmlFor="webhookUrl" className="mb-1 block font-medium text-sm">
 				{label}
 			</label>
 			{description ? (
-				<p className="mb-2 text-xs text-muted-foreground">{description}</p>
+				<p className="mb-2 text-muted-foreground text-xs">{description}</p>
 			) : null}
 			<div className="relative flex items-center gap-2">
 				<Input
@@ -60,7 +60,7 @@ const WebhookUrlInput: React.FC<WebhookUrlInputProps> = ({
 					value={webhookUrl}
 					readOnly={readOnly}
 					onChange={(event) => setWebhookUrl?.(event.target.value)}
-					className={cn("font-mono pr-10", inputClassName)}
+					className={cn("pr-10 font-mono", inputClassName)}
 				/>
 				{shouldShowCopy && webhookUrl && (
 					<Button

@@ -1,6 +1,5 @@
 "use client";
 
-import { useState, useMemo } from "react";
 import {
 	Dialog,
 	DialogContent,
@@ -15,13 +14,14 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { Phone, Mail, MessageSquare, Share2, Send, Search } from "lucide-react";
 import { useCampaignStore } from "@/lib/stores/campaigns";
 import type {
 	CallCampaign,
 	DirectMailCampaign,
 } from "@/types/_dashboard/campaign";
 import type { EmailCampaign } from "@/types/goHighLevel/email";
+import { Mail, MessageSquare, Phone, Search, Send, Share2 } from "lucide-react";
+import { useMemo, useState } from "react";
 
 type CampaignRecord = CallCampaign | EmailCampaign | DirectMailCampaign;
 type CampaignChannel = "all" | "call" | "text" | "social" | "email" | "direct";
@@ -134,7 +134,7 @@ export function CampaignSelectorModal({
 					<div className="flex items-center gap-3">
 						<label
 							htmlFor="type-filter"
-							className="whitespace-nowrap text-sm font-medium"
+							className="whitespace-nowrap font-medium text-sm"
 						>
 							Campaign Type:
 						</label>
@@ -157,7 +157,7 @@ export function CampaignSelectorModal({
 					</div>
 
 					{/* Campaign List */}
-					<div className="border rounded-lg bg-card">
+					<div className="rounded-lg border bg-card">
 						<div className="border-b px-3 py-2">
 							<div className="flex items-center gap-2">
 								<Search className="h-4 w-4 text-muted-foreground" />
@@ -172,7 +172,7 @@ export function CampaignSelectorModal({
 						</div>
 						<div className="max-h-[400px] overflow-y-auto p-2">
 							{filteredCampaigns.length === 0 ? (
-								<div className="py-6 text-center text-sm text-muted-foreground">
+								<div className="py-6 text-center text-muted-foreground text-sm">
 									No campaigns found.
 								</div>
 							) : (
@@ -186,16 +186,16 @@ export function CampaignSelectorModal({
 											<button
 												key={campaign.id}
 												onClick={() => handleSelect(campaign)}
-												className="w-full flex items-center justify-between gap-3 rounded-md px-3 py-3 text-left transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none"
+												className="flex w-full items-center justify-between gap-3 rounded-md px-3 py-3 text-left transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none"
 											>
-												<div className="flex items-center gap-3 flex-1 min-w-0">
+												<div className="flex min-w-0 flex-1 items-center gap-3">
 													<div
 														className={`flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10`}
 													>
-														<Icon className="h-5 w-5 text-primary flex-shrink-0" />
+														<Icon className="h-5 w-5 flex-shrink-0 text-primary" />
 													</div>
-													<div className="flex-1 min-w-0">
-														<div className="font-semibold text-foreground truncate">
+													<div className="min-w-0 flex-1">
+														<div className="truncate font-semibold text-foreground">
 															{campaign.name}
 														</div>
 														<div className="text-muted-foreground text-xs">
@@ -203,9 +203,9 @@ export function CampaignSelectorModal({
 														</div>
 													</div>
 												</div>
-												<div className="flex items-center gap-2 flex-shrink-0">
+												<div className="flex flex-shrink-0 items-center gap-2">
 													<span
-														className={`px-3 py-1.5 rounded-full text-xs font-semibold uppercase tracking-wide ${statusColor}`}
+														className={`rounded-full px-3 py-1.5 font-semibold text-xs uppercase tracking-wide ${statusColor}`}
 													>
 														{campaign.status}
 													</span>

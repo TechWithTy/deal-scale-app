@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { CreateKanbanTaskSchema } from "@/types/zod/kanban-task";
 import { useTaskStore } from "@/lib/stores/taskActions";
+import { CreateKanbanTaskSchema } from "@/types/zod/kanban-task";
+import { useEffect, useState } from "react";
 import { AssignmentTypeDropdown } from "./AssignmentTypeDropdown";
 import { LeadDropdown } from "./LeadDropdown";
 import { LeadListDropdown } from "./LeadListDropdown";
-import { TeamMemberDropdown } from "./TeamMemberDropdown";
 import { TaskFormFields } from "./TaskFormFields";
+import { TeamMemberDropdown } from "./TeamMemberDropdown";
 
 interface NewTaskFormProps {
 	setFormValid: (isValid: boolean) => void;

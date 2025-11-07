@@ -1,5 +1,6 @@
 "use client";
 
+import { Badge } from "@/components/ui/badge";
 import {
 	Card,
 	CardContent,
@@ -8,9 +9,8 @@ import {
 	CardTitle,
 } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Badge } from "@/components/ui/badge";
-import { Sparkles, TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { cn } from "@/lib/_utils";
+import { Minus, Sparkles, TrendingDown, TrendingUp } from "lucide-react";
 
 interface LeadScore {
 	leadId: string;
@@ -126,17 +126,17 @@ export function PredictiveLeadScoring({ leads }: PredictiveLeadScoringProps) {
 						return (
 							<div
 								key={lead.leadId}
-								className="rounded-lg border p-4 space-y-3 hover:bg-muted/50 transition-colors"
+								className="space-y-3 rounded-lg border p-4 transition-colors hover:bg-muted/50"
 							>
 								{/* Lead Header */}
 								<div className="flex items-start justify-between">
 									<div className="flex-1">
-										<div className="flex items-center gap-2 mb-1">
+										<div className="mb-1 flex items-center gap-2">
 											<h4 className="font-medium text-sm">{lead.leadName}</h4>
 											<Badge variant={badge.variant}>{badge.label}</Badge>
 											{getTrendIcon(lead.trend)}
 										</div>
-										<p className="text-xs text-muted-foreground">
+										<p className="text-muted-foreground text-xs">
 											{lead.recommendation}
 										</p>
 									</div>
@@ -149,36 +149,36 @@ export function PredictiveLeadScoring({ leads }: PredictiveLeadScoringProps) {
 										>
 											{lead.conversionProbability}%
 										</p>
-										<p className="text-xs text-muted-foreground">Conversion</p>
+										<p className="text-muted-foreground text-xs">Conversion</p>
 									</div>
 								</div>
 
 								{/* Score Breakdown */}
 								<div className="grid grid-cols-4 gap-2 text-xs">
 									<div>
-										<p className="text-muted-foreground mb-1">Engagement</p>
+										<p className="mb-1 text-muted-foreground">Engagement</p>
 										<Progress
 											value={lead.factors.engagement}
 											className="h-1.5"
 										/>
-										<p className="font-medium mt-0.5">
+										<p className="mt-0.5 font-medium">
 											{lead.factors.engagement}%
 										</p>
 									</div>
 									<div>
-										<p className="text-muted-foreground mb-1">Intent</p>
+										<p className="mb-1 text-muted-foreground">Intent</p>
 										<Progress value={lead.factors.intent} className="h-1.5" />
-										<p className="font-medium mt-0.5">{lead.factors.intent}%</p>
+										<p className="mt-0.5 font-medium">{lead.factors.intent}%</p>
 									</div>
 									<div>
-										<p className="text-muted-foreground mb-1">Timing</p>
+										<p className="mb-1 text-muted-foreground">Timing</p>
 										<Progress value={lead.factors.timing} className="h-1.5" />
-										<p className="font-medium mt-0.5">{lead.factors.timing}%</p>
+										<p className="mt-0.5 font-medium">{lead.factors.timing}%</p>
 									</div>
 									<div>
-										<p className="text-muted-foreground mb-1">Fit</p>
+										<p className="mb-1 text-muted-foreground">Fit</p>
 										<Progress value={lead.factors.fitScore} className="h-1.5" />
-										<p className="font-medium mt-0.5">
+										<p className="mt-0.5 font-medium">
 											{lead.factors.fitScore}%
 										</p>
 									</div>
@@ -191,7 +191,7 @@ export function PredictiveLeadScoring({ leads }: PredictiveLeadScoringProps) {
 				{/* Summary Stats */}
 				<div className="mt-6 grid grid-cols-3 gap-4 rounded-lg bg-muted p-4">
 					<div className="text-center">
-						<p className="text-xs text-muted-foreground">Avg Score</p>
+						<p className="text-muted-foreground text-xs">Avg Score</p>
 						<p className="font-bold text-lg">
 							{Math.round(
 								scoredLeads.reduce(
@@ -203,13 +203,13 @@ export function PredictiveLeadScoring({ leads }: PredictiveLeadScoringProps) {
 						</p>
 					</div>
 					<div className="text-center">
-						<p className="text-xs text-muted-foreground">Hot Leads</p>
-						<p className="font-bold text-lg text-green-600 dark:text-green-500">
+						<p className="text-muted-foreground text-xs">Hot Leads</p>
+						<p className="font-bold text-green-600 text-lg dark:text-green-500">
 							{scoredLeads.filter((l) => l.conversionProbability >= 75).length}
 						</p>
 					</div>
 					<div className="text-center">
-						<p className="text-xs text-muted-foreground">Focus This Week</p>
+						<p className="text-muted-foreground text-xs">Focus This Week</p>
 						<p className="font-bold text-lg text-primary">
 							{scoredLeads.filter((l) => l.conversionProbability >= 60).length}
 						</p>

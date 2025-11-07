@@ -57,8 +57,8 @@ export function MobileSidebar({ className }: SidebarProps) {
 				<SheetTrigger asChild>
 					<MenuIcon />
 				</SheetTrigger>
-				<SheetContent side="left" className="!px-0">
-					<div className="space-y-4 py-4">
+				<SheetContent side="left" className="!px-0 flex flex-col">
+					<div className="flex-1 space-y-4 overflow-y-auto py-4">
 						<div className="px-3">
 							<Link
 								href="/dashboard"

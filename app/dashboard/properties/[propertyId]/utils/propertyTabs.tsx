@@ -159,8 +159,8 @@ const PropertyTabsList: React.FC<PropertyTabsListProps> = ({
 		<div className="mt-4">
 			{enableToggle && (
 				<div className="mb-3 flex items-center gap-2">
-					<span className="text-sm text-muted-foreground">View:</span>
-					<div className="inline-flex border border-border rounded-md bg-card p-1">
+					<span className="text-muted-foreground text-sm">View:</span>
+					<div className="inline-flex rounded-md border border-border bg-card p-1">
 						<button
 							type="button"
 							aria-pressed={mode === "table"}

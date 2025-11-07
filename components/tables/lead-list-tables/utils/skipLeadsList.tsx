@@ -14,8 +14,8 @@ import type { LeadTypeGlobal } from "@/types/_dashboard/leads";
 import { skipTraceNestedSchema } from "@/types/zod/createLeadListSkip";
 import type React from "react";
 import { useState } from "react";
+import { FormProvider, useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { useForm, FormProvider } from "react-hook-form";
 
 type SkipTraceFormProps = {
 	leads: LeadTypeGlobal[]; // Simplified lead type
@@ -59,7 +59,7 @@ const SkipTraceForm: React.FC<SkipTraceFormProps> = ({
 	};
 
 	return (
-		<div className="bg-card rounded-lg p-6 shadow-md">
+		<div className="rounded-lg bg-card p-6 shadow-md">
 			<p className="mb-4 text-muted-foreground text-sm">
 				Select the number of leads to skip trace:
 			</p>

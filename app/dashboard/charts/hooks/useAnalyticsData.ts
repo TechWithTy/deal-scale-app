@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import type { AnalyticsData } from "../types/analytics";
 import { mockAnalyticsData } from "@/constants/_faker/analytics/charts";
+import { useEffect, useState } from "react";
+import type { AnalyticsData } from "../types/analytics";
 
 interface UseAnalyticsDataReturn {
 	data: AnalyticsData | null;

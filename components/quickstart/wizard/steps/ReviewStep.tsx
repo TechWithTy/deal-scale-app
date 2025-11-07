@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo } from "react";
 import { CheckCircle } from "lucide-react";
+import { useMemo } from "react";
 import { shallow } from "zustand/shallow";
 
 import { Badge } from "@/components/ui/badge";
@@ -157,7 +157,7 @@ const ReviewStep = () => {
 							)}
 						</div>
 						{marketFilters.length > 0 && (
-							<p className="mt-2 text-xs text-muted-foreground">
+							<p className="mt-2 text-muted-foreground text-xs">
 								Filters: {marketFilters.join(", ")}
 							</p>
 						)}

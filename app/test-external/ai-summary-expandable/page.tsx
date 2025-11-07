@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
 import {
 	ExpandableAISummary,
 	ExpandableAISummarySkeleton,
 } from "external/ai-summary-expandable/components";
+import { useEffect, useMemo, useState } from "react";
 
 export default function AISummaryExpandableTestPage() {
 	// Simulate loading to showcase skeleton
@@ -85,14 +85,14 @@ export default function AISummaryExpandableTestPage() {
 	);
 
 	return (
-		<div className="p-4 space-y-4">
+		<div className="space-y-4 p-4">
 			<h1 className="font-semibold">AI Summary Expandable — Test Page</h1>
 
 			{/* Decorative gradient banner to mirror screenshot vibe */}
 			<div className="relative overflow-hidden rounded-lg border border-border">
-				<div className="bg-gradient-to-r from-violet-500 via-fuchsia-500 to-pink-500 h-12" />
+				<div className="h-12 bg-gradient-to-r from-violet-500 via-fuchsia-500 to-pink-500" />
 				<div className="p-4">
-					<p className="text-sm text-muted-foreground">
+					<p className="text-muted-foreground text-sm">
 						Demo gradient banner above the component
 					</p>
 				</div>

@@ -3,8 +3,8 @@ import type { LeadTypeGlobal } from "@/types/_dashboard/leads";
 import { toast } from "sonner";
 import { create } from "zustand";
 
-import { exportLeadsToExcel } from "../_utils/files/loopDownload/leadExports";
 import { leadExcelColumns } from "@/components/tables/lead-tables/LeadColumns"; // * Import Excel columns for export
+import { exportLeadsToExcel } from "../_utils/files/loopDownload/leadExports";
 // Define the state and actions for managing leads
 interface LeadState {
 	leads: LeadTypeGlobal[]; // Holds the lead data

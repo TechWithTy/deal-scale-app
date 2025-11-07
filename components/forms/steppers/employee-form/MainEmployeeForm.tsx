@@ -4,6 +4,7 @@ import { Form } from "@/components/ui/form";
 import { Heading } from "@/components/ui/heading";
 import { Separator } from "@/components/ui/separator";
 
+import { Breadcrumbs } from "@/components/breadcrumbs";
 import { zodResolver } from "@hookform/resolvers/zod";
 // MainEmployeeForm.tsx
 import type React from "react";
@@ -11,12 +12,11 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { EmployeeInfoFields } from "./steps/EmployeeInfoFields";
 import { EmployeePermissionsSection } from "./steps/EmployeePermissionsSection";
+import { EmployeePlatformIntegrationSection } from "./steps/EmployeePlatformIntegrationSection";
 import { EmployeeRoleField } from "./steps/EmployeeRoleField";
 import { EmployeeTwoFactorSection } from "./steps/EmployeeTwoFactorSection";
-import { EmployeePlatformIntegrationSection } from "./steps/EmployeePlatformIntegrationSection";
 import { ResetPasswordSection } from "./steps/ResetPasswordSection";
 import { UpdatePasswordSection } from "./steps/UpdatePasswordSection";
-import { Breadcrumbs } from "@/components/breadcrumbs";
 
 import { teamMemberFormSchema } from "@/types/zod/userSetup/team-member-form-schema";
 import type {

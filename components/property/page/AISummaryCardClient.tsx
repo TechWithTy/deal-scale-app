@@ -1,14 +1,14 @@
 "use client";
 
-import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { useRemainingAI, useUserStore } from "@/lib/stores/userStore";
+import type { Property } from "@/types/_dashboard/property";
 import {
 	ExpandableAISummary,
 	ExpandableAISummarySkeleton,
 } from "external/ai-summary-expandable/components";
-import type { Property } from "@/types/_dashboard/property";
-import { useRemainingAI, useUserStore } from "@/lib/stores/userStore";
+import { useMemo, useState } from "react";
 
 interface SectionCard {
 	title: string;

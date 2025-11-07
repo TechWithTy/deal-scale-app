@@ -4,7 +4,7 @@
  * Upload, view, edit, and train AI agents using sales scripts
  */
 
-import { useState } from "react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -13,19 +13,8 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
-import {
-	Table,
-	TableBody,
-	TableCell,
-	TableHead,
-	TableHeader,
-	TableRow,
-} from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
 import {
 	Select,
 	SelectContent,
@@ -40,20 +29,31 @@ import {
 	SheetHeader,
 	SheetTitle,
 } from "@/components/ui/sheet";
+import { Switch } from "@/components/ui/switch";
 import {
-	Upload,
-	FileText,
+	Table,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableHeader,
+	TableRow,
+} from "@/components/ui/table";
+import { Textarea } from "@/components/ui/textarea";
+import { format } from "date-fns";
+import {
 	BarChart3,
 	Bot,
-	Pencil,
-	Trash2,
-	Search,
-	Plus,
-	X,
 	File,
+	FileText,
+	Pencil,
+	Plus,
+	Search,
+	Trash2,
+	Upload,
+	X,
 } from "lucide-react";
+import { useState } from "react";
 import { toast } from "sonner";
-import { format } from "date-fns";
 
 interface SalesScript {
 	id: string;
@@ -500,7 +500,7 @@ export const SalesScriptManager: React.FC = () => {
 									<Badge
 										key={idx}
 										variant="secondary"
-										className="gap-1 pl-2 pr-1"
+										className="gap-1 pr-1 pl-2"
 									>
 										{tag}
 										<button
@@ -519,7 +519,7 @@ export const SalesScriptManager: React.FC = () => {
 									onChange={(e) => setTagInput(e.target.value)}
 									onKeyDown={handleTagInputKeyDown}
 									onBlur={handleAddTag}
-									className="flex-1 border-0 p-0 shadow-none focus-visible:ring-0 min-w-[200px]"
+									className="min-w-[200px] flex-1 border-0 p-0 shadow-none focus-visible:ring-0"
 								/>
 							</div>
 							<p className="mt-1 text-muted-foreground text-xs">
@@ -543,7 +543,7 @@ export const SalesScriptManager: React.FC = () => {
 										<Button
 											type="button"
 											variant="outline"
-											className="gap-2 cursor-pointer"
+											className="cursor-pointer gap-2"
 											disabled={isUploading}
 											asChild
 										>
@@ -682,7 +682,7 @@ export const SalesScriptManager: React.FC = () => {
 									<Badge
 										key={idx}
 										variant="secondary"
-										className="gap-1 pl-2 pr-1"
+										className="gap-1 pr-1 pl-2"
 									>
 										{tag}
 										<button
@@ -701,7 +701,7 @@ export const SalesScriptManager: React.FC = () => {
 									onChange={(e) => setTagInput(e.target.value)}
 									onKeyDown={handleTagInputKeyDown}
 									onBlur={handleAddTag}
-									className="flex-1 border-0 p-0 shadow-none focus-visible:ring-0 min-w-[200px]"
+									className="min-w-[200px] flex-1 border-0 p-0 shadow-none focus-visible:ring-0"
 								/>
 							</div>
 							<p className="mt-1 text-muted-foreground text-xs">
@@ -725,7 +725,7 @@ export const SalesScriptManager: React.FC = () => {
 										<Button
 											type="button"
 											variant="outline"
-											className="gap-2 cursor-pointer"
+											className="cursor-pointer gap-2"
 											disabled={isUploading}
 											asChild
 										>

@@ -1,4 +1,3 @@
-import { create } from "zustand";
 import type {
 	PermissionAction,
 	PermissionMatrix,
@@ -7,6 +6,7 @@ import type {
 	UserRole,
 	UserTier,
 } from "@/types/user";
+import { create } from "zustand";
 
 interface UserCredits {
 	used: number;

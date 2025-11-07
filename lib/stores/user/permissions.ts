@@ -1,9 +1,9 @@
+import { useUserStore } from "@/lib/stores/userStore";
+import type { UserPermissions } from "@/types/userProfile";
 import { create } from "zustand";
 import { withAnalytics } from "../_middleware/analytics";
-import type { UserPermissions } from "@/types/userProfile";
 import { useSessionStore } from "./useSessionStore";
 import { useUserProfileStore } from "./userProfile";
-import { useUserStore } from "@/lib/stores/userStore";
 
 type PermissionKey = keyof UserPermissions;
 

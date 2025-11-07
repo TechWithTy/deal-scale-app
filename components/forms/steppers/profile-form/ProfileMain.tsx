@@ -1,13 +1,13 @@
 "use client";
+import { mockUserProfile } from "@/constants/_faker/profile/userProfile";
+import type { AssistantVoice } from "@/types/vapiAi/api/assistant/create";
 import type { ProfileFormValues } from "@/types/zod/userSetup/profile-form-schema";
 import type React from "react";
-import { useForm, FormProvider } from "react-hook-form";
+import { FormProvider, useForm } from "react-hook-form";
 import { OAuthMain } from "./steps/Oauth/OAuthMain";
 import { BaseSetupMain } from "./steps/base/BaseSetupMain";
 import { KnowledgeBaseMain } from "./steps/knowledge/KnowledgeBaseMain";
 import { PersonalInformationFormMain } from "./steps/personal_information/PersonalInformationFormMain";
-import type { AssistantVoice } from "@/types/vapiAi/api/assistant/create";
-import { mockUserProfile } from "@/constants/_faker/profile/userProfile";
 // Example initial data (replace with real data as needed)
 const initialData = undefined;
 

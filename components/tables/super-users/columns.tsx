@@ -1,10 +1,10 @@
 "use client";
 
+import { formatAdminRole } from "@/lib/admin/roles";
 import type { ColumnDef } from "@tanstack/react-table";
 import { DataTableColumnHeader } from "external/shadcn-table/src/components/data-table/data-table-column-header";
-import type { AdminUser } from "./types";
 import { CellAction } from "./cell-action";
-import { formatAdminRole } from "@/lib/admin/roles";
+import type { AdminUser } from "./types";
 
 interface AdminUserTableMeta {
 	onView?: (user: AdminUser) => void;

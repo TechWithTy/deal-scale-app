@@ -1,14 +1,14 @@
 "use client";
-import { useEffect, useMemo, useRef } from "react";
+import type { Property } from "@/types/_dashboard/property";
 import { DrawerFlow } from "external/drawer-flow";
 import type {
+	DrawerFlowProps,
 	DrawerItem,
 	ListService,
 	LoadMoreArgs,
 	LoadMoreResult,
-	DrawerFlowProps,
 } from "external/drawer-flow";
-import type { Property } from "@/types/_dashboard/property";
+import { useEffect, useMemo, useRef } from "react";
 import PropertyCard from "./propertyCard";
 
 export interface PropertyDrawerFlowProps {
@@ -124,7 +124,7 @@ export const PropertyDrawerFlow = ({
 									</h3>
 									<button
 										type="button"
-										className={`rounded-full border-2 px-2 py-1 text-sm ${selected ? "bg-orange-500 text-white border-orange-500" : "border-border hover:border-orange-500"}`}
+										className={`rounded-full border-2 px-2 py-1 text-sm ${selected ? "border-orange-500 bg-orange-500 text-white" : "border-border hover:border-orange-500"}`}
 										onClick={toggle}
 									>
 										{selected ? "Selected" : "Select"}

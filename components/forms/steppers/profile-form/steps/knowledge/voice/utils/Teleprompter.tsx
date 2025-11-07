@@ -1,5 +1,5 @@
-import { cn } from "@/lib/_utils";
 import type { ScriptLine } from "@/constants/_faker/_api/eleven_labs/scripts";
+import { cn } from "@/lib/_utils";
 import React, {
 	useRef,
 	useEffect,
@@ -92,7 +92,7 @@ const Teleprompter = forwardRef<TeleprompterHandle, TeleprompterProps>(
 				{showPauseResume && (
 					<button
 						type="button"
-						className="absolute -top-3 rounded bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground shadow hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring"
+						className="-top-3 absolute rounded bg-primary px-3 py-1 font-semibold text-primary-foreground text-xs shadow hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring"
 						style={{ transform: "translateY(-100%)" }}
 						onClick={() => {
 							onPauseChange?.(!isScrolling);
@@ -129,15 +129,15 @@ const Teleprompter = forwardRef<TeleprompterHandle, TeleprompterProps>(
 									className={cn(
 										"rounded px-2 py-1 transition-colors duration-200",
 										idx === currentIndex
-											? "border-l-4 border-primary bg-primary/10 font-bold text-primary shadow"
+											? "border-primary border-l-4 bg-primary/10 font-bold text-primary shadow"
 											: "text-muted-foreground",
 									)}
 								>
 									<div className="flex items-center gap-2">
-										<span className="text-lg font-extrabold leading-snug text-primary">
+										<span className="font-extrabold text-lg text-primary leading-snug">
 											{line.title}
 										</span>
-										<span className="ml-2 rounded bg-primary/10 px-2 py-0.5 align-middle text-xs font-normal text-primary">
+										<span className="ml-2 rounded bg-primary/10 px-2 py-0.5 align-middle font-normal text-primary text-xs">
 											{line.timing}s
 										</span>
 									</div>

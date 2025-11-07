@@ -8,8 +8,8 @@ import {
 	CardTitle,
 } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Users, Award } from "lucide-react";
 import { cn } from "@/lib/_utils";
+import { Award, Users } from "lucide-react";
 import type { TeamBenchmark } from "../../types/advanced-analytics";
 
 interface TeamBenchmarkingProps {
@@ -52,7 +52,7 @@ export function TeamBenchmarking({ data }: TeamBenchmarkingProps) {
 				{/* Category Badge */}
 				<div className="mb-6 flex items-center justify-between">
 					<div>
-						<p className="text-sm text-muted-foreground mb-1">
+						<p className="mb-1 text-muted-foreground text-sm">
 							Performance Category
 						</p>
 						<p className={cn("font-bold text-2xl", getCategoryColor())}>
@@ -60,7 +60,7 @@ export function TeamBenchmarking({ data }: TeamBenchmarkingProps) {
 						</p>
 					</div>
 					<div className="text-right">
-						<p className="text-sm text-muted-foreground mb-1">Percentile</p>
+						<p className="mb-1 text-muted-foreground text-sm">Percentile</p>
 						<div className="flex items-center gap-2">
 							<Award className="h-5 w-5 text-yellow-500" />
 							<p className="font-bold text-2xl">{data.percentile}th</p>
@@ -83,44 +83,44 @@ export function TeamBenchmarking({ data }: TeamBenchmarkingProps) {
 
 				{/* Comparative Bar Chart */}
 				<div className="mt-6 rounded-lg border p-4">
-					<p className="text-sm font-medium mb-3">Performance Comparison</p>
+					<p className="mb-3 font-medium text-sm">Performance Comparison</p>
 					<div className="space-y-3">
 						<div className="flex items-center gap-2">
-							<div className="w-24 text-xs text-muted-foreground">You</div>
-							<div className="flex-1 bg-muted rounded-full h-6 relative overflow-hidden">
+							<div className="w-24 text-muted-foreground text-xs">You</div>
+							<div className="relative h-6 flex-1 overflow-hidden rounded-full bg-muted">
 								<div
-									className="bg-primary h-full flex items-center justify-end pr-2 transition-all duration-500"
+									className="flex h-full items-center justify-end bg-primary pr-2 transition-all duration-500"
 									style={{ width: `${data.userScore}%` }}
 								>
-									<span className="text-xs font-medium text-primary-foreground">
+									<span className="font-medium text-primary-foreground text-xs">
 										{data.userScore}
 									</span>
 								</div>
 							</div>
 						</div>
 						<div className="flex items-center gap-2">
-							<div className="w-24 text-xs text-muted-foreground">Team Avg</div>
-							<div className="flex-1 bg-muted rounded-full h-6 relative overflow-hidden">
+							<div className="w-24 text-muted-foreground text-xs">Team Avg</div>
+							<div className="relative h-6 flex-1 overflow-hidden rounded-full bg-muted">
 								<div
-									className="bg-blue-500 h-full flex items-center justify-end pr-2 transition-all duration-500"
+									className="flex h-full items-center justify-end bg-blue-500 pr-2 transition-all duration-500"
 									style={{ width: `${data.teamAverage}%` }}
 								>
-									<span className="text-xs font-medium text-white">
+									<span className="font-medium text-white text-xs">
 										{data.teamAverage}
 									</span>
 								</div>
 							</div>
 						</div>
 						<div className="flex items-center gap-2">
-							<div className="w-24 text-xs text-muted-foreground">
+							<div className="w-24 text-muted-foreground text-xs">
 								Market Avg
 							</div>
-							<div className="flex-1 bg-muted rounded-full h-6 relative overflow-hidden">
+							<div className="relative h-6 flex-1 overflow-hidden rounded-full bg-muted">
 								<div
-									className="bg-gray-500 h-full flex items-center justify-end pr-2 transition-all duration-500"
+									className="flex h-full items-center justify-end bg-gray-500 pr-2 transition-all duration-500"
 									style={{ width: `${data.marketAverage}%` }}
 								>
-									<span className="text-xs font-medium text-white">
+									<span className="font-medium text-white text-xs">
 										{data.marketAverage}
 									</span>
 								</div>
@@ -130,7 +130,7 @@ export function TeamBenchmarking({ data }: TeamBenchmarkingProps) {
 				</div>
 
 				{/* Insights */}
-				<div className="mt-4 rounded-lg bg-muted p-3 text-xs text-muted-foreground">
+				<div className="mt-4 rounded-lg bg-muted p-3 text-muted-foreground text-xs">
 					<p>
 						<strong>Insight:</strong> You're performing{" "}
 						<span className="font-semibold text-foreground">

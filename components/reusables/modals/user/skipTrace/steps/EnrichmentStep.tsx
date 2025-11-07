@@ -1,15 +1,15 @@
-import { useSkipTraceStore } from "@/lib/stores/user/skip_trace/skipTraceStore";
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { enrichmentOptions } from "@/constants/skip-trace/enrichmentOptions";
+import { fieldLabels } from "@/constants/skip-trace/fieldLabels";
+import { useSkipTraceStore } from "@/lib/stores/user/skip_trace/skipTraceStore";
+import { useUserStore } from "@/lib/stores/userStore";
 import type {
 	EnrichmentOption,
 	InputField,
 } from "@/types/skip-trace/enrichment";
-import { enrichmentOptions } from "@/constants/skip-trace/enrichmentOptions";
-import { fieldLabels } from "@/constants/skip-trace/fieldLabels";
-import { useUserStore } from "@/lib/stores/userStore";
+import { useState } from "react";
 import { EnrichmentCard } from "./enrichment/EnrichmentCard";
 
 // * Helper functions that adapt to list vs single flow

@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/_utils";
-import { motion, type MotionStyle, type Transition } from "framer-motion";
+import { type MotionStyle, type Transition, motion } from "framer-motion";
 
 interface BorderBeamProps {
 	/**
@@ -46,7 +46,7 @@ interface BorderBeamProps {
 	initialOffset?: number;
 }
 
-export const BorderBeam = ({
+const BorderBeam = ({
 	className,
 	size = 50,
 	delay = 0,
@@ -92,3 +92,6 @@ export const BorderBeam = ({
 		</div>
 	);
 };
+
+export default BorderBeam;
+export { BorderBeam };

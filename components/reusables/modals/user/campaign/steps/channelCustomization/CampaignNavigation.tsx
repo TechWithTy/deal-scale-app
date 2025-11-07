@@ -1,5 +1,5 @@
-import type { FC } from "react";
 import { Button } from "@/components/ui/button";
+import type { FC } from "react";
 
 interface CampaignNavigationProps {
 	onBack: () => void;

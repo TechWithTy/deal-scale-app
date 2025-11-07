@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo } from "react";
 import { Compass } from "lucide-react";
+import { useMemo } from "react";
 import { shallow } from "zustand/shallow";
 
 import { Badge } from "@/components/ui/badge";
@@ -149,7 +149,7 @@ const MarketDiscoveryStep = () => {
 				</CardHeader>
 				<CardContent className="space-y-4">
 					<div className="space-y-2">
-						<Label className="text-sm font-medium">Monthly spend range</Label>
+						<Label className="font-medium text-sm">Monthly spend range</Label>
 						<Slider
 							value={[...budgetRange]}
 							onValueChange={(value) =>
@@ -168,7 +168,7 @@ const MarketDiscoveryStep = () => {
 					</div>
 
 					<div className="space-y-2">
-						<Label className="text-sm font-medium">
+						<Label className="font-medium text-sm">
 							When do you plan to launch?
 						</Label>
 						<Select

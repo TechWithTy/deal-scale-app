@@ -1,5 +1,5 @@
-import type { ReactNode } from "react";
 import { redirect } from "next/navigation";
+import type { ReactNode } from "react";
 
 import { auth } from "@/auth";
 import AdminNavigation from "@/components/admin/AdminNavigation";
@@ -50,7 +50,7 @@ export default async function AdminLayout({
 	return (
 		<div className="min-h-screen bg-background text-foreground">
 			<div className="flex min-h-screen flex-col lg:flex-row">
-				<aside className="border-b border-r border-border/50 bg-muted/10 lg:w-64 lg:border-b-0">
+				<aside className="border-border/50 border-r border-b bg-muted/10 lg:w-64 lg:border-b-0">
 					<div className="px-6 py-6">
 						<h2 className="font-semibold text-lg">Platform Admin Console</h2>
 						<p className="text-muted-foreground text-sm">
@@ -61,13 +61,13 @@ export default async function AdminLayout({
 				</aside>
 				<div className="flex flex-1 flex-col">
 					<ImpersonationBanner />
-					<header className="border-b border-border/50 px-6 py-4">
+					<header className="border-border/50 border-b px-6 py-4">
 						<div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
 							<div>
 								<div className="text-muted-foreground text-xs uppercase tracking-wide">
 									Signed in as
 								</div>
-								<div className="text-sm font-medium">
+								<div className="font-medium text-sm">
 									{session?.user?.email}
 								</div>
 								<p className="text-muted-foreground text-sm">{contextHint}</p>

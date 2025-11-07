@@ -1,17 +1,17 @@
 "use client";
 
 import FeatureGuard from "@/components/access/FeatureGuard";
-import { Sparkles } from "lucide-react";
+import { mockAdvancedAnalyticsData } from "@/constants/_faker/analytics/advanced";
 import { useSessionStore } from "@/lib/stores/user/useSessionStore";
+import { Sparkles } from "lucide-react";
+import { AIROIDashboard } from "./advanced/AIROIDashboard";
+import { DealEfficiencyCard } from "./advanced/DealEfficiencyCard";
+import { HobbyTimeForecast } from "./advanced/HobbyTimeForecast";
+import { PredictiveCloseCard } from "./advanced/PredictiveCloseCard";
 import { PredictiveLeadScoring } from "./advanced/PredictiveLeadScoring";
 import { RevenueForecasting } from "./advanced/RevenueForecasting";
-import { AIROIDashboard } from "./advanced/AIROIDashboard";
 import { SignalAttribution } from "./advanced/SignalAttribution";
-import { DealEfficiencyCard } from "./advanced/DealEfficiencyCard";
-import { PredictiveCloseCard } from "./advanced/PredictiveCloseCard";
 import { TeamBenchmarking } from "./advanced/TeamBenchmarking";
-import { HobbyTimeForecast } from "./advanced/HobbyTimeForecast";
-import { mockAdvancedAnalyticsData } from "@/constants/_faker/analytics/advanced";
 
 export function AdvancedAnalyticsTab() {
 	const sessionUser = useSessionStore((state) => state.user);

@@ -1,9 +1,9 @@
 "use client";
 
-import { Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useModalStore } from "@/lib/stores/dashboard";
 import { useGamificationStore } from "@/lib/stores/gamification";
+import { Trophy } from "lucide-react";
 import { useEffect } from "react";
 
 export default function LeaderboardDropdown() {
@@ -31,7 +31,7 @@ export default function LeaderboardDropdown() {
 		>
 			<Trophy className="h-[1.1rem] w-[1.1rem]" />
 			{hasRankChanged ? (
-				<span className="absolute -right-0.5 -top-0.5 inline-flex h-2.5 w-2.5 animate-pulse rounded-full bg-yellow-500" />
+				<span className="-right-0.5 -top-0.5 absolute inline-flex h-2.5 w-2.5 animate-pulse rounded-full bg-yellow-500" />
 			) : null}
 		</Button>
 	);

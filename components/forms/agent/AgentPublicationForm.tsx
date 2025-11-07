@@ -2,14 +2,12 @@
 
 import type { UseFormReturn } from "react-hook-form";
 
-import type { Agent } from "./utils/schema";
 import {
 	FormControl,
 	FormField,
 	FormItem,
 	FormLabel,
 } from "@/components/ui/form";
-import { Switch } from "@/components/ui/switch";
 import {
 	Select,
 	SelectContent,
@@ -17,6 +15,8 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import type { Agent } from "./utils/schema";
 
 interface AgentPublicationFormProps {
 	form: UseFormReturn<Agent>;
@@ -125,7 +125,7 @@ export function AgentPublicationForm({ form }: AgentPublicationFormProps) {
 											</SelectContent>
 										</Select>
 									</FormControl>
-									<div className="pt-2 text-sm text-muted-foreground">
+									<div className="pt-2 text-muted-foreground text-sm">
 										<div>
 											Estimated{" "}
 											{billingCycle === "one-time" ? "One-time" : "Monthly"}{" "}

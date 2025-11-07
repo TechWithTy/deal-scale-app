@@ -1,9 +1,9 @@
-import { createWithEqualityFn } from "zustand/traditional";
 import {
+	type StateStorage,
 	createJSONStorage,
 	persist,
-	type StateStorage,
 } from "zustand/middleware";
+import { createWithEqualityFn } from "zustand/traditional";
 
 interface QuickStartWizardExperienceState {
 	readonly hasSeenWizard: boolean;

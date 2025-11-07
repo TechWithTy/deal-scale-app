@@ -1,13 +1,13 @@
-import { Before, Given, When, Then } from "@cucumber/cucumber";
 import assert from "node:assert";
 import {
-	SUBSCRIPTION_TIERS,
-	hasRequiredTier,
-	resolveGuardBehavior,
-	ensureValidTier,
 	type FeatureGuardMode,
 	type GuardBehaviorKey,
+	SUBSCRIPTION_TIERS,
+	ensureValidTier,
+	hasRequiredTier,
+	resolveGuardBehavior,
 } from "@/constants/subscription/tiers";
+import { Before, Given, Then, When } from "@cucumber/cucumber";
 
 type FeatureGuardCtx = {
 	availableTiers: string[];

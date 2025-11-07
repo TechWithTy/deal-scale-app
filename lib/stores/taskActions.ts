@@ -1,8 +1,8 @@
 import { mockKanbanState } from "@/constants/_faker/kanban";
 import type {
+	KanbanTask as BaseKanbanTask,
 	KanbanColumn,
 	KanbanState,
-	KanbanTask as BaseKanbanTask,
 } from "@/types/_dashboard/kanban";
 
 // * Extend KanbanTask to include appointmentDate
@@ -12,11 +12,11 @@ export type KanbanTask = BaseKanbanTask & {
 	leadListId?: string;
 	assignedToTeamMember?: string;
 };
+import { defaultCols } from "@/constants/_faker/kanban";
 import { v4 as uuid } from "uuid";
 import { create } from "zustand";
-import { withAnalytics } from "./_middleware/analytics";
 import { persist } from "zustand/middleware";
-import { defaultCols } from "@/constants/_faker/kanban";
+import { withAnalytics } from "./_middleware/analytics";
 
 // Guard against NEXT_PUBLIC_APP_TESTING_MODE being off, which makes mockKanbanState falsy
 const safeKanbanState: KanbanState = (mockKanbanState as

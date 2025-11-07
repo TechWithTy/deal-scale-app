@@ -1,7 +1,7 @@
+import type { TextMessage } from "@/types/goHighLevel/text";
 // messages.ts: Export campaign messages to Excel
 import ExcelJS from "exceljs";
 import { saveWorkbookAsExcel, setWorksheetColumnsAndResize } from "./excel";
-import type { TextMessage } from "@/types/goHighLevel/text";
 
 /**
  * Exports campaign messages to Excel.

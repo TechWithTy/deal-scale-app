@@ -1,11 +1,11 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
+import { useImpersonationStore } from "@/lib/stores/impersonationStore";
+import { useUserStore } from "@/lib/stores/userStore";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { toast } from "sonner";
-import { useImpersonationStore } from "@/lib/stores/impersonationStore";
-import { useUserStore } from "@/lib/stores/userStore";
-import { Button } from "@/components/ui/button";
 
 export default function ImpersonationBanner() {
 	const {

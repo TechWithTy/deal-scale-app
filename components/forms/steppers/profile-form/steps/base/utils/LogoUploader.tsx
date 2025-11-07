@@ -1,8 +1,8 @@
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/_utils";
 import type React from "react";
 import { useRef } from "react";
-import { Button } from "@/components/ui/button";
 import { z } from "zod";
-import { cn } from "@/lib/_utils";
 
 export const logoSchema = z
 	.instanceof(File)
@@ -31,13 +31,13 @@ export const LogoUploader: React.FC<LogoUploaderProps> = ({
 			<label htmlFor="logo" className="mb-3 block font-semibold text-base">
 				Company Logo
 			</label>
-			<div className="flex flex-col items-center gap-4 rounded-lg border-2 border-dashed border-border bg-muted/30 p-6 transition-colors hover:border-primary/50 hover:bg-muted/50 sm:flex-row sm:items-center">
+			<div className="flex flex-col items-center gap-4 rounded-lg border-2 border-border border-dashed bg-muted/30 p-6 transition-colors hover:border-primary/50 hover:bg-muted/50 sm:flex-row sm:items-center">
 				<div
 					className={cn(
 						"flex h-28 w-28 items-center justify-center overflow-hidden rounded-lg border-2 bg-white shadow-sm transition-all",
 						value
 							? "border-primary"
-							: "border-dashed border-muted-foreground/30",
+							: "border-muted-foreground/30 border-dashed",
 					)}
 				>
 					{value ? (

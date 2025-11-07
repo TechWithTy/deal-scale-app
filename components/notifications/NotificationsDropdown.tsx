@@ -1,14 +1,14 @@
 "use client";
 
-import { Bell } from "lucide-react";
+import ThemeNotificationsPanel from "@/components/notifications/ThemeNotificationsPanel";
 import { Button } from "@/components/ui/button";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import ThemeNotificationsPanel from "@/components/notifications/ThemeNotificationsPanel";
 import { useNotificationsStore } from "@/lib/stores/notificationsStore";
+import { Bell } from "lucide-react";
 import { useEffect, useRef } from "react";
 
 export default function NotificationsDropdown() {
@@ -72,17 +72,17 @@ export default function NotificationsDropdown() {
 				title: "Credit Offer from Top Leader",
 				description: (
 					<div className="space-y-1.5">
-						<div className="text-sm leading-relaxed break-words">
+						<div className="break-words text-sm leading-relaxed">
 							100 AI credits • 5% monthly • Net 30
 						</div>
-						<div className="text-xs text-muted-foreground">
+						<div className="text-muted-foreground text-xs">
 							Due: {dueDateStr}
 						</div>
 						<a
 							href="https://dealscale.io/credit-terms"
 							target="_blank"
 							rel="noopener noreferrer"
-							className="inline-flex items-center text-xs text-primary hover:underline"
+							className="inline-flex items-center text-primary text-xs hover:underline"
 							onClick={(e) => e.stopPropagation()}
 						>
 							View terms & conditions →
@@ -123,13 +123,13 @@ export default function NotificationsDropdown() {
 				>
 					<Bell className="h-[1.1rem] w-[1.1rem]" />
 					{hasUnread ? (
-						<span className="absolute -right-0.5 -top-0.5 inline-flex h-2.5 w-2.5 rounded-full bg-destructive" />
+						<span className="-right-0.5 -top-0.5 absolute inline-flex h-2.5 w-2.5 rounded-full bg-destructive" />
 					) : null}
 				</Button>
 			</DropdownMenuTrigger>
 			<DropdownMenuContent
 				align="end"
-				className="p-0 max-h-[85vh]"
+				className="max-h-[85vh] p-0"
 				sideOffset={8}
 			>
 				<ThemeNotificationsPanel maxHeightClass="h-[600px]" />

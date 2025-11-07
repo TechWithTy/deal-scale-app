@@ -1,20 +1,20 @@
 "use client";
+import { Button } from "@/components/ui/button";
+import { useModalStore } from "@/lib/stores/dashboard";
+import type { AssistantVoice } from "@/types/vapiAi/api/assistant/create";
 import type { ProfileFormValues } from "@/types/zod/userSetup/profile-form-schema";
-import type React from "react";
-import { useForm, FormProvider } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { profileSchema } from "@/types/zod/userSetup/profile-form-schema";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Shield } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import type React from "react";
+import { useEffect, useMemo, useState } from "react";
+import { FormProvider, useForm } from "react-hook-form";
+import { toast } from "sonner";
 import { OAuthMain } from "./steps/Oauth/OAuthMain";
 import { BaseSetupMain } from "./steps/base/BaseSetupMain";
 import { KnowledgeBaseMain } from "./steps/knowledge/KnowledgeBaseMain";
 import { PersonalInformationFormMain } from "./steps/personal_information/PersonalInformationFormMain";
-import type { AssistantVoice } from "@/types/vapiAi/api/assistant/create";
-import { useState, useEffect, useMemo } from "react";
-import { useRouter, usePathname } from "next/navigation";
-import { toast } from "sonner";
-import { useModalStore } from "@/lib/stores/dashboard";
-import { Shield } from "lucide-react";
-import { Button } from "@/components/ui/button";
 // * Step definitions: label and component for each step
 const stepHashes = [
 	"profile-info", // Step 0

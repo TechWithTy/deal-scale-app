@@ -1,30 +1,30 @@
 "use client";
 
-import LeadAddressStep from "./steps/LeadAddressStep";
-import LeadBasicInfoStep from "./steps/LeadBasicInfoStep";
-import LeadContactStep from "./steps/LeadContactStep";
-import LeadSocialsStep from "./steps/LeadSocialsStep";
-import LeadListSelectStep from "./steps/LeadListSelectStep";
-import { LEAD_LISTS_MOCK } from "@/constants/dashboard/leadLists.mock";
+import { downloadLeadCsvTemplate } from "@/components/quickstart/utils/downloadLeadCsvTemplate";
+import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { useLeadModalState } from "./hooks/useLeadModalState";
+import { LEAD_LISTS_MOCK } from "@/constants/dashboard/leadLists.mock";
+import {
+	calculateLeadStatistics,
+	parseCsvToLeads,
+} from "@/lib/stores/_utils/csvParser";
+import { useLeadListStore } from "@/lib/stores/leadList";
+import { Download, Upload } from "lucide-react";
+import Papa from "papaparse";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { toast } from "sonner";
 import FieldMappingStep, {
 	REQUIRED_FIELD_MAPPING_KEYS,
 } from "../skipTrace/steps/FieldMappingStep";
+import { useLeadModalState } from "./hooks/useLeadModalState";
+import LeadAddressStep from "./steps/LeadAddressStep";
+import LeadBasicInfoStep from "./steps/LeadBasicInfoStep";
+import LeadContactStep from "./steps/LeadContactStep";
+import LeadListSelectStep from "./steps/LeadListSelectStep";
+import LeadSocialsStep from "./steps/LeadSocialsStep";
 import SkipTraceSummaryStep from "./steps/SkipTraceSummaryStep";
-import { Button } from "@/components/ui/button";
-import { Download, Upload } from "lucide-react";
-import { toast } from "sonner";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useLeadListStore } from "@/lib/stores/leadList";
-import {
-	parseCsvToLeads,
-	calculateLeadStatistics,
-} from "@/lib/stores/_utils/csvParser";
-import Papa from "papaparse";
 import { areRequiredFieldsMapped, autoMapCsvHeaders } from "./utils/csvAutoMap";
 import { deriveRecommendedEnrichmentOptions } from "./utils/enrichmentRecommendations";
-import { downloadLeadCsvTemplate } from "@/components/quickstart/utils/downloadLeadCsvTemplate";
 
 const INITIAL_COST_DETAILS = {
 	availableCredits: 0,
@@ -113,7 +113,7 @@ function LeadMainModal({
 				);
 				return false;
 			}
-			console.log("📨 Launching campaign with payload", payload);
+			// Campaign launch handled
 			resetCostDetails();
 			onLaunchCampaign(payload);
 			onClose();
@@ -417,7 +417,6 @@ function LeadMainModal({
 	};
 
 	const handleLaunchSuite = () => {
-		console.log("🚀 handleLaunchSuite called");
 		const baseProblems = validateStepNow();
 		const combinedProblems: Record<string, string> = { ...baseProblems };
 
@@ -473,14 +472,8 @@ function LeadMainModal({
 		launchToastIdRef.current = launchToastId;
 
 		if (csvContent && newListName.trim()) {
-			console.log("📄 Processing CSV content, length:", csvContent.length);
-			console.log("📋 Selected headers:", selectedHeadersState);
-			console.log("📝 List name:", newListName);
-
 			try {
-				console.log("🔄 Parsing CSV to leads...");
 				const leads = parseCsvToLeads(csvContent, selectedHeadersState);
-				console.log("✅ Parsed leads:", leads.length);
 
 				const stats = calculateLeadStatistics(leads);
 				console.log("📊 Lead statistics:", stats);

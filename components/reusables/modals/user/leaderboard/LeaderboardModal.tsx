@@ -1,16 +1,16 @@
 "use client";
 
-import { useModalStore } from "@/lib/stores/dashboard";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { LeaderboardContainer } from "@/external/score-streak-flow/src/components/leaderboard/LeaderboardContainer";
 import { WebSocketProvider } from "@/external/score-streak-flow/src/components/realtime/WebSocketProvider";
+import { useModalStore } from "@/lib/stores/dashboard";
 
 export default function LeaderboardModal() {
 	const { isLeaderboardModalOpen, closeLeaderboardModal } = useModalStore();
 
 	return (
 		<Dialog open={isLeaderboardModalOpen} onOpenChange={closeLeaderboardModal}>
-			<DialogContent className="max-h-[90vh] max-w-full sm:max-w-3xl md:max-w-3xl lg:max-w-5xl xl:max-w-6xl overflow-y-auto p-0">
+			<DialogContent className="max-h-[90vh] max-w-full overflow-y-auto p-0 sm:max-w-3xl md:max-w-3xl lg:max-w-5xl xl:max-w-6xl">
 				<DialogTitle className="sr-only">Leaderboard</DialogTitle>
 				<div className="relative">
 					{/* Leaderboard content with WebSocket provider */}

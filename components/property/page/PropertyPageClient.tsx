@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import PropertyHeader from "./propertyHeader";
 import type { Property } from "@/types/_dashboard/property";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import PropertyHeader from "./propertyHeader";
 
 interface PropertyPageClientProps {
 	initialProperty: Property;

@@ -1,12 +1,6 @@
 "use client";
 
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
 import {
 	Card,
 	CardContent,
@@ -15,25 +9,31 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import type { SubscriptionTier } from "@/constants/subscription/tiers";
+import type { UserRole } from "@/types/user";
+import type { DemoConfig } from "@/types/user";
+import type { CreditsProps } from "./CreditsComponent";
+import { CreditsComponent } from "./CreditsComponent";
+import { DemoConfigEditor } from "./DemoConfigEditor";
+import type { PermissionsEditorProps } from "./PermissionsEditor";
+import { PermissionsEditor } from "./PermissionsEditor";
 import { updateCredits } from "./creditUtils";
 import {
+	ROLE_SELECT_OPTIONS,
 	getPermissionsForRole,
 	getRoleLabelForTestUser,
-	ROLE_SELECT_OPTIONS,
 } from "./userHelpers";
 import type { EditableUser } from "./userHelpers";
-import type { UserRole } from "@/types/user";
-import type { CreditsProps } from "./CreditsComponent";
-import type { PermissionsEditorProps } from "./PermissionsEditor";
-import { CreditsComponent } from "./CreditsComponent";
-import { PermissionsEditor } from "./PermissionsEditor";
-import { DemoConfigEditor } from "./DemoConfigEditor";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import type { SubscriptionTier } from "@/constants/subscription/tiers";
-import type { DemoConfig } from "@/types/user";
 
 interface UserCardProps {
 	user: EditableUser;
@@ -122,15 +122,15 @@ export function UserCard({ user, onUpdateUser, onLogin }: UserCardProps) {
 			<CardContent>
 				<div className="space-y-2">
 					{/* Login Credentials */}
-					<div className="rounded-lg border border-border bg-muted/20 p-3 space-y-2">
-						<Label className="text-xs font-semibold text-muted-foreground">
+					<div className="space-y-2 rounded-lg border border-border bg-muted/20 p-3">
+						<Label className="font-semibold text-muted-foreground text-xs">
 							Login Credentials
 						</Label>
 						<div className="space-y-2">
 							<div className="space-y-1">
 								<Label
 									htmlFor={`email-${user.id}`}
-									className="text-xs text-muted-foreground"
+									className="text-muted-foreground text-xs"
 								>
 									Email
 								</Label>
@@ -151,7 +151,7 @@ export function UserCard({ user, onUpdateUser, onLogin }: UserCardProps) {
 							<div className="space-y-1">
 								<Label
 									htmlFor={`password-${user.id}`}
-									className="text-xs text-muted-foreground"
+									className="text-muted-foreground text-xs"
 								>
 									Password
 								</Label>
@@ -236,7 +236,7 @@ export function UserCard({ user, onUpdateUser, onLogin }: UserCardProps) {
 						<div className="flex items-center justify-between">
 							<Label
 								htmlFor={`beta-${user.id}`}
-								className="text-sm font-medium"
+								className="font-medium text-sm"
 							>
 								Beta tester
 							</Label>
@@ -254,7 +254,7 @@ export function UserCard({ user, onUpdateUser, onLogin }: UserCardProps) {
 						<div className="flex items-center justify-between">
 							<Label
 								htmlFor={`pilot-${user.id}`}
-								className="text-sm font-medium"
+								className="font-medium text-sm"
 							>
 								Pilot tester
 							</Label>

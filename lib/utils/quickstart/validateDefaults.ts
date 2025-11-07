@@ -5,9 +5,9 @@
  */
 
 import {
-	getGoalDefinition,
-	type QuickStartPersonaId,
 	type QuickStartGoalId,
+	type QuickStartPersonaId,
+	getGoalDefinition,
 } from "@/lib/config/quickstart/wizardFlows";
 import type { QuickStartDefaults } from "@/types/userProfile";
 

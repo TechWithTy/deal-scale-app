@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
-import { usePathname, useSearchParams } from "next/navigation";
-import { resolveSupademoIdForPath } from "@/lib/config/supademo";
-import { Rnd } from "react-rnd";
 import WalkThroughModal from "@/components/leadsSearch/search/WalkthroughModal";
+import { resolveSupademoIdForPath } from "@/lib/config/supademo";
+import { usePathname, useSearchParams } from "next/navigation";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Rnd } from "react-rnd";
 
 /**
  * FloatingHelpSupademo

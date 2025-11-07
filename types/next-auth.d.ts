@@ -1,5 +1,4 @@
-import type { DefaultSession } from "next-auth";
-import type { JWT as NextAuthJWT } from "next-auth/jwt";
+import type { ImpersonationIdentity } from "@/types/impersonation";
 import type {
 	DemoConfig,
 	PermissionMatrix,
@@ -7,7 +6,8 @@ import type {
 	UserRole,
 	UserTier,
 } from "@/types/user";
-import type { ImpersonationIdentity } from "@/types/impersonation";
+import type { DefaultSession } from "next-auth";
+import type { JWT as NextAuthJWT } from "next-auth/jwt";
 
 declare module "next-auth" {
 	/**

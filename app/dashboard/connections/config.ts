@@ -1,9 +1,9 @@
 import {
 	Activity,
+	type LucideIcon,
 	Rss,
 	ShieldCheck,
 	Webhook,
-	type LucideIcon,
 } from "lucide-react";
 
 import type { ButtonProps } from "@/components/ui/button";

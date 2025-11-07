@@ -1,0 +1,173 @@
+# Kestra Daily CRM Sync Workflow
+id: daily_crm_sync
+namespace: dealscale.workflows
+
+description: |
+  Automated daily synchronization of leads from DealScale to CRM
+  Includes skip trace enrichment and validation
+
+labels:
+  environment: production
+  team: automation
+  category: integration
+
+variables:
+  crmApiUrl: "https://crm.example.com/api"
+  batchSize: "100"
+  retryAttempts: "3"
+
+inputs:
+  - name: syncDate
+    type: DATE
+    description: "Date to sync (defaults to today)"
+    defaults: "{{ now() }}"
+
+triggers:
+  - id: daily_schedule
+    type: io.kestra.plugin.core.trigger.Schedule
+    description: "Run daily at midnight"
+    cron: "0 0 * * *"
+    timezone: "America/Los_Angeles"
+
+retry:
+  maxAttempts: 3
+  interval: "PT1M"
+  type: exponential
+
+tasks:
+  - id: fetch_leads
+    type: io.kestra.plugin.jdbc.postgresql.Query
+    description: "Fetch new leads from database"
+    url: "jdbc:postgresql://localhost:5432/dealscale"
+    username: "{{ secret('DB_USER') }}"
+    password: "{{ secret('DB_PASSWORD') }}"
+    sql: |
+      SELECT id, first_name, phone, email, property_address
+      FROM leads
+      WHERE created_at >= '{{ inputs.syncDate }}'
+      AND synced_to_crm = false
+      LIMIT {{ vars.batchSize }}
+    fetchType: FETCH
+    
+  - id: enrich_loop
+    type: io.kestra.plugin.core.flow.ForEachItem
+    description: "Process each lead with enrichment"
+    items: "{{ outputs.fetch_leads.rows }}"
+    tasks:
+      - id: skip_trace_enrich
+        type: io.kestra.plugin.core.http.Request
+        description: "Enrich lead with skip trace data"
+        uri: "https://skiptrace.api/enrich"
+        method: POST
+        contentType: application/json
+        body: |
+          {
+            "leadId": "{{ taskrun.value.id }}",
+            "phone": "{{ taskrun.value.phone }}"
+          }
+        retry:
+          maxAttempts: 5
+          interval: "PT30S"
+          type: exponential
+        timeout: PT1M
+        
+      - id: validate_data
+        type: io.kestra.plugin.scripts.python.Script
+        description: "Validate enriched data quality"
+        docker:
+          image: python:3.11-slim
+        script: |
+          import json
+          lead = json.loads(r'''{{ outputs.skip_trace_enrich.body }}''')
+          
+          # Validation logic
+          is_valid = bool(lead.get('email')) and bool(lead.get('phone'))
+          
+          print(json.dumps({
+            'leadId': lead['id'],
+            'valid': is_valid,
+            'completeness': (len([v for v in lead.values() if v]) / len(lead)) * 100
+          }))
+  
+  - id: check_quality
+    type: io.kestra.plugin.core.flow.Switch
+    description: "Route based on data quality"
+    value: "{{ outputs.validate_data.vars.valid }}"
+    cases:
+      "true": sync_to_crm
+      "false": flag_for_review
+  
+  - id: sync_to_crm
+    type: io.kestra.plugin.core.http.Request
+    description: "Sync validated leads to CRM"
+    uri: "{{ vars.crmApiUrl }}/leads/batch"
+    method: PUT
+    contentType: application/json
+    body: |
+      {
+        "leads": {{ outputs.enrich_loop.outputs }},
+        "source": "dealscale",
+        "syncDate": "{{ inputs.syncDate }}"
+      }
+    retry:
+      maxAttempts: "{{ vars.retryAttempts }}"
+      interval: "PT2M"
+  
+  - id: flag_for_review
+    type: io.kestra.plugin.notifications.slack.SlackIncomingWebhook
+    description: "Notify team of data quality issues"
+    url: "{{ secret('SLACK_WEBHOOK_URL') }}"
+    payload: |
+      {
+        "text": "⚠️ Lead data quality below threshold",
+        "blocks": [
+          {
+            "type": "section",
+            "text": {
+              "type": "mrkdwn",
+              "text": "*Leads flagged for manual review*\nDate: {{ inputs.syncDate }}"
+            }
+          }
+        ]
+      }
+  
+  - id: update_sync_status
+    type: io.kestra.plugin.jdbc.postgresql.Query
+    description: "Mark leads as synced"
+    url: "jdbc:postgresql://localhost:5432/dealscale"
+    username: "{{ secret('DB_USER') }}"
+    password: "{{ secret('DB_PASSWORD') }}"
+    sql: |
+      UPDATE leads
+      SET synced_to_crm = true,
+          synced_at = NOW()
+      WHERE id IN ({{ outputs.sync_to_crm.leadIds }})
+    fetchType: NONE
+
+errors:
+  - id: sync_error_handler
+    type: io.kestra.plugin.notifications.slack.SlackIncomingWebhook
+    description: "Notify on sync failure"
+    url: "{{ secret('SLACK_WEBHOOK_URL') }}"
+    payload: |
+      {
+        "text": "🔴 CRM Sync Failed",
+        "blocks": [
+          {
+            "type": "section",
+            "text": {
+              "type": "mrkdwn",
+              "text": "*Error Details*\n```{{ error.message }}```"
+            }
+          }
+        ]
+      }
+
+outputs:
+  - name: syncedCount
+    value: "{{ outputs.sync_to_crm.count }}"
+  - name: flaggedCount
+    value: "{{ outputs.flag_for_review.count }}"
+  - name: completedAt
+    value: "{{ execution.startDate }}"
+

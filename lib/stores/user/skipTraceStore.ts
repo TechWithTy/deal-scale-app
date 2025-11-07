@@ -1,1 +1,1 @@
-export * from './skip_trace/skipTraceStore';
+export * from "./skip_trace/skipTraceStore";

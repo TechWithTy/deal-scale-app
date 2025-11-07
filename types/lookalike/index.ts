@@ -1,8 +1,8 @@
 // Look-Alike Audience Type Definitions
 
 import type {
-	QuickStartPersonaId,
 	QuickStartGoalId,
+	QuickStartPersonaId,
 } from "@/lib/config/quickstart/wizardFlows";
 
 export type AdPlatform = "meta" | "google" | "linkedin";
@@ -120,6 +120,24 @@ export interface LookalikeConfig {
 		intentLevels?: IntentLevel[];
 		corporateOwnership?: CorporateOwnershipFilter;
 		absenteeOwner?: AbsenteeOwnerFilter;
+
+		// Efficiency & Deduplication
+		skipDuplicates?: boolean;
+		skipAlreadyTraced?: boolean;
+		skipExistingCampaigns?: boolean;
+		skipDncList?: boolean;
+		skipPreviouslyContacted?: boolean;
+
+		// Social Profile Enrichment
+		socialEnrichment?: boolean;
+		includeFacebook?: boolean;
+		includeLinkedIn?: boolean;
+		includeInstagram?: boolean;
+		includeFriendsData?: boolean;
+		includeInterests?: boolean;
+		includeEmployment?: boolean;
+		includeUsername?: boolean;
+		includeSocialDossier?: boolean;
 	};
 }
 

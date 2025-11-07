@@ -1,22 +1,22 @@
 import { mockUserProfile } from "@/constants/_faker/profile/userProfile"; // * Using mock user profile for phone number
+import { zodResolver } from "@hookform/resolvers/zod";
 import type { FC } from "react";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 
-import { useCampaignCreationStore } from "@/lib/stores/campaignCreation";
 import {
 	Form,
+	FormControl,
 	FormField,
 	FormItem,
-	FormControl,
 	FormMessage,
 } from "@/components/ui/form";
-import PhoneNumberInput from "./channelCustomization/PhoneNumberInput";
+import { useCampaignCreationStore } from "@/lib/stores/campaignCreation";
 import AreaModeSelector from "./channelCustomization/AreaModeSelector";
-import LeadListSelector from "./channelCustomization/LeadListSelector";
 import CampaignNavigation from "./channelCustomization/CampaignNavigation";
+import LeadListSelector from "./channelCustomization/LeadListSelector";
+import PhoneNumberInput from "./channelCustomization/PhoneNumberInput";
 
 // * Step 2: Channel Customization
 import type { UseFormReturn } from "react-hook-form";

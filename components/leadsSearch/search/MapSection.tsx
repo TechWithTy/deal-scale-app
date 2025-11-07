@@ -1,5 +1,5 @@
 import type { Coordinate } from "@/types/_dashboard/maps";
-import { GoogleMap, LoadScript, DrawingManager } from "@react-google-maps/api";
+import { DrawingManager, GoogleMap, LoadScript } from "@react-google-maps/api";
 import React, { useRef, useEffect, useState, useCallback } from "react";
 import type { FC } from "react";
 import { toast } from "sonner";

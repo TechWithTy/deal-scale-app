@@ -23,8 +23,8 @@ export default function WholesaleCalculator() {
 	};
 
 	return (
-		<div className="my-4 rounded-lg bg-card p-6 shadow-md text-card-foreground">
-			<h2 className="mb-4 text-xl font-bold">Wholesale Calculator</h2>
+		<div className="my-4 rounded-lg bg-card p-6 text-card-foreground shadow-md">
+			<h2 className="mb-4 font-bold text-xl">Wholesale Calculator</h2>
 			<p className="mb-4">
 				Easily make the right wholesale offer with confidence.
 			</p>

@@ -1,8 +1,8 @@
+import type { ProfileFormValues } from "@/types/zod/userSetup/profile-form-schema";
 import type React from "react";
 import { useFormContext } from "react-hook-form";
-import { OAuthSetup } from "./OAuthSetup";
-import type { ProfileFormValues } from "@/types/zod/userSetup/profile-form-schema";
 import type { InitialOauthSetupData } from "../../../utils/const/connectedAccounts";
+import { OAuthSetup } from "./OAuthSetup";
 
 interface OAuthMainProps {
 	loading: boolean;

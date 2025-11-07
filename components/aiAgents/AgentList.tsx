@@ -1,18 +1,7 @@
 "use client";
 
-import { AgentAvatar } from "./AgentAvatar";
-import { useEffect, useState } from "react";
+import { deleteAgent, fetchAgents } from "@/components/forms/agent/utils/api";
 import type { Agent } from "@/components/forms/agent/utils/schema";
-import { fetchAgents, deleteAgent } from "@/components/forms/agent/utils/api";
-import { Button } from "@/components/ui/button";
-import {
-	Table,
-	TableBody,
-	TableCell,
-	TableHead,
-	TableHeader,
-	TableRow,
-} from "@/components/ui/table";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -24,6 +13,17 @@ import {
 	AlertDialogTitle,
 	AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+import {
+	Table,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableHeader,
+	TableRow,
+} from "@/components/ui/table";
+import { useEffect, useState } from "react";
+import { AgentAvatar } from "./AgentAvatar";
 
 interface AgentListProps {
 	onEdit: (agent: Agent) => void;

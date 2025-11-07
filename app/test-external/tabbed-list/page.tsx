@@ -1,17 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
 import PropertyTabsList from "@/app/dashboard/properties/[propertyId]/utils/propertyTabs";
-import { toPropertySummary } from "external/tabbed-list-test";
-import type { PropertySummary } from "external/tabbed-list-test/schemas/types";
-import {
-	PropertyImage,
-	PropertyAddress,
-	PropertyPrice,
-	PropertyDetails,
-	PropertyBadges,
-	PropertySelectionButton,
-} from "external/tabbed-list-test/components/PropertyCardPrimitives";
+import { Badge } from "@/components/ui/badge";
 import {
 	Popover,
 	PopoverContent,
@@ -23,12 +13,22 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Badge } from "@/components/ui/badge";
-import { Settings2, GripVertical } from "lucide-react";
 import {
 	ExpandableAISummary,
 	ExpandableAISummarySkeleton,
 } from "external/ai-summary-expandable/components";
+import { toPropertySummary } from "external/tabbed-list-test";
+import {
+	PropertyAddress,
+	PropertyBadges,
+	PropertyDetails,
+	PropertyImage,
+	PropertyPrice,
+	PropertySelectionButton,
+} from "external/tabbed-list-test/components/PropertyCardPrimitives";
+import type { PropertySummary } from "external/tabbed-list-test/schemas/types";
+import { GripVertical, Settings2 } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 
 export default function TabbedListTestPage() {
 	// Loading showcase for AI Summary story
@@ -142,7 +142,7 @@ export default function TabbedListTestPage() {
 	function PropertyRow({ p }: { p: PropertySummary }) {
 		const isSelected = selectedIds.has(p.id);
 		return (
-			<div className="flex items-start gap-4 border rounded-lg bg-background border-border p-3">
+			<div className="flex items-start gap-4 rounded-lg border border-border bg-background p-3">
 				<div className="w-48">
 					<PropertyImage imageUrl={p.imageUrl} />
 				</div>
@@ -319,9 +319,9 @@ export default function TabbedListTestPage() {
 								.map((p, i) => (
 									<div
 										key={`${p.id}-linked-${i}`}
-										className="border rounded-lg p-3"
+										className="rounded-lg border p-3"
 									>
-										<div className="mb-2 text-sm text-muted-foreground">
+										<div className="mb-2 text-muted-foreground text-sm">
 											Linked by city: {p.city}
 										</div>
 										<PropertyRow p={p} />
@@ -332,7 +332,7 @@ export default function TabbedListTestPage() {
 									allData.filter((q) => q.city === p.city && q.id !== p.id)
 										.length === 0,
 							) && (
-								<div className="text-sm text-muted-foreground">
+								<div className="text-muted-foreground text-sm">
 									No linked properties.
 								</div>
 							)}
@@ -350,7 +350,7 @@ export default function TabbedListTestPage() {
 									status: "Released",
 								},
 							].map((r) => (
-								<div key={r.id} className="border rounded-lg p-3 text-sm">
+								<div key={r.id} className="rounded-lg border p-3 text-sm">
 									<div className="font-medium">{r.type}</div>
 									<div className="text-muted-foreground">Date: {r.date}</div>
 									<div className="text-muted-foreground">
@@ -371,7 +371,7 @@ export default function TabbedListTestPage() {
 									date: "2022-08-15",
 								},
 							].map((m) => (
-								<div key={m.id} className="border rounded-lg p-3 text-sm">
+								<div key={m.id} className="rounded-lg border p-3 text-sm">
 									<div className="font-medium">{m.lender}</div>
 									<div className="text-muted-foreground">
 										Amount: ${" " + m.amount.toLocaleString()}
@@ -505,9 +505,9 @@ export default function TabbedListTestPage() {
 				<h2 className="font-semibold">AI Summary Expandable — Story</h2>
 				{/* Decorative gradient banner for visual context */}
 				<div className="relative overflow-hidden rounded-lg border border-border">
-					<div className="bg-gradient-to-r from-violet-500 via-fuchsia-500 to-pink-500 h-12" />
+					<div className="h-12 bg-gradient-to-r from-violet-500 via-fuchsia-500 to-pink-500" />
 					<div className="p-4">
-						<p className="text-sm text-muted-foreground">
+						<p className="text-muted-foreground text-sm">
 							Demo gradient banner above the component
 						</p>
 					</div>

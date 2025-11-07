@@ -1,13 +1,13 @@
 "use client";
 
-import * as React from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CampaignActivitySummary } from "@/external/shadcn-table/src/components/data-table/campaign-activity-summary";
 import {
-	buildChannelActivityData,
 	type ChannelActivityData,
+	buildChannelActivityData,
 } from "@/external/shadcn-table/src/components/data-table/activity";
+import { CampaignActivitySummary } from "@/external/shadcn-table/src/components/data-table/campaign-activity-summary";
 import { useCampaignCreationStore } from "@/lib/stores/campaignCreation";
+import * as React from "react";
 
 interface CampaignActivityStepProps {
 	onBack?: () => void;
@@ -226,11 +226,11 @@ export default function CampaignActivityStep(_: CampaignActivityStepProps) {
 						{insights.map((metric) => (
 							<div key={metric.title} className="rounded-lg border bg-card p-4">
 								<h4 className="mb-2 font-medium">{metric.title}</h4>
-								<div className="text-3xl font-bold text-primary">
+								<div className="font-bold text-3xl text-primary">
 									{metric.value}
 								</div>
 								{metric.helper ? (
-									<div className="text-sm text-muted-foreground">
+									<div className="text-muted-foreground text-sm">
 										{metric.helper}
 									</div>
 								) : null}
@@ -255,11 +255,11 @@ export default function CampaignActivityStep(_: CampaignActivityStepProps) {
 							>
 								<div>
 									<div className="font-medium">{item.title}</div>
-									<div className="text-sm text-muted-foreground">
+									<div className="text-muted-foreground text-sm">
 										{item.description}
 									</div>
 								</div>
-								<div className="text-sm text-muted-foreground">{item.time}</div>
+								<div className="text-muted-foreground text-sm">{item.time}</div>
 							</div>
 						))}
 					</div>
@@ -284,7 +284,7 @@ export default function CampaignActivityStep(_: CampaignActivityStepProps) {
 	return (
 		<div className="space-y-6">
 			<div className="text-center">
-				<h2 className="text-2xl font-bold text-foreground">
+				<h2 className="font-bold text-2xl text-foreground">
 					{CHANNEL_LABELS[derivedChannel]} Campaign Activity
 				</h2>
 				<p className="text-muted-foreground">

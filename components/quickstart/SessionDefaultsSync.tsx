@@ -1,8 +1,8 @@
 "use client";
 
+import { useQuickStartWizardDataStore } from "@/lib/stores/quickstartWizardData";
 import { useSession } from "next-auth/react";
 import { useEffect } from "react";
-import { useQuickStartWizardDataStore } from "@/lib/stores/quickstartWizardData";
 
 /**
  * Syncs quickStartDefaults from session to QuickStart wizard store

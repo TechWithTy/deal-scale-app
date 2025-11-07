@@ -2,7 +2,6 @@
 
 import { campaignSteps } from "@/_tests/tours/campaignTour";
 import SkipTraceModalMain from "@/components/reusables/modals/user/skipTrace/SkipTraceModalMain";
-import WalkThroughModal from "../../leadsSearch/search/WalkthroughModal";
 import { Button } from "@/components/ui/button";
 import { Heading } from "@/components/ui/heading";
 import { Separator } from "@/components/ui/separator";
@@ -12,6 +11,7 @@ import Lottie from "lottie-react";
 import { HelpCircle, Menu, Plus } from "lucide-react"; // Icons
 import type React from "react";
 import { useState } from "react";
+import WalkThroughModal from "../../leadsSearch/search/WalkthroughModal";
 import { columns } from "./columns";
 import { LeadListDataTable } from "./lead-list-data-table";
 import LeadListFilterDropdown from "./utils/filterLeads";

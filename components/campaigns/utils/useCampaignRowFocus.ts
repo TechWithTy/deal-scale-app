@@ -1,7 +1,7 @@
 "use client";
 
-import * as React from "react";
 import type { Row, Table } from "@tanstack/react-table";
+import * as React from "react";
 
 type FocusStatus = "idle" | "found" | "not-found";
 

@@ -3,12 +3,12 @@
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { MainEmployeeForm } from "@/components/forms/steppers/employee-form/MainEmployeeForm";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { mockTeamMembers } from "@/constants/_faker/profile/team/members";
+import type { TeamMember } from "@/types/userProfile";
+import type { TeamMemberUpdatePasswordFormValues } from "@/types/zod/userSetup/team-member-form-schema";
+import { teamMemberToUpdatePasswordFormValues } from "@/utils/teamMemberToFormValues";
 import { useParams } from "next/navigation";
 import React from "react";
-import { teamMemberToUpdatePasswordFormValues } from "@/utils/teamMemberToFormValues";
-import type { TeamMemberUpdatePasswordFormValues } from "@/types/zod/userSetup/team-member-form-schema";
-import type { TeamMember } from "@/types/userProfile";
-import { mockTeamMembers } from "@/constants/_faker/profile/team/members";
 
 const breadcrumbItems = [
 	{ title: "Dashboard", link: "/dashboard" },

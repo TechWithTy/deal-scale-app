@@ -45,12 +45,119 @@ const MOCK_WORKFLOWS: WorkflowOption[] = [
 export interface SalesScriptOption {
 	id: string;
 	name: string;
+	description?: string;
+	content?: string;
+	type?: "call" | "sms" | "email" | "voicemail";
 }
 
 const MOCK_SALES_SCRIPTS: SalesScriptOption[] = [
-	{ id: "ss1", name: "General Sales Script" },
-	{ id: "ss2", name: "Appointment Setter Script" },
-	{ id: "ss3", name: "Appraisal Follow-up Script" },
+	{
+		id: "outbound_call_qualification",
+		name: "Outbound Call Qualification",
+		description: "Professional qualification call for off-market sellers",
+		type: "call",
+		content: `<poml>
+  <role>You are a highly professional sales agent for DealScale, focused on helping real estate owners sell off-market.</role>
+  <task>Conduct a qualification call with a property owner using the provided lead variables.</task>
+  <let>
+    {{prospectFirstName}} = prospect.firstName
+    {{agentName}} = user.name
+    {{propertyAddress}} = lead.propertyAddress
+    {{location}} = lead.location
+    {{ownerTimeInProperty}} = lead.ownerTimeInProperty
+    {{nextStepTime}} = "morning or afternoon"
+  </let>
+  <script>
+    "Hi {{prospectFirstName}}, this is {{agentName}} with DealScale. I saw your property at {{propertyAddress}} in {{location}} and noticed you've owned it for {{ownerTimeInProperty}} years. Are you open to exploring a fast, off-market exit while demand is high in your area?"
+
+    [If yes:]
+    "Great. Could you share your timeline for selling, and whether your priority is speed, price, or minimal hassle?"
+
+    [If no or maybe:]
+    "I understand. Would it be okay if I send you what similar homes in your neighborhood have recently achieved, and we check back in about 3-6 months when it makes sense for you?"
+
+    "Thanks for your time – I'll send you a summary of your options today, and we'll set a quick 15-minute follow-up. Does {{nextStepTime}} work better for you?"
+  </script>
+  <output-format>
+    Provide the next-step booking status (yes/no) and schedule slot.
+  </output-format>
+</poml>`,
+	},
+	{
+		id: "sms_text_outreach",
+		name: "SMS Text Outreach",
+		description: "Concise SMS for warm prospect engagement",
+		type: "sms",
+		content: `<poml>
+  <role>You are a direct but friendly text outreach specialist for DealScale.</role>
+  <task>Send a concise SMS message to initiate engagement with a warm prospect.</task>
+  <let>
+    {{prospectFirstName}} = prospect.firstName
+    {{agentName}} = user.name
+    {{location}} = lead.location
+    {{ownerTimeInProperty}} = lead.ownerTimeInProperty
+  </let>
+  <script>
+    Hi {{prospectFirstName}}, this is {{agentName}} at DealScale. I saw you own a property in {{location}} for about {{ownerTimeInProperty}} yrs. We're working with buyers who purchase off-market — would you be open to a quick 10-min chat this week? Reply "YES" and I'll send two time options.
+  </script>
+  <follow-up>
+    If no reply in 48 hours:
+    "Just following up – if you've got 2-mins today I can show you a recent deal we closed in {{location}} and how much equity the seller had. Want me to send it?"
+  </follow-up>
+  <output-format>
+    Return reply status ("YES", "NO", or no reply) and recommended next message.
+  </output-format>
+</poml>`,
+	},
+	{
+		id: "email_outreach_sequence",
+		name: "Email Outreach Sequence",
+		description: "2-step personalized email sequence for property owners",
+		type: "email",
+		content: `<poml>
+  <role>You are a strategic email outreach consultant for DealScale, crafting personalised emails to property-owners.</role>
+  <task>Send a 2-step email sequence to a prospect with property information and an off-market offer value proposition.</task>
+  <let>
+    {{prospectFirstName}} = prospect.firstName
+    {{agentName}} = user.name
+    {{propertyAddress}} = lead.propertyAddress
+    {{location}} = lead.location
+    {{ownerTimeInProperty}} = lead.ownerTimeInProperty
+  </let>
+
+  <email-#1>
+    <subject>Owners in {{location}} are getting off-market offers — is your property next?</subject>
+    <body>
+      Hi {{prospectFirstName}},
+
+      I hope your week's going well. I'm {{agentName}} with DealScale — we specialise in helping property-owners in {{location}} who've held their homes for {{ownerTimeInProperty}} + years. Because you own {{propertyAddress}}, I wanted to see if you'd consider a no-listing, off-market exit option.
+
+      If you're open to a quick 10-minute call, I'll share what similar homes in your neighborhood are currently selling for — no obligation.
+
+      Best,
+      {{agentName}}
+    </body>
+  </email-#1>
+
+  <email-#2>
+    <subject>How much equity you might have in {{propertyAddress}}</subject>
+    <body>
+      Hi {{prospectFirstName}},
+
+      Here's a quick snapshot: Homes like yours in {{location}} with similar ownership duration just sold for ~$xxx,xxx above asking in under 30 days.
+
+      If you'd like, I can prepare a free personalized off-market value estimate for your property. Would you like me to send it?
+
+      Regards,
+      {{agentName}}
+    </body>
+  </email-#2>
+
+  <output-format>
+    Provide which email was sent (1 or 2) and track open/reply status.
+  </output-format>
+</poml>`,
+	},
 ];
 
 // * Campaign Creation Store for multi-step modal context

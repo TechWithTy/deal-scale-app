@@ -2,16 +2,16 @@
  * SessionsSection: Active sessions and device management
  */
 
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
+	AlertCircle,
+	Globe,
+	LogOut,
+	MapPin,
 	Monitor,
 	Smartphone,
 	Tablet,
-	MapPin,
-	Globe,
-	LogOut,
-	AlertCircle,
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";

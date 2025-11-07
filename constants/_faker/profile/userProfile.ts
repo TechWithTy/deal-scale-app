@@ -175,7 +175,8 @@ export const generateMockUserProfile = (): UserProfile => {
 				priority: true, // ⭐ Favorited
 				lookalikeConfig: {
 					seedListId: safeLeadLists[0]?.id || "seed_investors_1",
-					seedListName: safeLeadLists[0]?.listName || "Louisville - On Market / 3+ Beds",
+					seedListName:
+						safeLeadLists[0]?.listName || "Louisville - On Market / 3+ Beds",
 					seedLeadCount: safeLeadLists[0]?.records || 720,
 					similarityThreshold: 85,
 					targetSize: 500,
@@ -224,7 +225,9 @@ export const generateMockUserProfile = (): UserProfile => {
 				priority: true, // ⭐ Favorited
 				lookalikeConfig: {
 					seedListId: safeLeadLists[1]?.id || "seed_wholesalers_1",
-					seedListName: safeLeadLists[1]?.listName || "New York - Notice Of Default / Lis Pendens",
+					seedListName:
+						safeLeadLists[1]?.listName ||
+						"New York - Notice Of Default / Lis Pendens",
 					seedLeadCount: safeLeadLists[1]?.records || 899,
 					similarityThreshold: 75,
 					targetSize: 1000,
@@ -268,7 +271,9 @@ export const generateMockUserProfile = (): UserProfile => {
 				priority: true, // ⭐ Favorited
 				lookalikeConfig: {
 					seedListId: safeLeadLists[2]?.id || "seed_agents_1",
-					seedListName: safeLeadLists[2]?.listName || "Seattle - Probate / Inheritance Only",
+					seedListName:
+						safeLeadLists[2]?.listName ||
+						"Seattle - Probate / Inheritance Only",
 					seedLeadCount: safeLeadLists[2]?.records || 992,
 					similarityThreshold: 70,
 					targetSize: 2000,
@@ -318,7 +323,8 @@ export const generateMockUserProfile = (): UserProfile => {
 				priority: false,
 				lookalikeConfig: {
 					seedListId: safeLeadLists[0]?.id || "seed_default_1",
-					seedListName: safeLeadLists[0]?.listName || "Louisville - On Market / 3+ Beds",
+					seedListName:
+						safeLeadLists[0]?.listName || "Louisville - On Market / 3+ Beds",
 					seedLeadCount: safeLeadLists[0]?.records || 720,
 					similarityThreshold: 85,
 					targetSize: 500,
@@ -361,7 +367,8 @@ export const generateMockUserProfile = (): UserProfile => {
 				priority: false,
 				lookalikeConfig: {
 					seedListId: safeLeadLists[1]?.id || "seed_default_2",
-					seedListName: safeLeadLists[1]?.listName || "New York - Notice Of Default",
+					seedListName:
+						safeLeadLists[1]?.listName || "New York - Notice Of Default",
 					seedLeadCount: safeLeadLists[1]?.records || 899,
 					similarityThreshold: 75,
 					targetSize: 1000,
@@ -372,7 +379,11 @@ export const generateMockUserProfile = (): UserProfile => {
 					},
 					propertyFilters: {
 						propertyTypes: ["single-family"],
-						distressedSignals: ["pre-foreclosure", "tax-lien", "code-violation"],
+						distressedSignals: [
+							"pre-foreclosure",
+							"tax-lien",
+							"code-violation",
+						],
 						equityPosition: ["<20%", "20-50%"],
 					},
 					geoFilters: {},
@@ -393,7 +404,9 @@ export const generateMockUserProfile = (): UserProfile => {
 				priority: false,
 				lookalikeConfig: {
 					seedListId: safeLeadLists[2]?.id || "seed_default_3",
-					seedListName: safeLeadLists[2]?.listName || "Seattle - Probate / Inheritance Only",
+					seedListName:
+						safeLeadLists[2]?.listName ||
+						"Seattle - Probate / Inheritance Only",
 					seedLeadCount: safeLeadLists[2]?.records || 992,
 					similarityThreshold: 70,
 					targetSize: 2000,
@@ -439,7 +452,9 @@ export const generateMockUserProfile = (): UserProfile => {
 				priority: false,
 				lookalikeConfig: {
 					seedListId: safeLeadLists[3]?.id || "seed_default_4",
-					seedListName: safeLeadLists[3]?.listName || "Cleveland - 2+ Units / VA Or FHA Loan",
+					seedListName:
+						safeLeadLists[3]?.listName ||
+						"Cleveland - 2+ Units / VA Or FHA Loan",
 					seedLeadCount: safeLeadLists[3]?.records || 1100,
 					similarityThreshold: 80,
 					targetSize: 300,
@@ -478,7 +493,8 @@ export const generateMockUserProfile = (): UserProfile => {
 				priority: false,
 				lookalikeConfig: {
 					seedListId: safeLeadLists[4]?.id || "seed_default_5",
-					seedListName: safeLeadLists[4]?.listName || "Phoenix - Luxury Properties",
+					seedListName:
+						safeLeadLists[4]?.listName || "Phoenix - Luxury Properties",
 					seedLeadCount: safeLeadLists[4]?.records || 450,
 					similarityThreshold: 75,
 					targetSize: 750,
@@ -507,6 +523,199 @@ export const generateMockUserProfile = (): UserProfile => {
 						enrichmentLevel: "none",
 					},
 				},
+			},
+		],
+		savedCampaignTemplates: [
+			{
+				id: faker.string.uuid(),
+				name: "High Equity Investor Outreach",
+				description:
+					"AI-generated multi-channel campaign targeting high equity investors",
+				campaignConfig: {
+					channels: ["call", "sms", "email"],
+					audience: {
+						targetList: "High Equity Leads",
+						filters: ["equityPercentage > 50", "location: California"],
+					},
+					messaging: {
+						emailSubject: "Exclusive Investment Opportunity",
+						emailBody: "We have an exclusive off-market property...",
+						smsMessage: "Hi {{firstName}}, interested in {{propertyAddress}}?",
+					},
+					schedule: {
+						startDate: faker.date.future(),
+						endDate: faker.date.future(),
+					},
+					budget: 5000,
+					aiPrompt:
+						"Create a multi-channel campaign targeting high equity investors in California with personalized messaging focused on exclusive opportunities.",
+					generatedByAI: true,
+					aiSuggested: false,
+				},
+				priority: true,
+				useCount: 12,
+				createdAt: faker.date.past(),
+				updatedAt: faker.date.recent(),
+				monetization: {
+					enabled: true,
+					priceMultiplier: 2.5,
+					isPublic: true,
+					acceptedTerms: true,
+				},
+			},
+			{
+				id: faker.string.uuid(),
+				name: "Absentee Owner Follow-Up",
+				description: "Suggested campaign for re-engaging absentee owners",
+				campaignConfig: {
+					channels: ["sms", "call"],
+					audience: {
+						targetList: "Absentee Owners",
+					},
+					messaging: {},
+					schedule: {},
+					aiPrompt:
+						"Create a follow-up campaign for absentee owners who showed initial interest",
+					generatedByAI: false,
+					aiSuggested: true,
+				},
+				priority: false,
+				useCount: 5,
+				createdAt: faker.date.past(),
+				updatedAt: faker.date.past(),
+				monetization: {
+					enabled: false,
+					priceMultiplier: 1.5,
+					isPublic: false,
+					acceptedTerms: true,
+				},
+			},
+			{
+				id: faker.string.uuid(),
+				name: "Manual Wholesaler Outreach",
+				description: "Custom manual campaign for wholesaler network",
+				campaignConfig: {
+					channels: ["call"],
+					audience: {
+						targetList: "Wholesaler Network",
+					},
+					messaging: {},
+					schedule: {},
+					generatedByAI: false,
+					aiSuggested: false,
+				},
+				priority: false,
+				useCount: 3,
+				createdAt: faker.date.past(),
+				updatedAt: faker.date.past(),
+			},
+		],
+		workflowPlatforms: [
+			{
+				platform: "n8n",
+				connected: true,
+				instanceUrl: "https://n8n.example.com",
+				connectedAt: faker.date.past(),
+			},
+			{
+				platform: "make",
+				connected: false,
+			},
+			{
+				platform: "kestra",
+				connected: false,
+			},
+		],
+		savedWorkflows: [
+			{
+				id: faker.string.uuid(),
+				name: "Lead Enrichment Pipeline",
+				description:
+					"AI-generated workflow for automated lead enrichment with skip trace",
+				platform: "n8n",
+				workflowConfig: {
+					nodes: [
+						{ id: "1", type: "webhook", name: "Lead Created Trigger" },
+						{ id: "2", type: "function", name: "Enrich Lead Data" },
+						{ id: "3", type: "webhook", name: "Update CRM" },
+					],
+					connections: [
+						{ from: "1", to: "2" },
+						{ from: "2", to: "3" },
+					],
+				},
+				aiPrompt: `<poml version="1.0">
+  <workflow name="Lead Enrichment Pipeline">
+    <trigger type="webhook">
+      <event>lead.created</event>
+    </trigger>
+    <phase name="enrichment">
+      <task>{{enrichLead}} with premium data</task>
+      <task>Validate email and phone</task>
+    </phase>
+    <phase name="notification">
+      <task>{{sendWebhook}} to {{webhookUrl}}</task>
+      <task>{{updateCRM}} with enriched data</task>
+    </phase>
+  </workflow>
+</poml>`,
+				generatedByAI: true,
+				createdAt: faker.date.past(),
+				updatedAt: faker.date.recent(),
+				monetization: {
+					enabled: true,
+					priceMultiplier: 3,
+					isPublic: true,
+					acceptedTerms: true,
+				},
+			},
+			{
+				id: faker.string.uuid(),
+				name: "Daily CRM Sync",
+				description: "Suggested workflow for daily synchronization with CRM",
+				platform: "n8n",
+				workflowConfig: {
+					nodes: [
+						{ id: "1", type: "schedule", name: "Daily Trigger" },
+						{ id: "2", type: "function", name: "Fetch Leads" },
+						{ id: "3", type: "webhook", name: "Sync to CRM" },
+					],
+					connections: [
+						{ from: "1", to: "2" },
+						{ from: "2", to: "3" },
+					],
+				},
+				aiPrompt:
+					"Create a daily workflow to sync leads from DealScale to my CRM",
+				generatedByAI: false,
+				createdAt: faker.date.past(),
+				updatedAt: faker.date.past(),
+				monetization: {
+					enabled: false,
+					priceMultiplier: 1,
+					isPublic: false,
+					acceptedTerms: true,
+				},
+			},
+			{
+				id: faker.string.uuid(),
+				name: "Campaign Activation Flow",
+				description: "Manual workflow for campaign activation and tracking",
+				platform: "n8n",
+				workflowConfig: {
+					nodes: [
+						{ id: "1", type: "webhook", name: "Campaign Created" },
+						{ id: "2", type: "function", name: "Build Audience" },
+						{ id: "3", type: "function", name: "Launch Outreach" },
+					],
+					connections: [
+						{ from: "1", to: "2" },
+						{ from: "2", to: "3" },
+					],
+				},
+				generatedByAI: false,
+				createdAt: faker.date.past(),
+				updatedAt: faker.date.past(),
 			},
 		],
 		notificationPreferences: {
@@ -598,16 +807,16 @@ export const generateMockUserProfile = (): UserProfile => {
 			},
 		],
 
-                securitySettings: {
-                        lastLoginTime: faker.date.recent(),
-                        password: faker.string.uuid(),
-                        passwordUpdatedAt: faker.date.past(),
-                },
-                quickStartDefaults: {
-                        personaId: "investor",
-                        goalId: "investor-pipeline",
-                },
-        };
+		securitySettings: {
+			lastLoginTime: faker.date.recent(),
+			password: faker.string.uuid(),
+			passwordUpdatedAt: faker.date.past(),
+		},
+		quickStartDefaults: {
+			personaId: "investor",
+			goalId: "investor-pipeline",
+		},
+	};
 };
 
 export const mockUserProfile: UserProfile | undefined =

@@ -1,14 +1,14 @@
-import { v4 as uuidv4 } from "uuid";
 import { generateMockRentCastProperty } from "@/constants/dashboard/mockRentCast";
+import { REAL_ADDRESSES } from "@/constants/dashboard/realAddresses";
 import {
-	createRentCastProperty,
 	type RentCastProperty,
+	createRentCastProperty,
 } from "@/types/_dashboard/property";
 import type {
 	RentCastListing,
 	RentCastListingHistory,
 } from "@/types/_dashboard/rentcast_listing";
-import { REAL_ADDRESSES } from "@/constants/dashboard/realAddresses";
+import { v4 as uuidv4 } from "uuid";
 
 // Minimal state to FIPS mapping for demos (fallback '00')
 const STATE_FIPS: Record<string, string> = {

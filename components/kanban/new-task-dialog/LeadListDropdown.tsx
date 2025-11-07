@@ -42,7 +42,7 @@ export function LeadListDropdown({
 						{selectedList ? selectedList.listName : "Select Lead List"}
 					</Button>
 				</DropdownMenuTrigger>
-				<DropdownMenuContent className="max-h-60 overflow-y-auto w-64">
+				<DropdownMenuContent className="max-h-60 w-64 overflow-y-auto">
 					{lists.map((list) => (
 						<DropdownMenuItem
 							key={list.id}

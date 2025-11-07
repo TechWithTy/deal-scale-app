@@ -1,10 +1,10 @@
-import * as z from "zod";
 import {
-	isValidUSState,
-	isValidUSCity,
-	isValidZipCode,
 	isLikelyAddress,
+	isValidUSCity,
+	isValidUSState,
+	isValidZipCode,
 } from "@/lib/utils/locationValidator";
+import * as z from "zod";
 
 export const mapFormSchema = z.object({
 	location: z

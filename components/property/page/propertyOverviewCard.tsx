@@ -2,17 +2,17 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { mockRentCastMappedProperties } from "@/constants/dashboard/rentcast_properties";
+import { usePropertyMarketView } from "@/lib/stores/property/marketView";
 import {
-	isRealtorProperty,
-	isRentCastProperty,
 	type Property,
 	type RentCastProperty,
+	isRealtorProperty,
+	isRentCastProperty,
 } from "@/types/_dashboard/property";
 import { Pencil } from "lucide-react";
 import type React from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { usePropertyMarketView } from "@/lib/stores/property/marketView";
-import { mockRentCastMappedProperties } from "@/constants/dashboard/rentcast_properties";
 
 interface PropertyOverviewCardProps {
 	property: Property;

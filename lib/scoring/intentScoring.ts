@@ -6,15 +6,15 @@
  */
 
 import type {
+	GroupedIntentSignals,
+	IntentLevel,
+	IntentScore,
+	IntentScoreBreakdown,
 	IntentSignal,
 	IntentSignalCategory,
 	IntentSignalType,
-	IntentScore,
-	IntentScoreBreakdown,
 	IntentTrend,
-	IntentLevel,
 	ScoringWeights,
-	GroupedIntentSignals,
 } from "@/types/_dashboard/intentSignals";
 
 import { DEFAULT_SCORING_WEIGHTS } from "@/types/_dashboard/intentSignals";

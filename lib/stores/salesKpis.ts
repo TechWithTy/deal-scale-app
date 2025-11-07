@@ -4,20 +4,20 @@
  * Zustand store for managing sales KPI state, calculations, and filtering.
  */
 
-import { create } from "zustand";
+import type { LeadStatus, LeadTypeGlobal } from "@/types/_dashboard/leads";
 import type {
-	SalesKPIDashboard,
+	ActivityMetrics,
+	ConversionFunnel,
 	DateRange,
 	DateRangePreset,
-	ConversionFunnel,
 	DealMetrics,
-	ROIMetrics,
-	PipelineVelocity,
-	ActivityMetrics,
 	MetricWithTrend,
+	PipelineVelocity,
+	ROIMetrics,
+	SalesKPIDashboard,
 	TrendDirection,
 } from "@/types/_dashboard/salesKpis";
-import type { LeadTypeGlobal, LeadStatus } from "@/types/_dashboard/leads";
+import { create } from "zustand";
 
 interface SalesKPIState {
 	/** Current dashboard data */
@@ -38,7 +38,7 @@ interface SalesKPIState {
  */
 function getDateRangeFromPreset(preset: DateRangePreset): DateRange {
 	const endDate = new Date();
-	let startDate = new Date();
+	const startDate = new Date();
 
 	switch (preset) {
 		case "7d":

@@ -1,10 +1,10 @@
 "use client";
 
-import { useSession } from "next-auth/react";
-import { useEffect } from "react";
-import { useUserStore } from "@/lib/stores/userStore";
 import { useImpersonationStore } from "@/lib/stores/impersonationStore";
 import { useSessionStore } from "@/lib/stores/user/useSessionStore";
+import { useUserStore } from "@/lib/stores/userStore";
+import { useSession } from "next-auth/react";
+import { useEffect } from "react";
 
 export default function SessionSync() {
 	const { data: session, status } = useSession();

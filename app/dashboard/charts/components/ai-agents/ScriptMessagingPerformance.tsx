@@ -7,8 +7,8 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-import { MessageSquare, Smile } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
+import { MessageSquare, Smile } from "lucide-react";
 import type { ScriptMessagingMetrics } from "../../types/ai-agents";
 
 interface ScriptMessagingPerformanceProps {
@@ -46,20 +46,20 @@ export function ScriptMessagingPerformance({
 				<div className="space-y-4">
 					<div className="grid grid-cols-2 gap-4">
 						<div>
-							<p className="text-sm text-muted-foreground mb-1">
+							<p className="mb-1 text-muted-foreground text-sm">
 								Messages Sent
 							</p>
-							<p className="text-2xl font-bold">{metrics.messages}</p>
-							<p className="text-xs text-muted-foreground">
+							<p className="font-bold text-2xl">{metrics.messages}</p>
+							<p className="text-muted-foreground text-xs">
 								Personalized outreach
 							</p>
 						</div>
 						<div>
-							<p className="text-sm text-muted-foreground mb-1">Reply Rate</p>
-							<p className="text-2xl font-bold text-green-600 dark:text-green-500">
+							<p className="mb-1 text-muted-foreground text-sm">Reply Rate</p>
+							<p className="font-bold text-2xl text-green-600 dark:text-green-500">
 								{metrics.reply_rate}%
 							</p>
-							<p className="text-xs text-green-600 dark:text-green-500">
+							<p className="text-green-600 text-xs dark:text-green-500">
 								↑12% from last week
 							</p>
 						</div>
@@ -67,7 +67,7 @@ export function ScriptMessagingPerformance({
 
 					<div className="space-y-3">
 						<div>
-							<div className="flex justify-between text-sm mb-1">
+							<div className="mb-1 flex justify-between text-sm">
 								<span className="text-muted-foreground">
 									Personalization Depth
 								</span>
@@ -76,8 +76,8 @@ export function ScriptMessagingPerformance({
 							<Progress value={metrics.personalization} className="h-2" />
 						</div>
 
-						<div className="flex justify-between items-center rounded-lg border p-3">
-							<span className="text-sm text-muted-foreground">
+						<div className="flex items-center justify-between rounded-lg border p-3">
+							<span className="text-muted-foreground text-sm">
 								Auto Follow-Ups
 							</span>
 							<span className="font-bold text-lg text-primary">
@@ -86,8 +86,8 @@ export function ScriptMessagingPerformance({
 						</div>
 
 						<div className="rounded-lg border p-3">
-							<div className="flex items-center justify-between mb-2">
-								<span className="text-sm text-muted-foreground">
+							<div className="mb-2 flex items-center justify-between">
+								<span className="text-muted-foreground text-sm">
 									Human Edit Rate
 								</span>
 								<div className="flex items-center gap-2">
@@ -98,7 +98,7 @@ export function ScriptMessagingPerformance({
 								</div>
 							</div>
 							<Progress value={100 - metrics.human_edit_rate} className="h-2" />
-							<p className="text-xs text-muted-foreground mt-1">
+							<p className="mt-1 text-muted-foreground text-xs">
 								{qualityLabel}
 							</p>
 						</div>

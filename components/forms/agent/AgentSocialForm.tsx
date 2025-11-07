@@ -2,6 +2,7 @@
 
 import type { UseFormReturn } from "react-hook-form";
 
+import { Button } from "@/components/ui/button";
 import {
 	FormControl,
 	FormField,
@@ -9,20 +10,19 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/ui/form";
-import Image from "next/image";
-import { Button } from "@/components/ui/button";
 import {
 	Tooltip,
 	TooltipContent,
 	TooltipProvider,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
+import Image from "next/image";
 
-import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 
-import type { Agent } from "./utils/schema";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import type { Agent } from "./utils/schema";
 
 interface AgentSocialFormProps {
 	form: UseFormReturn<Agent>;

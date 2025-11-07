@@ -1,6 +1,6 @@
-import Papa from "papaparse";
-import type { LeadTypeGlobal, LeadStatus } from "@/types/_dashboard/leads";
 import type { SocialsCount } from "@/types/_dashboard/leadList";
+import type { LeadStatus, LeadTypeGlobal } from "@/types/_dashboard/leads";
+import Papa from "papaparse";
 
 /**
  * Parse CSV text and extract leads based on field mappings
@@ -171,9 +171,9 @@ function extractLeadFromRow(
 			id: `lead_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
 			contactInfo,
 			summary: "",
-			bed: bedrooms ? parseInt(String(bedrooms), 10) || 0 : 0,
-			bath: bathrooms ? parseInt(String(bathrooms), 10) || 0 : 0,
-			sqft: squareFootage ? parseInt(String(squareFootage), 10) || 0 : 0,
+			bed: bedrooms ? Number.parseInt(String(bedrooms), 10) || 0 : 0,
+			bath: bathrooms ? Number.parseInt(String(bathrooms), 10) || 0 : 0,
+			sqft: squareFootage ? Number.parseInt(String(squareFootage), 10) || 0 : 0,
 			status: (leadStatus as LeadStatus) || "New Lead",
 			followUp: null,
 			lastUpdate: new Date().toISOString(),
@@ -221,10 +221,10 @@ function extractLeadFromRow(
 					? tcpaSource || "CSV Import"
 					: undefined,
 			propertyValue: propertyValue
-				? parseFloat(String(propertyValue)) || undefined
+				? Number.parseFloat(String(propertyValue)) || undefined
 				: undefined,
 			yearBuilt: yearBuilt
-				? parseInt(String(yearBuilt), 10) || undefined
+				? Number.parseInt(String(yearBuilt), 10) || undefined
 				: undefined,
 			leadSource: leadSource || undefined,
 			notes: notes || undefined,

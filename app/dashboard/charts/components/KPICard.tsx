@@ -1,8 +1,8 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowDown, ArrowUp, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/_utils";
+import { ArrowDown, ArrowUp, type LucideIcon } from "lucide-react";
 
 interface KPICardProps {
 	title: string;
@@ -38,7 +38,7 @@ export function KPICard({
 			</CardHeader>
 			<CardContent>
 				<div className="font-bold text-2xl">{formatValue(value)}</div>
-				<div className="flex items-center gap-1 text-xs mt-1">
+				<div className="mt-1 flex items-center gap-1 text-xs">
 					<TrendIcon
 						className={cn(
 							"h-3 w-3",

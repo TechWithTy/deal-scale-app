@@ -1,13 +1,13 @@
 "use client";
 
+import { campaignSteps } from "@/_tests/tours/campaignTour";
 import { Breadcrumbs } from "@/components/breadcrumbs";
-import { Button } from "@/components/ui/button";
 import PageContainer from "@/components/layout/page-container";
+import WalkThroughModal from "@/components/leadsSearch/search/WalkthroughModal";
 import { LeadClient } from "@/components/tables/lead-tables/client";
+import { Button } from "@/components/ui/button";
 import { HelpCircle } from "lucide-react";
 import { useState } from "react";
-import WalkThroughModal from "@/components/leadsSearch/search/WalkthroughModal";
-import { campaignSteps } from "@/_tests/tours/campaignTour";
 
 const breadcrumbItems = [
 	{ title: "Dashboard", link: "/dashboard" },
@@ -23,14 +23,14 @@ export default function page() {
 
 	return (
 		<PageContainer>
-			<div className="space-y-2 relative">
+			<div className="relative space-y-2">
 				{/* Question Mark Help Button */}
 				<div className="absolute top-2 right-2 z-10">
 					<button
 						onClick={() => setShowWalkthrough(true)}
-						className="rounded-full w-10 h-10 p-0 hover:bg-muted bg-transparent border-none"
+						className="h-10 w-10 rounded-full border-none bg-transparent p-0 hover:bg-muted"
 					>
-						<HelpCircle className="w-5 h-5 text-muted-foreground" />
+						<HelpCircle className="h-5 w-5 text-muted-foreground" />
 					</button>
 				</div>
 

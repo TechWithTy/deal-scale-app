@@ -1,10 +1,3 @@
-import { create } from "zustand";
-import type { Session } from "next-auth";
-import type {
-	ImpersonationIdentity,
-	ImpersonationSessionPayload,
-	ImpersonationSessionUserSnapshot,
-} from "@/types/impersonation";
 import {
 	startImpersonationSession,
 	stopImpersonationSession,
@@ -13,6 +6,13 @@ import {
 	identitySchema,
 	impersonationResponseSchema,
 } from "@/lib/impersonation/session-schemas";
+import type {
+	ImpersonationIdentity,
+	ImpersonationSessionPayload,
+	ImpersonationSessionUserSnapshot,
+} from "@/types/impersonation";
+import type { Session } from "next-auth";
+import { create } from "zustand";
 import { withAnalytics } from "./_middleware/analytics";
 import { useUserStore } from "./userStore";
 

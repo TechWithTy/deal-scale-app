@@ -4,7 +4,7 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/ui/form";
-import { XIcon, Search } from "lucide-react";
+import { Search, XIcon } from "lucide-react";
 import type React from "react";
 import { useEffect, useState } from "react";
 

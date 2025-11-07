@@ -1,23 +1,65 @@
+import ImpersonationBanner from "@/components/admin/ImpersonationBanner";
 // import { fetchUserProfileData, getUserProfile } from "@/actions/auth";
 import Header from "@/components/layout/header";
-import ImpersonationBanner from "@/components/admin/ImpersonationBanner";
 import Sidebar from "@/components/layout/sidebar";
-import SkipTraceDialog from "@/components/maps/properties/utils/createListModal";
-import BillingModalMain from "@/components/reusables/modals/user/billing/BillingModalMain";
-import { SecurityModal } from "@/components/reusables/modals/user/security";
-import AiUsageModal from "@/components/reusables/modals/user/usage";
-import { UpgradeModal } from "@/components/reusables/modals/user/usage/UpgradeModal";
-import { WebhookModal } from "@/components/reusables/modals/user/webhooks/WebHookMain";
-import { InviteEmployeeModal } from "@/components/tables/employee-tables/utils/addEmployee";
-import LeaderboardModal from "@/components/reusables/modals/user/leaderboard/LeaderboardModal";
-import WheelSpinnerModal from "@/components/reusables/modals/user/wheel/WheelSpinnerModal";
-import dynamic from "next/dynamic";
 import {
 	MockUserProfile,
 	mockUserProfile,
 } from "@/constants/_faker/profile/userProfile";
 import { useSessionStore } from "@/lib/stores/user/useSessionStore";
 import type { Metadata } from "next";
+import dynamic from "next/dynamic";
+
+// 🚀 Lazy load modals - only load when needed (saves ~150KB on initial bundle)
+const SkipTraceDialog = dynamic(
+	() => import("@/components/maps/properties/utils/createListModal"),
+	{ ssr: false },
+);
+const BillingModalMain = dynamic(
+	() => import("@/components/reusables/modals/user/billing/BillingModalMain"),
+	{ ssr: false },
+);
+const LeaderboardModal = dynamic(
+	() =>
+		import("@/components/reusables/modals/user/leaderboard/LeaderboardModal"),
+	{ ssr: false },
+);
+const SecurityModal = dynamic(
+	() =>
+		import("@/components/reusables/modals/user/security").then(
+			(mod) => mod.SecurityModal,
+		),
+	{ ssr: false },
+);
+const AiUsageModal = dynamic(
+	() => import("@/components/reusables/modals/user/usage"),
+	{ ssr: false },
+);
+const UpgradeModal = dynamic(
+	() =>
+		import("@/components/reusables/modals/user/usage/UpgradeModal").then(
+			(mod) => mod.UpgradeModal,
+		),
+	{ ssr: false },
+);
+const WebhookModal = dynamic(
+	() =>
+		import("@/components/reusables/modals/user/webhooks/WebHookMain").then(
+			(mod) => mod.WebhookModal,
+		),
+	{ ssr: false },
+);
+const WheelSpinnerModal = dynamic(
+	() => import("@/components/reusables/modals/user/wheel/WheelSpinnerModal"),
+	{ ssr: false },
+);
+const InviteEmployeeModal = dynamic(
+	() =>
+		import("@/components/tables/employee-tables/utils/addEmployee").then(
+			(mod) => mod.InviteEmployeeModal,
+		),
+	{ ssr: false },
+);
 
 export const metadata: Metadata = {
 	title: "Deal Scale Dashboard | Real Estate Property Search & Market Analysis",
@@ -55,7 +97,7 @@ export default async function DashboardLayout({
 		<div className="flex">
 			{/* Pass only a valid UserProfile or null to Sidebar */}
 			<Sidebar user={user} />
-			<main className="w-full flex-1 overflow-hidden">
+			<main className="w-full flex-1 overflow-x-hidden overflow-y-auto">
 				<ImpersonationBanner />
 				<Header />
 				{children}

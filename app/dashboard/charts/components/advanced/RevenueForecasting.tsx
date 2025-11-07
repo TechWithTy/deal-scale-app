@@ -7,6 +7,10 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
+import { ChartContainer, ChartTooltipContent } from "@/components/ui/chart";
+import { cn } from "@/lib/_utils";
+import { addMonths, format } from "date-fns";
+import { DollarSign, Sparkles, TrendingUp } from "lucide-react";
 import {
 	Area,
 	AreaChart,
@@ -17,10 +21,6 @@ import {
 	XAxis,
 	YAxis,
 } from "recharts";
-import { ChartContainer, ChartTooltipContent } from "@/components/ui/chart";
-import { TrendingUp, DollarSign, Sparkles } from "lucide-react";
-import { format, addMonths } from "date-fns";
-import { cn } from "@/lib/_utils";
 
 interface ForecastDataPoint {
 	month: string;
@@ -128,16 +128,16 @@ export function RevenueForecasting({
 				{/* Summary Metrics */}
 				<div className="mb-6 grid grid-cols-3 gap-4">
 					<div className="rounded-lg border p-3">
-						<div className="flex items-center gap-2 mb-1">
+						<div className="mb-1 flex items-center gap-2">
 							<DollarSign className="h-4 w-4 text-muted-foreground" />
-							<p className="text-xs text-muted-foreground">Next Month</p>
+							<p className="text-muted-foreground text-xs">Next Month</p>
 						</div>
 						<p className="font-bold text-xl">
 							${(nextMonth / 1000).toFixed(0)}K
 						</p>
 						<p
 							className={cn(
-								"text-xs font-medium",
+								"font-medium text-xs",
 								growthRate >= 0
 									? "text-green-600 dark:text-green-500"
 									: "text-red-600 dark:text-red-500",
@@ -149,25 +149,25 @@ export function RevenueForecasting({
 					</div>
 
 					<div className="rounded-lg border p-3">
-						<div className="flex items-center gap-2 mb-1">
+						<div className="mb-1 flex items-center gap-2">
 							<TrendingUp className="h-4 w-4 text-muted-foreground" />
-							<p className="text-xs text-muted-foreground">12-Month Total</p>
+							<p className="text-muted-foreground text-xs">12-Month Total</p>
 						</div>
 						<p className="font-bold text-xl">
 							${(totalForecastRevenue / 1000).toFixed(0)}K
 						</p>
-						<p className="text-xs text-muted-foreground">Projected</p>
+						<p className="text-muted-foreground text-xs">Projected</p>
 					</div>
 
 					<div className="rounded-lg border p-3">
-						<div className="flex items-center gap-2 mb-1">
+						<div className="mb-1 flex items-center gap-2">
 							<Sparkles className="h-4 w-4 text-muted-foreground" />
-							<p className="text-xs text-muted-foreground">Avg Monthly</p>
+							<p className="text-muted-foreground text-xs">Avg Monthly</p>
 						</div>
 						<p className="font-bold text-xl">
 							${(avgMonthlyForecast / 1000).toFixed(0)}K
 						</p>
-						<p className="text-xs text-muted-foreground">Next 12 months</p>
+						<p className="text-muted-foreground text-xs">Next 12 months</p>
 					</div>
 				</div>
 
@@ -247,9 +247,9 @@ export function RevenueForecasting({
 				</ChartContainer>
 
 				{/* Insights */}
-				<div className="mt-4 rounded-lg bg-primary/10 p-4 space-y-2">
+				<div className="mt-4 space-y-2 rounded-lg bg-primary/10 p-4">
 					<div className="flex items-start gap-2">
-						<Sparkles className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+						<Sparkles className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary" />
 						<div className="space-y-1 text-sm">
 							<p className="font-medium">AI Insights:</p>
 							<ul className="space-y-1 text-muted-foreground">

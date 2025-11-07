@@ -1,9 +1,9 @@
+import type { ScriptLine } from "@/constants/_faker/_api/eleven_labs/scripts";
+import VoiceClone from "@/public/lottie/RecordingButton.json";
+import Lottie, { type LottieRefCurrentProps } from "lottie-react";
 import type React from "react";
 import { useEffect, useRef, useState } from "react";
-import Lottie, { type LottieRefCurrentProps } from "lottie-react";
-import VoiceClone from "@/public/lottie/RecordingButton.json";
 import Teleprompter, { type TeleprompterHandle } from "./utils/Teleprompter";
-import type { ScriptLine } from "@/constants/_faker/_api/eleven_labs/scripts";
 
 interface VoiceRecorderCoreProps {
 	open: boolean;
@@ -174,7 +174,7 @@ const VoiceRecorderCore: React.FC<VoiceRecorderCoreProps> = ({
 
 	return (
 		<div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
-			<div className="relative max-h-[90vh] w-full max-w-md overflow-y-auto rounded-lg bg-card p-6 shadow-lg">
+			<div className="relative mx-4 max-h-[90vh] w-full max-w-md overflow-y-auto rounded-lg bg-card p-4 shadow-lg sm:mx-0 sm:p-6">
 				<button
 					type="button"
 					onClick={onClose}

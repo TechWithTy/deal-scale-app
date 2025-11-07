@@ -45,3 +45,24 @@ export interface LoftyCRMOAuthData extends OAuthData {
 	teamId?: string; // Optional team ID
 	agentId?: string; // Optional agent ID
 }
+
+export interface N8nOAuthData extends OAuthData {
+	instanceUrl: string; // n8n instance URL
+	workflowId?: string; // Optional workflow ID
+	webhookUrl?: string; // Optional webhook URL
+}
+
+export interface DiscordOAuthData extends OAuthData {
+	userId: string; // Discord user ID
+	username: string; // Discord username
+	discriminator?: string; // Discord discriminator (legacy, may be "0")
+	guildId?: string; // Optional Discord server/guild ID
+	botToken?: string; // Optional bot token for advanced integrations
+}
+
+export interface KestraOAuthData extends OAuthData {
+	tenantId: string; // Kestra tenant ID
+	namespaceId?: string; // Optional namespace ID
+	apiEndpoint: string; // Kestra API endpoint URL
+	workflowTemplateId?: string; // Optional workflow template ID
+}

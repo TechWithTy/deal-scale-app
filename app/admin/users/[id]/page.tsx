@@ -1,19 +1,19 @@
 "use client";
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { useParams } from "next/navigation";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
 import AdjustCreditsModal from "@/components/admin/AdjustCreditsModal";
-import { useImpersonationStore } from "@/lib/stores/impersonationStore";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatAdminRole } from "@/lib/admin/roles";
 import {
-	getAdminActivityLog,
-	getAdminDirectoryUser,
 	type AdminActivityEvent,
 	type AdminDirectoryUser,
+	getAdminActivityLog,
+	getAdminDirectoryUser,
 } from "@/lib/admin/user-directory";
+import { useImpersonationStore } from "@/lib/stores/impersonationStore";
+import { useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 export default function AdminUserDetailPage() {
 	const params = useParams();

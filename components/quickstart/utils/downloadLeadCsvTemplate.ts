@@ -3,10 +3,10 @@ import {
 	LEAD_CSV_TEMPLATE_HEADERS,
 } from "@/lib/config/leads/csvTemplateConfig";
 import {
-	getGoalDefinition,
-	getPersonaDefinition,
 	type QuickStartGoalId,
 	type QuickStartPersonaId,
+	getGoalDefinition,
+	getPersonaDefinition,
 } from "@/lib/config/quickstart/wizardFlows";
 
 export interface DownloadLeadCsvTemplateOptions {

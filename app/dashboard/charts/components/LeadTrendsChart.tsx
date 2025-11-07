@@ -7,6 +7,8 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
+import { ChartContainer, ChartTooltipContent } from "@/components/ui/chart";
+import { format, parseISO } from "date-fns";
 import {
 	CartesianGrid,
 	Legend,
@@ -16,9 +18,7 @@ import {
 	XAxis,
 	YAxis,
 } from "recharts";
-import { ChartContainer, ChartTooltipContent } from "@/components/ui/chart";
 import type { LeadTrend } from "../types/analytics";
-import { format, parseISO } from "date-fns";
 
 interface LeadTrendsChartProps {
 	data: LeadTrend[];

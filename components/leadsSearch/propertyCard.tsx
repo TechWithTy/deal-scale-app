@@ -1,24 +1,24 @@
-import { cn } from "@/lib/_utils";
 import { Card, CardContent } from "@/components/ui/card";
+import { cn } from "@/lib/_utils";
 import type { Property } from "@/types/_dashboard/property";
 import { isRealtorProperty } from "@/types/_dashboard/property";
-import { format } from "date-fns";
-import {
-	MapPin,
-	Ruler,
-	Bath,
-	Bed,
-	DollarSign,
-	Calendar,
-	Home,
-} from "lucide-react";
 import type {
 	RealtorProperty,
 	RentCastProperty,
 } from "@/types/_dashboard/property";
+import { format } from "date-fns";
+import {
+	Bath,
+	Bed,
+	Calendar,
+	DollarSign,
+	Home,
+	MapPin,
+	Ruler,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import type React from "react";
+import React, { type } from "react";
 import { useState } from "react";
 
 interface PropertyCardProps {
@@ -313,4 +313,5 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
 	);
 };
 
-export default PropertyCard;
+// * Memoize component to prevent unnecessary re-renders
+export default React.memo(PropertyCard);

@@ -1,5 +1,7 @@
 "use client";
 
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
 	Dialog,
 	DialogContent,
@@ -7,11 +9,9 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import type { TeamMember } from "@/types/userProfile";
+import { Mail, MessageSquare, Shield, Sparkles } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Mail, MessageSquare, Sparkles, Shield } from "lucide-react";
 
 interface AIActionsModalProps {
 	open: boolean;
@@ -102,7 +102,7 @@ export function AIActionsModal({
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent className="max-w-3xl">
+			<DialogContent className="mx-4 max-w-3xl sm:mx-auto">
 				<DialogHeader>
 					<DialogTitle>AI Actions</DialogTitle>
 					<DialogDescription>

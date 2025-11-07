@@ -7,17 +7,17 @@
  * grouped timeline view, and filtering options.
  */
 
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { groupSignalsByType } from "@/lib/scoring/intentScoring";
+import type {
+	IntentScore,
+	IntentSignal,
+} from "@/types/_dashboard/intentSignals";
+import { Activity, Target, TrendingUp } from "lucide-react";
 import React from "react";
 import { IntentScoreWidget } from "./IntentScoreWidget";
 import { IntentSignalCard } from "./IntentSignalCard";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Activity, Target, TrendingUp } from "lucide-react";
-import type {
-	IntentSignal,
-	IntentScore,
-} from "@/types/_dashboard/intentSignals";
-import { groupSignalsByType } from "@/lib/scoring/intentScoring";
 
 interface IntentSignalsTabProps {
 	/** Array of intent signals for the lead */
@@ -33,17 +33,17 @@ function EmptyState() {
 	return (
 		<Card>
 			<CardContent className="flex flex-col items-center justify-center py-12 text-center">
-				<div className="rounded-full bg-muted p-4 mb-4">
+				<div className="mb-4 rounded-full bg-muted p-4">
 					<Activity className="h-8 w-8 text-muted-foreground" />
 				</div>
-				<h3 className="font-semibold text-lg mb-2">No Intent Signals Yet</h3>
-				<p className="text-muted-foreground text-sm max-w-sm">
+				<h3 className="mb-2 font-semibold text-lg">No Intent Signals Yet</h3>
+				<p className="max-w-sm text-muted-foreground text-sm">
 					Intent signals are automatically tracked when leads interact with your
 					emails, website, calls, and other touchpoints. Check back once this
 					lead becomes more active.
 				</p>
-				<div className="mt-6 rounded-lg bg-muted/50 p-4 text-left text-sm max-w-md">
-					<p className="font-medium mb-2">Tracked Activities:</p>
+				<div className="mt-6 max-w-md rounded-lg bg-muted/50 p-4 text-left text-sm">
+					<p className="mb-2 font-medium">Tracked Activities:</p>
 					<ul className="space-y-1 text-muted-foreground">
 						<li>• Email opens, clicks, and replies</li>
 						<li>• Website visits and page views</li>
@@ -79,7 +79,7 @@ function SignalList({
 				<CardTitle className="flex items-center gap-2 text-base">
 					<Icon className="h-4 w-4" />
 					{title}
-					<span className="text-muted-foreground text-sm font-normal">
+					<span className="font-normal text-muted-foreground text-sm">
 						({signals.length})
 					</span>
 				</CardTitle>
@@ -134,7 +134,7 @@ export function IntentSignalsTab({ signals, score }: IntentSignalsTabProps) {
 				</TabsList>
 
 				{/* All Signals Tab */}
-				<TabsContent value="all" className="space-y-4 mt-4">
+				<TabsContent value="all" className="mt-4 space-y-4">
 					<Card>
 						<CardHeader>
 							<CardTitle className="flex items-center gap-2 text-base">
@@ -155,7 +155,7 @@ export function IntentSignalsTab({ signals, score }: IntentSignalsTabProps) {
 				</TabsContent>
 
 				{/* Engagement Signals Tab */}
-				<TabsContent value="engagement" className="space-y-4 mt-4">
+				<TabsContent value="engagement" className="mt-4 space-y-4">
 					{grouped.engagement.length > 0 ? (
 						<SignalList
 							signals={grouped.engagement.sort(
@@ -176,7 +176,7 @@ export function IntentSignalsTab({ signals, score }: IntentSignalsTabProps) {
 				</TabsContent>
 
 				{/* Behavioral Signals Tab */}
-				<TabsContent value="behavioral" className="space-y-4 mt-4">
+				<TabsContent value="behavioral" className="mt-4 space-y-4">
 					{grouped.behavioral.length > 0 ? (
 						<SignalList
 							signals={grouped.behavioral.sort(
@@ -197,7 +197,7 @@ export function IntentSignalsTab({ signals, score }: IntentSignalsTabProps) {
 				</TabsContent>
 
 				{/* External Signals Tab */}
-				<TabsContent value="external" className="space-y-4 mt-4">
+				<TabsContent value="external" className="mt-4 space-y-4">
 					{grouped.external.length > 0 ? (
 						<SignalList
 							signals={grouped.external.sort(

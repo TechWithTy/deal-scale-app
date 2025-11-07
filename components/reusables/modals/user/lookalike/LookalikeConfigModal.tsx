@@ -6,9 +6,14 @@
 
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import {
+	Accordion,
+	AccordionContent,
+	AccordionItem,
+	AccordionTrigger,
+} from "@/components/ui/accordion";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
 	Dialog,
 	DialogContent,
@@ -16,36 +21,36 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
-import {
-	Accordion,
-	AccordionItem,
-	AccordionTrigger,
-} from "@/components/ui/accordion";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { AlertCircle, Loader2, TrendingUp, User, Target } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import type { LookalikeConfig } from "@/types/lookalike";
+import { estimateAudienceSize } from "@/lib/api/lookalike/generate";
 import type {
-	QuickStartPersonaId,
 	QuickStartGoalId,
+	QuickStartPersonaId,
 } from "@/lib/config/quickstart/wizardFlows";
 import {
-	getPersonaDefinition,
 	getGoalDefinition,
+	getPersonaDefinition,
 } from "@/lib/config/quickstart/wizardFlows";
-import { estimateAudienceSize } from "@/lib/api/lookalike/generate";
-import { toast } from "sonner";
 import { useQuickStartWizardDataStore } from "@/lib/stores/quickstartWizardData";
-import { lookalikeConfigSchema, type FormValues } from "./types";
-import { buildLookalikeConfig } from "./utils/configBuilder";
-import { SimilaritySettings } from "./components/SimilaritySettings";
-import { SalesTargeting } from "./components/SalesTargeting";
-import { PropertyFilters } from "./components/PropertyFilters";
-import { GeographicFilters } from "./components/GeographicFilters";
-import { GeneralOptions } from "./components/GeneralOptions";
+import type { LookalikeConfig } from "@/types/lookalike";
+import type { SavedSearch } from "@/types/userProfile";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { AlertCircle, Loader2, Target, TrendingUp, User } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import { AdvancedOptions } from "./components/AdvancedOptions";
+import { ComplianceOptions } from "./components/ComplianceOptions";
 import { CostSummary } from "./components/CostSummary";
+import { EfficiencyOptions } from "./components/EfficiencyOptions";
+import { GeographicFilters } from "./components/GeographicFilters";
+import { PropertyFilters } from "./components/PropertyFilters";
+import { SalesTargeting } from "./components/SalesTargeting";
+import { SimilaritySettings } from "./components/SimilaritySettings";
+import { SocialEnrichmentAdvanced } from "./components/SocialEnrichmentAdvanced";
+import { type FormValues, lookalikeConfigSchema } from "./types";
+import { buildLookalikeConfig } from "./utils/configBuilder";
 
 interface LookalikeConfigModalProps {
 	isOpen: boolean;
@@ -56,6 +61,7 @@ interface LookalikeConfigModalProps {
 	onGenerate: (config: LookalikeConfig) => void;
 	onSaveConfig?: (config: LookalikeConfig, configName: string) => void;
 	initialConfig?: Partial<FormValues>;
+	savedSearch?: SavedSearch;
 	userPersona?: QuickStartPersonaId;
 	userGoal?: QuickStartGoalId;
 }
@@ -73,6 +79,7 @@ export function LookalikeConfigModal({
 	onGenerate,
 	onSaveConfig,
 	initialConfig,
+	savedSearch,
 	userPersona,
 	userGoal,
 }: LookalikeConfigModalProps) {
@@ -90,12 +97,28 @@ export function LookalikeConfigModal({
 			dncCompliance: true,
 			tcpaOptInRequired: true,
 			requirePhone: true,
-			requireEmail: initialConfig?.requireEmail ?? false,
 			enrichmentLevel: initialConfig?.enrichmentLevel ?? "premium",
 			enrichmentRequired: initialConfig?.enrichmentRequired ?? false,
 			cashBuyerOnly: initialConfig?.cashBuyerOnly ?? false,
 			corporateOwnership: initialConfig?.corporateOwnership || "all",
 			absenteeOwner: initialConfig?.absenteeOwner || "all",
+			// Efficiency options - default to true for optimal cost savings
+			skipDuplicates: initialConfig?.skipDuplicates ?? true,
+			skipAlreadyTraced: initialConfig?.skipAlreadyTraced ?? true,
+			skipExistingCampaigns: initialConfig?.skipExistingCampaigns ?? true,
+			skipDncList: initialConfig?.skipDncList ?? true,
+			skipPreviouslyContacted: initialConfig?.skipPreviouslyContacted ?? false,
+			// Social enrichment options - ENABLED BY DEFAULT
+			socialEnrichment: initialConfig?.socialEnrichment ?? true,
+			includeFacebook: initialConfig?.includeFacebook ?? true,
+			includeLinkedIn: initialConfig?.includeLinkedIn ?? true,
+			includeInstagram: initialConfig?.includeInstagram ?? true,
+			includeFriendsData: initialConfig?.includeFriendsData ?? true,
+			includeInterests: initialConfig?.includeInterests ?? true,
+			includeEmployment: initialConfig?.includeEmployment ?? true,
+			includeUsername: initialConfig?.includeUsername ?? true,
+			includeSocialDossier: initialConfig?.includeSocialDossier ?? false,
+			requireEmail: initialConfig?.requireEmail ?? true,
 			...initialConfig,
 		},
 	});
@@ -119,10 +142,15 @@ export function LookalikeConfigModal({
 		],
 	);
 
-	// Validation logic
+	// Validation logic with edge cases
+	const socialEnrichmentEnabled = watchedValues.socialEnrichment ?? false;
 	const isValidSeedList = seedLeadCount > 0;
 	const hasTargetSize = (watchedValues.targetSize || 0) > 0;
-	const canGenerate = isValidSeedList && hasTargetSize && !isGenerating;
+	const targetSizeValid =
+		(watchedValues.targetSize || 0) >= 10 &&
+		(watchedValues.targetSize || 0) <= 10000;
+	const canGenerate =
+		isValidSeedList && hasTargetSize && targetSizeValid && !isGenerating;
 
 	const validationErrors: string[] = [];
 	if (!isValidSeedList) {
@@ -130,6 +158,16 @@ export function LookalikeConfigModal({
 	}
 	if (!hasTargetSize) {
 		validationErrors.push("Target audience size must be greater than 0");
+	}
+	if (hasTargetSize && !targetSizeValid) {
+		validationErrors.push("Target size must be between 10 and 10,000");
+	}
+	if (
+		socialEnrichmentEnabled &&
+		seedLeadCount > 0 &&
+		!watchedValues.requireEmail
+	) {
+		validationErrors.push("Email is required for social enrichment");
 	}
 
 	// Debug logging (in render, not useEffect to avoid dependency issues)
@@ -145,6 +183,7 @@ export function LookalikeConfigModal({
 	}
 
 	/** Debounced audience size estimation - only runs when relevant fields change */
+	// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
 	useEffect(() => {
 		if (!isOpen) return;
 
@@ -169,8 +208,7 @@ export function LookalikeConfigModal({
 		}, 1500);
 
 		return () => clearTimeout(timer);
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [isOpen, estimationKey]);
+	}, [isOpen, estimationKey, userPersona, userGoal]);
 
 	/** Handles form submission and audience generation */
 	const handleGenerate = async (values: FormValues) => {
@@ -238,7 +276,7 @@ export function LookalikeConfigModal({
 
 	return (
 		<Dialog open={isOpen} onOpenChange={onOpenChange}>
-			<DialogContent className="flex max-h-[90vh] max-w-4xl flex-col overflow-hidden">
+			<DialogContent className="mx-4 flex max-h-[90vh] max-w-4xl flex-col overflow-hidden sm:mx-auto">
 				<DialogHeader>
 					<DialogTitle>Configure Look-Alike Audience</DialogTitle>
 					<DialogDescription>
@@ -305,22 +343,16 @@ export function LookalikeConfigModal({
 						/>
 
 						{/* Accordion for all other filters */}
-						<Accordion type="multiple" className="space-y-2">
+						<Accordion
+							type="multiple"
+							className="space-y-2"
+							defaultValue={["sales", "geo"]}
+						>
 							<AccordionItem value="sales" className="rounded-lg border px-4">
 								<AccordionTrigger className="font-semibold text-base">
-									Sales & Audience Targeting
+									Audience & Sales Targeting
 								</AccordionTrigger>
 								<SalesTargeting form={form} />
-							</AccordionItem>
-
-							<AccordionItem
-								value="property"
-								className="rounded-lg border px-4"
-							>
-								<AccordionTrigger className="font-semibold text-base">
-									Property Filters
-								</AccordionTrigger>
-								<PropertyFilters form={form} />
 							</AccordionItem>
 
 							<AccordionItem value="geo" className="rounded-lg border px-4">
@@ -330,11 +362,58 @@ export function LookalikeConfigModal({
 								<GeographicFilters form={form} />
 							</AccordionItem>
 
-							<AccordionItem value="general" className="rounded-lg border px-4">
+							<AccordionItem
+								value="property"
+								className="rounded-lg border px-4"
+							>
 								<AccordionTrigger className="font-semibold text-base">
-									General Options
+									🏠 Property Filters
 								</AccordionTrigger>
-								<GeneralOptions form={form} />
+								<AccordionContent className="pt-4">
+									<PropertyFilters form={form} />
+								</AccordionContent>
+							</AccordionItem>
+
+							<AccordionItem
+								value="social"
+								className="rounded-lg border border-blue-500/30 bg-blue-500/5 px-4"
+							>
+								<AccordionTrigger className="font-semibold text-base">
+									📱 Social Enrichment
+									<Badge
+										variant="outline"
+										className="ml-2 bg-blue-500/10 text-[10px]"
+									>
+										Optional
+									</Badge>
+								</AccordionTrigger>
+								<AccordionContent className="pt-4">
+									<SocialEnrichmentAdvanced form={form} />
+								</AccordionContent>
+							</AccordionItem>
+
+							<AccordionItem
+								value="compliance"
+								className="rounded-lg border border-green-500/30 bg-green-500/5 px-4"
+							>
+								<AccordionTrigger className="font-semibold text-base">
+									✓ Compliance & Data Quality
+								</AccordionTrigger>
+								<AccordionContent className="pt-4">
+									<ComplianceOptions form={form} />
+								</AccordionContent>
+							</AccordionItem>
+
+							<AccordionItem
+								value="efficiency"
+								className="rounded-lg border border-primary/30 bg-primary/5 px-4"
+							>
+								<AccordionTrigger className="font-semibold text-base">
+									⚡ Efficiency Options
+								</AccordionTrigger>
+								<AccordionContent className="pt-4">
+									<EfficiencyOptions form={form} nested={false} />
+								</AccordionContent>
 							</AccordionItem>
 						</Accordion>
 

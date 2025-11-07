@@ -1,5 +1,6 @@
 "use client";
 
+import { Badge } from "@/components/ui/badge";
 import {
 	Card,
 	CardContent,
@@ -7,9 +8,8 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Database, Zap } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
+import { Database, Zap } from "lucide-react";
 import type { EnrichmentMetrics } from "../../types/ai-agents";
 
 interface EnrichmentIntelligenceProps {
@@ -40,36 +40,36 @@ export function EnrichmentIntelligence({
 				<div className="space-y-4">
 					<div className="grid grid-cols-2 gap-4">
 						<div>
-							<p className="text-sm text-muted-foreground mb-1">
+							<p className="mb-1 text-muted-foreground text-sm">
 								Leads Enriched
 							</p>
-							<p className="text-2xl font-bold">
+							<p className="font-bold text-2xl">
 								{metrics.leads_enriched.toLocaleString()}
 							</p>
-							<p className="text-xs text-muted-foreground">Auto-enriched</p>
+							<p className="text-muted-foreground text-xs">Auto-enriched</p>
 						</div>
 						<div>
-							<p className="text-sm text-muted-foreground mb-1">Match Rate</p>
-							<p className="text-2xl font-bold text-green-600 dark:text-green-500">
+							<p className="mb-1 text-muted-foreground text-sm">Match Rate</p>
+							<p className="font-bold text-2xl text-green-600 dark:text-green-500">
 								{metrics.match_rate}%
 							</p>
 							<Progress value={metrics.match_rate} className="mt-2 h-2" />
 						</div>
 					</div>
 
-					<div className="rounded-lg bg-primary/10 border border-primary/20 p-4">
-						<div className="flex items-center justify-between mb-2">
+					<div className="rounded-lg border border-primary/20 bg-primary/10 p-4">
+						<div className="mb-2 flex items-center justify-between">
 							<div className="flex items-center gap-2">
 								<Zap className="h-4 w-4 text-primary" />
-								<span className="text-sm font-medium">
+								<span className="font-medium text-sm">
 									High-Intent Signals Found
 								</span>
 							</div>
-							<Badge variant="default" className="text-lg px-3 py-1">
+							<Badge variant="default" className="px-3 py-1 text-lg">
 								{metrics.high_intent}
 							</Badge>
 						</div>
-						<p className="text-xs text-muted-foreground">
+						<p className="text-muted-foreground text-xs">
 							AI identified 2X more hot leads this week
 						</p>
 					</div>
@@ -87,8 +87,8 @@ export function EnrichmentIntelligence({
 					</div>
 
 					<div className="rounded-lg border p-3">
-						<div className="flex justify-between items-center">
-							<span className="text-sm font-medium">Top Signal Source</span>
+						<div className="flex items-center justify-between">
+							<span className="font-medium text-sm">Top Signal Source</span>
 							<Badge variant="secondary">{metrics.top_source}</Badge>
 						</div>
 					</div>

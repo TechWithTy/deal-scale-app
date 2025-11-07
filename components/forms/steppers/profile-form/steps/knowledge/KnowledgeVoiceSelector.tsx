@@ -1,4 +1,8 @@
 import {
+	AudioDropdown,
+	type AudioDropdownOption,
+} from "@/components/ui/AudioDropdown";
+import {
 	FormControl,
 	FormField,
 	FormItem,
@@ -6,13 +10,9 @@ import {
 	FormMessage,
 } from "@/components/ui/form";
 import type { AssistantVoice } from "@/types/vapiAi/api/assistant/create";
-import { useFormContext } from "react-hook-form";
-import type React from "react";
 import type { ProfileFormValues } from "@/types/zod/userSetup/profile-form-schema";
-import {
-	AudioDropdown,
-	type AudioDropdownOption,
-} from "@/components/ui/AudioDropdown";
+import type React from "react";
+import { useFormContext } from "react-hook-form";
 
 import { mockUserProfile } from "@/constants/_faker/profile/userProfile";
 

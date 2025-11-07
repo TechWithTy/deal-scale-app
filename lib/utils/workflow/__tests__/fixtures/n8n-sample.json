@@ -1,0 +1,132 @@
+{
+	"id": "n8n_lead_enrichment",
+	"name": "Lead Enrichment Pipeline",
+	"meta": {
+		"description": "Automated lead enrichment with skip trace and CRM sync"
+	},
+	"nodes": [
+		{
+			"id": "webhook_1",
+			"name": "Lead Created Webhook",
+			"type": "n8n-nodes-base.webhook",
+			"typeVersion": 1,
+			"position": [250, 300],
+			"parameters": {
+				"path": "lead-created",
+				"responseMode": "onReceived",
+				"httpMethod": "POST"
+			},
+			"webhookId": "abc123"
+		},
+		{
+			"id": "http_skip_trace",
+			"name": "Skip Trace API",
+			"type": "n8n-nodes-base.httpRequest",
+			"typeVersion": 2,
+			"position": [450, 300],
+			"parameters": {
+				"url": "https://skiptrace.api/enrich",
+				"method": "POST",
+				"bodyParametersJson": "={{ $json }}",
+				"options": {
+					"timeout": 30000
+				}
+			},
+			"notes": "Enrich lead with contact information",
+			"retryOnFail": true,
+			"maxTries": 3,
+			"waitBetweenTries": 1000
+		},
+		{
+			"id": "if_has_email",
+			"name": "Has Email?",
+			"type": "n8n-nodes-base.if",
+			"typeVersion": 1,
+			"position": [650, 300],
+			"parameters": {
+				"conditions": {
+					"string": [
+						{
+							"value1": "={{ $json.email }}",
+							"operation": "isNotEmpty"
+						}
+					]
+				}
+			}
+		},
+		{
+			"id": "http_update_crm",
+			"name": "Update CRM",
+			"type": "n8n-nodes-base.httpRequest",
+			"typeVersion": 2,
+			"position": [850, 200],
+			"parameters": {
+				"url": "https://crm.example.com/api/leads",
+				"method": "PUT",
+				"bodyParametersJson": "={{ $json }}"
+			}
+		},
+		{
+			"id": "send_notification",
+			"name": "Send Notification",
+			"type": "n8n-nodes-base.emailSend",
+			"typeVersion": 1,
+			"position": [850, 400],
+			"parameters": {
+				"to": "team@dealscale.com",
+				"subject": "Lead enrichment failed",
+				"text": "Lead {{ $json.id }} missing email"
+			}
+		}
+	],
+	"connections": {
+		"Lead Created Webhook": {
+			"main": [
+				[
+					{
+						"node": "Skip Trace API",
+						"type": "main",
+						"index": 0
+					}
+				]
+			]
+		},
+		"Skip Trace API": {
+			"main": [
+				[
+					{
+						"node": "Has Email?",
+						"type": "main",
+						"index": 0
+					}
+				]
+			]
+		},
+		"Has Email?": {
+			"main": [
+				[
+					{
+						"node": "Update CRM",
+						"type": "main",
+						"index": 0
+					}
+				],
+				[
+					{
+						"node": "Send Notification",
+						"type": "main",
+						"index": 0
+					}
+				]
+			]
+		}
+	},
+	"settings": {
+		"saveExecutionProgress": true,
+		"saveManualExecutions": true
+	},
+	"staticData": null,
+	"tags": ["leads", "enrichment", "automation"],
+	"pinData": {},
+	"versionId": "1.0.0"
+}

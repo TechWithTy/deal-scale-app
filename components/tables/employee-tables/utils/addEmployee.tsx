@@ -13,12 +13,12 @@ import { useModalStore } from "@/lib/stores/dashboard";
 // import { useTheme } from 'next-themes';
 import type { UserPermissions } from "@/types/userProfile";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Settings } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Controller, FormProvider, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
-import { useRouter } from "next/navigation";
-import { Settings } from "lucide-react";
 
 // Define the form schema with Zod
 const formSchema = z.object({

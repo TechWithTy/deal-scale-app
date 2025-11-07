@@ -7,6 +7,8 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
+import { ChartContainer, ChartTooltipContent } from "@/components/ui/chart";
+import { Target } from "lucide-react";
 import {
 	Bar,
 	BarChart,
@@ -16,8 +18,6 @@ import {
 	XAxis,
 	YAxis,
 } from "recharts";
-import { ChartContainer, ChartTooltipContent } from "@/components/ui/chart";
-import { Target } from "lucide-react";
 import type { SignalToSaleAttribution } from "../../types/advanced-analytics";
 
 interface SignalAttributionProps {
@@ -55,7 +55,7 @@ export function SignalAttribution({ data }: SignalAttributionProps) {
 				{/* Chart */}
 				<ChartContainer
 					config={chartConfig}
-					className="aspect-auto h-[250px] w-full mb-6"
+					className="mb-6 aspect-auto h-[250px] w-full"
 				>
 					<BarChart data={data} width={500} height={250}>
 						<CartesianGrid strokeDasharray="3 3" vertical={false} />
@@ -87,17 +87,17 @@ export function SignalAttribution({ data }: SignalAttributionProps) {
 					{data.map((signal) => (
 						<div
 							key={signal.signalType}
-							className="flex items-center justify-between rounded-lg border p-3 hover:bg-muted/50 transition-colors"
+							className="flex items-center justify-between rounded-lg border p-3 transition-colors hover:bg-muted/50"
 						>
 							<div className="flex-1">
 								<p className="font-medium text-sm">{signal.signalType}</p>
-								<p className="text-xs text-muted-foreground">
+								<p className="text-muted-foreground text-xs">
 									{signal.leadCount} leads → {signal.dealsClosed} deals
 								</p>
 							</div>
-							<div className="text-right space-y-1">
+							<div className="space-y-1 text-right">
 								<p className="font-bold text-sm">{signal.conversionRate}%</p>
-								<p className="text-xs text-muted-foreground">
+								<p className="text-muted-foreground text-xs">
 									${(signal.avgDealValue / 1000).toFixed(1)}K avg
 								</p>
 							</div>
@@ -106,11 +106,11 @@ export function SignalAttribution({ data }: SignalAttributionProps) {
 				</div>
 
 				{/* Best Performer Highlight */}
-				<div className="mt-4 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 p-3">
-					<p className="text-xs text-green-700 dark:text-green-400 font-medium mb-1">
+				<div className="mt-4 rounded-lg border border-green-200 bg-green-50 p-3 dark:border-green-800 dark:bg-green-900/20">
+					<p className="mb-1 font-medium text-green-700 text-xs dark:text-green-400">
 						🏆 Best Performing Channel
 					</p>
-					<p className="text-sm font-semibold text-green-900 dark:text-green-300">
+					<p className="font-semibold text-green-900 text-sm dark:text-green-300">
 						{bestPerformer.signalType} - {bestPerformer.conversionRate}%
 						conversion rate
 					</p>

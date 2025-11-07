@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { updateCredits, formatCreditsDisplay } from "./creditUtils";
+import { formatCreditsDisplay, updateCredits } from "./creditUtils";
 import type { Credits } from "./creditUtils";
 
 export interface CreditsProps {

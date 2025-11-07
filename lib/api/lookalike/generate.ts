@@ -1,4 +1,4 @@
-import type { LookalikeConfig, LookalikeCandidate } from "@/types/lookalike";
+import type { LookalikeCandidate, LookalikeConfig } from "@/types/lookalike";
 
 // Mock lead data for generating lookalike candidates
 const MOCK_FIRST_NAMES = [

@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
 import { HelpCircle } from "lucide-react";
+import React, { useEffect, useMemo, useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -22,9 +22,9 @@ import {
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-	useModalStore,
 	type WebhookCategory,
 	type WebhookStage,
+	useModalStore,
 } from "@/lib/stores/dashboard";
 import {
 	categoryConfig,
@@ -76,7 +76,7 @@ const StageCard = ({ stage, onOpen }: StageCardProps) => {
 									<p className="font-medium text-foreground">
 										{highlight.title}
 									</p>
-									<p className="text-sm leading-relaxed text-muted-foreground">
+									<p className="text-muted-foreground text-sm leading-relaxed">
 										{highlight.description}
 									</p>
 								</div>
@@ -84,7 +84,7 @@ const StageCard = ({ stage, onOpen }: StageCardProps) => {
 						</div>
 					))}
 				</div>
-				<p className="border-t pt-4 text-xs text-muted-foreground">
+				<p className="border-t pt-4 text-muted-foreground text-xs">
 					{config.footer}
 				</p>
 			</CardContent>
@@ -152,10 +152,10 @@ const ConnectionsPage = () => {
 			{/* Header */}
 			<div className="flex flex-col items-center gap-5 text-center">
 				<div className="space-y-2.5">
-					<h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+					<h1 className="font-bold text-3xl text-foreground tracking-tight sm:text-4xl">
 						Connections Hub
 					</h1>
-					<p className="mx-auto max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">
+					<p className="mx-auto max-w-2xl text-muted-foreground text-sm leading-relaxed sm:text-base">
 						Manage webhooks, feeds, and delivery activity from a single
 						workspace.
 					</p>
@@ -188,7 +188,7 @@ const ConnectionsPage = () => {
 							<TabsTrigger
 								key={category}
 								value={category}
-								className="px-4 py-2 text-sm font-medium transition-all data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:text-foreground"
+								className="px-4 py-2 font-medium text-sm transition-all data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm"
 							>
 								{categoryConfig[category].label}
 							</TabsTrigger>
@@ -214,19 +214,19 @@ const ConnectionsPage = () => {
 								<TabsList className="inline-flex h-11 items-center justify-center rounded-lg bg-muted p-1.5">
 									<TabsTrigger
 										value="incoming"
-										className="px-4 py-2 text-sm font-medium transition-all data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:text-foreground"
+										className="px-4 py-2 font-medium text-sm transition-all data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm"
 									>
 										Incoming
 									</TabsTrigger>
 									<TabsTrigger
 										value="outgoing"
-										className="px-4 py-2 text-sm font-medium transition-all data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:text-foreground"
+										className="px-4 py-2 font-medium text-sm transition-all data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm"
 									>
 										Outgoing
 									</TabsTrigger>
 									<TabsTrigger
 										value="feeds"
-										className="px-4 py-2 text-sm font-medium transition-all data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:text-foreground"
+										className="px-4 py-2 font-medium text-sm transition-all data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm"
 									>
 										Feeds
 									</TabsTrigger>
@@ -250,7 +250,7 @@ const ConnectionsPage = () => {
 			<Card className="border shadow-sm">
 				<CardHeader className="flex flex-col gap-4 border-b bg-muted/30 px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
 					<div className="space-y-1.5">
-						<CardTitle className="text-xl font-semibold">
+						<CardTitle className="font-semibold text-xl">
 							Activity History
 						</CardTitle>
 						<CardDescription className="text-sm">
@@ -266,10 +266,10 @@ const ConnectionsPage = () => {
 				<CardContent className="p-6">
 					{filteredLog.length === 0 ? (
 						<div className="flex flex-col items-center justify-center py-12 text-center">
-							<p className="text-sm font-medium text-foreground">
+							<p className="font-medium text-foreground text-sm">
 								No activity recorded
 							</p>
-							<p className="mt-1 text-sm text-muted-foreground">
+							<p className="mt-1 text-muted-foreground text-sm">
 								No events recorded for the selected stage yet. Trigger a test
 								from the modal to populate history.
 							</p>
@@ -300,7 +300,7 @@ const ConnectionsPage = () => {
 												{row.event}
 											</div>
 										</TableCell>
-										<TableCell className="max-w-[240px] truncate text-xs font-mono">
+										<TableCell className="max-w-[240px] truncate font-mono text-xs">
 											{row.endpoint}
 										</TableCell>
 										<TableCell>

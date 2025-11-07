@@ -11,10 +11,18 @@ import {
 	LoadScript,
 	Marker,
 } from "@react-google-maps/api";
-import Lottie from "lottie-react";
+import dynamic from "next/dynamic";
 import type React from "react";
-import { useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import PropertyListView from "../leadsSearch/propertyList";
+
+// * Lazy load Lottie to reduce bundle size (saves ~82KB)
+const Lottie = dynamic(() => import("lottie-react"), {
+	ssr: false,
+	loading: () => (
+		<div className="h-[30px] w-[30px] animate-pulse rounded bg-muted" />
+	),
+});
 
 const maxCardsPerLoad = 50;
 // * DrawingControls (inline)

@@ -1,6 +1,6 @@
+import { scriptCloneTextDefault } from "@/constants/_faker/_api/eleven_labs/scripts";
 import type React from "react";
 import VoiceRecorderCore from "./VoiceRecorderCore";
-import { scriptCloneTextDefault } from "@/constants/_faker/_api/eleven_labs/scripts";
 
 const MIN_RECORDING_LENGTH = 60;
 const MAX_RECORDING_LENGTH = 120;

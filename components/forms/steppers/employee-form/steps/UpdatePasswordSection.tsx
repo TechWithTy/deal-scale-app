@@ -1,10 +1,10 @@
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "@/components/ui/use-toast";
-import { LockIcon, CheckCircle2 } from "lucide-react";
+import { CheckCircle2, LockIcon } from "lucide-react";
+import { useState } from "react";
 
 interface UpdatePasswordSectionProps {
 	userId: string;

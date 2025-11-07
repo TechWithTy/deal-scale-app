@@ -13,7 +13,7 @@ import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/_utils";
 
 // * Form component: wraps children in FormProvider and <form>
-import type { UseFormReturn, FieldValues } from "react-hook-form";
+import type { FieldValues, UseFormReturn } from "react-hook-form";
 /**
  * Form wrapper: Provides form context to all children via useFormContext().
  * Passes only HTML attributes to <form>, and all form methods to FormProvider.
@@ -184,6 +184,9 @@ const FormMessage = React.forwardRef<
 			ref={ref}
 			id={formMessageId}
 			className={cn("font-medium text-[0.8rem] text-destructive", className)}
+			role="alert"
+			aria-live="polite"
+			aria-atomic="true"
 			{...props}
 		>
 			{body}

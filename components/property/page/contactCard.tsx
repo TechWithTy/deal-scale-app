@@ -4,9 +4,9 @@ import { AddContactInfoModal } from "@/components/reusables/modals/addContactInf
 import SkipTraceModalMain from "@/components/reusables/modals/user/skipTrace/SkipTraceModalMain";
 import { Button } from "@/components/ui/button";
 import searchAnimation from "@/public/lottie/SearchPing.json";
-import type { ContactField } from "@/types/contact";
 import type { Property, RealtorProperty } from "@/types/_dashboard/property";
 import { isRealtorProperty } from "@/types/_dashboard/property";
+import type { ContactField } from "@/types/contact";
 import Lottie from "lottie-react";
 import { useSearchParams } from "next/navigation";
 import type React from "react";
@@ -76,7 +76,7 @@ export const ContactCard: React.FC<ContactCardProps> = ({ property }) => {
 			{/* Title and buttons container */}
 			<div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
 				{/* Title */}
-				<h2 className="text-lg font-semibold text-foreground">
+				<h2 className="font-semibold text-foreground text-lg">
 					Contact Information
 				</h2>
 

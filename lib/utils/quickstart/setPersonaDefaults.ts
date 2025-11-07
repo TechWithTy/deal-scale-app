@@ -9,8 +9,8 @@ import type {
 	QuickStartGoalId,
 	QuickStartPersonaId,
 } from "@/lib/config/quickstart/wizardFlows";
-import type { QuickStartDefaults } from "@/types/userProfile";
 import type { ClientType } from "@/types/user";
+import type { QuickStartDefaults } from "@/types/userProfile";
 
 /**
  * Maps ClientType to QuickStart PersonaId

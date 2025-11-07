@@ -1,4 +1,3 @@
-import { Controller, type Control } from "react-hook-form";
 import { Label } from "@/components/ui/label";
 import {
 	Select,
@@ -9,6 +8,7 @@ import {
 } from "@/components/ui/select";
 import { useLeadSearchStore } from "@/lib/stores/leadSearch/leadSearch";
 import type { MapFormSchemaType } from "@/types/_dashboard/maps";
+import { type Control, Controller } from "react-hook-form";
 
 interface PropertyTypeSelectProps {
 	control: Control<MapFormSchemaType>;
