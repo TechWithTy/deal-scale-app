@@ -67,9 +67,9 @@ export interface SavedCampaignTemplate {
 	description?: string; // Optional description
 	campaignConfig: {
 		channels: string[]; // ['call', 'sms', 'email', 'social']
-		audience: any; // Audience configuration
-		messaging: any; // Messaging configuration
-		schedule: any; // Schedule configuration
+		audience: Record<string, unknown>; // Audience configuration
+		messaging: Record<string, unknown>; // Messaging configuration
+		schedule: Record<string, unknown>; // Schedule configuration
 		budget?: number; // Campaign budget
 		aiPrompt?: string; // The original AI prompt used to generate this template
 		generatedByAI?: boolean; // True if created entirely by AI
@@ -102,7 +102,7 @@ export interface SavedWorkflow {
 	name: string;
 	description?: string;
 	platform: "n8n" | "make" | "kestra";
-	workflowConfig: any; // Platform-specific JSON/YAML
+	workflowConfig: unknown; // Platform-specific JSON/YAML
 	aiPrompt?: string;
 	generatedByAI?: boolean;
 	createdAt: Date;
@@ -244,6 +244,7 @@ export interface AIKnowledgebase {
 	salesScript?: string; // Optional sales script field
 	assignedAssistantID: string; // e.g., 'female', 'male', 'ai'
 	assignedSquadID: string; // UUID for the assigned squad
+	preferredProvider?: "openai" | "claude" | "gemini" | "dealscale";
 	recordings: {
 		customVoiceID: string;
 		voiceClone?: {

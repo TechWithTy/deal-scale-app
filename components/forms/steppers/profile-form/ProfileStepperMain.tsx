@@ -19,7 +19,7 @@ import { PersonalInformationFormMain } from "./steps/personal_information/Person
 const stepHashes = [
 	"profile-info", // Step 0
 	"company-info", // Step 1
-	"voice-script", // Step 2
+	"knowledgebase", // Step 2
 	"oauth", // Step 3
 ];
 

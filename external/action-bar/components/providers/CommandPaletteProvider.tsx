@@ -1,6 +1,6 @@
 "use client";
 
-import {
+import React, {
 	createContext,
 	useCallback,
 	useContext,
@@ -83,13 +83,16 @@ export function CommandPaletteProvider({
 		(e: KeyboardEvent) => {
 			if (!keyboard) return;
 			const isMac = navigator.platform.toUpperCase().includes("MAC");
-			const mod = isMac ? e.metaKey : e.ctrlKey;
-			if (mod && (e.key === "k" || e.key === "K")) {
+			const modPressed = isMac ? e.metaKey : e.ctrlKey;
+			const isFocusShortcut =
+				modPressed && e.shiftKey && (e.key === "d" || e.key === "D");
+			if (isFocusShortcut) {
 				e.preventDefault();
 				setIsOpen((v) => !v);
+				return;
 			}
 			// '/' opens palette globally and does not seed '/' into the input
-			if (!mod && e.key === "/") {
+			if (!modPressed && e.key === "/") {
 				e.preventDefault();
 				setInitialQuery("");
 				setIsOpen(true);

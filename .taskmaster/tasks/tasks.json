@@ -1,0 +1,113 @@
+{
+  "master": {
+    "tasks": [
+      {
+        "id": 1,
+        "title": "Optimize plan for embeddable live charts",
+        "description": "Outline approach for advanced charts embeddable via script with live updates using existing API polling.",
+        "details": "",
+        "testStrategy": "",
+        "status": "done",
+        "dependencies": [],
+        "priority": "high",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Audit existing chart implementation",
+            "description": "Review components/charts/*, lib/charts, and related types to inventory reusable chart primitives and identify embeddability gaps.",
+            "details": "",
+            "status": "done",
+            "dependencies": [],
+            "parentTaskId": 1
+          },
+          {
+            "id": 2,
+            "title": "Document embed contract",
+            "description": "Draft _docs/features/charts/embed-contract.md specifying script API, config schema, authentication, theming options, and polling cadence.",
+            "details": "",
+            "status": "done",
+            "dependencies": [],
+            "parentTaskId": 1
+          },
+          {
+            "id": 3,
+            "title": "Author embed loader tests",
+            "description": "Create tests/external/embed-chart.spec.tsx covering configuration bootstrapping, polling interval dispatch, and reactive chart updates using mocked fetch responses.",
+            "details": "",
+            "status": "done",
+            "dependencies": [],
+            "parentTaskId": 1
+          },
+          {
+            "id": 4,
+            "title": "Add mock live data API route",
+            "description": "Implement app/api/charts/live/[chartId]/route.ts returning deterministic metrics with ETag headers and validation using shared API utilities.",
+            "details": "",
+            "status": "done",
+            "dependencies": [],
+            "parentTaskId": 1
+          },
+          {
+            "id": 5,
+            "title": "Build polling hook",
+            "description": "Add lib/hooks/useLiveChartData.ts providing configurable polling with zod-validated responses, SWR-style caching, and cleanup logic.",
+            "details": "",
+            "status": "done",
+            "dependencies": [],
+            "parentTaskId": 1
+          },
+          {
+            "id": 6,
+            "title": "Create embeddable frame components",
+            "description": "Implement components/external/embed-chart-frame.tsx and embed-chart.tsx composing loader states, theming, and chart primitives while staying under 250 lines each.",
+            "details": "",
+            "status": "done",
+            "dependencies": [],
+            "parentTaskId": 1
+          },
+          {
+            "id": 7,
+            "title": "Expose public embed bootstrap",
+            "description": "Create external/embed/index.ts exporting mountDealScaleChart, wiring dynamic import of components and ensuring compatibility with Next standalone bundling.",
+            "details": "",
+            "status": "done",
+            "dependencies": [],
+            "parentTaskId": 1
+          },
+          {
+            "id": 8,
+            "title": "Isolate embed styling",
+            "description": "Add public/embed/deal-scale-charts.css with scoped variables and document how host sites override colors without global leakage.",
+            "details": "",
+            "status": "done",
+            "dependencies": [],
+            "parentTaskId": 1
+          },
+          {
+            "id": 9,
+            "title": "Write operational guide",
+            "description": "Document integration, polling limits, and QA flow in _docs/features/charts/embed-live-updates.md referencing mock endpoints and configuration schema.",
+            "details": "",
+            "status": "done",
+            "dependencies": [],
+            "parentTaskId": 1
+          },
+          {
+            "id": 10,
+            "title": "Capture QA checklist",
+            "description": "Add follow-up checklist (cross-origin embed, theme overrides, throttle behavior, websocket enhancement backlog) to docs or task comments for future tracking.",
+            "details": "",
+            "status": "done",
+            "dependencies": [],
+            "parentTaskId": 1
+          }
+        ]
+      }
+    ],
+    "metadata": {
+      "created": "2025-11-07T21:33:13.717Z",
+      "description": "Default tasks context",
+      "updated": "2025-11-07T21:57:29.649Z"
+    }
+  }
+}

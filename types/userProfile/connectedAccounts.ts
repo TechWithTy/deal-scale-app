@@ -1,3 +1,5 @@
+import type React from "react";
+
 export interface OAuthService {
 	name: string;
 	oauthType: string;
@@ -65,4 +67,15 @@ export interface KestraOAuthData extends OAuthData {
 	namespaceId?: string; // Optional namespace ID
 	apiEndpoint: string; // Kestra API endpoint URL
 	workflowTemplateId?: string; // Optional workflow template ID
+}
+
+export interface SpotifyOAuthData extends OAuthData {
+	userId: string; // Spotify user ID
+	username: string; // Spotify username
+	product: string; // Spotify product (e.g., "premium")
+}
+
+export interface TwilioOAuthData extends OAuthData {
+	accountSid: string; // Twilio account SID
+	authToken?: string; // Twilio auth token (masked)
 }

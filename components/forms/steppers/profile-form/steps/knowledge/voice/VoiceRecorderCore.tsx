@@ -173,7 +173,15 @@ const VoiceRecorderCore: React.FC<VoiceRecorderCoreProps> = ({
 	if (!open) return null;
 
 	return (
-		<div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
+		<div
+			className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm"
+			onClick={(event) => {
+				if (event.target === event.currentTarget) onClose();
+			}}
+			onKeyDown={(event) => {
+				if (event.key === "Escape") onClose();
+			}}
+		>
 			<div className="relative mx-4 max-h-[90vh] w-full max-w-md overflow-y-auto rounded-lg bg-card p-4 shadow-lg sm:mx-0 sm:p-6">
 				<button
 					type="button"

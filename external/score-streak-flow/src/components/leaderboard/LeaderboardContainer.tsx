@@ -6,6 +6,7 @@ import { PlayerToWatchAlert } from "../ai/PlayerToWatchAlert";
 import { useLeaderboard } from "../realtime/useLeaderboard";
 import { leaderboardConfig } from "./config";
 import { Button } from "@root/components/ui/button";
+import { useGamificationStore } from "@root/lib/stores/gamification";
 import { LeaderboardHeader } from "./LeaderboardHeader";
 import { LeaderboardSettingsPanel } from "./LeaderboardSettingsPanel";
 import { TableToolbar } from "./TableToolbar";
@@ -37,6 +38,15 @@ export const LeaderboardContainer = () => {
 		pause,
 		resume,
 	} = useLeaderboard();
+	const setCurrentRank = useGamificationStore((state) => state.setCurrentRank);
+	const checkRankChange = useGamificationStore((state) => state.checkRankChange);
+	React.useEffect(() => {
+		if (typeof myRank === "number" && myRank > 0) {
+			setCurrentRank(myRank);
+			checkRankChange(myRank);
+		}
+	}, [myRank, setCurrentRank, checkRankChange]);
+
 
 	const [settings, setSettings] = useState(leaderboardConfig);
 	const [animationEnabled, setAnimationEnabled] = useState(false);

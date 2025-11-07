@@ -6,6 +6,7 @@ export interface InitialKnowledgeBaseData {
 	exampleEmailBody?: string;
 	voicemailRecordingId?: string;
 	clonedVoiceId?: string;
+	approvalLevel?: "manual" | "auto" | "turbo";
 }
 
 export const extractInitialKnowledgeBaseDataFromUserProfile = (
@@ -19,5 +20,6 @@ export const extractInitialKnowledgeBaseDataFromUserProfile = (
 			profile.aIKnowledgebase?.recordings?.voicemailFile || "",
 		clonedVoiceId:
 			profile.aIKnowledgebase?.recordings?.voiceClone?.clonedVoiceID || "",
+		approvalLevel: profile.aIKnowledgebase?.approvalLevel || "manual",
 	};
 };

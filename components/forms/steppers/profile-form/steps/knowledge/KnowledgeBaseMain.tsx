@@ -5,16 +5,38 @@ import type {
 	GenerateSpeechRequest,
 } from "@/types/elevenLabs/api/clone";
 import type React from "react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import type { InitialKnowledgeBaseData } from "../../../utils/const/getKnowledgeBase";
 
 import type { ProfileFormValues } from "@/types/zod/userSetup/profile-form-schema";
-import type { UseFormReturn } from "react-hook-form";
+import type { FieldPath } from "react-hook-form";
+import { useFormContext } from "react-hook-form";
+import {
+	Card,
+	CardContent,
+	CardDescription,
+	CardHeader,
+	CardTitle,
+} from "@/components/ui/card";
+import {
+	FormControl,
+	FormField,
+	FormItem,
+	FormLabel,
+	FormMessage,
+} from "@/components/ui/form";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
+import { AlertTriangle, Gauge, Sparkle } from "lucide-react";
 import { KnowledgeEmailUpload } from "./KnowledgeEmailUpload";
 import { KnowledgeSalesScriptUpload } from "./KnowledgeSalesScriptUpload";
 
-import { useFormContext } from "react-hook-form";
 import CreateVoiceModal from "./voice/CreateVoiceModal";
 import VoicemailModal from "./voice/VoicemailModal";
 import VoiceFeatureTabs from "./voice/utils/VoiceFeatureTabs";
@@ -22,12 +44,37 @@ import VoiceFeatureTabs from "./voice/utils/VoiceFeatureTabs";
 import { FeatureGuard } from "@/components/access/FeatureGuard";
 import type { PlayButtonTimeLineHandle } from "@/components/reusables/audio/timeline/types";
 import { Badge } from "@/components/ui/badge";
-import { FormLabel } from "@/components/ui/form";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CloneModal } from "@/external/teleprompter-modal";
 import { KnowledgeVoiceSelector } from "./KnowledgeVoiceSelector";
 import { SalesScriptManager } from "./SalesScriptManager";
 import { VoiceManager } from "./VoiceManager";
+
+const approvalOptions = [
+	{
+		value: "manual" as const,
+		title: "Manual Review",
+		icon: AlertTriangle,
+		description:
+			"Every AI-generated update waits for your approval before going live.",
+		badge: "Safest",
+	},
+	{
+		value: "auto" as const,
+		title: "Auto Approve",
+		icon: Sparkle,
+		description:
+			"Auto-approve routine updates while logging changes for auditing.",
+	},
+	{
+		value: "turbo" as const,
+		title: "Turbo Mode",
+		icon: Gauge,
+		description:
+			"Streamline go-live workflows with immediate approvals and proactive alerts.",
+		badge: "Fastest",
+	},
+];
 
 export interface KnowledgeBaseMainProps {
 	loading: boolean;
@@ -64,6 +111,9 @@ export const KnowledgeBaseMain: React.FC<KnowledgeBaseMainProps> = ({
 				initialData.voicemailRecordingId || "",
 			);
 			form.setValue("clonedVoiceId", initialData.clonedVoiceId || "");
+			if (initialData.approvalLevel) {
+				form.setValue("aiKnowledgeApproval", initialData.approvalLevel);
+			}
 		}
 	}, [initialData, form]);
 
@@ -92,6 +142,72 @@ export const KnowledgeBaseMain: React.FC<KnowledgeBaseMainProps> = ({
 
 	return (
 		<div className="mx-auto flex w-full max-w-5xl flex-col gap-8">
+			<Card>
+				<CardHeader className="pb-3">
+					<CardTitle>AI Approval Policy</CardTitle>
+					<CardDescription>
+						Control how AI-generated scripts, voice assets, and campaign updates
+						are reviewed before publishing.
+					</CardDescription>
+				</CardHeader>
+				<CardContent>
+					<FormField
+						control={form.control}
+						name={"aiKnowledgeApproval" as FieldPath<ProfileFormValues>}
+						render={({ field }) => {
+							const selected = approvalOptions.find(
+								(option) => option.value === field.value,
+							);
+							const Icon = selected?.icon ?? AlertTriangle;
+							return (
+								<FormItem>
+									<FormLabel className="text-sm font-medium">
+										Approval Level
+									</FormLabel>
+									<FormControl>
+										<Select value={field.value} onValueChange={field.onChange}>
+											<SelectTrigger className="mt-1">
+												<SelectValue placeholder="Select approval flow" />
+											</SelectTrigger>
+											<SelectContent>
+												{approvalOptions.map((option) => (
+													<SelectItem key={option.value} value={option.value}>
+														{option.title}
+													</SelectItem>
+												))}
+											</SelectContent>
+										</Select>
+									</FormControl>
+									<FormMessage />
+									{selected && (
+										<div className="mt-3 flex items-start gap-3 rounded-md border border-border/60 bg-muted/40 p-3">
+											<div className="mt-0.5">
+												<Icon className="h-4 w-4 text-primary" />
+											</div>
+											<div className="space-y-1 text-xs text-muted-foreground">
+												<div className="flex items-center gap-2 font-semibold text-foreground">
+													{selected.title}
+													{selected.badge && (
+														<Badge
+															variant="outline"
+															className="text-[10px] uppercase"
+														>
+															{selected.badge}
+														</Badge>
+													)}
+												</div>
+												<p className="leading-relaxed">
+													{selected.description}
+												</p>
+											</div>
+										</div>
+									)}
+								</FormItem>
+							);
+						}}
+					/>
+				</CardContent>
+			</Card>
 			<Tabs defaultValue="voice-library" className="w-full">
 				<TabsList className="grid w-full grid-cols-2">
 					<TabsTrigger value="voice-library">

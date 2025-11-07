@@ -4,6 +4,7 @@
  * Record, clone, create, and manage all voices in one place
  */
 
+import { MonetizationToggle } from "@/components/reusables/ai/shared/MonetizationToggle";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -31,9 +32,7 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { CloneModal } from "@/external/teleprompter-modal";
 import { format } from "date-fns";
 import {
 	BarChart3,
@@ -51,6 +50,11 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import {
+	type VoiceCreationPreferences,
+	VoicePreferencesForm,
+} from "./voice/VoicePreferencesForm";
+import CloneModal from "./voice/CloneModal";
 import CreateVoiceModal from "./voice/CreateVoiceModal";
 import VoicemailModal from "./voice/VoicemailModal";
 
@@ -63,6 +67,8 @@ interface Voice {
 	notes?: string;
 	useForCalls: boolean;
 	useForVoicemail: boolean;
+	knowledgeBaseEnabled: boolean;
+	aiTrainingEnabled: boolean;
 	createdAt: Date;
 	updatedAt: Date;
 	stats?: {
@@ -71,7 +77,22 @@ interface Voice {
 		totalCallDuration: number;
 		lastUsedDate?: Date;
 	};
+	monetization: {
+		enabled: boolean;
+		priceMultiplier: number;
+		acceptedTerms: boolean;
+	};
 }
+
+const createTagKeyList = (tags: string[], prefix: string, limit?: number) => {
+	const registry = new Map<string, number>();
+	const subset = typeof limit === "number" ? tags.slice(0, limit) : tags;
+	return subset.map((tag) => {
+		const count = (registry.get(tag) ?? 0) + 1;
+		registry.set(tag, count);
+		return { tag, key: `${prefix}-${tag}-${count}` };
+	});
+};
 
 export const VoiceManager: React.FC = () => {
 	const [voices, setVoices] = useState<Voice[]>([]);
@@ -93,8 +114,23 @@ export const VoiceManager: React.FC = () => {
 		tags: [] as string[],
 		useForCalls: false,
 		useForVoicemail: false,
+		knowledgeBaseEnabled: true,
+		aiTrainingEnabled: false,
+		monetizationEnabled: false,
+		priceMultiplier: 1,
+		acceptedTerms: false,
 	});
 	const [tagInput, setTagInput] = useState("");
+
+	const [creationPreferences, setCreationPreferences] =
+		useState<VoiceCreationPreferences>({
+			knowledgeBaseEnabled: true,
+			aiTrainingEnabled: false,
+			monetizationEnabled: false,
+			priceMultiplier: 1,
+			acceptedTerms: false,
+			voiceUsage: "call",
+		});
 
 	const handleAddTag = () => {
 		const input = tagInput.trim();
@@ -135,20 +171,30 @@ export const VoiceManager: React.FC = () => {
 	};
 
 	const handleVoiceRecorded = async (audioBlob: Blob) => {
+		const usage = creationPreferences.voiceUsage;
 		const newVoice: Voice = {
 			id: `voice-${Date.now()}`,
 			name: `Recording ${voices.length + 1}`,
 			type: "Recording",
 			audioUrl: URL.createObjectURL(audioBlob),
 			tags: [],
-			useForCalls: false,
-			useForVoicemail: true,
+			useForCalls: usage === "call" || usage === "dual",
+			useForVoicemail: usage === "voicemail" || usage === "dual",
+			knowledgeBaseEnabled: creationPreferences.knowledgeBaseEnabled,
+			aiTrainingEnabled: creationPreferences.aiTrainingEnabled,
 			createdAt: new Date(),
 			updatedAt: new Date(),
 			stats: {
 				timesUsed: 0,
 				avgRating: 0,
 				totalCallDuration: 0,
+			},
+			monetization: {
+				enabled: creationPreferences.monetizationEnabled,
+				priceMultiplier: creationPreferences.priceMultiplier,
+				acceptedTerms: creationPreferences.monetizationEnabled
+					? creationPreferences.acceptedTerms
+					: false,
 			},
 		};
 
@@ -158,20 +204,30 @@ export const VoiceManager: React.FC = () => {
 	};
 
 	const handleVoiceCloned = async (audioBlob: Blob) => {
+		const usage = creationPreferences.voiceUsage;
 		const newVoice: Voice = {
 			id: `voice-clone-${Date.now()}`,
 			name: `Cloned Voice ${voices.length + 1}`,
 			type: "Clone",
 			audioUrl: URL.createObjectURL(audioBlob),
 			tags: [],
-			useForCalls: true,
-			useForVoicemail: false,
+			useForCalls: usage === "call" || usage === "dual",
+			useForVoicemail: usage === "voicemail" || usage === "dual",
+			knowledgeBaseEnabled: creationPreferences.knowledgeBaseEnabled,
+			aiTrainingEnabled: creationPreferences.aiTrainingEnabled,
 			createdAt: new Date(),
 			updatedAt: new Date(),
 			stats: {
 				timesUsed: 0,
 				avgRating: 0,
 				totalCallDuration: 0,
+			},
+			monetization: {
+				enabled: creationPreferences.monetizationEnabled,
+				priceMultiplier: creationPreferences.priceMultiplier,
+				acceptedTerms: creationPreferences.monetizationEnabled
+					? creationPreferences.acceptedTerms
+					: false,
 			},
 		};
 
@@ -181,20 +237,30 @@ export const VoiceManager: React.FC = () => {
 	};
 
 	const handleVoiceCreated = async (audioBlob: Blob) => {
+		const usage = creationPreferences.voiceUsage;
 		const newVoice: Voice = {
 			id: `voice-gen-${Date.now()}`,
 			name: `Generated Voice ${voices.length + 1}`,
 			type: "Generated",
 			audioUrl: URL.createObjectURL(audioBlob),
 			tags: [],
-			useForCalls: true,
-			useForVoicemail: false,
+			useForCalls: usage === "call" || usage === "dual",
+			useForVoicemail: usage === "voicemail" || usage === "dual",
+			knowledgeBaseEnabled: creationPreferences.knowledgeBaseEnabled,
+			aiTrainingEnabled: creationPreferences.aiTrainingEnabled,
 			createdAt: new Date(),
 			updatedAt: new Date(),
 			stats: {
 				timesUsed: 0,
 				avgRating: 0,
 				totalCallDuration: 0,
+			},
+			monetization: {
+				enabled: creationPreferences.monetizationEnabled,
+				priceMultiplier: creationPreferences.priceMultiplier,
+				acceptedTerms: creationPreferences.monetizationEnabled
+					? creationPreferences.acceptedTerms
+					: false,
 			},
 		};
 
@@ -215,6 +281,15 @@ export const VoiceManager: React.FC = () => {
 						tags: formData.tags,
 						useForCalls: formData.useForCalls,
 						useForVoicemail: formData.useForVoicemail,
+						knowledgeBaseEnabled: formData.knowledgeBaseEnabled,
+						aiTrainingEnabled: formData.aiTrainingEnabled,
+						monetization: {
+							enabled: formData.monetizationEnabled,
+							priceMultiplier: formData.priceMultiplier,
+							acceptedTerms: formData.monetizationEnabled
+								? formData.acceptedTerms
+								: false,
+						},
 						updatedAt: new Date(),
 					}
 				: voice,
@@ -240,6 +315,11 @@ export const VoiceManager: React.FC = () => {
 			tags: voice.tags,
 			useForCalls: voice.useForCalls,
 			useForVoicemail: voice.useForVoicemail,
+			knowledgeBaseEnabled: voice.knowledgeBaseEnabled,
+			aiTrainingEnabled: voice.aiTrainingEnabled,
+			monetizationEnabled: voice.monetization?.enabled ?? false,
+			priceMultiplier: voice.monetization?.priceMultiplier ?? 1,
+			acceptedTerms: voice.monetization?.acceptedTerms ?? false,
 		});
 		setTagInput("");
 		setIsDetailsModalOpen(true);
@@ -257,6 +337,11 @@ export const VoiceManager: React.FC = () => {
 			tags: [],
 			useForCalls: false,
 			useForVoicemail: false,
+			knowledgeBaseEnabled: true,
+			aiTrainingEnabled: false,
+			monetizationEnabled: false,
+			priceMultiplier: 1,
+			acceptedTerms: false,
 		});
 		setTagInput("");
 	};
@@ -323,6 +408,19 @@ export const VoiceManager: React.FC = () => {
 						Create Voice
 					</Button>
 				</div>
+			</div>
+			<div className="rounded-lg border border-border bg-background/60 p-4">
+				<div className="mb-3">
+					<h4 className="font-semibold text-sm">New Voice Defaults</h4>
+					<p className="text-muted-foreground text-xs">
+						These settings apply when you record, clone, or create a new voice.
+					</p>
+				</div>
+				<VoicePreferencesForm
+					preferences={creationPreferences}
+					onChange={setCreationPreferences}
+					showUsageSelector
+				/>
 			</div>
 
 			{/* Search */}
@@ -391,15 +489,17 @@ export const VoiceManager: React.FC = () => {
 									</TableCell>
 									<TableCell>
 										<div className="flex flex-wrap gap-1">
-											{voice.tags.slice(0, 2).map((tag, idx) => (
-												<Badge
-													key={idx}
-													variant="secondary"
-													className="text-xs"
-												>
-													{tag}
-												</Badge>
-											))}
+											{createTagKeyList(voice.tags, voice.id, 2).map(
+												({ tag, key }) => (
+													<Badge
+														key={key}
+														variant="secondary"
+														className="text-xs"
+													>
+														{tag}
+													</Badge>
+												),
+											)}
 											{voice.tags.length > 2 && (
 												<Badge variant="secondary" className="text-xs">
 													+{voice.tags.length - 2}
@@ -417,6 +517,24 @@ export const VoiceManager: React.FC = () => {
 											{voice.useForVoicemail && (
 												<Badge variant="default" className="w-fit text-xs">
 													📨 Voicemail
+												</Badge>
+											)}
+											{voice.knowledgeBaseEnabled && (
+												<Badge variant="secondary" className="w-fit text-xs">
+													📚 Knowledge Base
+												</Badge>
+											)}
+											{voice.aiTrainingEnabled && (
+												<Badge variant="secondary" className="w-fit text-xs">
+													🤖 AI Training
+												</Badge>
+											)}
+											{voice.monetization.enabled && (
+												<Badge
+													variant="default"
+													className="w-fit bg-emerald-600 text-white text-xs hover:bg-emerald-600"
+												>
+													${voice.monetization.priceMultiplier}x Marketplace
 												</Badge>
 											)}
 										</div>
@@ -510,22 +628,24 @@ export const VoiceManager: React.FC = () => {
 						<div>
 							<Label htmlFor="voice-tags">Tags</Label>
 							<div className="flex min-h-[40px] flex-wrap items-center gap-2 rounded-md border border-input bg-background px-3 py-2">
-								{formData.tags.map((tag, idx) => (
-									<Badge
-										key={idx}
-										variant="secondary"
-										className="gap-1 pr-1 pl-2"
-									>
-										{tag}
-										<button
-											type="button"
-											onClick={() => handleRemoveTag(tag)}
-											className="ml-1 rounded-sm hover:bg-muted"
+								{createTagKeyList(formData.tags, "voice-edit").map(
+									({ tag, key }) => (
+										<Badge
+											key={key}
+											variant="secondary"
+											className="gap-1 pr-1 pl-2"
 										>
-											<X className="h-3 w-3" />
-										</button>
-									</Badge>
-								))}
+											{tag}
+											<button
+												type="button"
+												onClick={() => handleRemoveTag(tag)}
+												className="ml-1 rounded-sm hover:bg-muted"
+											>
+												<X className="h-3 w-3" />
+											</button>
+										</Badge>
+									),
+								)}
 								<Input
 									id="voice-tags"
 									placeholder="Add tag and press Enter..."
@@ -583,6 +703,55 @@ export const VoiceManager: React.FC = () => {
 								/>
 							</div>
 						</div>
+						<div className="space-y-4 rounded-lg border p-4">
+							<div className="flex items-center justify-between">
+								<div className="space-y-0.5">
+									<Label>Add to Knowledge Base</Label>
+									<p className="text-muted-foreground text-xs">
+										Make this voice searchable in the library.
+									</p>
+								</div>
+								<Switch
+									checked={formData.knowledgeBaseEnabled}
+									onCheckedChange={(checked) =>
+										setFormData({ ...formData, knowledgeBaseEnabled: checked })
+									}
+								/>
+							</div>
+							<div className="flex items-center justify-between">
+								<div className="space-y-0.5">
+									<Label>Enable AI Training</Label>
+									<p className="text-muted-foreground text-xs">
+										Allow this voice to train AI agents and scenarios.
+									</p>
+								</div>
+								<Switch
+									checked={formData.aiTrainingEnabled}
+									onCheckedChange={(checked) =>
+										setFormData({ ...formData, aiTrainingEnabled: checked })
+									}
+								/>
+							</div>
+						</div>
+						<MonetizationToggle
+							enabled={formData.monetizationEnabled}
+							onEnabledChange={(enabled) =>
+								setFormData((prev) => ({
+									...prev,
+									monetizationEnabled: enabled,
+									acceptedTerms: enabled ? prev.acceptedTerms : false,
+								}))
+							}
+							priceMultiplier={formData.priceMultiplier}
+							onPriceMultiplierChange={(value) =>
+								setFormData((prev) => ({ ...prev, priceMultiplier: value }))
+							}
+							acceptedTerms={formData.acceptedTerms}
+							onAcceptedTermsChange={(value) =>
+								setFormData((prev) => ({ ...prev, acceptedTerms: value }))
+							}
+							itemType="voice"
+						/>
 						<div className="flex justify-end gap-2">
 							<Button
 								variant="outline"
@@ -656,16 +825,22 @@ export const VoiceManager: React.FC = () => {
 				open={showRecordModal}
 				onClose={() => setShowRecordModal(false)}
 				onSave={handleVoiceRecorded}
+				preferences={creationPreferences}
+				onPreferencesChange={setCreationPreferences}
 			/>
 			<CloneModal
 				open={showCloneModal}
 				onClose={() => setShowCloneModal(false)}
 				onSave={handleVoiceCloned}
+				preferences={creationPreferences}
+				onPreferencesChange={setCreationPreferences}
 			/>
 			<CreateVoiceModal
 				open={showCreateModal}
 				onClose={() => setShowCreateModal(false)}
 				onSave={handleVoiceCreated}
+				preferences={creationPreferences}
+				onPreferencesChange={setCreationPreferences}
 			/>
 		</div>
 	);

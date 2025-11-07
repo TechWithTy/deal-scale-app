@@ -1,0 +1,111 @@
+[data-dealscale-chart] {
+  --deal-scale-bg: var(--background, #0b101a);
+  --deal-scale-border: rgba(255, 255, 255, 0.1);
+  --deal-scale-foreground: var(--foreground, #f8fafc);
+  --deal-scale-chart-1: hsl(210deg 85% 60%);
+  --deal-scale-chart-2: hsl(340deg 80% 62%);
+  --deal-scale-chart-3: hsl(160deg 70% 52%);
+  --deal-scale-chart-4: hsl(45deg 90% 56%);
+  --deal-scale-chart-5: hsl(270deg 70% 60%);
+  display: block;
+  font-family: "Inter", system-ui, -apple-system, Segoe UI, sans-serif;
+  border-radius: 16px;
+  border: 1px solid var(--deal-scale-border);
+  background: var(--deal-scale-bg);
+  color: var(--deal-scale-foreground);
+  overflow: hidden;
+}
+
+.deal-scale-embed-chart {
+  padding: 16px;
+  display: grid;
+  gap: 12px;
+}
+
+.deal-scale-embed-header h3 {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.deal-scale-embed-subtitle {
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 0.875rem;
+  margin: 0;
+}
+
+.deal-scale-chart {
+  height: 240px;
+}
+
+.deal-scale-embed-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.875rem;
+  border-top: 1px solid var(--deal-scale-border);
+  padding-top: 12px;
+  margin-top: 8px;
+}
+
+.deal-scale-embed-latest {
+  font-family: "JetBrains Mono", SFMono-Regular, ui-monospace, monospace;
+}
+
+.deal-scale-embed-refresh {
+  appearance: none;
+  background: transparent;
+  border: 1px solid var(--deal-scale-border);
+  color: inherit;
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s ease, border 0.2s ease;
+}
+
+.deal-scale-embed-refresh[disabled] {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.deal-scale-embed-refresh:not([disabled]):hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+.deal-scale-embed-loading,
+.deal-scale-embed-error {
+  display: grid;
+  place-items: center;
+  padding: 32px;
+  text-align: center;
+  gap: 8px;
+}
+
+.deal-scale-embed-error h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.deal-scale-embed-error button {
+  margin-top: 12px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--deal-scale-border);
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.deal-scale-embed-total {
+  font-size: 1.25rem;
+  font-weight: 600;
+  fill: var(--deal-scale-foreground);
+}
+
+.deal-scale-embed-unit {
+  font-size: 0.75rem;
+  fill: rgba(255, 255, 255, 0.65);
+}
+

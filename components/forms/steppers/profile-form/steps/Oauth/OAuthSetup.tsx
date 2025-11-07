@@ -15,6 +15,13 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/ui/form";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
 import type { OAuthData } from "@/types/userProfile/connectedAccounts";
 import type { ProfileFormValues } from "@/types/zod/userSetup/profile-form-schema";
 import {
@@ -24,11 +31,15 @@ import {
 	Facebook,
 	Linkedin,
 	Lock,
+	MessageSquare,
+	Music4,
+	Sparkles,
 	Webhook,
 } from "lucide-react";
 import type React from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { UseFormReturn } from "react-hook-form";
+import { toast } from "sonner";
 import { useUserStore } from "@/lib/stores/userStore";
 import { hasRequiredTier } from "@/constants/subscription/tiers";
 import type { InitialOauthSetupData } from "../../../utils/const/connectedAccounts";
@@ -69,6 +80,8 @@ interface OAuthProvider {
 		solution: string;
 		benefits: string[];
 	};
+	featureBlocked?: boolean;
+	featureBlockedReason?: string;
 }
 
 const oauthProviders: OAuthProvider[] = [
@@ -93,6 +106,26 @@ const oauthProviders: OAuthProvider[] = [
 		borderColor: "border-blue-300 dark:border-blue-800",
 	},
 	{
+		id: "spotify",
+		name: "Spotify",
+		description:
+			"Curate branded playlists for waiting rooms, events, and campaign touchpoints",
+		icon: <Music4 className="h-6 w-6" />,
+		color: "text-green-600",
+		bgColor: "bg-green-50 dark:bg-green-950",
+		borderColor: "border-green-200 dark:border-green-800",
+	},
+	{
+		id: "twilio",
+		name: "Twilio",
+		description:
+			"Route calls and SMS through Twilio to power outreach, hotlines, and nurturing",
+		icon: <MessageSquare className="h-6 w-6" />,
+		color: "text-rose-600",
+		bgColor: "bg-rose-50 dark:bg-rose-950",
+		borderColor: "border-rose-200 dark:border-rose-800",
+	},
+	{
 		id: "goHighLevel",
 		name: "GoHighLevel",
 		description:
@@ -108,9 +141,9 @@ const oauthProviders: OAuthProvider[] = [
 				<path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z" />
 			</svg>
 		),
-		color: "text-green-600",
-		bgColor: "bg-green-50 dark:bg-green-950",
-		borderColor: "border-green-200 dark:border-green-800",
+		color: "text-emerald-600",
+		bgColor: "bg-emerald-50 dark:bg-emerald-950",
+		borderColor: "border-emerald-200 dark:border-emerald-800",
 	},
 	{
 		id: "loftyCRM",
@@ -172,6 +205,9 @@ const oauthProviders: OAuthProvider[] = [
 		bgColor: "bg-pink-50 dark:bg-pink-950",
 		borderColor: "border-pink-200 dark:border-pink-800",
 		requiredTier: "Enterprise",
+		featureBlocked: true,
+		featureBlockedReason:
+			"Kestra orchestration is in private beta. Join the waitlist to get early access.",
 		enterpriseHighlights: {
 			problem:
 				"Manual data workflows and disconnected automation tools slow down your team and create errors",
@@ -185,6 +221,64 @@ const oauthProviders: OAuthProvider[] = [
 			],
 		},
 	},
+];
+
+const aiProviderOptions = [
+	{
+		id: "dealscale",
+		title: "DealScale Fusion",
+		tagline: "Managed AI with guardrails",
+		description:
+			"Adaptive routing across our proprietary models with live observability, safety rails, and cost controls.",
+		recommended: true,
+	},
+	{
+		id: "openai",
+		title: "OpenAI GPT",
+		tagline: "Best-in-class general reasoning",
+		description:
+			"Use GPT-4.1 for rich conversations, summarization, and knowledge synthesis.",
+	},
+	{
+		id: "claude",
+		title: "Anthropic Claude",
+		tagline: "High compliance & long context",
+		description:
+			"Great for regulated industries needing alignment and traceable outputs.",
+	},
+	{
+		id: "deepseek",
+		title: "DeepSeek",
+		tagline: "Cost-optimized reasoning",
+		description:
+			"Efficient for large-scale lead scoring, enrichment, and outbound personalization.",
+	},
+];
+
+const aiRoutingOptions = [
+	{
+		id: "balanced",
+		label: "Balanced",
+		description: "Smartly weights quality vs cost per request.",
+	},
+	{
+		id: "quality",
+		label: "Quality First",
+		description: "Always favor highest-performing models.",
+	},
+	{
+		id: "economy",
+		label: "Cost Saver",
+		description: "Route to cost-effective models unless overridden.",
+	},
+];
+
+const fallbackOptions = [
+	{ id: "none", label: "No Fallback" },
+	...aiProviderOptions.map((option) => ({
+		id: option.id,
+		label: option.title,
+	})),
 ];
 
 /**
@@ -207,6 +301,8 @@ export const OAuthSetup: React.FC<OAuthSetupProps> = ({
 	>({
 		meta: null,
 		linkedIn: null,
+		spotify: null,
+		twilio: null,
 		goHighLevel: null,
 		loftyCRM: null,
 		n8n: null,
@@ -229,6 +325,8 @@ export const OAuthSetup: React.FC<OAuthSetupProps> = ({
 			setOauthStates({
 				meta: initialData.connectedAccounts.facebook ?? null,
 				linkedIn: initialData.connectedAccounts.linkedIn ?? null,
+				spotify: initialData.connectedAccounts.spotify ?? null,
+				twilio: initialData.connectedAccounts.twilio ?? null,
 				goHighLevel: initialData.connectedAccounts.goHighLevel ?? null,
 				loftyCRM: initialData.connectedAccounts.loftyCRM ?? null,
 				n8n: initialData.connectedAccounts.n8n ?? null,
@@ -250,12 +348,31 @@ export const OAuthSetup: React.FC<OAuthSetupProps> = ({
 				"socialMediaCampaignAccounts.oauthData.linkedIn",
 				initialData.connectedAccounts.linkedIn ?? defaultOAuthData,
 			);
+			form.setValue(
+				"socialMediaCampaignAccounts.oauthData.spotify",
+				initialData.connectedAccounts.spotify ?? defaultOAuthData,
+			);
+			form.setValue(
+				"socialMediaCampaignAccounts.oauthData.twilio",
+				initialData.connectedAccounts.twilio ?? defaultOAuthData,
+			);
 			form.setValue("socialMediatags", initialData.socialMediaTags || []);
+			if (initialData.aiProvider) {
+				form.setValue("aiProvider", initialData.aiProvider as any);
+			}
 		}
 	}, [initialData]);
 
 	// ! Handle OAuth login flow for different services
 	const handleOAuthLogin = (providerId: string) => {
+		const provider = oauthProviders.find((item) => item.id === providerId);
+		if (provider?.featureBlocked) {
+			toast.info(
+				"This integration is in private beta. Join the waitlist to be notified.",
+			);
+			return;
+		}
+
 		const simulatedOAuthData: OAuthData = {
 			accessToken: `${providerId}_access_token_${Date.now()}`,
 			refreshToken: `${providerId}_refresh_token_${Date.now()}`,
@@ -281,6 +398,18 @@ export const OAuthSetup: React.FC<OAuthSetupProps> = ({
 			case "linkedIn":
 				form.setValue(
 					"socialMediaCampaignAccounts.oauthData.linkedIn",
+					simulatedOAuthData,
+				);
+				break;
+			case "spotify":
+				form.setValue(
+					"socialMediaCampaignAccounts.oauthData.spotify",
+					simulatedOAuthData,
+				);
+				break;
+			case "twilio":
+				form.setValue(
+					"socialMediaCampaignAccounts.oauthData.twilio",
 					simulatedOAuthData,
 				);
 				break;
@@ -340,6 +469,18 @@ export const OAuthSetup: React.FC<OAuthSetupProps> = ({
 					defaultOAuthData,
 				);
 				break;
+			case "spotify":
+				form.setValue(
+					"socialMediaCampaignAccounts.oauthData.spotify",
+					defaultOAuthData,
+				);
+				break;
+			case "twilio":
+				form.setValue(
+					"socialMediaCampaignAccounts.oauthData.twilio",
+					defaultOAuthData,
+				);
+				break;
 			case "goHighLevel":
 				form.setValue(
 					"socialMediaCampaignAccounts.oauthData.goHighLevel",
@@ -375,6 +516,20 @@ export const OAuthSetup: React.FC<OAuthSetupProps> = ({
 		}
 	};
 
+	const selectedPrimary = form.watch("aiProvider.primary");
+	const selectedFallback = form.watch("aiProvider.fallback");
+	const selectedRouting = form.watch("aiProvider.routing");
+
+	const primaryInfo = useMemo(
+		() => aiProviderOptions.find((option) => option.id === selectedPrimary),
+		[selectedPrimary],
+	);
+
+	const fallbackInfo = useMemo(
+		() => aiProviderOptions.find((option) => option.id === selectedFallback),
+		[selectedFallback],
+	);
+
 	return (
 		<div className="space-y-6">
 			<div>
@@ -388,9 +543,11 @@ export const OAuthSetup: React.FC<OAuthSetupProps> = ({
 			<div className="grid gap-4 md:grid-cols-2">
 				{oauthProviders.map((provider) => {
 					const isConnected = !!oauthStates[provider.id];
-					const hasAccess = provider.requiredTier
-						? hasRequiredTier(userTier, provider.requiredTier)
-						: true;
+					const hasAccess = provider.featureBlocked
+						? false
+						: provider.requiredTier
+							? hasRequiredTier(userTier, provider.requiredTier)
+							: true;
 					const isLocked = !hasAccess;
 
 					return (
@@ -399,7 +556,7 @@ export const OAuthSetup: React.FC<OAuthSetupProps> = ({
 							className={`transition-all ${
 								isConnected
 									? `border-2 shadow-lg hover:shadow-xl ${provider.bgColor} ${provider.borderColor}`
-									: isLocked
+									: isLocked || provider.featureBlocked
 										? "border-2 border-muted-foreground/10 border-dashed bg-muted/10 opacity-75"
 										: "border-2 border-muted-foreground/20 border-dashed bg-muted/20 hover:border-muted-foreground/40 hover:shadow-md"
 							}`}
@@ -411,12 +568,16 @@ export const OAuthSetup: React.FC<OAuthSetupProps> = ({
 											className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-lg transition-all ${
 												isConnected
 													? `${provider.color} ${provider.borderColor} border-2 bg-white dark:bg-gray-900`
-													: isLocked
+													: isLocked || provider.featureBlocked
 														? "border-2 border-muted-foreground/20 bg-muted/30 text-muted-foreground/40"
 														: `${provider.bgColor} ${provider.color} opacity-50`
 											}`}
 										>
-											{isLocked ? <Lock className="h-6 w-6" /> : provider.icon}
+											{isLocked || provider.featureBlocked ? (
+												<Lock className="h-6 w-6" />
+											) : (
+												provider.icon
+											)}
 										</div>
 										<div className="min-w-0 flex-1">
 											<CardTitle className="mb-1 flex items-center gap-2 text-base">
@@ -446,7 +607,7 @@ export const OAuthSetup: React.FC<OAuthSetupProps> = ({
 									className={`mt-2 text-xs leading-relaxed ${
 										isConnected
 											? "text-foreground/70"
-											: isLocked
+											: isLocked || provider.featureBlocked
 												? "text-muted-foreground/60"
 												: "text-muted-foreground"
 									}`}
@@ -455,7 +616,27 @@ export const OAuthSetup: React.FC<OAuthSetupProps> = ({
 								</CardDescription>
 							</CardHeader>
 							<CardContent className="pt-0">
-								{isConnected ? (
+								{provider.featureBlocked ? (
+									<div className="space-y-3">
+										<div className="rounded-lg border border-amber-300 bg-amber-50 p-3 text-center dark:border-amber-800 dark:bg-amber-950/40">
+											<p className="mb-1 font-semibold text-amber-900 text-xs dark:text-amber-100">
+												🚧 In Private Beta
+											</p>
+											<p className="text-amber-700 text-xs leading-relaxed dark:text-amber-300">
+												{provider.featureBlockedReason ??
+													"We're polishing this integration before opening access."}
+											</p>
+										</div>
+										<Button
+											type="button"
+											className="w-full"
+											disabled
+											variant="outline"
+										>
+											<Lock className="mr-2 h-4 w-4" /> Join Waitlist
+										</Button>
+									</div>
+								) : isConnected ? (
 									<div className="space-y-3">
 										<div className="rounded-lg border-2 border-green-200 bg-green-50 p-3 dark:border-green-800 dark:bg-green-950">
 											<div className="flex items-center gap-2 text-xs">
@@ -496,100 +677,6 @@ export const OAuthSetup: React.FC<OAuthSetupProps> = ({
 											</Button>
 										</div>
 									</div>
-								) : isLocked ? (
-									<div className="space-y-3">
-										{provider.enterpriseHighlights ? (
-											<>
-												{/* Problem Statement */}
-												<div className="rounded-lg border border-red-200 bg-red-50 p-3 dark:border-red-900 dark:bg-red-950/50">
-													<p className="mb-1 font-semibold text-red-900 text-xs dark:text-red-100">
-														⚠️ The Challenge
-													</p>
-													<p className="text-red-700 text-xs leading-relaxed dark:text-red-300">
-														{provider.enterpriseHighlights.problem}
-													</p>
-												</div>
-
-												{/* Solution */}
-												<div className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 dark:border-emerald-900 dark:bg-emerald-950/50">
-													<p className="mb-1 font-semibold text-emerald-900 text-xs dark:text-emerald-100">
-														✨ The Solution
-													</p>
-													<p className="text-emerald-700 text-xs leading-relaxed dark:text-emerald-300">
-														{provider.enterpriseHighlights.solution}
-													</p>
-												</div>
-
-												{/* Benefits */}
-												<div className="rounded-lg border border-blue-200 bg-blue-50 p-3 dark:border-blue-900 dark:bg-blue-950/50">
-													<p className="mb-2 font-semibold text-blue-900 text-xs dark:text-blue-100">
-														🚀 Key Features
-													</p>
-													<ul className="space-y-1">
-														{provider.enterpriseHighlights.benefits.map(
-															(benefit, idx) => (
-																<li
-																	key={idx}
-																	className="flex items-start gap-2 text-blue-700 text-xs dark:text-blue-300"
-																>
-																	<span className="text-blue-500 dark:text-blue-400">
-																		▸
-																	</span>
-																	<span className="leading-relaxed">
-																		{benefit}
-																	</span>
-																</li>
-															),
-														)}
-													</ul>
-												</div>
-
-												{/* Upgrade CTA */}
-												<div className="rounded-lg border border-amber-200 bg-gradient-to-br from-amber-50 to-orange-50 p-4 text-center dark:border-amber-800 dark:from-amber-950 dark:to-orange-950">
-													<Lock className="mx-auto mb-2 h-10 w-10 text-amber-600 dark:text-amber-400" />
-													<p className="mb-1 font-bold text-amber-900 text-sm dark:text-amber-100">
-														{provider.requiredTier} Feature
-													</p>
-													<p className="mb-3 text-amber-700 text-xs dark:text-amber-300">
-														Unlock advanced ML automation with Enterprise
-													</p>
-													<Button
-														type="button"
-														className="w-full bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700"
-														size="sm"
-														onClick={() => {
-															// TODO: Navigate to upgrade page
-															console.log("Upgrade to Enterprise");
-														}}
-													>
-														🎯 Upgrade to {provider.requiredTier}
-													</Button>
-												</div>
-											</>
-										) : (
-											<>
-												<div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-center dark:border-amber-800 dark:bg-amber-950">
-													<Lock className="mx-auto mb-2 h-8 w-8 text-amber-600 dark:text-amber-400" />
-													<p className="mb-1 font-semibold text-amber-900 text-xs dark:text-amber-100">
-														{provider.requiredTier} Plan Required
-													</p>
-													<p className="text-amber-700 text-xs dark:text-amber-300">
-														Upgrade to {provider.requiredTier} to unlock this
-														integration
-													</p>
-												</div>
-												<Button
-													type="button"
-													className="w-full"
-													variant="outline"
-													disabled
-												>
-													<Lock className="mr-2 h-4 w-4" />
-													Upgrade to Connect
-												</Button>
-											</>
-										)}
-									</div>
 								) : (
 									<div className="space-y-3">
 										<div className="rounded-lg border border-muted-foreground/30 border-dashed bg-muted/50 p-3 text-center">
@@ -612,6 +699,141 @@ export const OAuthSetup: React.FC<OAuthSetupProps> = ({
 						</Card>
 					);
 				})}
+			</div>
+
+			{/* AI Provider Orchestration */}
+			<div className="mt-8 space-y-5">
+				<div>
+					<h3 className="mb-1 font-semibold text-base">
+						AI Provider Orchestration
+					</h3>
+					<p className="text-muted-foreground text-sm">
+						Choose how DealScale orchestrates large language model calls. Mix
+						and match providers and routing rules to balance cost, latency, and
+						compliance.
+					</p>
+				</div>
+				<div className="grid gap-4 md:grid-cols-3">
+					<FormField
+						control={form.control}
+						name="aiProvider.primary"
+						render={({ field }) => (
+							<FormItem>
+								<FormLabel className="text-sm font-medium">
+									Primary Provider
+								</FormLabel>
+								<FormControl>
+									<Select onValueChange={field.onChange} value={field.value}>
+										<SelectTrigger className="mt-1">
+											<SelectValue placeholder="Select primary" />
+										</SelectTrigger>
+										<SelectContent>
+											{aiProviderOptions.map((option) => (
+												<SelectItem key={option.id} value={option.id}>
+													{option.title}
+												</SelectItem>
+											))}
+										</SelectContent>
+									</Select>
+								</FormControl>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
+					<FormField
+						control={form.control}
+						name="aiProvider.fallback"
+						render={({ field }) => (
+							<FormItem>
+								<FormLabel className="text-sm font-medium">
+									Fallback Provider
+								</FormLabel>
+								<FormControl>
+									<Select onValueChange={field.onChange} value={field.value}>
+										<SelectTrigger className="mt-1">
+											<SelectValue placeholder="Select fallback" />
+										</SelectTrigger>
+										<SelectContent>
+											{fallbackOptions.map((option) => (
+												<SelectItem key={option.id} value={option.id}>
+													{option.label}
+												</SelectItem>
+											))}
+										</SelectContent>
+									</Select>
+								</FormControl>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
+					<FormField
+						control={form.control}
+						name="aiProvider.routing"
+						render={({ field }) => (
+							<FormItem>
+								<FormLabel className="text-sm font-medium">
+									Routing Strategy
+								</FormLabel>
+								<FormControl>
+									<Select onValueChange={field.onChange} value={field.value}>
+										<SelectTrigger className="mt-1">
+											<SelectValue placeholder="Select strategy" />
+										</SelectTrigger>
+										<SelectContent>
+											{aiRoutingOptions.map((option) => (
+												<SelectItem key={option.id} value={option.id}>
+													{option.label}
+												</SelectItem>
+											))}
+										</SelectContent>
+									</Select>
+								</FormControl>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
+				</div>
+
+				<div className="rounded-lg border border-border/60 bg-card/50 p-4">
+					<div className="flex items-center gap-2">
+						<Sparkles className="h-4 w-4 text-primary" />
+						<p className="font-semibold text-sm text-foreground">
+							Execution Plan
+						</p>
+						{primaryInfo?.recommended && (
+							<Badge
+								variant="default"
+								className="ml-auto bg-primary/10 text-primary"
+							>
+								Recommended
+							</Badge>
+						)}
+					</div>
+					<p className="mt-2 text-muted-foreground text-xs leading-relaxed">
+						Requests start with{" "}
+						<strong>{primaryInfo?.title ?? "DealScale Fusion"}</strong>
+						{selectedFallback !== "none" && fallbackInfo ? (
+							<>
+								, then automatically fail over to{" "}
+								<strong>{fallbackInfo.title}</strong> if a call fails.
+							</>
+						) : (
+							" with no failover configured."
+						)}
+					</p>
+					<p className="text-muted-foreground text-xs leading-relaxed">
+						Routing mode:{" "}
+						<strong>
+							{aiRoutingOptions.find((option) => option.id === selectedRouting)
+								?.label ?? "Balanced"}
+						</strong>
+						—{" "}
+						{
+							aiRoutingOptions.find((option) => option.id === selectedRouting)
+								?.description
+						}
+					</p>
+				</div>
 			</div>
 
 			{/* Social Media Configuration */}

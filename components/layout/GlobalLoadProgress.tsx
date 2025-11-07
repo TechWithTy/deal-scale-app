@@ -1,7 +1,7 @@
 "use client";
 
 import { useIsFetching, useIsMutating } from "@tanstack/react-query";
-import React, { useEffect, useRef, useState, type ReactElement } from "react";
+import { type ReactElement, useEffect, useRef, useState } from "react";
 
 import { ScrollProgress } from "@/components/ui/scroll-progress";
 

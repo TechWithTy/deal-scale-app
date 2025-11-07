@@ -24,7 +24,7 @@ interface MonetizationToggleProps {
 	onPriceMultiplierChange: (value: number) => void;
 	acceptedTerms: boolean;
 	onAcceptedTermsChange: (accepted: boolean) => void;
-	itemType?: "template" | "workflow" | "search";
+	itemType?: "template" | "workflow" | "search" | "voice" | "salesScript";
 }
 
 export function MonetizationToggle({
@@ -36,12 +36,21 @@ export function MonetizationToggle({
 	onAcceptedTermsChange,
 	itemType = "template",
 }: MonetizationToggleProps) {
-	const itemTypeLabel =
-		itemType === "template"
-			? "Template"
-			: itemType === "workflow"
-				? "Workflow"
-				: "Search";
+	const itemTypeLabel = (() => {
+		switch (itemType) {
+			case "workflow":
+				return "Workflow";
+			case "search":
+				return "Search";
+			case "voice":
+				return "Voice";
+			case "salesScript":
+				return "Sales Script";
+			case "template":
+			default:
+				return "Template";
+		}
+	})();
 
 	return (
 		<>
