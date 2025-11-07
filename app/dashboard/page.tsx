@@ -247,17 +247,11 @@ export default function QuickStartPage() {
 		router.push("/dashboard/integrations");
 	}, [router]);
 
-	// Smart webhook/CRM handler that checks for existing integrations
-	const handleSmartWebhook = useCallback(
+	const handleOpenWebhook = useCallback(
 		(stage: WebhookStage) => {
-			// Check if user has any integrations configured
-			// For now, always open the webhook modal for configuration
-			toast.info("Setting up integrations...", {
-				description: "Connect your CRM or automation tools",
-			});
-			handleOpenWebhook(stage);
+			openWebhookModal(stage);
 		},
-		[handleOpenWebhook],
+		[openWebhookModal],
 	);
 
 	const handleCampaignCreate = useCallback(() => {

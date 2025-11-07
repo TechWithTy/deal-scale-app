@@ -2,7 +2,6 @@ import NonCriticalStyles from "@/components/layout/NonCriticalStyles";
 import Providers from "@/components/layout/providers";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import NextTopLoader from "nextjs-toploader";
 import React, { type ReactNode } from "react";
 import "./globals.css";
 import { auth } from "@/auth";
@@ -162,7 +161,6 @@ export default async function RootLayout({
 			</head>
 			<body className={inter.className} suppressHydrationWarning={true}>
 				<NonCriticalStyles />
-				<NextTopLoader showSpinner={false} />
 				{isAuthenticated && AuthenticatedAppShell ? (
 					<AuthenticatedAppShell session={session}>
 						{children}

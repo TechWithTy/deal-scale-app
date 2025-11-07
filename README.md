@@ -57,3 +57,21 @@ Follow these steps to clone the repository and start the development server:
 - `npm run dev`
 
 You should now be able to access the application at http://localhost:3000.
+
+## Progressive Web App Enhancements
+
+Deal Scale’s dashboard ships with PWA capabilities so teams can stay productive on mobile and flaky networks.
+
+- Push notifications via `PushManager` store and FastAPI endpoints (ready for VAPID integration).
+- Custom install prompt banner (desktop + iOS hand-off instructions).
+- Offline-resilient campaign drafts, cached analytics, and an in-app offline banner.
+- Service worker update detection with in-app toast to refresh instantly.
+- Network-aware dashboards that avoid loading heavy charts on slow connections.
+
+### Testing PWA Behavior
+
+- Unit coverage for push, install, and SW update hooks lives in `tests/pwa/pwa.spec.ts`.
+- Run the suite with `pnpm test:pwa`.
+- A Playwright runner is still available for legacy store specs: `pnpm test:stores:playwright`.
+
+See `_docs/pwa/pwa-overview.md` for deeper implementation details and extension guidelines.

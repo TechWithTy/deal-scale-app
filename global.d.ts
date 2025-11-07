@@ -8,6 +8,15 @@ declare global {
 		}
 	}
 
+	interface BeforeInstallPromptEvent extends Event {
+		readonly platforms: string[];
+		readonly userChoice: Promise<{
+			outcome: "accepted" | "dismissed";
+			platform: string;
+		}>;
+		prompt: () => Promise<void>;
+	}
+
 	// Allow Google Maps Places UI Kit web components in TSX
 	namespace JSX {
 		interface IntrinsicElements {

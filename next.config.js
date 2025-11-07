@@ -1,5 +1,6 @@
 const path = require("node:path");
 const { buildCacheControl } = require("./utils/http/cacheControl.js");
+const { runtimeCaching, offlineFallback } = require("./public/sw-config.js");
 
 // Bundle analyzer (run with: ANALYZE=true pnpm build)
 const withBundleAnalyzer = require("@next/bundle-analyzer")({
@@ -12,19 +13,24 @@ const withPWA = require("next-pwa")({
 	disable: process.env.NODE_ENV === "development",
 	register: true,
 	skipWaiting: true,
-	runtimeCaching: [
-		{
-			urlPattern: /^https?.*/,
-			handler: "NetworkFirst",
-			options: {
-				cacheName: "offlineCache",
-				expiration: {
-					maxEntries: 200,
-					maxAgeSeconds: 24 * 60 * 60, // 24 hours
-				},
-			},
-		},
-	],
+	swSrc: "./public/sw-custom.js",
+	runtimeCaching,
+	buildExcludes: [/middleware-manifest\.json$/],
+	workboxOptions: {
+		navigationPreload: true,
+		cleanupOutdatedCaches: true,
+		clientsClaim: true,
+		skipWaiting: true,
+		cacheId: "deal-scale-app",
+		navigateFallback: offlineFallback,
+		navigateFallbackDenylist: [/^\/api\//],
+		additionalManifestEntries: [
+			{ url: offlineFallback, revision: null },
+		],
+	},
+	fallbacks: {
+		document: offlineFallback,
+	},
 });
 
 /** @type {import('next').NextConfig} */

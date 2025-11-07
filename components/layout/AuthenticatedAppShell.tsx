@@ -6,6 +6,7 @@ import { CommandPaletteProvider } from "external/action-bar";
 import "@uploadthing/react/styles.css";
 import { QuickStartDebug } from "@/components/quickstart/QuickStartDebug";
 import FloatingHelpSupademo from "@/components/ui/FloatingHelpSupademo";
+import { OfflineBanner } from "@/components/layout/OfflineBanner";
 import type { Session } from "next-auth";
 import dynamic from "next/dynamic";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
@@ -41,6 +42,7 @@ export function AuthenticatedAppShell({
 		<CommandPaletteProvider>
 			<NuqsAdapter>
 				<Providers session={session}>
+					<OfflineBanner />
 					<SupademoClient />
 					{children}
 					<SessionSync />
