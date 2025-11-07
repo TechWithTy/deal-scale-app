@@ -16,7 +16,9 @@
 		"prepare": "husky",
 		"test": "set TS_NODE_PROJECT=tsconfig.cucumber.json&& cucumber-js lib/stores/user/_tests/_features --require-module ts-node/register/transpile-only --require-module tsconfig-paths/register --require lib/stores/user/_tests/_steps/support.ts",
 		"test:watch": "vitest --watch --config vitest.config.ts",
-		"test:stores": "vitest run lib/stores/user/_tests --config vitest.config.ts --reporter=dot",
+		"test:stores": "vitest run \"lib/stores/__tests__/**/*.test.ts\" --config vitest.config.ts --reporter=dot",
+		"test:pwa": "vitest run tests/pwa/pwa.spec.ts --config vitest.config.ts --reporter=dot",
+		"test:stores:playwright": "playwright test lib/stores/user/_tests",
 		"typecheck": "tsc -p tsconfig.typecheck.json --noEmit",
 		"postinstall:submodules": "node scripts/postinstall.js",
 		"clean:external": "node scripts/clean-external-node-modules.js",
@@ -141,6 +143,7 @@
 		"uuid": "^9.0.1",
 		"uuidv4": "^6.2.13",
 		"vaul": "^0.9.3",
+		"web-push": "^3.5.2",
 		"xlsx": "^0.18.5",
 		"zod": "^3.22.4",
 		"zustand": "^4.4.6"

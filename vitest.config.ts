@@ -25,6 +25,8 @@ export default defineConfig({
 			"tests/**/*.spec.tsx",
 			"tests/**/*.test.ts",
 			"tests/**/*.test.tsx",
+			"tests/pwa/**/*.spec.ts",
+			"tests/pwa/**/*.test.ts",
 		],
 		setupFiles: ["lib/stores/user/_tests/_steps/setup.ts"],
 	},

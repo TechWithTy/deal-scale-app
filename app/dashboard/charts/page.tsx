@@ -1,5 +1,7 @@
 "use client";
 
+import type { ReactElement } from "react";
+import dynamic from "next/dynamic";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -7,22 +9,82 @@ import {
 	BarChart,
 	BarChart3,
 	Bot,
-	LineChart,
 	ListTodo,
 	Percent,
 	Sparkles,
 	TrendingUp,
 } from "lucide-react";
 import { RefreshCw } from "lucide-react";
-import { AIAgentsTab } from "./components/AIAgentsTab";
-import { AdvancedAnalyticsTab } from "./components/AdvancedAnalyticsTab";
-import { CampaignPerformanceChart } from "./components/CampaignPerformanceChart";
-import { ChartsCommandPalette } from "./components/ChartsCommandPalette";
 import { KPICard } from "./components/KPICard";
-import { LeadTrendsChart } from "./components/LeadTrendsChart";
-import { ROICalculator } from "./components/ROICalculator";
-import { SalesPipelineFunnel } from "./components/SalesPipelineFunnel";
 import { useAnalyticsData } from "./hooks/useAnalyticsData";
+
+const CampaignPerformanceChart = dynamic(
+	() =>
+		import("./components/CampaignPerformanceChart").then((mod) => ({
+			default: mod.CampaignPerformanceChart,
+		})),
+	{
+		ssr: false,
+		loading: () => <ChartSkeleton />,
+	},
+);
+
+const LeadTrendsChart = dynamic(
+	() =>
+		import("./components/LeadTrendsChart").then((mod) => ({
+			default: mod.LeadTrendsChart,
+		})),
+	{
+		ssr: false,
+		loading: () => <ChartSkeleton />,
+	},
+);
+
+const SalesPipelineFunnel = dynamic(
+	() =>
+		import("./components/SalesPipelineFunnel").then((mod) => ({
+			default: mod.SalesPipelineFunnel,
+		})),
+	{
+		ssr: false,
+		loading: () => <FullWidthSkeleton />,
+	},
+);
+
+const ROICalculator = dynamic(
+	() =>
+		import("./components/ROICalculator").then((mod) => ({
+			default: mod.ROICalculator,
+		})),
+	{
+		ssr: false,
+		loading: () => <FullWidthSkeleton />,
+	},
+);
+
+const ChartsCommandPalette = dynamic(
+	() =>
+		import("./components/ChartsCommandPalette").then((mod) => ({
+			default: mod.ChartsCommandPalette,
+		})),
+	{ ssr: false, loading: () => null },
+);
+
+const AIAgentsTab = dynamic(
+	() =>
+		import("./components/AIAgentsTab").then((mod) => ({
+			default: mod.AIAgentsTab,
+		})),
+	{ ssr: false, loading: () => <FullWidthSkeleton /> },
+);
+
+const AdvancedAnalyticsTab = dynamic(
+	() =>
+		import("./components/AdvancedAnalyticsTab").then((mod) => ({
+			default: mod.AdvancedAnalyticsTab,
+		})),
+	{ ssr: false, loading: () => <FullWidthSkeleton /> },
+);
 
 export default function ChartsPage() {
 	const { data, loading, error, refetch } = useAnalyticsData();
@@ -44,38 +106,7 @@ export default function ChartsPage() {
 	}
 
 	if (loading || !data) {
-		return (
-			<div className="container mx-auto space-y-6 py-6">
-				<div className="flex items-center justify-between">
-					<div>
-						<h1 className="font-bold text-3xl">Analytics & Charts</h1>
-						<p className="mt-2 text-muted-foreground">
-							Visualize your data and track your performance metrics
-						</p>
-					</div>
-				</div>
-
-				{/* Loading State */}
-				<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-					{["total-leads", "campaigns", "conversion-rate", "active-tasks"].map(
-						(id) => (
-							<Skeleton
-								key={`kpi-skeleton-${id}`}
-								className="h-[120px] w-full"
-							/>
-						),
-					)}
-				</div>
-				<div className="grid gap-4 md:grid-cols-2">
-					{["campaign-performance", "lead-trends"].map((id) => (
-						<Skeleton
-							key={`chart-skeleton-${id}`}
-							className="h-[400px] w-full"
-						/>
-					))}
-				</div>
-			</div>
-		);
+		return <ChartsLoadingState onRetry={refetch} />;
 	}
 
 	const {
@@ -87,10 +118,7 @@ export default function ChartsPage() {
 
 	return (
 		<div className="container mx-auto space-y-6 py-6">
-			{/* Command Palette Integration */}
 			<ChartsCommandPalette />
-
-			{/* Header */}
 			<div className="flex items-center justify-between">
 				<div>
 					<h1 className="font-bold text-3xl">Analytics & Charts</h1>
@@ -104,7 +132,6 @@ export default function ChartsPage() {
 				</Button>
 			</div>
 
-			{/* Main Tabs */}
 			<Tabs defaultValue="overview" className="w-full">
 				<TabsList>
 					<TabsTrigger value="overview" className="flex items-center gap-2">
@@ -121,9 +148,7 @@ export default function ChartsPage() {
 					</TabsTrigger>
 				</TabsList>
 
-				{/* Overview Tab */}
 				<TabsContent value="overview" className="mt-6 space-y-6">
-					{/* KPI Summary Cards */}
 					<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
 						<KPICard
 							title="Total Leads"
@@ -158,30 +183,111 @@ export default function ChartsPage() {
 							format="number"
 						/>
 					</div>
-
-					{/* Main Chart Sections */}
-					<div className="grid gap-4 md:grid-cols-2">
-						<CampaignPerformanceChart data={campaign_performance} />
-						<LeadTrendsChart data={lead_trends} />
-					</div>
-
-					{/* Sales Pipeline */}
-					<SalesPipelineFunnel data={sales_pipeline} />
-
-					{/* ROI Calculator */}
-					<ROICalculator />
+					{isSlowNetwork ? (
+						<NetworkFallback
+							icon={<BarChart className="h-4 w-4" />}
+							message="Charts paused to save bandwidth"
+							description="Reconnect on a faster network to view campaign performance visuals."
+						/>
+					) : (
+						<>
+							<div className="grid gap-4 md:grid-cols-2">
+								<CampaignPerformanceChart data={campaign_performance} />
+								<LeadTrendsChart data={lead_trends} />
+							</div>
+							<SalesPipelineFunnel data={sales_pipeline} />
+							<ROICalculator />
+						</>
+					)}
 				</TabsContent>
 
-				{/* AI Agents Tab - Starter Tier */}
 				<TabsContent value="ai-agents" className="mt-6">
-					<AIAgentsTab />
+					{isSlowNetwork ? (
+						<NetworkFallback
+							icon={<Bot className="h-4 w-4" />}
+							message="AI analytics paused"
+							description="We’ll load the AI dashboards once your connection improves."
+						/>
+					) : (
+						<AIAgentsTab />
+					)}
 				</TabsContent>
 
-				{/* Advanced Tab - Enterprise Tier */}
 				<TabsContent value="advanced" className="mt-6">
-					<AdvancedAnalyticsTab />
+					{isSlowNetwork ? (
+						<NetworkFallback
+							icon={<Sparkles className="h-4 w-4" />}
+							message="Advanced analytics inactive"
+							description="Switch to a stronger connection to unlock advanced visualizations."
+						/>
+					) : (
+						<AdvancedAnalyticsTab />
+					)}
 				</TabsContent>
 			</Tabs>
 		</div>
 	);
+}
+
+function NetworkFallback({
+	icon,
+	message,
+	description,
+}: {
+	icon: ReactElement;
+	message: string;
+	description: string;
+}): JSX.Element {
+	return (
+		<div className="flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-border/60 bg-muted/40 p-8 text-center">
+			<div className="flex h-12 w-12 items-center justify-center rounded-full border border-border/60 text-muted-foreground">
+				{icon}
+			</div>
+			<p className="text-base font-medium text-foreground">{message}</p>
+			<p className="max-w-md text-sm text-muted-foreground">{description}</p>
+		</div>
+	);
+}
+
+function ChartsLoadingState({
+	onRetry,
+}: {
+	onRetry: () => void;
+}): JSX.Element {
+	return (
+		<div className="container mx-auto space-y-6 py-6">
+			<div className="flex items-center justify-between">
+				<div>
+					<h1 className="font-bold text-3xl">Analytics & Charts</h1>
+					<p className="mt-2 text-muted-foreground">
+						Visualize your data and track your performance metrics
+					</p>
+				</div>
+				<Button onClick={onRetry} variant="outline" size="sm">
+					<RefreshCw className="mr-2 h-4 w-4" />
+					Refresh
+				</Button>
+			</div>
+			<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+				{["total-leads", "campaigns", "conversion-rate", "active-tasks"].map(
+					(id) => (
+						<Skeleton key={`kpi-skeleton-${id}`} className="h-[120px] w-full" />
+					),
+				)}
+			</div>
+			<div className="grid gap-4 md:grid-cols-2">
+				{["campaign-performance", "lead-trends"].map((id) => (
+					<Skeleton key={`chart-skeleton-${id}`} className="h-[400px] w-full" />
+				))}
+			</div>
+		</div>
+	);
+}
+
+function ChartSkeleton(): JSX.Element {
+	return <Skeleton className="h-[400px] w-full" />;
+}
+
+function FullWidthSkeleton(): JSX.Element {
+	return <Skeleton className="h-[360px] w-full" />;
 }
