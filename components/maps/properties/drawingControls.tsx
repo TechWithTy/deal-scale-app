@@ -11,7 +11,7 @@ const DrawingControls: React.FC<DrawingControlsProps> = ({
 	drawingMode,
 	setDrawingMode,
 }) => (
-	<div className="absolute left-4 top-4 z-10 flex gap-2 rounded bg-card p-2 shadow">
+	<div className="absolute top-4 left-4 z-10 flex gap-2 rounded bg-card p-2 shadow">
 		<button
 			type="button"
 			className={`rounded px-3 py-1 text-xs ${drawingMode === google.maps.drawing.OverlayType.CIRCLE ? "bg-primary text-primary-foreground" : "bg-muted"}`}
@@ -28,7 +28,7 @@ const DrawingControls: React.FC<DrawingControlsProps> = ({
 		</button>
 		<button
 			type="button"
-			className="rounded bg-destructive px-3 py-1 text-xs text-destructive-foreground"
+			className="rounded bg-destructive px-3 py-1 text-destructive-foreground text-xs"
 			onClick={() => setDrawingMode(null)}
 		>
 			Cancel

@@ -1,13 +1,13 @@
 "use client";
 
-import * as React from "react";
 import {
-	CaretSortIcon,
-	CheckIcon,
-	CaretUpIcon,
 	CaretDownIcon,
+	CaretSortIcon,
+	CaretUpIcon,
+	CheckIcon,
 } from "@radix-ui/react-icons";
 import * as SelectPrimitive from "@radix-ui/react-select";
+import * as React from "react";
 
 import { cn } from "@/lib/_utils";
 
@@ -29,9 +29,9 @@ const SelectTrigger = React.forwardRef<
 		)}
 		{...props}
 	>
-		<span className="truncate flex-1 text-left">{children}</span>
+		<span className="flex-1 truncate text-left">{children}</span>
 		<SelectPrimitive.Icon asChild>
-			<CaretSortIcon className="h-4 w-4 opacity-50 shrink-0" />
+			<CaretSortIcon className="h-4 w-4 shrink-0 opacity-50" />
 		</SelectPrimitive.Icon>
 	</SelectPrimitive.Trigger>
 ));
@@ -74,7 +74,7 @@ const SelectContent = React.forwardRef<
 				</SelectPrimitive.ScrollUpButton>
 				<SelectPrimitive.Viewport
 					className={cn(
-						"max-h-[60vh] overflow-y-auto overscroll-contain touch-pan-y p-1 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-300 dark:[&::-webkit-scrollbar-thumb]:bg-slate-500 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-gray-100 dark:[&::-webkit-scrollbar-track]:bg-slate-700 [&::-webkit-scrollbar]:w-2",
+						"max-h-[60vh] touch-pan-y overflow-y-auto overscroll-contain p-1 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-300 dark:[&::-webkit-scrollbar-thumb]:bg-slate-500 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-gray-100 dark:[&::-webkit-scrollbar-track]:bg-slate-700 [&::-webkit-scrollbar]:w-2",
 						className,
 					)}
 				>

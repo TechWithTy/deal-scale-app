@@ -9,7 +9,6 @@ import {
 	FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
 import {
 	Select,
 	SelectContent,
@@ -17,6 +16,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import type { TeamMemberFormValues } from "@/types/zod/userSetup/team-member-form-schema";
 import type { UseFormReturn } from "react-hook-form";
 
@@ -46,8 +46,8 @@ export function EmployeePlatformIntegrationSection({
 	return (
 		<div className="space-y-6">
 			<div>
-				<h3 className="text-lg font-medium">Platform Integration Settings</h3>
-				<p className="text-sm text-muted-foreground">
+				<h3 className="font-medium text-lg">Platform Integration Settings</h3>
+				<p className="text-muted-foreground text-sm">
 					Configure collaboration and communication settings for this team
 					member.
 				</p>

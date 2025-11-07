@@ -5,23 +5,23 @@
 
 "use client";
 
-import { X, Loader2 } from "lucide-react";
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { useModalStore } from "@/lib/stores/dashboard";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import type { PaymentState } from "@/lib/mock/mockPayment";
 import {
-	pricingTiers,
-	type PricingCategory,
 	type BillingCycle,
+	type PricingCategory,
+	pricingTiers,
 } from "@/lib/mock/plans";
-import { PricingTabs } from "./PricingTabs";
+import { useModalStore } from "@/lib/stores/dashboard";
+import { Loader2, X } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { BillingToggle } from "./BillingToggle";
+import { OneTimeCard } from "./OneTimeCard";
+import { PricingTabs } from "./PricingTabs";
 import { SubscriptionTierCard } from "./SubscriptionTierCard";
 import { SuccessBasedCard } from "./SuccessBasedCard";
-import { OneTimeCard } from "./OneTimeCard";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import type { PaymentState } from "@/lib/mock/mockPayment";
 
 export interface UpgradeModalProps {
 	trial?: boolean;

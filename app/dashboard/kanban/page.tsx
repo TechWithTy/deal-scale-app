@@ -1,12 +1,12 @@
 "use client";
+import { campaignSteps } from "@/_tests/tours/campaignTour";
+import WalkThroughModal from "@/components/leadsSearch/search/WalkthroughModal";
 import { Button } from "@/components/ui/button";
 import { KanbanBoard } from "external/kanban/KanbanBoard";
+import { useTaskStore } from "external/kanban/utils/store";
 import NewTaskDialog from "external/new-task-dialog";
 import { HelpCircle } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useTaskStore } from "external/kanban/utils/store";
-import WalkThroughModal from "@/components/leadsSearch/search/WalkthroughModal";
-import { campaignSteps } from "@/_tests/tours/campaignTour";
 
 export default function TestExternalKanbanPage() {
 	const { tasks, runAi } = useTaskStore();
@@ -30,14 +30,14 @@ export default function TestExternalKanbanPage() {
 	const handleCloseTour = () => setIsTourOpen(false);
 
 	return (
-		<div className="container mx-auto space-y-6 py-6 relative">
+		<div className="container relative mx-auto space-y-6 py-6">
 			{/* Question Mark Help Button */}
 			<div className="absolute top-0 right-0 z-50">
 				<button
 					onClick={() => setShowWalkthrough(true)}
-					className="rounded-full w-10 h-10 p-0 hover:bg-muted bg-transparent border-none"
+					className="h-10 w-10 rounded-full border-none bg-transparent p-0 hover:bg-muted"
 				>
-					<HelpCircle className="w-5 h-5 text-muted-foreground" />
+					<HelpCircle className="h-5 w-5 text-muted-foreground" />
 				</button>
 			</div>
 

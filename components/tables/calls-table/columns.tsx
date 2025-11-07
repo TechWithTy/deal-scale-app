@@ -1,6 +1,6 @@
-import { Checkbox } from "@/components/ui/checkbox";
-import { Badge } from "@/components/ui/badge";
 import { ControlPanel } from "@/components/reusables/ControlPanel";
+import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import type { CallCampaign } from "@/types/_dashboard/campaign";
 import type { ColumnDef } from "@tanstack/react-table";
 import { PlaybackCell } from "external/audio-playback";

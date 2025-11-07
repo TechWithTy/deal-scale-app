@@ -75,7 +75,7 @@ const LeadAddressStep: FC<LeadAddressStepProps> = ({
 					</svg>
 				</button>
 				{open && (
-					<div className="absolute left-0 right-0 z-[80] mt-1 max-h-60 overflow-auto rounded-md border bg-popover p-1 text-popover-foreground shadow-md">
+					<div className="absolute right-0 left-0 z-[80] mt-1 max-h-60 overflow-auto rounded-md border bg-popover p-1 text-popover-foreground shadow-md">
 						{options.map((opt) => (
 							<button
 								key={opt.value}
@@ -92,7 +92,7 @@ const LeadAddressStep: FC<LeadAddressStepProps> = ({
 							</button>
 						))}
 						{options.length === 0 && (
-							<div className="px-2 py-1.5 text-sm text-muted-foreground">
+							<div className="px-2 py-1.5 text-muted-foreground text-sm">
 								No options
 							</div>
 						)}

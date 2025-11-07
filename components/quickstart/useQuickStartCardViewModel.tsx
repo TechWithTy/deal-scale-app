@@ -22,6 +22,11 @@ interface QuickStartCardViewModelParams {
 	readonly createRouterPush: (path: string) => () => void;
 	readonly onStartNewSearch: () => void;
 	readonly onOpenSavedSearches: () => void;
+	readonly onAIGenerateSearch: () => void;
+	readonly onAIGenerateCampaign: () => void;
+	readonly onOpenSavedCampaignTemplates: () => void;
+	readonly onAIGenerateWorkflow: () => void;
+	readonly onOpenSavedWorkflows: () => void;
 	readonly onLaunchWizard: (
 		preset: QuickStartWizardPreset | undefined,
 		action: () => void,
@@ -83,6 +88,11 @@ export const useQuickStartCardViewModel = (
 		createRouterPush: params.createRouterPush,
 		onStartNewSearch: params.onStartNewSearch,
 		onOpenSavedSearches: params.onOpenSavedSearches,
+		onAIGenerateSearch: params.onAIGenerateSearch,
+		onAIGenerateCampaign: params.onAIGenerateCampaign,
+		onOpenSavedCampaignTemplates: params.onOpenSavedCampaignTemplates,
+		onAIGenerateWorkflow: params.onAIGenerateWorkflow,
+		onOpenSavedWorkflows: params.onOpenSavedWorkflows,
 		onLaunchQuickStartFlow: params.onLaunchQuickStartFlow,
 	});
 

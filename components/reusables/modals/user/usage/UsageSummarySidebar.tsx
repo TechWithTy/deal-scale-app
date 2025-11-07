@@ -1,6 +1,6 @@
+import { Badge } from "@/components/ui/badge";
 // ! UsageSummary: Shows credits, leads, skip traces with enhanced UI/UX
 import type { UserProfileSubscription } from "@/constants/_faker/profile/userSubscription";
-import { Badge } from "@/components/ui/badge";
 import { Calendar, CreditCard, Zap } from "lucide-react";
 import type React from "react";
 

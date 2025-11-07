@@ -1,6 +1,32 @@
 const path = require("node:path");
 const { buildCacheControl } = require("./utils/http/cacheControl.js");
 
+// Bundle analyzer (run with: ANALYZE=true pnpm build)
+const withBundleAnalyzer = require("@next/bundle-analyzer")({
+	enabled: process.env.ANALYZE === "true",
+});
+
+// PWA support - make dashboard installable
+const withPWA = require("next-pwa")({
+	dest: "public",
+	disable: process.env.NODE_ENV === "development",
+	register: true,
+	skipWaiting: true,
+	runtimeCaching: [
+		{
+			urlPattern: /^https?.*/,
+			handler: "NetworkFirst",
+			options: {
+				cacheName: "offlineCache",
+				expiration: {
+					maxEntries: 200,
+					maxAgeSeconds: 24 * 60 * 60, // 24 hours
+				},
+			},
+		},
+	],
+});
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
 	// Essential configurations
@@ -51,7 +77,7 @@ const nextConfig = {
 		];
 	},
 
-	// Image domains for external images
+	// Image optimization and CDN configuration
 	images: {
 		domains: [
 			"utfs.io",
@@ -65,6 +91,10 @@ const nextConfig = {
 			"placehold.co",
 			"i.pravatar.cc",
 		],
+		formats: ["image/webp", "image/avif"], // Modern image formats
+		deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+		imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+		minimumCacheTTL: 60 * 60 * 24 * 7, // 7 days
 	},
 
 	experimental: {
@@ -100,4 +130,4 @@ const nextConfig = {
 	},
 };
 
-module.exports = nextConfig;
+module.exports = withBundleAnalyzer(withPWA(nextConfig));

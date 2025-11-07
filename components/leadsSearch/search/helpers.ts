@@ -1,6 +1,6 @@
 import {
-	createRentCastProperty,
 	type Property as DashboardProperty,
+	createRentCastProperty,
 } from "@/types/_dashboard/property";
 
 export const GOOGLE_LIBS = ["drawing", "marker", "places", "geometry"] as const;

@@ -1,12 +1,12 @@
-import { NextResponse } from "next/server";
-import { z } from "zod";
 import { auth, update } from "@/auth";
 import { getUserByEmail, getUserById } from "@/lib/mock-db";
-import type { User } from "@/types/user";
 import type {
 	ImpersonationSessionPayload,
 	ImpersonationSessionUserSnapshot,
 } from "@/types/impersonation";
+import type { User } from "@/types/user";
+import { NextResponse } from "next/server";
+import { z } from "zod";
 
 const START_SCHEMA = z.object({
 	userId: z.string().min(1, "Target user id is required"),

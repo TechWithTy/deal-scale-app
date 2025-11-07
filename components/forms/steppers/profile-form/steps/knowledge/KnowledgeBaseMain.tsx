@@ -5,7 +5,7 @@ import type {
 	GenerateSpeechRequest,
 } from "@/types/elevenLabs/api/clone";
 import type React from "react";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import type { InitialKnowledgeBaseData } from "../../../utils/const/getKnowledgeBase";
 
@@ -14,20 +14,20 @@ import type { UseFormReturn } from "react-hook-form";
 import { KnowledgeEmailUpload } from "./KnowledgeEmailUpload";
 import { KnowledgeSalesScriptUpload } from "./KnowledgeSalesScriptUpload";
 
-import VoicemailModal from "./voice/VoicemailModal";
-import VoiceFeatureTabs from "./voice/utils/VoiceFeatureTabs";
 import { useFormContext } from "react-hook-form";
 import CreateVoiceModal from "./voice/CreateVoiceModal";
+import VoicemailModal from "./voice/VoicemailModal";
+import VoiceFeatureTabs from "./voice/utils/VoiceFeatureTabs";
 
+import { FeatureGuard } from "@/components/access/FeatureGuard";
+import type { PlayButtonTimeLineHandle } from "@/components/reusables/audio/timeline/types";
+import { Badge } from "@/components/ui/badge";
+import { FormLabel } from "@/components/ui/form";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { CloneModal } from "@/external/teleprompter-modal";
 import { KnowledgeVoiceSelector } from "./KnowledgeVoiceSelector";
 import { SalesScriptManager } from "./SalesScriptManager";
 import { VoiceManager } from "./VoiceManager";
-import { FormLabel } from "@/components/ui/form";
-import type { PlayButtonTimeLineHandle } from "@/components/reusables/audio/timeline/types";
-import { FeatureGuard } from "@/components/access/FeatureGuard";
-import { CloneModal } from "@/external/teleprompter-modal";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
 
 export interface KnowledgeBaseMainProps {
 	loading: boolean;
@@ -113,7 +113,7 @@ export const KnowledgeBaseMain: React.FC<KnowledgeBaseMainProps> = ({
 				</TabsList>
 
 				{/* Legacy Voice Features Tab - Hidden but kept for reference */}
-				<TabsContent value="voice" className="space-y-6 hidden">
+				<TabsContent value="voice" className="hidden space-y-6">
 					{/* Voice Features Group */}
 					<div className="flex flex-col gap-4 rounded-xl border bg-card p-6 text-card-foreground shadow-sm">
 						<span className="mb-2 font-semibold text-lg">Voice Features</span>

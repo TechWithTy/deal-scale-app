@@ -1,9 +1,7 @@
 "use client";
 
-import React from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LeadListDataTable } from "@/components/ui/list-data-table";
-import { marketColumns, type MarketRow } from "./columns";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { mockRealtorMappedProperties } from "@/constants/dashboard/realtor_properties";
 import { mockRentCastMappedProperties } from "@/constants/dashboard/rentcast_properties";
 import type {
@@ -11,6 +9,8 @@ import type {
 	RealtorProperty,
 	RentCastProperty,
 } from "@/types/_dashboard/property";
+import React from "react";
+import { type MarketRow, marketColumns } from "./columns";
 
 function mapOnMarketRows(props: Property[]): MarketRow[] {
 	return props

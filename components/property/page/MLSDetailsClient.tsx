@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo } from "react";
+import { mockRentCastMappedProperties } from "@/constants/dashboard/rentcast_properties";
 import { usePropertyMarketView } from "@/lib/stores/property/marketView";
 import type {
 	Property,
@@ -11,7 +11,7 @@ import {
 	isRealtorProperty,
 	isRentCastProperty,
 } from "@/types/_dashboard/property";
-import { mockRentCastMappedProperties } from "@/constants/dashboard/rentcast_properties";
+import React, { useMemo } from "react";
 import MLSTableComponent from "./mlsData";
 
 interface Props {

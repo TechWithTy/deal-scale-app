@@ -55,8 +55,8 @@ export default function AmortizationCalculator() {
 	};
 
 	return (
-		<div className="my-2 rounded-lg bg-card p-6 shadow-md text-card-foreground">
-			<h2 className="mb-4 text-xl font-bold">Amortization Calculator</h2>
+		<div className="my-2 rounded-lg bg-card p-6 text-card-foreground shadow-md">
+			<h2 className="mb-4 font-bold text-xl">Amortization Calculator</h2>
 			<p className="mb-4">Modify the values to quickly analyze a deal.</p>
 
 			<div className="mb-4 grid grid-cols-3 gap-4">
@@ -84,7 +84,7 @@ export default function AmortizationCalculator() {
 						onChange={handleLoanTermChange}
 					/>
 					{errorMessage.loanTerm && (
-						<span className="text-sm text-destructive">
+						<span className="text-destructive text-sm">
 							{errorMessage.loanTerm}
 						</span>
 					)}
@@ -102,7 +102,7 @@ export default function AmortizationCalculator() {
 						onChange={handleInterestRateChange}
 					/>
 					{errorMessage.interestRate && (
-						<span className="text-sm text-destructive">
+						<span className="text-destructive text-sm">
 							{errorMessage.interestRate}
 						</span>
 					)}

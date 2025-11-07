@@ -1,9 +1,10 @@
 "use client";
 
-import { type ChangeEvent, useRef } from "react";
 import { Database, Download, PlugZap, Search, Upload } from "lucide-react";
+import { type ChangeEvent, useRef } from "react";
 import { shallow } from "zustand/shallow";
 
+import { downloadLeadCsvTemplate } from "@/components/quickstart/utils/downloadLeadCsvTemplate";
 import { Button } from "@/components/ui/button";
 import {
 	Card,
@@ -20,7 +21,6 @@ import {
 	type LeadSourceOption,
 	useQuickStartWizardDataStore,
 } from "@/lib/stores/quickstartWizardData";
-import { downloadLeadCsvTemplate } from "@/components/quickstart/utils/downloadLeadCsvTemplate";
 
 const INTEGRATION_OPTIONS = [
 	"DealScale CRM",
@@ -208,7 +208,7 @@ const LeadSourceSelector = () => {
 
 				{leadSource === "saved-search" && (
 					<div className="rounded-lg border bg-muted/30 p-4">
-						<Label htmlFor="saved-search-name" className="text-sm font-medium">
+						<Label htmlFor="saved-search-name" className="font-medium text-sm">
 							Which saved search should we hydrate?
 						</Label>
 						<Input
@@ -225,7 +225,7 @@ const LeadSourceSelector = () => {
 				)}
 
 				{leadSource === "integrations" && (
-					<div className="rounded-lg border bg-muted/30 p-4 space-y-3">
+					<div className="space-y-3 rounded-lg border bg-muted/30 p-4">
 						<p className="font-medium text-sm">
 							Select any connected integrations to hydrate this journey.
 						</p>

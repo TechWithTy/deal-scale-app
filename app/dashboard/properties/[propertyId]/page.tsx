@@ -1,7 +1,7 @@
 "use server";
 
-import { notFound } from "next/navigation";
 import dynamic from "next/dynamic";
+import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
 // Dynamic imports for client components
@@ -10,32 +10,31 @@ const PropertyHeaderWrapper = dynamic(
 	{ ssr: false },
 );
 
+import PropertyMap from "@/components/maps/properties/propertyMap";
 // Static imports
 import {
 	calculateOwnershipLength,
 	convertSqftToAcres,
 } from "@/constants/utility/property";
-import type { Property } from "@/types/_dashboard/property";
-import { isRealtorProperty } from "@/types/_dashboard/property";
 import {
 	createEmptyProperty,
 	formatPropertyAddress,
 	formatPropertyDetails,
 	getPrimaryImage,
 } from "@/lib/utils/propertyUtils";
-import PropertyMap from "@/components/maps/properties/propertyMap";
+import type { Property } from "@/types/_dashboard/property";
+import { isRealtorProperty } from "@/types/_dashboard/property";
 const PageContainer = dynamic(
 	() => import("@/components/layout/page-container"),
 	{ ssr: false },
 );
-import { Skeleton } from "@/components/ui/skeleton";
 import AmortizationCalculator from "@/components/property/page/calculations/amortizationCalculator";
 import WholesaleCalculator from "@/components/property/page/calculations/wholesale";
 import ForeclosuresComponent from "@/components/property/page/forclusureLiens";
 import LandLocationInformationComponent from "@/components/property/page/landLocationInformation";
 import {
-	LastSaleTable,
 	CurrentMortgageTable,
+	LastSaleTable,
 } from "@/components/property/page/lastSaleCurrentMortgage";
 import LinkedPropertiesComponent from "@/components/property/page/linkedProperties";
 import MLSTableComponent from "@/components/property/page/mlsData";
@@ -45,28 +44,29 @@ import {
 } from "@/components/property/page/mortgageHistory";
 import OwnershipInformationComponent from "@/components/property/page/ownerInformation";
 import PropertyCardDataComponent from "@/components/property/page/propertyDetailsCard";
+import { Skeleton } from "@/components/ui/skeleton";
 
+// Replaced legacy AI score card with external summary client wrapper
+import AISummaryCardClient from "@/components/property/page/AISummaryCardClient";
+import ContactCard from "@/components/property/page/contactCard";
 import PropertyOverviewCard from "@/components/property/page/propertyOverviewCard";
 import TaxInformationComponent from "@/components/property/page/taxInformation";
 import {
 	exampleLinkedPropertyData,
 	foreclosureData,
 	liensData,
-	saleData,
 	mortgageData,
+	saleData,
 	saleHistoryData,
 } from "@/constants/dashboard/profileInfo";
 import { emptyAgentProperty as testProperty } from "@/constants/dashboard/testProperties";
-import { createRealtorProperty } from "@/types/_dashboard/property";
-import PropertyTabsList from "./utils/propertyTabs";
-import ContactCard from "@/components/property/page/contactCard";
-// Replaced legacy AI score card with external summary client wrapper
-import AISummaryCardClient from "@/components/property/page/AISummaryCardClient";
-import { z } from "zod";
 import {
-	createOnMarketRentCastMock,
 	createOffMarketRentCastMock,
+	createOnMarketRentCastMock,
 } from "@/lib/utils/rentcastFactory";
+import { createRealtorProperty } from "@/types/_dashboard/property";
+import { z } from "zod";
+import PropertyTabsList from "./utils/propertyTabs";
 
 // Dynamically import the client component with no SSR
 const PropertyPageClient = dynamic(

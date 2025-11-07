@@ -1,7 +1,8 @@
 "use client";
 import PostHogProviderBridge from "@/components/analytics/PostHogProviderBridge";
-import dynamic from "next/dynamic";
+import { QueryProvider } from "@/lib/providers/QueryProvider";
 import { SessionProvider, type SessionProviderProps } from "next-auth/react";
+import dynamic from "next/dynamic";
 import Script from "next/script";
 import React, { type ReactNode } from "react";
 import ThemeProvider from "./ThemeToggle/theme-provider";
@@ -21,7 +22,9 @@ export default function Providers({
 		<>
 			<ThemeProvider attribute="class" defaultTheme="system" enableSystem>
 				<SessionProvider session={session}>
-					<PostHogProviderBridge>{children}</PostHogProviderBridge>
+					<QueryProvider>
+						<PostHogProviderBridge>{children}</PostHogProviderBridge>
+					</QueryProvider>
 				</SessionProvider>
 				{/* Global toast container */}
 				<ClientToaster />

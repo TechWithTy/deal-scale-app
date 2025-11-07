@@ -4,7 +4,7 @@
  * Record, clone, create, and manage all voices in one place
  */
 
-import { useState } from "react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -13,6 +13,16 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+	Sheet,
+	SheetContent,
+	SheetDescription,
+	SheetHeader,
+	SheetTitle,
+} from "@/components/ui/sheet";
+import { Switch } from "@/components/ui/switch";
 import {
 	Table,
 	TableBody,
@@ -21,38 +31,28 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
-import {
-	Sheet,
-	SheetContent,
-	SheetDescription,
-	SheetHeader,
-	SheetTitle,
-} from "@/components/ui/sheet";
-import {
-	Mic,
-	Copy,
-	Wand2,
-	Play,
-	Pause,
-	BarChart3,
-	Pencil,
-	Trash2,
-	Search,
-	Plus,
-	X,
-	Volume2,
-} from "lucide-react";
-import { toast } from "sonner";
-import { format } from "date-fns";
-import VoicemailModal from "./voice/VoicemailModal";
-import { CloneModal } from "@/external/teleprompter-modal";
-import CreateVoiceModal from "./voice/CreateVoiceModal";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
+import { CloneModal } from "@/external/teleprompter-modal";
+import { format } from "date-fns";
+import {
+	BarChart3,
+	Copy,
+	Mic,
+	Pause,
+	Pencil,
+	Play,
+	Plus,
+	Search,
+	Trash2,
+	Volume2,
+	Wand2,
+	X,
+} from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
+import CreateVoiceModal from "./voice/CreateVoiceModal";
+import VoicemailModal from "./voice/VoicemailModal";
 
 interface Voice {
 	id: string;
@@ -514,7 +514,7 @@ export const VoiceManager: React.FC = () => {
 									<Badge
 										key={idx}
 										variant="secondary"
-										className="gap-1 pl-2 pr-1"
+										className="gap-1 pr-1 pl-2"
 									>
 										{tag}
 										<button
@@ -533,7 +533,7 @@ export const VoiceManager: React.FC = () => {
 									onChange={(e) => setTagInput(e.target.value)}
 									onKeyDown={handleTagInputKeyDown}
 									onBlur={handleAddTag}
-									className="flex-1 border-0 p-0 shadow-none focus-visible:ring-0 min-w-[200px]"
+									className="min-w-[200px] flex-1 border-0 p-0 shadow-none focus-visible:ring-0"
 								/>
 							</div>
 							<p className="mt-1 text-muted-foreground text-xs">

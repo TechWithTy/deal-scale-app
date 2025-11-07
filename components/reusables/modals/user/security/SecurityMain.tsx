@@ -4,17 +4,17 @@
  * Full-featured security UI for managing all security aspects
  */
 
-import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useModalStore } from "@/lib/stores/dashboard";
 import { X } from "lucide-react";
-import PasswordSection from "./PasswordSection";
-import TwoFactorSection from "./TwoFactorSection";
-import ApiKeysSection from "./ApiKeysSection";
-import SessionsSection from "./SessionsSection";
+import { useState } from "react";
 import ActivityLogSection from "./ActivityLogSection";
-import WebhookSecuritySection from "./WebhookSecuritySection";
+import ApiKeysSection from "./ApiKeysSection";
 import DataPrivacySection from "./DataPrivacySection";
+import PasswordSection from "./PasswordSection";
+import SessionsSection from "./SessionsSection";
+import TwoFactorSection from "./TwoFactorSection";
+import WebhookSecuritySection from "./WebhookSecuritySection";
 
 const SecurityMain: React.FC = () => {
 	const { isSecurityModalOpen, closeSecurityModal } = useModalStore();
@@ -31,7 +31,7 @@ const SecurityMain: React.FC = () => {
 			}}
 		>
 			<div
-				className="relative w-full max-w-6xl max-h-[90vh] overflow-hidden rounded-xl bg-white shadow-2xl dark:bg-gray-900"
+				className="relative max-h-[90vh] w-full max-w-6xl overflow-hidden rounded-xl bg-white shadow-2xl dark:bg-gray-900"
 				onClick={(e) => e.stopPropagation()}
 				onKeyDown={(e) => e.stopPropagation()}
 			>

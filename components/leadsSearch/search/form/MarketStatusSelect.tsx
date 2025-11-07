@@ -1,4 +1,3 @@
-import { Controller, type Control } from "react-hook-form";
 import { Label } from "@/components/ui/label";
 import {
 	Select,
@@ -9,8 +8,9 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/_utils";
 import { useLeadSearchStore } from "@/lib/stores/leadSearch/leadSearch";
-import type { MapFormSchemaType } from "@/types/_dashboard/maps";
 import { useRemainingLeads } from "@/lib/stores/userStore";
+import type { MapFormSchemaType } from "@/types/_dashboard/maps";
+import { type Control, Controller } from "react-hook-form";
 
 interface MarketStatusSelectProps {
 	control: Control<MapFormSchemaType>;
@@ -44,7 +44,7 @@ const MarketStatusSelect: React.FC<MarketStatusSelectProps> = ({ control }) => {
 								value="off_market"
 								disabled={remainingLeads < 1}
 								className={cn(
-									"relative overflow-hidden rounded-md border border-primary/30 bg-gradient-to-r from-primary/15 via-primary/5 to-transparent font-semibold text-primary transition-colors duration-200 data-[highlighted]:from-primary/25 data-[highlighted]:via-primary/15 data-[state=checked]:border-primary data-[state=checked]:from-primary/30 data-[state=checked]:text-primary-foreground dark:from-primary/25 dark:via-primary/10 dark:data-[state=checked]:from-primary/35",
+									"relative overflow-hidden rounded-md border border-primary/30 bg-gradient-to-r from-primary/15 via-primary/5 to-transparent font-semibold text-primary transition-colors duration-200 data-[state=checked]:border-primary data-[highlighted]:from-primary/25 data-[state=checked]:from-primary/30 data-[highlighted]:via-primary/15 data-[state=checked]:text-primary-foreground dark:from-primary/25 dark:via-primary/10 dark:data-[state=checked]:from-primary/35",
 									remainingLeads < 1 ? "opacity-50" : undefined,
 								)}
 							>
@@ -56,11 +56,11 @@ const MarketStatusSelect: React.FC<MarketStatusSelectProps> = ({ control }) => {
 										/>
 										<span>Off Market</span>
 									</div>
-									<span className="rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-primary dark:bg-primary/25">
+									<span className="rounded-full bg-primary/15 px-2 py-0.5 font-medium text-[10px] text-primary uppercase tracking-wide dark:bg-primary/25">
 										High Intent
 									</span>
 									{remainingLeads < 1 && (
-										<span className="ml-2 text-muted-foreground text-[10px]">
+										<span className="ml-2 text-[10px] text-muted-foreground">
 											(Requires 1+ credits)
 										</span>
 									)}

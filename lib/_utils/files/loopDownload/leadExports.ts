@@ -1,8 +1,8 @@
+// ! If LeadList is not exported from leads, import from correct location
+import type { LeadList } from "@/types/_dashboard/leadList";
 // * Lead/LeadList Excel & ZIP Export Utilities
 // ! All lead data is exported as Uint8Array buffers for download/zip.
 import type { LeadTypeGlobal } from "@/types/_dashboard/leads";
-// ! If LeadList is not exported from leads, import from correct location
-import type { LeadList } from "@/types/_dashboard/leadList";
 import ExcelJS from "exceljs";
 import JSZip from "jszip";
 

@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
-	validateLeadStep,
 	type LeadListMode,
 	type LeadValidationInput,
+	validateLeadStep,
 } from "../utils/leadValidation";
 
 export function useLeadModalState(

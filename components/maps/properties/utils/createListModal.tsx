@@ -218,8 +218,8 @@ const SkipTraceForm: React.FC<SkipTraceFormProps> = ({
 	);
 };
 
-import { useModalStore } from "@/lib/stores/leadSearch/leadListStore";
 import BareDropdown from "@/components/ui/bareDropdown";
+import { useModalStore } from "@/lib/stores/leadSearch/leadListStore";
 
 export type SkipTraceDialogProps = {
 	properties?: Property[];

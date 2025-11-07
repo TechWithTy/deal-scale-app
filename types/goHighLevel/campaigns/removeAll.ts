@@ -78,11 +78,9 @@ export default async function handler(
 
 		const parsed = await apiResponse.json();
 		if (!isCampaignActionResponse(parsed)) {
-			return res
-				.status(502)
-				.json({
-					error: "Invalid API response shape for CampaignActionResponse",
-				});
+			return res.status(502).json({
+				error: "Invalid API response shape for CampaignActionResponse",
+			});
 		}
 
 		return res.status(200).json(parsed); // 200 OK

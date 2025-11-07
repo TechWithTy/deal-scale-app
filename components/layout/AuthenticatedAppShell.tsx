@@ -4,12 +4,12 @@ import SessionSync from "@/components/auth/SessionSync";
 import Providers from "@/components/layout/providers";
 import { CommandPaletteProvider } from "external/action-bar";
 import "@uploadthing/react/styles.css";
+import { QuickStartDebug } from "@/components/quickstart/QuickStartDebug";
+import FloatingHelpSupademo from "@/components/ui/FloatingHelpSupademo";
 import type { Session } from "next-auth";
 import dynamic from "next/dynamic";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import React, { type ReactNode } from "react";
-import { QuickStartDebug } from "@/components/quickstart/QuickStartDebug";
-import FloatingHelpSupademo from "@/components/ui/FloatingHelpSupademo";
 
 const SupademoClient = dynamic(
 	() => import("@/components/integrations/SupademoClient"),

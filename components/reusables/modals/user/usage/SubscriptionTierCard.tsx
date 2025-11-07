@@ -4,9 +4,9 @@
  */
 
 import { Badge } from "@/components/ui/badge";
+import type { BillingCycle, SubscriptionTier } from "@/lib/mock/plans";
 import { CheckCircle2, Lock } from "lucide-react";
 import Link from "next/link";
-import type { SubscriptionTier, BillingCycle } from "@/lib/mock/plans";
 
 interface SubscriptionTierCardProps {
 	tier: SubscriptionTier;
@@ -48,13 +48,13 @@ export function SubscriptionTierCard({
 		<div
 			className={`group relative flex flex-col rounded-xl border-2 transition-all duration-200 ${
 				isSelected
-					? "border-primary bg-gradient-to-br from-primary/5 via-primary/3 to-transparent shadow-xl shadow-primary/5"
+					? "border-primary bg-gradient-to-br from-primary/5 via-primary/3 to-transparent shadow-primary/5 shadow-xl"
 					: "border-border bg-card hover:border-primary/30 hover:shadow-lg"
 			}`}
 		>
 			{/* Selected Indicator */}
 			{isSelected && (
-				<div className="absolute -top-3 left-1/2 -translate-x-1/2">
+				<div className="-top-3 -translate-x-1/2 absolute left-1/2">
 					<Badge className="bg-primary text-primary-foreground shadow-md">
 						Selected
 					</Badge>
@@ -67,12 +67,12 @@ export function SubscriptionTierCard({
 					<div className="mb-3 flex items-start justify-between">
 						<h3 className="font-bold text-2xl text-foreground">{tier.name}</h3>
 						{tier.tags && tier.tags.length > 0 && (
-							<div className="flex flex-wrap gap-1.5 justify-end">
+							<div className="flex flex-wrap justify-end gap-1.5">
 								{tier.tags.map((tag, idx) => (
 									<Badge
 										key={idx}
 										variant={tag === "Most Popular" ? "default" : "secondary"}
-										className="text-xs font-semibold"
+										className="font-semibold text-xs"
 									>
 										{tag}
 									</Badge>
@@ -81,7 +81,7 @@ export function SubscriptionTierCard({
 						)}
 					</div>
 					{showDiscount && (
-						<div className="mb-2 inline-flex items-center gap-1.5 rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-semibold text-green-700 dark:bg-green-950/30 dark:text-green-400">
+						<div className="mb-2 inline-flex items-center gap-1.5 rounded-full bg-green-100 px-2.5 py-0.5 font-semibold text-green-700 text-xs dark:bg-green-950/30 dark:text-green-400">
 							<span>✨</span>
 							<span>{tier.billing.yearly.discount} off + 2 months free</span>
 						</div>
@@ -89,7 +89,7 @@ export function SubscriptionTierCard({
 				</div>
 
 				{/* Pricing */}
-				<div className="mb-6 border-b border-border/50 pb-4">
+				<div className="mb-6 border-border/50 border-b pb-4">
 					<div className="flex flex-wrap items-baseline gap-2">
 						<span className="font-bold text-4xl text-foreground">
 							${currentPrice.toLocaleString()}
@@ -100,7 +100,7 @@ export function SubscriptionTierCard({
 					</div>
 					{billingCycle === "yearly" && tier.billing.yearly.original && (
 						<div className="mt-2">
-							<span className="text-sm text-muted-foreground line-through">
+							<span className="text-muted-foreground text-sm line-through">
 								${tier.billing.yearly.original.toLocaleString()}/yr
 							</span>
 						</div>
@@ -116,8 +116,8 @@ export function SubscriptionTierCard({
 					<div className="space-y-3">
 						<div className="flex items-center justify-between">
 							<div className="flex items-center gap-2">
-								<CheckCircle2 className="h-4 w-4 text-green-600 flex-shrink-0" />
-								<span className="text-sm font-medium text-foreground">
+								<CheckCircle2 className="h-4 w-4 flex-shrink-0 text-green-600" />
+								<span className="font-medium text-foreground text-sm">
 									AI Credits
 								</span>
 							</div>
@@ -128,8 +128,8 @@ export function SubscriptionTierCard({
 
 						<div className="flex items-center justify-between">
 							<div className="flex items-center gap-2">
-								<CheckCircle2 className="h-4 w-4 text-green-600 flex-shrink-0" />
-								<span className="text-sm font-medium text-foreground">
+								<CheckCircle2 className="h-4 w-4 flex-shrink-0 text-green-600" />
+								<span className="font-medium text-foreground text-sm">
 									Lead Credits
 								</span>
 							</div>
@@ -140,8 +140,8 @@ export function SubscriptionTierCard({
 
 						<div className="flex items-center justify-between">
 							<div className="flex items-center gap-2">
-								<CheckCircle2 className="h-4 w-4 text-green-600 flex-shrink-0" />
-								<span className="text-sm font-medium text-foreground">
+								<CheckCircle2 className="h-4 w-4 flex-shrink-0 text-green-600" />
+								<span className="font-medium text-foreground text-sm">
 									Skip Trace
 								</span>
 							</div>
@@ -152,7 +152,7 @@ export function SubscriptionTierCard({
 					</div>
 
 					{/* Credit Explanations */}
-					<div className="mt-3 rounded-lg bg-muted/30 p-3 text-xs text-muted-foreground">
+					<div className="mt-3 rounded-lg bg-muted/30 p-3 text-muted-foreground text-xs">
 						<div className="space-y-1.5">
 							<div>• 1 AI credit = 5 min call or 10 messages</div>
 							<div>• 1 lead credit = 1 look-alike generation</div>
@@ -163,7 +163,7 @@ export function SubscriptionTierCard({
 
 				{/* Add-on */}
 				<div className="mb-6 rounded-lg bg-muted/40 px-3 py-2 text-center">
-					<span className="text-sm font-medium text-muted-foreground">
+					<span className="font-medium text-muted-foreground text-sm">
 						{tier.addOn}
 					</span>
 				</div>
@@ -181,7 +181,7 @@ export function SubscriptionTierCard({
 									className="flex items-start gap-2.5"
 								>
 									<CheckCircle2 className="mt-0.5 h-4 w-4 flex-shrink-0 text-green-600" />
-									<span className="text-sm text-foreground">{feature}</span>
+									<span className="text-foreground text-sm">{feature}</span>
 								</li>
 							))}
 						</ul>
@@ -206,19 +206,19 @@ export function SubscriptionTierCard({
 											href={feature.link}
 											target="_blank"
 											rel="noopener noreferrer"
-											className="text-xs font-medium text-foreground hover:text-primary transition-colors"
+											className="font-medium text-foreground text-xs transition-colors hover:text-primary"
 										>
 											{feature.name}
 										</Link>
 									) : (
-										<span className="text-xs font-medium text-foreground">
+										<span className="font-medium text-foreground text-xs">
 											{feature.name}
 										</span>
 									)}
 								</div>
 							))}
 							{unlockedFeatures.length > 4 && (
-								<div className="text-xs text-muted-foreground">
+								<div className="text-muted-foreground text-xs">
 									+{unlockedFeatures.length - 4} more features
 								</div>
 							)}
@@ -231,7 +231,7 @@ export function SubscriptionTierCard({
 					<div className="mb-6">
 						<div className="mb-2 flex items-center gap-2">
 							<Lock className="h-3.5 w-3.5 text-muted-foreground" />
-							<span className="text-xs font-medium text-muted-foreground">
+							<span className="font-medium text-muted-foreground text-xs">
 								Coming in higher tiers
 							</span>
 						</div>
@@ -239,13 +239,13 @@ export function SubscriptionTierCard({
 							{lockedFeatures.slice(0, 3).map((feature, index) => (
 								<span
 									key={`${tier.id}-locked-${index}`}
-									className="rounded-full bg-muted/50 px-2.5 py-1 text-xs text-muted-foreground line-through"
+									className="rounded-full bg-muted/50 px-2.5 py-1 text-muted-foreground text-xs line-through"
 								>
 									{feature.name}
 								</span>
 							))}
 							{lockedFeatures.length > 3 && (
-								<span className="rounded-full bg-muted/50 px-2.5 py-1 text-xs text-muted-foreground">
+								<span className="rounded-full bg-muted/50 px-2.5 py-1 text-muted-foreground text-xs">
 									+{lockedFeatures.length - 3}
 								</span>
 							)}
@@ -264,8 +264,8 @@ export function SubscriptionTierCard({
 					className={`mt-6 w-full rounded-lg py-3 font-semibold text-base transition-all ${
 						isSelected
 							? "bg-primary text-primary-foreground shadow-md hover:bg-primary/90 hover:shadow-lg"
-							: "border-2 border-primary bg-transparent text-primary hover:bg-primary/10 hover:border-primary/80"
-					} disabled:opacity-50 disabled:cursor-not-allowed`}
+							: "border-2 border-primary bg-transparent text-primary hover:border-primary/80 hover:bg-primary/10"
+					} disabled:cursor-not-allowed disabled:opacity-50`}
 				>
 					{isSelected ? "✓ Selected" : "Select Plan"}
 				</button>

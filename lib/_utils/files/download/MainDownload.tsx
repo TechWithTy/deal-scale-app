@@ -1,14 +1,14 @@
+import type { SocialMediaCampaign } from "@/types/_dashboard/campaign";
+import type { LeadTypeGlobal } from "@/types/_dashboard/leads";
+import type { GetEmailByIdResponse } from "@/types/goHighLevel/email";
+import type { TextMessage } from "@/types/goHighLevel/text";
 // MainDownload.tsx: Centralized component for all download/export actions
 // * Combines all subcomponents/utilities for DRY, scalable data export
 import type React from "react";
-import type { GetEmailByIdResponse } from "@/types/goHighLevel/email";
-import type { TextMessage } from "@/types/goHighLevel/text";
-import type { LeadTypeGlobal } from "@/types/_dashboard/leads";
-import type { SocialMediaCampaign } from "@/types/_dashboard/campaign";
-import { exportLeadsTableDataToExcel } from "./leads";
-import { exportSocialTableDataToExcel } from "./social";
-import { exportCampaignMessagesToExcel } from "./messages";
 import { exportEmailCampaignToExcel } from "./email";
+import { exportLeadsTableDataToExcel } from "./leads";
+import { exportCampaignMessagesToExcel } from "./messages";
+import { exportSocialTableDataToExcel } from "./social";
 
 // ! Add more types and exports as your app grows
 

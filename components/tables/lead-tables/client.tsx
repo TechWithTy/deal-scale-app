@@ -1,7 +1,6 @@
 "use client";
 import { campaignSteps } from "@/_tests/tours/campaignTour";
 import LeadMainModal from "@/components/reusables/modals/user/lead/LeadModalMain";
-import WalkThroughModal from "../../leadsSearch/search/WalkthroughModal";
 import { Button } from "@/components/ui/button";
 import { Heading } from "@/components/ui/heading";
 import { Separator } from "@/components/ui/separator";
@@ -13,6 +12,7 @@ import Lottie from "lottie-react";
 import { Calendar, Download, HelpCircle, Plus } from "lucide-react";
 import type React from "react";
 import { useMemo, useRef, useState } from "react";
+import WalkThroughModal from "../../leadsSearch/search/WalkthroughModal";
 import { leadListColumns } from "./LeadColumns";
 import { LeadTables } from "./LeadTables";
 import FilterDropdown from "./utils/filterLeads";

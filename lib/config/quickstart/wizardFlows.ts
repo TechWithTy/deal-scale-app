@@ -27,6 +27,14 @@ export interface QuickStartFlowStepDefinition {
 	readonly note: string;
 }
 
+export type QuickStartFinalActionType = "route" | "modal" | "none";
+
+export interface QuickStartFinalAction {
+	readonly type: QuickStartFinalActionType;
+	readonly route?: string; // For type: "route"
+	readonly cardId?: string; // For type: "modal" (reuse cardId mapping)
+}
+
 export interface QuickStartGoalDefinition {
 	readonly id: QuickStartGoalId;
 	readonly personaId: QuickStartPersonaId;
@@ -35,6 +43,8 @@ export interface QuickStartGoalDefinition {
 	readonly outcome: string;
 	readonly flow: readonly QuickStartFlowStepDefinition[];
 	readonly templateId?: QuickStartTemplateId;
+	readonly finalAction?: QuickStartFinalAction;
+	readonly isOneClickAutomatable?: boolean; // If true, single click runs full automation; if false, requires 2s hold
 }
 
 const PERSONAS: readonly QuickStartPersonaDefinition[] = [
@@ -77,6 +87,7 @@ const GOALS: readonly QuickStartGoalDefinition[] = [
 			"Bring in a fresh list, launch nurture, and sync results back to your systems.",
 		outcome: "A ready-to-run outreach play that accelerates new acquisitions.",
 		templateId: "lead-import",
+		isOneClickAutomatable: false, // Complex flow - requires intentional hold
 		flow: [
 			{
 				cardId: "import",
@@ -91,6 +102,9 @@ const GOALS: readonly QuickStartGoalDefinition[] = [
 				note: "Pipe hot responses into your CRM or automations instantly.",
 			},
 		],
+		finalAction: {
+			type: "none",
+		},
 	},
 	{
 		id: "investor-market",
@@ -100,6 +114,7 @@ const GOALS: readonly QuickStartGoalDefinition[] = [
 			"Model distressed segments, test messaging, and prep for scale.",
 		outcome: "Insights-backed lists and campaigns ready for launch.",
 		templateId: "market-research",
+		isOneClickAutomatable: false, // Complex flow - requires intentional hold
 		flow: [
 			{
 				cardId: "market-deals",
@@ -114,6 +129,9 @@ const GOALS: readonly QuickStartGoalDefinition[] = [
 				note: "Spin up campaigns that A/B test messaging against those targets.",
 			},
 		],
+		finalAction: {
+			type: "none",
+		},
 	},
 	{
 		id: "wholesaler-dispositions",
@@ -123,6 +141,7 @@ const GOALS: readonly QuickStartGoalDefinition[] = [
 			"Prep marketing assets and notify premium buyers as soon as a deal is signed.",
 		outcome: "Qualified buyers queued with automation-ready messaging.",
 		templateId: "campaign-default",
+		isOneClickAutomatable: true, // Quick setup - one click automates
 		flow: [
 			{
 				cardId: "import",
@@ -137,6 +156,9 @@ const GOALS: readonly QuickStartGoalDefinition[] = [
 				note: "Monitor responses and export buyer interest for negotiation teams.",
 			},
 		],
+		finalAction: {
+			type: "none",
+		},
 	},
 	{
 		id: "wholesaler-acquisitions",
@@ -146,6 +168,7 @@ const GOALS: readonly QuickStartGoalDefinition[] = [
 			"Find distressed opportunities, then capture and nurture sellers.",
 		outcome: "Seller conversations ready for assignment or contract.",
 		templateId: "campaign-default",
+		isOneClickAutomatable: false, // Complex flow - requires intentional hold
 		flow: [
 			{
 				cardId: "market-deals",
@@ -160,6 +183,9 @@ const GOALS: readonly QuickStartGoalDefinition[] = [
 				note: "Automate outreach sequences to secure appointments quickly.",
 			},
 		],
+		finalAction: {
+			type: "none",
+		},
 	},
 	{
 		id: "agent-sphere",
@@ -169,6 +195,7 @@ const GOALS: readonly QuickStartGoalDefinition[] = [
 			"Segment homeowners, launch smart follow-up, and keep your pipeline warm.",
 		outcome: "Consistent conversations with clients likely to transact soon.",
 		templateId: "campaign-default",
+		isOneClickAutomatable: true, // Simple setup - one click automates
 		flow: [
 			{
 				cardId: "import",
@@ -183,6 +210,9 @@ const GOALS: readonly QuickStartGoalDefinition[] = [
 				note: "Notify your CRM and ISA team as soon as leads engage.",
 			},
 		],
+		finalAction: {
+			type: "none",
+		},
 	},
 	{
 		id: "agent-expansion",
@@ -192,6 +222,7 @@ const GOALS: readonly QuickStartGoalDefinition[] = [
 			"Equip your team with tools that feed open house and web traffic directly into DealScale.",
 		outcome: "Automated lead capture feeding campaigns without manual imports.",
 		templateId: "campaign-default",
+		isOneClickAutomatable: true, // Quick setup - one click automates
 		flow: [
 			{
 				cardId: "extension",
@@ -199,13 +230,16 @@ const GOALS: readonly QuickStartGoalDefinition[] = [
 			},
 			{
 				cardId: "campaign",
-				note: "Drop new contacts into nurture sequences the moment they’re saved.",
+				note: "Drop new contacts into nurture sequences the moment they're saved.",
 			},
 			{
 				cardId: "control-data",
 				note: "Track campaign performance and export reports for your team.",
 			},
 		],
+		finalAction: {
+			type: "none",
+		},
 	},
 	{
 		id: "lender-fund-fast",
@@ -216,6 +250,7 @@ const GOALS: readonly QuickStartGoalDefinition[] = [
 		outcome:
 			"Automation routing keeps borrowers moving from intake to funding.",
 		templateId: "automation-routing",
+		isOneClickAutomatable: false, // Complex flow - requires intentional hold
 		flow: [
 			{
 				cardId: "import",
@@ -230,6 +265,9 @@ const GOALS: readonly QuickStartGoalDefinition[] = [
 				note: "Sync approvals and stalled deals to downstream systems with event-driven routing.",
 			},
 		],
+		finalAction: {
+			type: "none",
+		},
 	},
 ] as const;
 

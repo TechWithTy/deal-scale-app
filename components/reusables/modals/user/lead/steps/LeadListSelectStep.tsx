@@ -1,6 +1,5 @@
 "use client";
 
-import type React from "react";
 import {
 	Select,
 	SelectContent,
@@ -8,6 +7,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import type React from "react";
 
 interface LeadListSelectStepProps {
 	mode: "select" | "create";

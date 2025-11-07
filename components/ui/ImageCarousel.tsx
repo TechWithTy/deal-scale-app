@@ -1,6 +1,6 @@
+import Image from "next/image";
 import type React from "react";
 import { useState } from "react";
-import Image from "next/image";
 
 interface ImageCarouselProps {
 	images: string[];

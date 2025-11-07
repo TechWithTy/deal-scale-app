@@ -3,28 +3,28 @@ import {
 	isRealtorProperty,
 	isRentCastProperty,
 } from "@/types/_dashboard/property";
+import { buildSummaryPayloads } from "./presenters";
+import {
+	computeBuyerSentiment,
+	computeInvestorSentiment,
+	computeWholesalerSentiment,
+} from "./sentiment";
+import type {
+	BuildLeadSummariesOptions,
+	LeadSummariesResult,
+	LeadSummaryMetrics,
+	PropertyTypeSnapshot,
+} from "./types";
 import {
 	THIRTY_DAYS_MS,
 	average,
-	median,
-	roundTo,
-	parseDate,
 	computeTrend,
-	toneFromScore,
 	labelFromScore,
+	median,
+	parseDate,
+	roundTo,
+	toneFromScore,
 } from "./utils";
-import {
-	computeInvestorSentiment,
-	computeWholesalerSentiment,
-	computeBuyerSentiment,
-} from "./sentiment";
-import {
-	type BuildLeadSummariesOptions,
-	type LeadSummariesResult,
-	type PropertyTypeSnapshot,
-	type LeadSummaryMetrics,
-} from "./types";
-import { buildSummaryPayloads } from "./presenters";
 
 interface NumericRecord {
 	value: number;

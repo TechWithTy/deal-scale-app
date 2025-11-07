@@ -1,6 +1,6 @@
-import { Given, When, Then, Before } from "@cucumber/cucumber";
 import assert from "node:assert";
 import { useAIReportsStore } from "@/lib/stores/user/userProfile";
+import { Before, Given, Then, When } from "@cucumber/cucumber";
 
 let ctx: any = {};
 Before(() => {
@@ -22,24 +22,19 @@ Then("the DM summary contains sent, delivered and failed", () => {
 	assert.ok(Object.prototype.hasOwnProperty.call(ctx.dm, "failed"));
 });
 
-When("I read the Social summary", function () {
+When("I read the Social summary", () => {
 	ctx.social = ctx.store.socialSummary();
 });
 
-Then(
-	"the Social summary contains totalCampaigns and totalActions",
-	function () {
-		assert.ok(
-			Object.prototype.hasOwnProperty.call(ctx.social, "totalCampaigns"),
-		);
-		assert.ok(Object.prototype.hasOwnProperty.call(ctx.social, "totalActions"));
-	},
-);
+Then("the Social summary contains totalCampaigns and totalActions", () => {
+	assert.ok(Object.prototype.hasOwnProperty.call(ctx.social, "totalCampaigns"));
+	assert.ok(Object.prototype.hasOwnProperty.call(ctx.social, "totalActions"));
+});
 
-When("I read the Kanban summary", function () {
+When("I read the Kanban summary", () => {
 	ctx.kanban = ctx.store.kanbanSummary();
 });
 
-Then("the Kanban summary contains totalTasks", function () {
+Then("the Kanban summary contains totalTasks", () => {
 	assert.ok(Object.prototype.hasOwnProperty.call(ctx.kanban, "totalTasks"));
 });

@@ -2,19 +2,19 @@
 
 import { FormProvider } from "react-hook-form";
 
-import type { Agent } from "./utils/schema";
 import { useAgentForm } from "./useAgentForm";
+import type { Agent } from "./utils/schema";
 
-import { AgentDetailsForm } from "./AgentDetailsForm";
 import { AgentAudioForm } from "./AgentAudioForm";
+import { AgentDetailsForm } from "./AgentDetailsForm";
 
+import { AgentDirectMailForm } from "./AgentDirectMailForm";
 import { AgentPublicationForm } from "./AgentPublicationForm";
 import { AgentSocialForm } from "./AgentSocialForm";
-import { AgentDirectMailForm } from "./AgentDirectMailForm";
 
+import VoicemailModal from "@/components/forms/steppers/profile-form/steps/knowledge/voice/VoicemailModal";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import VoicemailModal from "@/components/forms/steppers/profile-form/steps/knowledge/voice/VoicemailModal";
 import { CloneModal } from "external/teleprompter-modal";
 
 interface AgentFormProps {

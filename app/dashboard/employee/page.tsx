@@ -1,27 +1,27 @@
 "use client"; // Ensure it's a client-side component
 
+import TeamCreditsBanner from "@/components/banners/TeamCreditsBanner";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import PageContainer from "@/components/layout/page-container";
-import { DataTableViewOptions } from "external/shadcn-table/src/components/data-table/data-table-view-options";
+import EmployeeKanbanTable from "@/components/tables/employee-tables/EmployeeKanbanTable";
+import InviteEmployeeModal from "@/components/tables/employee-tables/InviteEmployeeModal";
 import { columns } from "@/components/tables/employee-tables/columns";
 import { buttonVariants } from "@/components/ui/button";
 import { Button } from "@/components/ui/button";
 import { Heading } from "@/components/ui/heading";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { mockUserProfile } from "@/constants/_faker/profile/userProfile";
 import { cn } from "@/lib/_utils";
 import type { TeamMember, UserProfile } from "@/types/userProfile";
+import type { Table as TanstackTable } from "@tanstack/react-table";
+import TeamActivityFeed from "external/activity-graph/components/TeamActivityFeed";
+import { DataTableViewOptions } from "external/shadcn-table/src/components/data-table/data-table-view-options";
 import { HelpCircle, Plus } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react"; // Import useState and useEffect for state management
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import TeamActivityFeed from "external/activity-graph/components/TeamActivityFeed";
-import TeamCreditsBanner from "@/components/banners/TeamCreditsBanner";
-import InviteEmployeeModal from "@/components/tables/employee-tables/InviteEmployeeModal";
-import type { Table as TanstackTable } from "@tanstack/react-table";
-import EmployeeKanbanTable from "@/components/tables/employee-tables/EmployeeKanbanTable";
 import { z } from "zod";
 
 const breadcrumbItems = [

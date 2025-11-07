@@ -1,4 +1,4 @@
-import { Before, After, AfterStep } from "@cucumber/cucumber";
+import { After, AfterStep, Before } from "@cucumber/cucumber";
 import "./index";
 
 class MemoryStorage {

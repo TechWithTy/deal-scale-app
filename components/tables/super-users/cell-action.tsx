@@ -1,16 +1,5 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuLabel,
-	DropdownMenuTrigger,
-	DropdownMenuSub,
-	DropdownMenuSubContent,
-	DropdownMenuSubTrigger,
-} from "@/components/ui/dropdown-menu";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -20,18 +9,29 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import type { AdminUser } from "./types";
+import { Button } from "@/components/ui/button";
 import {
-	MoreHorizontal,
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuLabel,
+	DropdownMenuSub,
+	DropdownMenuSubContent,
+	DropdownMenuSubTrigger,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+	Edit,
 	Eye,
+	Key,
+	MoreHorizontal,
+	Shield,
 	Sparkles,
 	UserCheck,
-	Edit,
-	Key,
-	Shield,
 	UserCog,
 } from "lucide-react";
 import { useState } from "react";
+import type { AdminUser } from "./types";
 
 interface CellActionProps {
 	user: AdminUser;
@@ -174,7 +174,7 @@ export function CellAction({
 									e.stopPropagation();
 									if (onBanUser) return onBanUser(user);
 								}}
-								className="focus:bg-red-50 focus:text-red-600 text-red-600"
+								className="text-red-600 focus:bg-red-50 focus:text-red-600"
 							>
 								Ban User
 							</DropdownMenuItem>

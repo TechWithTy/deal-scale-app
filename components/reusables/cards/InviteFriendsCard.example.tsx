@@ -6,7 +6,7 @@
  */
 
 import { InviteFriendsCard } from "./InviteFriendsCard";
-import type { SharePlatform, ReferralStats } from "./InviteFriendsCard";
+import type { ReferralStats, SharePlatform } from "./InviteFriendsCard";
 
 /**
  * Example 1: Basic Usage

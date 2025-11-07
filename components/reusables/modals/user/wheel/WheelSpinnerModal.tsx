@@ -1,10 +1,10 @@
 "use client";
 
-import { useModalStore } from "@/lib/stores/dashboard";
-import { useSessionStore } from "@/lib/stores/user/useSessionStore";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import PrizeWheel from "@/external/wheel-spinner/PrizeWheel";
 import type { Prize } from "@/external/wheel-spinner/types";
+import { useModalStore } from "@/lib/stores/dashboard";
+import { useSessionStore } from "@/lib/stores/user/useSessionStore";
 import { toast } from "sonner";
 import { PrizeLegend } from "./PrizeLegend";
 
@@ -180,7 +180,7 @@ export default function WheelSpinnerModal() {
 			open={isWheelSpinnerModalOpen}
 			onOpenChange={closeWheelSpinnerModal}
 		>
-			<DialogContent className="max-w-lg">
+			<DialogContent className="mx-4 max-w-lg sm:mx-auto">
 				<DialogTitle className="sr-only">Daily Wheel Spinner</DialogTitle>
 				<div className="relative">
 					{/* Wheel content */}

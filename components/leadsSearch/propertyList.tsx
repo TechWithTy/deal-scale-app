@@ -11,9 +11,9 @@ import type { Property } from "@/types/_dashboard/property";
 import { isRealtorProperty } from "@/types/_dashboard/property";
 import { X } from "lucide-react";
 import type React from "react";
-import { useState } from "react";
-import PropertyCard from "./propertyCard";
+import { useCallback, useMemo, useState } from "react";
 import SkipTraceDialog from "../maps/properties/utils/createListModal";
+import PropertyCard from "./propertyCard";
 
 interface PropertyListProps {
 	properties: Property[];
@@ -24,35 +24,46 @@ const cardLoadOptions = [12, 24, 48, 96]; // You can add more options if needed
 // * PropertyListView now manages selected properties for list creation
 const PropertyListView: React.FC<PropertyListProps> = ({ properties }) => {
 	const [searchTerm, setSearchTerm] = useState("");
-	const filteredProperties = properties.filter((property) => {
-		if (isRealtorProperty(property)) {
-			const searchText =
-				`${property.address.street || ""} ${property.address.city || ""}`.toLowerCase();
-			return searchText.includes(searchTerm.toLowerCase());
-		}
 
-		// For RentCastProperty, use address fields for search
-		const rentCastProperty = property;
-		const searchText = [
-			rentCastProperty.address.street,
-			rentCastProperty.address.city,
-			rentCastProperty.address.state,
-			rentCastProperty.address.zipCode,
-			rentCastProperty.metadata.legalDescription,
-			rentCastProperty.metadata.subdivision,
-			rentCastProperty.metadata.zoning,
-		]
-			.filter(Boolean)
-			.join(" ")
-			.toLowerCase();
-		return searchText.includes(searchTerm.toLowerCase());
-	});
+	// * Memoize filtered properties for performance
+	const filteredProperties = useMemo(
+		() =>
+			properties.filter((property) => {
+				if (isRealtorProperty(property)) {
+					const searchText =
+						`${property.address.street || ""} ${property.address.city || ""}`.toLowerCase();
+					return searchText.includes(searchTerm.toLowerCase());
+				}
+
+				// For RentCastProperty, use address fields for search
+				const rentCastProperty = property;
+				const searchText = [
+					rentCastProperty.address.street,
+					rentCastProperty.address.city,
+					rentCastProperty.address.state,
+					rentCastProperty.address.zipCode,
+					rentCastProperty.metadata.legalDescription,
+					rentCastProperty.metadata.subdivision,
+					rentCastProperty.metadata.zoning,
+				]
+					.filter(Boolean)
+					.join(" ")
+					.toLowerCase();
+				return searchText.includes(searchTerm.toLowerCase());
+			}),
+		[properties, searchTerm],
+	);
 
 	// ...existing hooks and state
-	const availableListNames = (MockUserProfile?.companyInfo.leadLists ?? []).map(
-		(list) => list.listName,
+	const availableListNames = useMemo(
+		() =>
+			(MockUserProfile?.companyInfo.leadLists ?? []).map(
+				(list) => list.listName,
+			),
+		[],
 	);
-	const openSkipTraceDialog = () => {
+
+	const openSkipTraceDialog = useCallback(() => {
 		useModalStore.getState().openModal("skipTrace", {
 			properties: filteredProperties.filter((p) =>
 				selectedPropertyIds.includes(p.id ?? ""),
@@ -60,7 +71,7 @@ const PropertyListView: React.FC<PropertyListProps> = ({ properties }) => {
 			availableListNames,
 			costPerRecord: 0.1,
 		});
-	};
+	}, [filteredProperties, selectedPropertyIds, availableListNames]);
 	// todo: Move selection state to Zustand/global if needed for cross-component access
 	const [selectedPropertyIds, setSelectedPropertyIds] = useState<string[]>([]);
 
@@ -80,26 +91,30 @@ const PropertyListView: React.FC<PropertyListProps> = ({ properties }) => {
 	// State to manage the max cards per load
 	const [maxCardsPerLoad, setMaxCardsPerLoad] = useState(6); // Default to 6 cards per load
 
-	// Start resizing the drawer
-	const startResizing = (event: React.MouseEvent) => {
-		event.preventDefault();
-		window.addEventListener("mousemove", resizeDrawer);
-		window.addEventListener("mouseup", stopResizing);
-	};
+	// * Memoize resize handlers for performance
+	const resizeDrawer = useCallback(
+		(event: globalThis.MouseEvent) => {
+			const newHeight = window.innerHeight - event.clientY;
+			if (newHeight >= MIN_DRAWER_HEIGHT && newHeight <= window.innerHeight) {
+				setDrawerHeight(newHeight); // Update drawer height using Zustand
+			}
+		},
+		[setDrawerHeight],
+	);
 
-	// Resize the drawer's height
-	const resizeDrawer = (event: globalThis.MouseEvent) => {
-		const newHeight = window.innerHeight - event.clientY;
-		if (newHeight >= MIN_DRAWER_HEIGHT && newHeight <= window.innerHeight) {
-			setDrawerHeight(newHeight); // Update drawer height using Zustand
-		}
-	};
-
-	// Stop resizing
-	const stopResizing = () => {
+	const stopResizing = useCallback(() => {
 		window.removeEventListener("mousemove", resizeDrawer);
 		window.removeEventListener("mouseup", stopResizing);
-	};
+	}, [resizeDrawer]);
+
+	const startResizing = useCallback(
+		(event: React.MouseEvent) => {
+			event.preventDefault();
+			window.addEventListener("mousemove", resizeDrawer);
+			window.addEventListener("mouseup", stopResizing);
+		},
+		[resizeDrawer, stopResizing],
+	);
 
 	// Handle dropdown change for max cards per load
 	const handleMaxCardsChange = (

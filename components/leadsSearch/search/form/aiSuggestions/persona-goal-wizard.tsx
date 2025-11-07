@@ -2,8 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
 	Dialog,
 	DialogContent,
@@ -13,15 +13,15 @@ import {
 } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
 
-import PersonaGoalStep from "./persona-goal-step";
-import SuggestionsStep from "./suggestions-step";
-import RecommendationsStep from "./recommendations-step";
-import ApplyStep from "./apply-step";
 import {
-	deriveSuggestion,
 	type Goal,
 	type Persona,
+	deriveSuggestion,
 } from "../locationSuggestions";
+import ApplyStep from "./apply-step";
+import PersonaGoalStep from "./persona-goal-step";
+import RecommendationsStep from "./recommendations-step";
+import SuggestionsStep from "./suggestions-step";
 
 export interface PersonaGoal {
 	propertyType: string;
@@ -483,7 +483,7 @@ export default function PersonaGoalWizard({
 				<div className="mt-2 space-y-4">
 					<div className="flex items-center justify-between">
 						<div>
-							<p className="text-sm font-medium">
+							<p className="font-medium text-sm">
 								{STEP_METADATA[stepIndex].title}
 							</p>
 							<p className="text-muted-foreground text-sm">

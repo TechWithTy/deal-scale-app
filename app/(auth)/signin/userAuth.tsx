@@ -1,8 +1,8 @@
 "use client";
 
-import Link from "next/link";
-import { users } from "@/lib/mock-db";
 import type { AppTestingMode } from "@/constants/testingMode";
+import { users } from "@/lib/mock-db";
+import Link from "next/link";
 import { CredentialSignInForm } from "./_components/CredentialSignInForm";
 
 interface AuthFormProps {

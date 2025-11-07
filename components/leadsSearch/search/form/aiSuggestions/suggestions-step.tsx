@@ -1,5 +1,6 @@
 "use client";
 
+import { Badge } from "@/components/ui/badge";
 import {
 	Card,
 	CardContent,
@@ -7,9 +8,8 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Lightbulb, TrendingUp, Clock, Shield, Target } from "lucide-react";
+import { Clock, Lightbulb, Shield, Target, TrendingUp } from "lucide-react";
 
 interface Suggestion {
 	id: string;
@@ -45,8 +45,8 @@ const getSuggestionIcon = (title: string) => {
 export default function SuggestionsStep({ suggestions }: SuggestionsStepProps) {
 	if (suggestions.length === 0) {
 		return (
-			<div className="text-center py-12">
-				<Lightbulb className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+			<div className="py-12 text-center">
+				<Lightbulb className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
 				<p className="text-muted-foreground">
 					Generating personalized suggestions...
 				</p>
@@ -56,8 +56,8 @@ export default function SuggestionsStep({ suggestions }: SuggestionsStepProps) {
 
 	return (
 		<div className="space-y-6">
-			<div className="text-center mb-8">
-				<h3 className="text-2xl font-semibold mb-2">
+			<div className="mb-8 text-center">
+				<h3 className="mb-2 font-semibold text-2xl">
 					AI-Powered Investment Suggestions
 				</h3>
 				<p className="text-muted-foreground">
@@ -66,7 +66,7 @@ export default function SuggestionsStep({ suggestions }: SuggestionsStepProps) {
 				</p>
 			</div>
 
-			<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+			<div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
 				{suggestions.map((suggestion) => {
 					const Icon = getSuggestionIcon(suggestion.title);
 					return (
@@ -75,7 +75,7 @@ export default function SuggestionsStep({ suggestions }: SuggestionsStepProps) {
 								<div className="flex items-start justify-between">
 									<div className="flex items-center gap-2">
 										<div
-											className={`p-2 rounded-full ${getConfidenceColor(suggestion.confidence)}`}
+											className={`rounded-full p-2 ${getConfidenceColor(suggestion.confidence)}`}
 										>
 											<Icon className="h-4 w-4 text-white" />
 										</div>
@@ -100,16 +100,16 @@ export default function SuggestionsStep({ suggestions }: SuggestionsStepProps) {
 									{suggestion.description}
 								</CardDescription>
 
-								<div className="bg-muted/50 p-3 rounded-lg">
-									<p className="text-xs font-medium text-muted-foreground mb-1">
+								<div className="rounded-lg bg-muted/50 p-3">
+									<p className="mb-1 font-medium text-muted-foreground text-xs">
 										AI Reasoning:
 									</p>
 									<p className="text-sm">{suggestion.reasoning}</p>
 								</div>
 
-								<div className="flex items-center gap-2 text-xs text-muted-foreground">
+								<div className="flex items-center gap-2 text-muted-foreground text-xs">
 									<div
-										className={`w-2 h-2 rounded-full ${getConfidenceColor(suggestion.confidence)}`}
+										className={`h-2 w-2 rounded-full ${getConfidenceColor(suggestion.confidence)}`}
 									/>
 									<span>
 										{Math.round(suggestion.confidence * 100)}% match with your
@@ -122,17 +122,17 @@ export default function SuggestionsStep({ suggestions }: SuggestionsStepProps) {
 				})}
 			</div>
 
-			<Card className="bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200">
+			<Card className="border-blue-200 bg-gradient-to-r from-blue-50 to-purple-50">
 				<CardContent className="pt-6">
 					<div className="flex items-start gap-4">
-						<div className="p-3 bg-blue-100 rounded-full">
+						<div className="rounded-full bg-blue-100 p-3">
 							<Lightbulb className="h-6 w-6 text-blue-600" />
 						</div>
 						<div>
-							<h4 className="font-semibold text-blue-900 mb-2">
+							<h4 className="mb-2 font-semibold text-blue-900">
 								How We Generated These Suggestions
 							</h4>
-							<p className="text-sm text-blue-700 leading-relaxed">
+							<p className="text-blue-700 text-sm leading-relaxed">
 								Our AI analyzes your investment goals, risk tolerance, timeline,
 								and budget against current market data, historical trends, and
 								economic indicators. Each suggestion includes a confidence score

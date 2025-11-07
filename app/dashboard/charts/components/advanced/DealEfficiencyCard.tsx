@@ -1,5 +1,6 @@
 "use client";
 
+import { Badge } from "@/components/ui/badge";
 import {
 	Card,
 	CardContent,
@@ -8,9 +9,8 @@ import {
 	CardTitle,
 } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Badge } from "@/components/ui/badge";
-import { Zap, TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { cn } from "@/lib/_utils";
+import { Minus, TrendingDown, TrendingUp, Zap } from "lucide-react";
 import type { DealEfficiencyIndex } from "../../types/advanced-analytics";
 
 interface DealEfficiencyCardProps {
@@ -57,13 +57,13 @@ export function DealEfficiencyCard({ data }: DealEfficiencyCardProps) {
 			<CardContent>
 				{/* Main Score */}
 				<div className="mb-6 text-center">
-					<div className="flex items-center justify-center gap-2 mb-2">
+					<div className="mb-2 flex items-center justify-center gap-2">
 						<p className={cn("font-bold text-6xl", getScoreColor(data.score))}>
 							{data.score}
 						</p>
 						{getTrendIcon()}
 					</div>
-					<p className="text-sm text-muted-foreground">Overall DEI Score</p>
+					<p className="text-muted-foreground text-sm">Overall DEI Score</p>
 				</div>
 
 				{/* Component Breakdown */}
@@ -74,7 +74,7 @@ export function DealEfficiencyCard({ data }: DealEfficiencyCardProps) {
 							<span className="font-medium">{data.components.speedScore}%</span>
 						</div>
 						<Progress value={data.components.speedScore} className="h-2" />
-						<p className="text-xs text-muted-foreground">
+						<p className="text-muted-foreground text-xs">
 							How quickly you move deals through pipeline
 						</p>
 					</div>
@@ -87,7 +87,7 @@ export function DealEfficiencyCard({ data }: DealEfficiencyCardProps) {
 							</span>
 						</div>
 						<Progress value={data.components.automationScore} className="h-2" />
-						<p className="text-xs text-muted-foreground">
+						<p className="text-muted-foreground text-xs">
 							AI task automation usage rate
 						</p>
 					</div>
@@ -100,7 +100,7 @@ export function DealEfficiencyCard({ data }: DealEfficiencyCardProps) {
 							</span>
 						</div>
 						<Progress value={data.components.qualityScore} className="h-2" />
-						<p className="text-xs text-muted-foreground">
+						<p className="text-muted-foreground text-xs">
 							Lead quality and conversion effectiveness
 						</p>
 					</div>
@@ -108,7 +108,7 @@ export function DealEfficiencyCard({ data }: DealEfficiencyCardProps) {
 
 				{/* Insights */}
 				<div className="mt-6 rounded-lg bg-primary/10 p-3 text-sm">
-					<p className="font-medium mb-1">💡 Performance Insight:</p>
+					<p className="mb-1 font-medium">💡 Performance Insight:</p>
 					<p className="text-muted-foreground text-xs">
 						{data.score >= 85
 							? `Outstanding! You're in the ${data.rank}. Your automation and speed are driving exceptional results.`

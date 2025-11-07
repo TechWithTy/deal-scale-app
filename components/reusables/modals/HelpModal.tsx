@@ -1,21 +1,22 @@
 "use client";
 
-import type { FC } from "react";
-import React, { useState } from "react";
 import {
-	BookOpen,
-	PlayCircle,
-	HelpCircle,
-	Settings,
-	Users,
-	Target,
 	BarChart3,
-	Zap,
+	BookOpen,
+	HelpCircle,
+	PlayCircle,
+	Settings,
+	Target,
+	Users,
 	X,
+	Zap,
 } from "lucide-react";
+import type { FC } from "react";
+import type React from "react";
+import { useState } from "react";
 
-import { Button } from "@/components/ui/button";
 import WalkthroughModal from "@/components/leadsSearch/search/WalkthroughModal";
+import { Button } from "@/components/ui/button";
 
 interface HelpCategory {
 	id: string;
@@ -239,7 +240,7 @@ const HelpModal: FC<HelpModalProps> = ({ isOpen, onClose }) => {
 					{/* Header */}
 					<div className="mb-6 flex items-center justify-between">
 						<div>
-							<h2 className="text-2xl font-bold text-foreground">
+							<h2 className="font-bold text-2xl text-foreground">
 								Help & Support
 							</h2>
 							<p className="text-muted-foreground">
@@ -275,7 +276,7 @@ const HelpModal: FC<HelpModalProps> = ({ isOpen, onClose }) => {
 											<h3 className="font-semibold text-foreground">
 												{category.title}
 											</h3>
-											<p className="text-sm text-muted-foreground">
+											<p className="text-muted-foreground text-sm">
 												{category.description}
 											</p>
 										</div>
@@ -284,7 +285,7 @@ const HelpModal: FC<HelpModalProps> = ({ isOpen, onClose }) => {
 
 								{/* Sub-options */}
 								{selectedCategory === category.id && (
-									<div className="ml-4 space-y-2 border-l-2 border-muted pl-4">
+									<div className="ml-4 space-y-2 border-muted border-l-2 pl-4">
 										{category.options.map((option) => (
 											<button
 												type="button"
@@ -295,10 +296,10 @@ const HelpModal: FC<HelpModalProps> = ({ isOpen, onClose }) => {
 												<div className="flex items-center space-x-2">
 													<PlayCircle className="h-4 w-4 text-muted-foreground" />
 													<div className="flex-1">
-														<p className="text-sm font-medium text-foreground">
+														<p className="font-medium text-foreground text-sm">
 															{option.title}
 														</p>
-														<p className="text-xs text-muted-foreground">
+														<p className="text-muted-foreground text-xs">
 															{option.description}
 														</p>
 													</div>

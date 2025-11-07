@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { Copy } from "lucide-react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -13,8 +13,8 @@ import {
 	DialogTitle,
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ExpandableAISummary } from "external/ai-summary-expandable/components";
 import type { LeadSummariesResult, SummaryPayload } from "@/lib/analysis/types";
+import { ExpandableAISummary } from "external/ai-summary-expandable/components";
 
 interface LeadAnalysisModalProps {
 	isOpen: boolean;
@@ -43,7 +43,7 @@ const SummaryTab = ({ payload }: { payload: SummaryPayload }) => (
 		<ExpandableAISummary section={payload.section} />
 		<div className="rounded-lg border border-border bg-muted/40 p-4">
 			<div className="mb-2 flex items-center justify-between gap-2">
-				<span className="text-sm font-medium text-foreground">Template</span>
+				<span className="font-medium text-foreground text-sm">Template</span>
 				<Button
 					type="button"
 					size="sm"
@@ -54,7 +54,7 @@ const SummaryTab = ({ payload }: { payload: SummaryPayload }) => (
 					<Copy className="h-4 w-4" /> Copy summary
 				</Button>
 			</div>
-			<pre className="max-h-64 overflow-auto whitespace-pre-wrap text-left text-sm text-muted-foreground">
+			<pre className="max-h-64 overflow-auto whitespace-pre-wrap text-left text-muted-foreground text-sm">
 				{payload.copy}
 			</pre>
 		</div>

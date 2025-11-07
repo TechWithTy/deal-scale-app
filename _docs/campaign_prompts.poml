@@ -1,0 +1,327 @@
+<!-- 
+  DealScale Campaign Creation Prompts Library
+  Unified POML file with MCP-compatible function bindings
+  Compatible with: Kestra, FastAPI, pgvector backends
+-->
+
+<poml-library>
+  <meta>
+    <title>DealScale Campaign Creation Prompts</title>
+    <version>2.0</version>
+    <author>DealScale Intelligence Suite</author>
+    <license>Proprietary</license>
+  </meta>
+
+  <!-- Global Variable Definitions -->
+  <global-variables>
+    {{tenantId}}
+    {{leadSource}}
+    {{campaignName}}
+    {{leadList}}
+    {{location}}
+    {{propertyType}}
+    {{budget}}
+    {{leadScore}}
+    {{contactStatus}}
+    {{responseRate}}
+    {{skipTraceStatus}}
+    {{ownerTimeInProperty}}
+    {{estimatedEquityPercentage}}
+    {{isOutOfStateOwner}}
+    {{sellerIntentScore}}
+    {{vertical}}
+  </global-variables>
+
+  <!-- MCP Function Registry -->
+  <functions>
+    <function id="analyzeLeadList" endpoint="/api/leads/analyze" method="POST" />
+    <function id="bulkEnrich" endpoint="/api/leads/enrich" method="POST" />
+    <function id="scoreLookalike" endpoint="/api/audience/similarity" method="POST" />
+    <function id="filterProspects" endpoint="/api/audience/filter" method="POST" />
+    <function id="exportAudience" endpoint="/api/audience/export" method="POST" />
+    <function id="callOutreach" endpoint="/api/outreach/call" method="POST" />
+    <function id="textOutreach" endpoint="/api/outreach/text" method="POST" />
+    <function id="trackPerformance" endpoint="/api/campaign/performance" method="GET" />
+  </functions>
+
+  <!-- A2A Agent Registry -->
+  <agents>
+    <agent id="CallQualifier" endpoint="https://api.dealscale.io/agents/call-qualifier" />
+    <agent id="TextNurturer" endpoint="https://api.dealscale.io/agents/text-nurturer" />
+    <agent id="CampaignOrchestrator" endpoint="https://api.dealscale.io/agents/campaign-orchestrator" />
+    <agent id="LookalikeBuilder" endpoint="https://api.dealscale.io/agents/lookalike-builder" />
+  </agents>
+
+  <!-- Prompt Templates -->
+  <prompts>
+    
+    <!-- 1. Baseline Campaign Creation -->
+    <prompt id="baseline_campaign_creation" category="campaign">
+      <name>Baseline Campaign Creation</name>
+      <description>Dynamic campaign builder with audience filters and channel mix</description>
+      <content>
+        <poml>
+          <role>You are the Campaign Creation AI inside DealScale's Intelligence Suite.</role>
+          <task>Generate an optimized campaign plan using the following variables.</task>
+          <variables>
+            {{leadSource}}
+            {{campaignName}}
+            {{leadList}}
+            {{location}}
+            {{propertyType}}
+            {{budget}}
+            {{ownerTimeInProperty}}
+            {{isOutOfStateOwner}}
+            {{estimatedEquityPercentage}}
+            {{sellerIntentScore}}
+          </variables>
+          <prompt>
+            Build a campaign named **{{campaignName}}** targeting property owners in **{{location}}** with:
+            - Property type: {{propertyType}}
+            - Ownership duration: {{ownerTimeInProperty}} years
+            - Equity: ≥ {{estimatedEquityPercentage}}%
+            - Intent score: ≥ {{sellerIntentScore}}
+
+            Recommend:
+            1️⃣ Audience filters
+            2️⃣ Channel mix (Call / SMS / Social %)
+            3️⃣ Message type (educational / urgency / value-driven)
+            4️⃣ Campaign goal (book appointments, get replies, collect interest)
+            5️⃣ Success KPIs
+          </prompt>
+          <output-format>
+            JSON object: { "filters": [], "channels": {}, "messageType": "", "goal": "", "KPIs": {} }
+          </output-format>
+        </poml>
+      </content>
+    </prompt>
+
+    <!-- 2. Campaign from Look-Alike Audience -->
+    <prompt id="lookalike_campaign" category="campaign">
+      <name>Campaign from Look-Alike Audience</name>
+      <description>Create campaign targeting lookalike audience with similarity scoring</description>
+      <content>
+        <poml>
+          <role>You are the Look-Alike Campaign Architect.</role>
+          <task>Use enriched and scored lead data to create a new campaign targeting look-alike audiences.</task>
+          <variables>
+            {{leadList}}
+            {{location}}
+            {{propertyType}}
+            {{leadScore}}
+            {{sellerIntentScore}}
+            {{campaignName}}
+          </variables>
+          <prompt>
+            Identify prospects similar to the top 10% of leads in {{leadList}}.
+            - Match on propertyType, location proximity, and sellerIntentScore ±10%.
+            - Exclude already-contacted leads.
+            - Generate campaign blueprint {{campaignName}}_LookAlike.
+
+            Output a configuration JSON with:
+            • Search query filters
+            • Expected audience size
+            • Primary communication channels
+            • Outreach timing schedule
+          </prompt>
+          <output-format>
+            JSON object: { "audience_query": "", "expected_size": "", "channels": [], "schedule": {} }
+          </output-format>
+        </poml>
+      </content>
+    </prompt>
+
+    <!-- 3. Predictive Campaign (Intent + Equity) -->
+    <prompt id="predictive_campaign" category="campaign">
+      <name>Predictive Campaign (Intent + Equity)</name>
+      <description>AI-powered predictive outreach using intent and equity metrics</description>
+      <content>
+        <poml>
+          <role>You are the Predictive Campaign Planner for DealScale.</role>
+          <task>Design a predictive outreach campaign using AI intent and equity metrics.</task>
+          <variables>
+            {{leadList}}
+            {{estimatedEquityPercentage}}
+            {{sellerIntentScore}}
+            {{leadScore}}
+            {{budget}}
+          </variables>
+          <prompt>
+            Create a campaign that prioritizes:
+            - Leads with high sellerIntentScore (≥ 0.7)
+            - Equity between {{estimatedEquityPercentage}}%–100%
+            - LeadScore ≥ 75
+
+            Determine:
+            1. Recommended campaign cadence (calls per week, texts per day)
+            2. Dynamic segmentation rules (intent tiers)
+            3. Personalized message angle (equity leverage, market trends)
+          </prompt>
+          <output-format>
+            JSON object: { "cadence": {}, "segments": [], "messageAngle": "" }
+          </output-format>
+        </poml>
+      </content>
+    </prompt>
+
+    <!-- 4. Multi-Channel Campaign Sequences -->
+    <prompt id="multi_channel_campaign" category="campaign">
+      <name>Multi-Channel Campaign Sequences</name>
+      <description>3-channel outreach strategy with budget allocation</description>
+      <content>
+        <poml>
+          <role>You are a Multi-Channel Campaign Strategist for DealScale.</role>
+          <task>Design a 3-channel outreach campaign for the provided variables.</task>
+          <variables>
+            {{campaignName}}
+            {{leadList}}
+            {{location}}
+            {{leadSource}}
+            {{budget}}
+            {{contactStatus}}
+          </variables>
+          <prompt>
+            Develop a campaign named {{campaignName}} targeting {{leadList}} in {{location}} from {{leadSource}}.
+            - Allocate outreach across Call, SMS, and Social channels.
+            - Adjust volume based on {{budget}}.
+            - Adapt messaging to contactStatus (new, engaged, cold).
+
+            Provide:
+            • Channel distribution plan (%)
+            • Message template type per channel
+            • Daily/weekly activity pacing
+            • Expected engagement benchmarks
+          </prompt>
+          <output-format>
+            JSON object: { "channels": {}, "templates": {}, "schedule": {}, "benchmarks": {} }
+          </output-format>
+        </poml>
+      </content>
+    </prompt>
+
+    <!-- 5. Enterprise Multi-Tenant Campaign -->
+    <prompt id="enterprise_campaign" category="campaign">
+      <name>Enterprise Campaign (Multi-Tenant RLS)</name>
+      <description>Tenant-specific campaign with row-level security</description>
+      <content>
+        <poml>
+          <role>You are the Enterprise Campaign Builder Agent within DealScale's Multi-Tenant AI system.</role>
+          <task>Create a tenant-specific campaign with Row Level Security and vector personalization.</task>
+          <variables>
+            {{tenantId}}
+            {{campaignName}}
+            {{leadList}}
+            {{location}}
+            {{propertyType}}
+            {{budget}}
+          </variables>
+          <prompt>
+            Build a private campaign for tenant {{tenantId}}:
+            - Use data from {{leadList}} partition.
+            - Generate tenant-specific vectors via pgvector.
+            - Only access rows where tenant_id = {{tenantId}}.
+            - Target {{propertyType}} properties in {{location}}.
+            - Allocate spend dynamically based on {{budget}}.
+
+            Output configuration:
+            1. Secure RLS filters
+            2. Personalized vector embeddings summary
+            3. Campaign objectives and performance metrics
+          </prompt>
+          <output-format>
+            JSON object: { "RLS_filters": {}, "vectorSummary": {}, "objectives": {}, "KPIs": {} }
+          </output-format>
+        </poml>
+      </content>
+    </prompt>
+
+    <!-- 6. Feedback-Optimized Campaign -->
+    <prompt id="feedback_campaign" category="campaign">
+      <name>Auto-Optimized Campaign (Feedback Loop)</name>
+      <description>Generate optimized campaign from prior performance data</description>
+      <content>
+        <poml>
+          <role>You are the Feedback-Driven Campaign Optimizer Agent using A2A protocol.</role>
+          <task>Review prior campaign data and generate a new optimized campaign plan.</task>
+          <variables>
+            {{campaignName}}
+            {{leadSource}}
+            {{responseRate}}
+          </variables>
+          <prompt>
+            Evaluate performance from {{campaignName}}:
+            - ResponseRate: {{responseRate}}%
+            - Identify underperforming segments from {{leadSource}}
+
+            Adjust:
+            • Similarity threshold (if conv < 5%)
+            • Geo radius (if resp < 10%)
+            • Outreach timing based on historical engagement hours
+
+            Return an updated campaign blueprint that improves KPIs by ≥15%.
+          </prompt>
+          <output-format>
+            JSON object: { "updatedFilters": {}, "timingAdjustments": {}, "expectedLift": "" }
+          </output-format>
+        </poml>
+      </content>
+    </prompt>
+
+    <!-- 7. Campaign Activation Workflow -->
+    <prompt id="campaign_activation" category="campaign">
+      <name>Campaign Activation Workflow</name>
+      <description>Convert campaign config into executable MCP pipeline</description>
+      <content>
+        <poml>
+          <role>You are the Campaign Activator Agent in DealScale's MCP Orchestrator.</role>
+          <task>Convert the campaign configuration into an actionable pipeline using registered MCP functions.</task>
+          <variables>
+            {{campaignName}}
+            {{leadList}}
+            {{tenantId}}
+          </variables>
+          <workflow>
+            <step id="1" label="Create Campaign Record">
+              <call function="analyzeLeadList" with="leadList={{leadList}}" />
+            </step>
+            <step id="2" label="Build Audience">
+              <call function="scoreLookalike" with="seedListID={{leadList}}, tenantId={{tenantId}}" />
+            </step>
+            <step id="3" label="Launch Outreach">
+              <parallel>
+                <call agent="CallQualifier" function="callOutreach" />
+                <call agent="TextNurturer" function="textOutreach" />
+              </parallel>
+            </step>
+            <step id="4" label="Track Campaign">
+              <call function="trackPerformance" with="campaignID={{campaignName}}" />
+            </step>
+          </workflow>
+          <output-format>
+            Campaign status log and performance summary
+          </output-format>
+        </poml>
+      </content>
+    </prompt>
+
+  </prompts>
+
+  <!-- Backend Integration -->
+  <backend-config>
+    <kestra>
+      <flow-trigger>campaign.create</flow-trigger>
+      <namespace>dealscale.campaigns</namespace>
+    </kestra>
+    <fastapi>
+      <router>/api/campaigns</router>
+      <auth>bearer-token</auth>
+    </fastapi>
+    <database>
+      <type>pgvector</type>
+      <connection>postgresql://dealscale_db</connection>
+      <embedding-dim>1536</embedding-dim>
+    </database>
+  </backend-config>
+
+</poml-library>
+

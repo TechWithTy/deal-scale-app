@@ -7,8 +7,8 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-import { TrendingUp, Clock, DollarSign } from "lucide-react";
 import { cn } from "@/lib/_utils";
+import { Clock, DollarSign, TrendingUp } from "lucide-react";
 import type { AIROIMetrics } from "../../types/advanced-analytics";
 
 interface AIROIDashboardProps {
@@ -31,7 +31,7 @@ export function AIROIDashboard({ metrics }: AIROIDashboardProps) {
 					</div>
 					<div
 						className={cn(
-							"rounded-full px-3 py-1 text-sm font-bold",
+							"rounded-full px-3 py-1 font-bold text-sm",
 							isPositiveROI
 								? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
 								: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
@@ -45,36 +45,36 @@ export function AIROIDashboard({ metrics }: AIROIDashboardProps) {
 			<CardContent>
 				<div className="grid gap-4 md:grid-cols-3">
 					{/* Time Saved */}
-					<div className="rounded-lg border p-4 space-y-2">
+					<div className="space-y-2 rounded-lg border p-4">
 						<div className="flex items-center gap-2 text-muted-foreground">
 							<Clock className="h-4 w-4" />
-							<p className="text-xs font-medium">Time Saved</p>
+							<p className="font-medium text-xs">Time Saved</p>
 						</div>
 						<p className="font-bold text-3xl">{hoursaved}h</p>
-						<p className="text-xs text-muted-foreground">
+						<p className="text-muted-foreground text-xs">
 							{metrics.timeSavedMinutes.toLocaleString()} minutes this month
 						</p>
 					</div>
 
 					{/* Value Saved */}
-					<div className="rounded-lg border p-4 space-y-2">
+					<div className="space-y-2 rounded-lg border p-4">
 						<div className="flex items-center gap-2 text-muted-foreground">
 							<DollarSign className="h-4 w-4" />
-							<p className="text-xs font-medium">Value Saved</p>
+							<p className="font-medium text-xs">Value Saved</p>
 						</div>
 						<p className="font-bold text-3xl text-green-600 dark:text-green-500">
 							${Math.round(metrics.estimatedValueSaved).toLocaleString()}
 						</p>
-						<p className="text-xs text-muted-foreground">
+						<p className="text-muted-foreground text-xs">
 							@ ${metrics.hourlyValue}/hour rate
 						</p>
 					</div>
 
 					{/* Net Benefit */}
-					<div className="rounded-lg border p-4 space-y-2">
+					<div className="space-y-2 rounded-lg border p-4">
 						<div className="flex items-center gap-2 text-muted-foreground">
 							<TrendingUp className="h-4 w-4" />
-							<p className="text-xs font-medium">Net Benefit</p>
+							<p className="font-medium text-xs">Net Benefit</p>
 						</div>
 						<p
 							className={cn(
@@ -89,7 +89,7 @@ export function AIROIDashboard({ metrics }: AIROIDashboardProps) {
 								metrics.estimatedValueSaved - metrics.planCost,
 							).toLocaleString()}
 						</p>
-						<p className="text-xs text-muted-foreground">
+						<p className="text-muted-foreground text-xs">
 							Plan cost: ${metrics.planCost.toLocaleString()}
 						</p>
 					</div>
@@ -97,7 +97,7 @@ export function AIROIDashboard({ metrics }: AIROIDashboardProps) {
 
 				{/* ROI Breakdown */}
 				<div className="mt-6 rounded-lg bg-muted p-4">
-					<p className="font-medium text-sm mb-3">This Month's Impact:</p>
+					<p className="mb-3 font-medium text-sm">This Month's Impact:</p>
 					<div className="space-y-2 text-sm">
 						<div className="flex justify-between">
 							<span className="text-muted-foreground">
@@ -121,8 +121,8 @@ export function AIROIDashboard({ metrics }: AIROIDashboardProps) {
 								-${metrics.planCost.toLocaleString()}
 							</span>
 						</div>
-						<div className="h-px bg-border my-2" />
-						<div className="flex justify-between items-center">
+						<div className="my-2 h-px bg-border" />
+						<div className="flex items-center justify-between">
 							<span className="font-medium">Return on Investment:</span>
 							<span
 								className={cn(

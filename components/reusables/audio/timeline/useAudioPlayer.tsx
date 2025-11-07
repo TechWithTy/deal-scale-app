@@ -1,16 +1,16 @@
-import type { LottieRefCurrentProps } from "lottie-react";
 import playAnimation from "@/public/lottie/playButton.json"; // Ensure this path is correct
+import type { LottieRefCurrentProps } from "lottie-react";
+import Lottie from "lottie-react";
 import {
+	forwardRef,
+	useCallback,
 	useEffect,
+	useImperativeHandle,
 	useRef,
 	useState,
-	useImperativeHandle,
-	useCallback,
-	forwardRef,
 } from "react";
-import { useFormContext } from "react-hook-form";
 import type { ForwardedRef } from "react";
-import Lottie from "lottie-react";
+import { useFormContext } from "react-hook-form";
 import type { PlayButtonTimeLineHandle } from "./types";
 
 interface PlayButtonTimeLineProps {

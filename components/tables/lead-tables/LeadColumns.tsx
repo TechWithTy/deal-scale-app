@@ -1,6 +1,6 @@
+import { Badge } from "@/components/ui/badge";
 // * Lead Table Columns Definition - Cleaned for Biome & TypeScript
 import { Checkbox } from "@/components/ui/checkbox";
-import { Badge } from "@/components/ui/badge";
 import type { LeadTypeGlobal } from "@/types/_dashboard/leads";
 import type { ColumnDef, Row } from "@tanstack/react-table";
 import { EmailCell } from "./steps/columns/EmailCell";
@@ -138,7 +138,7 @@ export const leadListColumns: ColumnDef<LeadTypeGlobal>[] = [
 			return (
 				<div className="flex items-center gap-2">
 					<span className={`font-semibold ${getColor()}`}>{score.total}</span>
-					<Badge variant={getVariant()} className="capitalize text-xs">
+					<Badge variant={getVariant()} className="text-xs capitalize">
 						{score.level}
 					</Badge>
 				</div>

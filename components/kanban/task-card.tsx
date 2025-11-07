@@ -1,8 +1,20 @@
 import { Button } from "@/components/ui/button";
-import { mockGeneratedLeads } from "@/constants/data";
-import { mockLeadListData } from "@/constants/dashboard/leadList";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { mockTeamMembers } from "@/constants/_faker/profile/team/members";
+import { mockLeadListData } from "@/constants/dashboard/leadList";
+import { mockGeneratedLeads } from "@/constants/data";
 import { useTaskStore } from "@/lib/stores/taskActions";
 import type { KanbanTask } from "@/types/_dashboard/kanban";
 import { useSortable } from "@dnd-kit/sortable";
@@ -10,20 +22,8 @@ import { CSS } from "@dnd-kit/utilities";
 import { cva } from "class-variance-authority";
 import { GripVertical, MoreVertical, Pencil, Trash } from "lucide-react";
 import { useState } from "react";
-import EditTaskDialog from "./edit-task-dialog/EditTaskDialog";
 import { Badge } from "../ui/badge";
-import {
-	Tooltip,
-	TooltipTrigger,
-	TooltipContent,
-} from "@/components/ui/tooltip";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import EditTaskDialog from "./edit-task-dialog/EditTaskDialog";
 
 // Priority-to-Badge variant mapping
 const priorityBadgeVariant = {

@@ -1,10 +1,10 @@
 import type { FC } from "react";
 
-import type {
-	QuickStartGoalDefinition,
-	QuickStartFlowStepDefinition,
-} from "@/lib/config/quickstart/wizardFlows";
 import type { QuickStartTemplateDefinition } from "@/lib/config/quickstart/templates";
+import type {
+	QuickStartFlowStepDefinition,
+	QuickStartGoalDefinition,
+} from "@/lib/config/quickstart/wizardFlows";
 
 interface SummaryStepProps {
 	readonly goal: QuickStartGoalDefinition | null;
@@ -38,9 +38,9 @@ const SummaryStep: FC<SummaryStepProps> = ({ goal, steps, template }) => {
 				{steps.map((step, index) => (
 					<li
 						key={`${step.cardId}-${index}`}
-						className="flex gap-4 rounded-lg border border-dashed border-primary/40 bg-primary/5 p-4"
+						className="flex gap-4 rounded-lg border border-primary/40 border-dashed bg-primary/5 p-4"
 					>
-						<span className="mt-1 flex h-8 w-8 flex-none items-center justify-center rounded-full bg-primary text-background font-semibold">
+						<span className="mt-1 flex h-8 w-8 flex-none items-center justify-center rounded-full bg-primary font-semibold text-background">
 							{index + 1}
 						</span>
 						<div className="space-y-1">
@@ -57,11 +57,11 @@ const SummaryStep: FC<SummaryStepProps> = ({ goal, steps, template }) => {
 			</ol>
 			{template ? (
 				<div
-					className="rounded-lg border bg-muted/10 p-4 space-y-2"
+					className="space-y-2 rounded-lg border bg-muted/10 p-4"
 					data-testid="quickstart-summary-template"
 				>
 					<h4 className="font-semibold text-lg">{template.summary.headline}</h4>
-					<ul className="list-disc pl-5 space-y-1 text-muted-foreground text-sm">
+					<ul className="list-disc space-y-1 pl-5 text-muted-foreground text-sm">
 						{template.summary.bullets.map((bullet) => (
 							<li key={bullet}>{bullet}</li>
 						))}

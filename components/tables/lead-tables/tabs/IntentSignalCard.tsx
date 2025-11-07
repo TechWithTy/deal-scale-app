@@ -9,24 +9,24 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
+import { getSignalWeight } from "@/lib/scoring/intentScoring";
+import type { IntentSignal } from "@/types/_dashboard/intentSignals";
 import {
+	Calculator,
+	Calendar,
+	DollarSign,
+	Eye,
+	FileText,
+	Globe,
+	Linkedin,
 	Mail,
 	MousePointerClick,
 	Phone,
-	Globe,
-	FileText,
-	Video,
-	Calculator,
 	Search,
-	DollarSign,
-	Calendar,
-	Linkedin,
 	TrendingUp,
 	Users,
-	Eye,
+	Video,
 } from "lucide-react";
-import type { IntentSignal } from "@/types/_dashboard/intentSignals";
-import { getSignalWeight } from "@/lib/scoring/intentScoring";
 
 interface IntentSignalCardProps {
 	/** The intent signal to display */
@@ -238,7 +238,7 @@ export function IntentSignalCard({
 					</div>
 
 					<div className="flex items-center gap-2">
-						<Badge variant={typeBadgeVariant} className="capitalize text-xs">
+						<Badge variant={typeBadgeVariant} className="text-xs capitalize">
 							{signal.type}
 						</Badge>
 					</div>

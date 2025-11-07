@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
 import {
 	Dialog,
 	DialogContent,
@@ -7,19 +8,18 @@ import {
 	DialogTitle,
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { formatAdminRole } from "@/lib/admin/roles";
-import AdjustCreditsModal from "./AdjustCreditsModal";
-import { useImpersonationStore } from "@/lib/stores/impersonationStore";
-import { toast } from "sonner";
 import {
-	getAdminActivityLog,
-	getAdminDirectoryUser,
 	type AdminActivityEvent,
 	type AdminDirectoryUser,
+	getAdminActivityLog,
+	getAdminDirectoryUser,
 } from "@/lib/admin/user-directory";
+import { useImpersonationStore } from "@/lib/stores/impersonationStore";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
+import AdjustCreditsModal from "./AdjustCreditsModal";
 
 export interface AdminUserDetailModalProps {
 	open: boolean;

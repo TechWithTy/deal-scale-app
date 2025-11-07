@@ -1,11 +1,11 @@
 import type { LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
 
+import type { QuickStartTemplateId } from "@/lib/config/quickstart/templates";
 import type {
 	QuickStartGoalId,
 	QuickStartPersonaId,
 } from "@/lib/config/quickstart/wizardFlows";
-import type { QuickStartTemplateId } from "@/lib/config/quickstart/templates";
 
 export type QuickStartCardChipTone =
 	| "primary"
@@ -59,4 +59,12 @@ export interface QuickStartCardConfig {
 	readonly featureChips?: QuickStartCardChipConfig[];
 	readonly actions: QuickStartActionConfig[];
 	readonly wizardPreset?: QuickStartWizardPreset;
+	readonly showBorderBeam?: boolean;
+	readonly borderBeamConfig?: {
+		size?: number;
+		duration?: number;
+		delay?: number;
+		colorFrom?: string;
+		colorTo?: string;
+	};
 }

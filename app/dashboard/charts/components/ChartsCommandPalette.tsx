@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
 import type { CommandItem } from "external/action-bar/utils/types";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 /**
  * Component to register chart-specific commands in the command palette

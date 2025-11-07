@@ -5,9 +5,9 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import type { AssistantVoice } from "@/types/vapiAi/api/assistant/create";
 import { useEffect, useState } from "react";
 import VoiceCloningModal from "./cloneModal";
-import type { AssistantVoice } from "@/types/vapiAi/api/assistant/create";
 
 interface VoiceSelectorProps {
 	voices: AssistantVoice[]; // Array of AssistantVoice objects

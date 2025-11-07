@@ -1,3 +1,4 @@
+import PlatformAdminPlanTable from "@/components/admin/PlatformAdminPlanTable";
 import {
 	Card,
 	CardContent,
@@ -5,7 +6,6 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-import PlatformAdminPlanTable from "@/components/admin/PlatformAdminPlanTable";
 import { createPlatformAdminPlan } from "@/lib/admin/platformAdminPlan";
 
 export default function AdminHomePage() {

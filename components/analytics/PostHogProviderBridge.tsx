@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
+import { useSession } from "next-auth/react";
 import posthog from "posthog-js";
 import { PostHogProvider } from "posthog-js/react";
-import { useSession } from "next-auth/react";
+import { useEffect, useMemo } from "react";
 
 interface Props {
 	children: React.ReactNode;

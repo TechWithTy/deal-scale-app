@@ -2,17 +2,17 @@
  * TwoFactorSection: Two-Factor Authentication management
  */
 
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
+	AlertTriangle,
+	CheckCircle2,
+	Copy,
+	Key,
+	Mail,
 	Shield,
 	Smartphone,
-	Key,
-	CheckCircle2,
-	AlertTriangle,
-	Mail,
-	Copy,
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";

@@ -1,15 +1,15 @@
 "use client";
 
-import type React from "react";
-import { useEffect, useMemo, useRef, useState } from "react";
-import Papa from "papaparse";
+import { fieldLabels } from "@/constants/skip-trace/fieldLabels";
 import { useSkipTraceStore } from "@/lib/stores/user/skip_trace/skipTraceStore";
 import { useUserProfileStore } from "@/lib/stores/user/userProfile";
+import type { InputField } from "@/types/skip-trace/enrichment";
+import Papa from "papaparse";
+import type React from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { EnrichmentStep } from "../steps/EnrichmentStep";
 import MapHeadersStep from "../steps/MapHeadersStep";
 import UploadStep from "../steps/UploadStep";
-import type { InputField } from "@/types/skip-trace/enrichment";
-import { fieldLabels } from "@/constants/skip-trace/fieldLabels";
 
 interface ListTraceFlowProps {
 	onClose: () => void;

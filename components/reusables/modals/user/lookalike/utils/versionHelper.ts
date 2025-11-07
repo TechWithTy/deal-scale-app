@@ -21,7 +21,7 @@
  */
 export function generateLookalikeListName(
 	seedListName: string,
-	version: number = 1,
+	version = 1,
 ): string {
 	// Pad version to 2 digits (01, 02, 03, etc.)
 	const versionStr = version.toString().padStart(2, "0");
@@ -41,7 +41,7 @@ export function generateLookalikeListName(
 export function extractVersionFromName(listName: string): number | null {
 	const match = listName.match(/v0\.(\d+)$/);
 	if (!match) return null;
-	return parseInt(match[1], 10);
+	return Number.parseInt(match[1], 10);
 }
 
 /**

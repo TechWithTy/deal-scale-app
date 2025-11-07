@@ -1,3 +1,4 @@
+import { ControlPanel } from "@/components/reusables/ControlPanel";
 import { Checkbox } from "@/components/ui/checkbox";
 import type {
 	SocialAction,
@@ -5,7 +6,6 @@ import type {
 } from "@/types/_dashboard/campaign";
 import type { ColumnDef } from "@tanstack/react-table";
 import DownloadCell from "./steps/columns/DownloadCell";
-import { ControlPanel } from "@/components/reusables/ControlPanel";
 import PlatformCell from "./steps/columns/PlatformCell";
 import StatusCell from "./steps/columns/StatusCell";
 

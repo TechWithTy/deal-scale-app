@@ -6,7 +6,7 @@ import {
 } from "@/components/ui/form";
 import type { ProfileFormValues } from "@/types/zod/userSetup/profile-form-schema";
 import type React from "react";
-import { useFormContext, type UseFormReturn } from "react-hook-form";
+import { type UseFormReturn, useFormContext } from "react-hook-form";
 
 type NotificationKey = keyof ProfileFormValues["notifications"];
 const notificationOptions: { name: NotificationKey; label: string }[] = [

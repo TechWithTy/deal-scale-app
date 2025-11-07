@@ -1,6 +1,6 @@
+import { Modal } from "@/components/ui/modal";
 import type React from "react";
 import { useState } from "react";
-import { Modal } from "@/components/ui/modal";
 
 interface QuickSaveModalProps {
 	open: boolean;

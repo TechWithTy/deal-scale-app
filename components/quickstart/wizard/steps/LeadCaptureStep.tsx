@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo } from "react";
 import { Inbox } from "lucide-react";
+import { useMemo } from "react";
 import { shallow } from "zustand/shallow";
 
 import {
@@ -93,7 +93,7 @@ const LeadCaptureStep = () => {
 					<Inbox className="hidden h-10 w-10 text-primary sm:block" />
 				</CardHeader>
 				<CardContent className="space-y-4">
-					<p className="rounded-lg border bg-muted/40 p-3 text-xs text-muted-foreground">
+					<p className="rounded-lg border bg-muted/40 p-3 text-muted-foreground text-xs">
 						{summary}
 					</p>
 					<div className="grid gap-3">
@@ -142,7 +142,7 @@ const LeadCaptureStep = () => {
 						Clarify next steps for agents once a capture event fires.
 					</CardDescription>
 				</CardHeader>
-				<CardContent className="space-y-2 text-xs text-muted-foreground">
+				<CardContent className="space-y-2 text-muted-foreground text-xs">
 					<p>
 						Forwarding Number:{" "}
 						{captureOptions.forwardingNumber || "Not configured"}

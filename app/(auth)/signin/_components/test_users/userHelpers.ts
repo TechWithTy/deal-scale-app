@@ -1,12 +1,5 @@
 "use client";
 
-import { toast } from "sonner";
-import { signIn } from "next-auth/react";
-import type {
-	PermissionMatrix,
-	User as UserType,
-	UserRole,
-} from "@/types/user";
 import {
 	formatAdminRole,
 	isClassicAdminRole,
@@ -14,6 +7,13 @@ import {
 	isPlatformAdminRole,
 	isPlatformSupportRole,
 } from "@/lib/admin/roles";
+import type {
+	PermissionMatrix,
+	UserRole,
+	User as UserType,
+} from "@/types/user";
+import { signIn } from "next-auth/react";
+import { toast } from "sonner";
 
 // Extend the User type to ensure password is required for test users
 export type TestUser = Omit<UserType, "password"> & {

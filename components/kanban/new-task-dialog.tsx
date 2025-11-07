@@ -1,7 +1,5 @@
 "use client";
 
-import { useState } from "react";
-import { NewTaskForm } from "./new-task-dialog/NewTaskForm";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -13,6 +11,8 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from "@/components/ui/dialog";
+import { useState } from "react";
+import { NewTaskForm } from "./new-task-dialog/NewTaskForm";
 
 export default function NewTaskDialog() {
 	const [formValid, setFormValid] = useState(false);

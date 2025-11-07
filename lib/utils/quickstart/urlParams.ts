@@ -10,10 +10,10 @@
  */
 
 import {
+	type QuickStartGoalId,
+	type QuickStartPersonaId,
 	getGoalDefinition,
 	getPersonaDefinition,
-	type QuickStartPersonaId,
-	type QuickStartGoalId,
 } from "@/lib/config/quickstart/wizardFlows";
 
 /**

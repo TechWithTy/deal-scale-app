@@ -36,7 +36,7 @@ const LandLocationInformationComponent: React.FC<LandLocationProps> = ({
 
 	return (
 		<div className="my-2 rounded-lg bg-card p-6 text-card-foreground shadow-md">
-			<h2 className="mb-4 text-xl font-bold text-foreground">
+			<h2 className="mb-4 font-bold text-foreground text-xl">
 				Land/Location Information
 			</h2>
 			<div className="grid grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-4">

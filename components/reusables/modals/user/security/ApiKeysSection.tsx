@@ -2,10 +2,10 @@
  * ApiKeysSection: API Keys management for developers
  */
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Key, Plus, Copy, Eye, EyeOff, Trash2, RefreshCw } from "lucide-react";
+import { Copy, Eye, EyeOff, Key, Plus, RefreshCw, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 

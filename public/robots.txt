@@ -1,0 +1,39 @@
+# Deal Scale Robots.txt
+# https://dealscale.app/robots.txt
+
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /admin/
+Disallow: /dashboard/
+Disallow: /private/
+Disallow: /_debug/
+Disallow: /_docs/
+Disallow: /_tests/
+
+# Sitemap location
+Sitemap: https://dealscale.app/sitemap.xml
+
+# Crawl delay (optional, adjust as needed)
+Crawl-delay: 10
+
+# Block common bot categories
+User-agent: GPTBot
+Disallow: /
+
+User-agent: ChatGPT-User
+Disallow: /
+
+User-agent: CCBot
+Disallow: /
+
+User-agent: Google-Extended
+Disallow: /
+
+User-agent: anthropic-ai
+Disallow: /
+
+User-agent: Claude-Web
+Disallow: /
+
+

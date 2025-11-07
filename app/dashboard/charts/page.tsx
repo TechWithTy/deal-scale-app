@@ -1,28 +1,28 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
+	BarChart,
 	BarChart3,
+	Bot,
 	LineChart,
 	ListTodo,
-	TrendingUp,
 	Percent,
-	BarChart,
 	Sparkles,
-	Bot,
+	TrendingUp,
 } from "lucide-react";
-import { KPICard } from "./components/KPICard";
-import { CampaignPerformanceChart } from "./components/CampaignPerformanceChart";
-import { LeadTrendsChart } from "./components/LeadTrendsChart";
-import { SalesPipelineFunnel } from "./components/SalesPipelineFunnel";
-import { ROICalculator } from "./components/ROICalculator";
-import { AdvancedAnalyticsTab } from "./components/AdvancedAnalyticsTab";
-import { AIAgentsTab } from "./components/AIAgentsTab";
-import { ChartsCommandPalette } from "./components/ChartsCommandPalette";
-import { useAnalyticsData } from "./hooks/useAnalyticsData";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RefreshCw } from "lucide-react";
+import { AIAgentsTab } from "./components/AIAgentsTab";
+import { AdvancedAnalyticsTab } from "./components/AdvancedAnalyticsTab";
+import { CampaignPerformanceChart } from "./components/CampaignPerformanceChart";
+import { ChartsCommandPalette } from "./components/ChartsCommandPalette";
+import { KPICard } from "./components/KPICard";
+import { LeadTrendsChart } from "./components/LeadTrendsChart";
+import { ROICalculator } from "./components/ROICalculator";
+import { SalesPipelineFunnel } from "./components/SalesPipelineFunnel";
+import { useAnalyticsData } from "./hooks/useAnalyticsData";
 
 export default function ChartsPage() {
 	const { data, loading, error, refetch } = useAnalyticsData();

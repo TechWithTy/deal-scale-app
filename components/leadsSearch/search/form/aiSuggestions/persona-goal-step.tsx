@@ -1,5 +1,6 @@
 "use client";
 
+import { Badge } from "@/components/ui/badge";
 import {
 	Card,
 	CardContent,
@@ -7,8 +8,9 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
 	Select,
 	SelectContent,
@@ -16,8 +18,6 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Badge } from "@/components/ui/badge";
 
 interface PersonaGoal {
 	propertyType: string;
@@ -104,7 +104,7 @@ export default function PersonaGoalStep({
 
 	return (
 		<div className="space-y-6">
-			<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+			<div className="grid grid-cols-1 gap-6 md:grid-cols-2">
 				{/* Property Type */}
 				<Card>
 					<CardHeader>
@@ -254,7 +254,7 @@ export default function PersonaGoalStep({
 					</CardDescription>
 				</CardHeader>
 				<CardContent>
-					<div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+					<div className="grid grid-cols-2 gap-4 md:grid-cols-3">
 						{goalOptions.map((goal) => (
 							<div key={goal} className="flex items-center space-x-2">
 								<Checkbox
@@ -264,7 +264,7 @@ export default function PersonaGoalStep({
 								/>
 								<Label
 									htmlFor={goal}
-									className="text-sm font-normal cursor-pointer"
+									className="cursor-pointer font-normal text-sm"
 								>
 									{goal}
 								</Label>
@@ -273,7 +273,7 @@ export default function PersonaGoalStep({
 					</div>
 					{data.goals && data.goals.length > 0 && (
 						<div className="mt-4">
-							<p className="text-sm text-muted-foreground mb-2">
+							<p className="mb-2 text-muted-foreground text-sm">
 								Selected goals:
 							</p>
 							<div className="flex flex-wrap gap-2">

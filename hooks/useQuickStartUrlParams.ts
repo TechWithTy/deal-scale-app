@@ -5,14 +5,14 @@
  * Handles URL params like ?quickstart_persona=investor&quickstart_goal=investor-pipeline
  */
 
-import { useQueryStates, parseAsString, parseAsBoolean } from "nuqs";
-import { useMemo } from "react";
 import {
 	QUICKSTART_URL_PARAMS,
-	validatePersonaIdParam,
-	validateGoalIdParam,
 	type QuickStartUrlParams,
+	validateGoalIdParam,
+	validatePersonaIdParam,
 } from "@/lib/utils/quickstart/urlParams";
+import { parseAsBoolean, parseAsString, useQueryStates } from "nuqs";
+import { useMemo } from "react";
 
 /**
  * Hook to read and manage QuickStart URL parameters

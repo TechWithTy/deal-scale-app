@@ -1,12 +1,12 @@
 "use client";
 
-import type { Property } from "@/types/_dashboard/property";
-import PropertyHeader from "./propertyHeader";
-import { useLayoutEffect } from "react";
 import {
-	usePropertyMarketView,
 	type MarketView,
+	usePropertyMarketView,
 } from "@/lib/stores/property/marketView";
+import type { Property } from "@/types/_dashboard/property";
+import { useLayoutEffect } from "react";
+import PropertyHeader from "./propertyHeader";
 
 interface PropertyHeaderWrapperProps {
 	property: Property;

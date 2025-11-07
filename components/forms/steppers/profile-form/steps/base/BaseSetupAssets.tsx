@@ -6,10 +6,10 @@ import {
 	FormMessage,
 } from "@/components/ui/form";
 import type { ProfileFormValues } from "@/types/zod/userSetup/profile-form-schema";
-import { LogoUploader } from "./utils/LogoUploader";
-import { AssetsUploader } from "./utils/AssetsUploader";
 import type React from "react";
 import { useFormContext } from "react-hook-form";
+import { AssetsUploader } from "./utils/AssetsUploader";
+import { LogoUploader } from "./utils/LogoUploader";
 
 // * Props only include loading; form state is managed via useFormContext
 interface BaseSetupAssetsProps {

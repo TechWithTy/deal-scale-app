@@ -1,10 +1,5 @@
 "use client";
 
-import { enrichmentOptions } from "@/constants/skip-trace/enrichmentOptions";
-import type { Header } from "@/types/skip-trace";
-import type { InputField } from "@/types/skip-trace/enrichment";
-import { fieldLabels } from "@/constants/skip-trace/fieldLabels";
-import type React from "react";
 import { Label } from "@/components/ui/label";
 import {
 	Select,
@@ -13,7 +8,12 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { enrichmentOptions } from "@/constants/skip-trace/enrichmentOptions";
+import { fieldLabels } from "@/constants/skip-trace/fieldLabels";
 import { useSkipTraceStore } from "@/lib/stores/user/skip_trace/skipTraceStore";
+import type { Header } from "@/types/skip-trace";
+import type { InputField } from "@/types/skip-trace/enrichment";
+import type React from "react";
 
 interface ReviewAndSubmitStepProps {
 	onSubmit: () => void;

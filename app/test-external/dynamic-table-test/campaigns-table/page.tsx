@@ -1,13 +1,13 @@
 "use client";
 
-import * as React from "react";
-import { NuqsAdapter } from "nuqs/adapters/next/app";
-import CallCampaignsDemoTable from "../../../../external/shadcn-table/src/examples/call-campaigns-demo-table";
-import TextCampaignsDemoTable from "../../../../external/shadcn-table/src/examples/text-campaigns-demo-table";
-import SocialCampaignsDemoTable from "../../../../external/shadcn-table/src/examples/social-campaigns-demo-table";
-import DirectMailCampaignsDemoTable from "../../../../external/shadcn-table/src/examples/direct-mail-campaigns-demo-table";
 import LeadMainModal from "@/components/reusables/modals/user/lead/LeadModalMain";
 import SkipTraceModalMain from "@/components/reusables/modals/user/skipTrace/SkipTraceModalMain";
+import { NuqsAdapter } from "nuqs/adapters/next/app";
+import * as React from "react";
+import CallCampaignsDemoTable from "../../../../external/shadcn-table/src/examples/call-campaigns-demo-table";
+import DirectMailCampaignsDemoTable from "../../../../external/shadcn-table/src/examples/direct-mail-campaigns-demo-table";
+import SocialCampaignsDemoTable from "../../../../external/shadcn-table/src/examples/social-campaigns-demo-table";
+import TextCampaignsDemoTable from "../../../../external/shadcn-table/src/examples/text-campaigns-demo-table";
 
 export default function CampaignCallTablePage() {
 	type ParentTab = "calls" | "text" | "social" | "directMail";

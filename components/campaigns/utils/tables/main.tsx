@@ -1,3 +1,4 @@
+import { ControlPanel } from "@/components/reusables/ControlPanel";
 import {
 	Table,
 	TableBody,
@@ -14,7 +15,6 @@ import type {
 import type { EmailCampaign } from "@/types/goHighLevel/email";
 import type React from "react";
 import type { GHLTextMessageCampaign } from "../../../../types/goHighLevel/text";
-import { ControlPanel } from "@/components/reusables/ControlPanel";
 
 interface CampaignsTableProps {
 	campaigns: Array<
@@ -262,7 +262,7 @@ const CampaignsTable: React.FC<CampaignsTableProps> = ({
 				{/* Table Body */}
 				<TableBody>
 					{campaigns.map((campaign, index) => (
-						<TableRow key={campaign.id} className="border-t border-border">
+						<TableRow key={campaign.id} className="border-border border-t">
 							{renderTableRowCells(campaign, campaignType)}
 						</TableRow>
 					))}

@@ -1,0 +1,215 @@
+{
+	"id": "make_campaign_activation",
+	"name": "Multi-Channel Campaign Activation",
+	"note": "Automated campaign launch with SMS, Email, and Call outreach",
+	"scheduling": {
+		"type": "interval",
+		"interval": 15
+	},
+	"modules": [
+		{
+			"id": 1,
+			"module": "builtin:WebhookRespond",
+			"version": 1,
+			"mapper": {
+				"name": "Campaign Created Webhook",
+				"url": "/campaign-created"
+			},
+			"metadata": {
+				"designer": {
+					"x": 100,
+					"y": 200
+				}
+			}
+		},
+		{
+			"id": 2,
+			"module": "dealscale:BuildAudience",
+			"version": 1,
+			"mapper": {
+				"name": "Build Target Audience",
+				"leadListId": "{{1.leadListId}}",
+				"filters": {
+					"equity": "> 50",
+					"location": "California"
+				}
+			},
+			"metadata": {
+				"designer": {
+					"x": 300,
+					"y": 200
+				}
+			}
+		},
+		{
+			"id": 3,
+			"module": "builtin:Router",
+			"version": 1,
+			"mapper": {
+				"name": "Channel Router"
+			},
+			"metadata": {
+				"designer": {
+					"x": 500,
+					"y": 200
+				}
+			}
+		},
+		{
+			"id": 4,
+			"module": "twilio:SendSMS",
+			"version": 2,
+			"mapper": {
+				"name": "Send SMS Campaign",
+				"to": "{{2.phone}}",
+				"message": "Hi {{2.firstName}}, interested in {{2.propertyAddress}}?"
+			},
+			"metadata": {
+				"designer": {
+					"x": 700,
+					"y": 100
+				}
+			}
+		},
+		{
+			"id": 5,
+			"module": "smtp:SendEmail",
+			"version": 1,
+			"mapper": {
+				"name": "Send Email Campaign",
+				"to": "{{2.email}}",
+				"subject": "Exclusive Opportunity",
+				"body": "Hello {{2.firstName}}..."
+			},
+			"metadata": {
+				"designer": {
+					"x": 700,
+					"y": 200
+				}
+			}
+		},
+		{
+			"id": 6,
+			"module": "vapi:MakeCall",
+			"version": 1,
+			"mapper": {
+				"name": "Make Outbound Call",
+				"phoneNumber": "{{2.phone}}",
+				"assistantId": "{{env.VAPI_ASSISTANT_ID}}"
+			},
+			"metadata": {
+				"designer": {
+					"x": 700,
+					"y": 300
+				}
+			}
+		},
+		{
+			"id": 7,
+			"module": "dealscale:TrackPerformance",
+			"version": 1,
+			"mapper": {
+				"name": "Track Campaign Metrics",
+				"campaignId": "{{1.campaignId}}"
+			},
+			"metadata": {
+				"designer": {
+					"x": 900,
+					"y": 200
+				}
+			}
+		}
+	],
+	"routes": [
+		{
+			"flow": [
+				{
+					"src": 1,
+					"tgt": 2
+				},
+				{
+					"src": 2,
+					"tgt": 3
+				},
+				{
+					"src": 3,
+					"tgt": 4,
+					"label": "SMS Channel",
+					"filter": {
+						"name": "Has Phone",
+						"conditions": [
+							{
+								"a": "{{2.phone}}",
+								"o": "exist"
+							}
+						]
+					}
+				},
+				{
+					"src": 3,
+					"tgt": 5,
+					"label": "Email Channel",
+					"filter": {
+						"name": "Has Email",
+						"conditions": [
+							{
+								"a": "{{2.email}}",
+								"o": "exist"
+							}
+						]
+					}
+				},
+				{
+					"src": 3,
+					"tgt": 6,
+					"label": "Call Channel",
+					"filter": {
+						"name": "Primary Contact",
+						"conditions": [
+							{
+								"a": "{{2.contactPreference}}",
+								"o": "equal",
+								"b": "call"
+							}
+						]
+					}
+				},
+				{
+					"src": 4,
+					"tgt": 7
+				},
+				{
+					"src": 5,
+					"tgt": 7
+				},
+				{
+					"src": 6,
+					"tgt": 7
+				}
+			]
+		}
+	],
+	"dataStructures": [
+		{
+			"name": "Lead",
+			"spec": [
+				{
+					"name": "id",
+					"type": "text"
+				},
+				{
+					"name": "firstName",
+					"type": "text"
+				},
+				{
+					"name": "phone",
+					"type": "text"
+				},
+				{
+					"name": "email",
+					"type": "text"
+				}
+			]
+		}
+	]
+}

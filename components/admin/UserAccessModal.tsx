@@ -1,16 +1,16 @@
 "use client";
 
+import type { AdminUser } from "@/components/tables/super-users/types";
+import { Button } from "@/components/ui/button";
 import {
 	Dialog,
 	DialogContent,
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useState, useEffect } from "react";
-import type { AdminUser } from "@/components/tables/super-users/types";
+import { useEffect, useState } from "react";
 
 interface UserAccessModalProps {
 	open: boolean;
@@ -90,14 +90,14 @@ export default function UserAccessModal({
 	const renderSuspendForm = () => (
 		<div className="space-y-4">
 			<div>
-				<p className="text-sm text-muted-foreground">
+				<p className="text-muted-foreground text-sm">
 					Suspend user{" "}
 					<strong>
 						{user?.firstName} {user?.lastName}
 					</strong>{" "}
 					({user?.email})
 				</p>
-				<p className="mt-2 text-sm text-muted-foreground">
+				<p className="mt-2 text-muted-foreground text-sm">
 					Suspended users cannot log in until the unsuspend date.
 				</p>
 			</div>

@@ -1,7 +1,7 @@
-import React, { useState } from "react";
 import { Calendar } from "@/components/ui/calendar";
 import { useCampaignCreationStore } from "@/lib/stores/campaignCreation";
 import Holidays from "date-holidays";
+import React, { useState } from "react";
 
 interface TimingPreferencesStepProps {
 	onBack: () => void;
@@ -184,7 +184,7 @@ export function TimingPreferencesStep({
 			</div>
 			{/* Debug: Show skipped dates within selected range */}
 			{startDate && endDate && (
-				<div className="mx-auto max-w-md text-left text-xs text-muted-foreground">
+				<div className="mx-auto max-w-md text-left text-muted-foreground text-xs">
 					{(() => {
 						const skipped: string[] = [];
 						const d = new Date(startDate);

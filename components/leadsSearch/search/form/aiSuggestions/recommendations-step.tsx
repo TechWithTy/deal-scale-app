@@ -1,5 +1,7 @@
 "use client";
 
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
 	Card,
 	CardContent,
@@ -7,17 +9,15 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
-	MapPin,
-	TrendingUp,
-	TrendingDown,
-	Minus,
-	DollarSign,
-	Users,
 	Building,
+	DollarSign,
+	MapPin,
+	Minus,
+	TrendingDown,
+	TrendingUp,
+	Users,
 } from "lucide-react";
 
 interface ZipCodeRecommendation {
@@ -81,8 +81,8 @@ export default function RecommendationsStep({
 }: RecommendationsStepProps) {
 	if (recommendations.length === 0) {
 		return (
-			<div className="text-center py-12">
-				<MapPin className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+			<div className="py-12 text-center">
+				<MapPin className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
 				<p className="text-muted-foreground">
 					Generating zip code recommendations...
 				</p>
@@ -92,28 +92,28 @@ export default function RecommendationsStep({
 
 	return (
 		<div className="space-y-6">
-			<div className="text-center mb-8">
-				<h3 className="text-2xl font-semibold mb-2">Recommended Zip Codes</h3>
+			<div className="mb-8 text-center">
+				<h3 className="mb-2 font-semibold text-2xl">Recommended Zip Codes</h3>
 				<p className="text-muted-foreground">
 					Based on your goals and market analysis, here are the top zip codes
 					for your investment strategy
 				</p>
 			</div>
 
-			<div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+			<div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
 				{recommendations.map((rec) => (
 					<Card
 						key={rec.zipCode}
 						className={`relative transition-all duration-200 ${
 							selectedZipCodes.includes(rec.zipCode)
-								? "ring-2 ring-primary shadow-lg"
+								? "shadow-lg ring-2 ring-primary"
 								: ""
 						}`}
 					>
 						<CardHeader className="pb-4">
 							<div className="flex items-start justify-between">
 								<div className="flex items-center gap-3">
-									<div className="p-2 bg-primary/10 rounded-full">
+									<div className="rounded-full bg-primary/10 p-2">
 										<MapPin className="h-5 w-5 text-primary" />
 									</div>
 									<div>
@@ -137,7 +137,7 @@ export default function RecommendationsStep({
 
 						<CardContent className="space-y-4">
 							{/* Market Trend */}
-							<div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+							<div className="flex items-center justify-between rounded-lg bg-muted/50 p-3">
 								<div className="flex items-center gap-2">
 									{getTrendIcon(rec.marketTrend)}
 									<span className="font-medium">Market Trend</span>
@@ -150,7 +150,7 @@ export default function RecommendationsStep({
 
 							{/* Summary */}
 							<div>
-								<p className="text-sm font-medium text-muted-foreground mb-1">
+								<p className="mb-1 font-medium text-muted-foreground text-sm">
 									Summary
 								</p>
 								<p className="text-sm leading-relaxed">{rec.summary}</p>
@@ -158,19 +158,19 @@ export default function RecommendationsStep({
 
 							{/* Key Metrics */}
 							<div className="grid grid-cols-2 gap-4">
-								<div className="flex items-center gap-2 p-3 bg-muted/30 rounded-lg">
+								<div className="flex items-center gap-2 rounded-lg bg-muted/30 p-3">
 									<DollarSign className="h-4 w-4 text-muted-foreground" />
 									<div>
-										<p className="text-xs text-muted-foreground">Avg Price</p>
+										<p className="text-muted-foreground text-xs">Avg Price</p>
 										<p className="font-semibold">
 											{formatPrice(rec.averagePrice)}
 										</p>
 									</div>
 								</div>
-								<div className="flex items-center gap-2 p-3 bg-muted/30 rounded-lg">
+								<div className="flex items-center gap-2 rounded-lg bg-muted/30 p-3">
 									<Building className="h-4 w-4 text-muted-foreground" />
 									<div>
-										<p className="text-xs text-muted-foreground">Match Score</p>
+										<p className="text-muted-foreground text-xs">Match Score</p>
 										<p className="font-semibold">
 											{Math.round(rec.score * 100)}%
 										</p>
@@ -180,7 +180,7 @@ export default function RecommendationsStep({
 
 							{/* Reasons */}
 							<div>
-								<p className="text-sm font-medium text-muted-foreground mb-2">
+								<p className="mb-2 font-medium text-muted-foreground text-sm">
 									Why this location?
 								</p>
 								<div className="flex flex-wrap gap-1">
@@ -193,8 +193,8 @@ export default function RecommendationsStep({
 							</div>
 
 							{selectedZipCodes.includes(rec.zipCode) && (
-								<div className="mt-4 p-3 bg-primary/5 border border-primary/20 rounded-lg">
-									<p className="text-sm text-primary font-medium">
+								<div className="mt-4 rounded-lg border border-primary/20 bg-primary/5 p-3">
+									<p className="font-medium text-primary text-sm">
 										✓ Selected for application
 									</p>
 								</div>
@@ -205,15 +205,15 @@ export default function RecommendationsStep({
 			</div>
 
 			{selectedZipCodes.length > 0 && (
-				<Card className="bg-primary/5 border-primary/20">
+				<Card className="border-primary/20 bg-primary/5">
 					<CardContent className="pt-6">
 						<div className="flex items-center justify-between">
 							<div>
-								<h4 className="font-semibold text-primary mb-1">
+								<h4 className="mb-1 font-semibold text-primary">
 									{selectedZipCodes.length} location
 									{selectedZipCodes.length !== 1 ? "s" : ""} selected
 								</h4>
-								<p className="text-sm text-muted-foreground">
+								<p className="text-muted-foreground text-sm">
 									These locations will be applied to your search filters and
 									saved to your preferences.
 								</p>

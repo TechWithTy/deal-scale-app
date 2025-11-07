@@ -20,11 +20,11 @@ const WebhookPayloadSection: React.FC<WebhookPayloadSectionProps> = ({
 	webhookPayload,
 }) => (
 	<div className={cn("relative mt-4", className)}>
-		<label htmlFor="webhookPayload" className="mb-1 block text-sm font-medium">
+		<label htmlFor="webhookPayload" className="mb-1 block font-medium text-sm">
 			{label}
 		</label>
 		{description ? (
-			<p className="mb-2 text-xs text-muted-foreground">{description}</p>
+			<p className="mb-2 text-muted-foreground text-xs">{description}</p>
 		) : null}
 		<div className="relative">
 			<Textarea
@@ -37,7 +37,7 @@ const WebhookPayloadSection: React.FC<WebhookPayloadSectionProps> = ({
 			<Button
 				onClick={onCopy}
 				variant="ghost"
-				className="absolute right-2 top-2"
+				className="absolute top-2 right-2"
 				size="icon"
 				type="button"
 			>

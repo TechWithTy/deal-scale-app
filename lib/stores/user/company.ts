@@ -1,5 +1,3 @@
-import { create } from "zustand";
-import { withAnalytics } from "../_middleware/analytics";
 import type { CompanyInfo } from "@/types/userProfile";
 import type {
 	FacebookOAuthData,
@@ -7,6 +5,8 @@ import type {
 	LinkedInOAuthData,
 	TwitterOAuthData,
 } from "@/types/userProfile/connectedAccounts";
+import { create } from "zustand";
+import { withAnalytics } from "../_middleware/analytics";
 import { useUserProfileStore } from "./userProfile";
 
 type ConnectedPlatform = "facebook" | "instagram" | "linkedIn" | "twitter";

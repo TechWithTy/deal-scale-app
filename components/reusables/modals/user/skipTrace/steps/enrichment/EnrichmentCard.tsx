@@ -1,6 +1,3 @@
-import type { InputField } from "@/types/skip-trace/enrichment";
-import { Check } from "lucide-react";
-import type React from "react";
 import { Badge } from "@/components/ui/badge";
 import {
 	Tooltip,
@@ -8,7 +5,10 @@ import {
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/_utils/kanban/utils";
+import type { InputField } from "@/types/skip-trace/enrichment";
 import type { EnrichmentOption } from "@/types/skip-trace/enrichment";
+import { Check } from "lucide-react";
+import type React from "react";
 
 interface EnrichmentCardProps {
 	enrichment: EnrichmentOption;

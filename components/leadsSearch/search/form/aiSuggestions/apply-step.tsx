@@ -1,5 +1,7 @@
 "use client";
 
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
 	Card,
 	CardContent,
@@ -7,9 +9,7 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { CheckCircle, MapPin, Save, Filter, Bell } from "lucide-react";
+import { Bell, CheckCircle, Filter, MapPin, Save } from "lucide-react";
 
 interface ZipCodeRecommendation {
 	zipCode: string;
@@ -57,13 +57,13 @@ export default function ApplyStep({
 
 	return (
 		<div className="space-y-6">
-			<div className="text-center mb-8">
-				<div className="flex justify-center mb-4">
-					<div className="p-3 bg-green-100 rounded-full">
+			<div className="mb-8 text-center">
+				<div className="mb-4 flex justify-center">
+					<div className="rounded-full bg-green-100 p-3">
 						<CheckCircle className="h-8 w-8 text-green-600" />
 					</div>
 				</div>
-				<h3 className="text-2xl font-semibold mb-2">
+				<h3 className="mb-2 font-semibold text-2xl">
 					Ready to Apply Your Selections
 				</h3>
 				<p className="text-muted-foreground">
@@ -84,13 +84,13 @@ export default function ApplyStep({
 					</CardDescription>
 				</CardHeader>
 				<CardContent>
-					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+					<div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
 						{selectedRecommendations.map((rec) => (
 							<div
 								key={rec.zipCode}
-								className="p-4 border rounded-lg bg-muted/20"
+								className="rounded-lg border bg-muted/20 p-4"
 							>
-								<div className="flex items-center gap-2 mb-2">
+								<div className="mb-2 flex items-center gap-2">
 									<Badge className="bg-primary text-primary-foreground">
 										{rec.zipCode}
 									</Badge>
@@ -101,7 +101,7 @@ export default function ApplyStep({
 								<p className="font-medium text-sm">
 									{rec.city}, {rec.state}
 								</p>
-								<p className="text-xs text-muted-foreground mt-1">
+								<p className="mt-1 text-muted-foreground text-xs">
 									Avg: ${rec.averagePrice.toLocaleString()}
 								</p>
 							</div>
@@ -111,7 +111,7 @@ export default function ApplyStep({
 			</Card>
 
 			{/* Action Options */}
-			<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+			<div className="grid grid-cols-1 gap-6 md:grid-cols-2">
 				<Card className="border-primary/20 bg-primary/5">
 					<CardHeader>
 						<CardTitle className="flex items-center gap-2 text-primary">
@@ -132,7 +132,7 @@ export default function ApplyStep({
 						>
 							Apply Filters Now
 						</Button>
-						<p className="text-xs text-muted-foreground mt-2">
+						<p className="mt-2 text-muted-foreground text-xs">
 							This will update your current search to only show properties in
 							selected zip codes
 						</p>
@@ -162,7 +162,7 @@ export default function ApplyStep({
 						>
 							Save Preferences
 						</Button>
-						<p className="text-xs text-muted-foreground mt-2">
+						<p className="mt-2 text-muted-foreground text-xs">
 							Get notified when new properties matching your criteria become
 							available
 						</p>
@@ -176,33 +176,33 @@ export default function ApplyStep({
 					<CardTitle className="text-lg">Investment Summary</CardTitle>
 				</CardHeader>
 				<CardContent className="space-y-4">
-					<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-						<div className="text-center p-4 bg-white rounded-lg border">
-							<p className="text-2xl font-bold text-primary">
+					<div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+						<div className="rounded-lg border bg-white p-4 text-center">
+							<p className="font-bold text-2xl text-primary">
 								${totalMarketValue.toLocaleString()}
 							</p>
-							<p className="text-sm text-muted-foreground">
+							<p className="text-muted-foreground text-sm">
 								Total Market Value
 							</p>
 						</div>
-						<div className="text-center p-4 bg-white rounded-lg border">
-							<p className="text-2xl font-bold text-green-600">
+						<div className="rounded-lg border bg-white p-4 text-center">
+							<p className="font-bold text-2xl text-green-600">
 								{averageScore}%
 							</p>
-							<p className="text-sm text-muted-foreground">
+							<p className="text-muted-foreground text-sm">
 								Average Match Score
 							</p>
 						</div>
-						<div className="text-center p-4 bg-white rounded-lg border">
-							<p className="text-2xl font-bold text-blue-600">
+						<div className="rounded-lg border bg-white p-4 text-center">
+							<p className="font-bold text-2xl text-blue-600">
 								{totalSelected}
 							</p>
-							<p className="text-sm text-muted-foreground">Areas Selected</p>
+							<p className="text-muted-foreground text-sm">Areas Selected</p>
 						</div>
 					</div>
 
-					<div className="bg-white p-4 rounded-lg border">
-						<h4 className="font-medium mb-2">Market Trend Analysis</h4>
+					<div className="rounded-lg border bg-white p-4">
+						<h4 className="mb-2 font-medium">Market Trend Analysis</h4>
 						<div className="flex gap-2">
 							{selectedRecommendations.map((rec) => (
 								<Badge key={rec.zipCode} variant="outline" className="text-xs">
@@ -215,18 +215,18 @@ export default function ApplyStep({
 			</Card>
 
 			{/* Final CTA */}
-			<Card className="bg-green-50 border-green-200">
+			<Card className="border-green-200 bg-green-50">
 				<CardContent className="pt-6">
 					<div className="text-center">
-						<CheckCircle className="h-12 w-12 mx-auto text-green-600 mb-4" />
-						<h3 className="text-xl font-semibold text-green-800 mb-2">
+						<CheckCircle className="mx-auto mb-4 h-12 w-12 text-green-600" />
+						<h3 className="mb-2 font-semibold text-green-800 text-xl">
 							Setup Complete!
 						</h3>
-						<p className="text-green-700 mb-4">
+						<p className="mb-4 text-green-700">
 							Your personalized zip code recommendations are ready. Click below
 							to start finding properties that match your investment goals.
 						</p>
-						<div className="flex gap-3 justify-center">
+						<div className="flex justify-center gap-3">
 							<Button
 								onClick={onApply}
 								disabled={

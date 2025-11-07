@@ -7,11 +7,11 @@
  * breakdown by signal type, and trend information.
  */
 
-import { Progress } from "@/components/ui/progress";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { TrendingUp, TrendingDown, Minus, Target } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
 import type { IntentScore } from "@/types/_dashboard/intentSignals";
+import { Minus, Target, TrendingDown, TrendingUp } from "lucide-react";
 
 interface IntentScoreWidgetProps {
 	/** The calculated intent score object */
@@ -134,7 +134,7 @@ export function IntentScoreWidget({
 				<div className="text-center">
 					<div className={`font-bold text-5xl ${scoreColor}`}>
 						{score.total}
-						<span className="text-muted-foreground text-2xl">/100</span>
+						<span className="text-2xl text-muted-foreground">/100</span>
 					</div>
 					<div className="mt-2 flex items-center justify-center gap-2 text-muted-foreground text-sm">
 						<TrendIcon trend={score.trend} />

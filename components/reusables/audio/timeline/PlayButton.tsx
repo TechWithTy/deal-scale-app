@@ -1,6 +1,6 @@
-import { forwardRef } from "react";
-import Lottie from "lottie-react";
 import playAnimation from "@/public/lottie/playButton.json";
+import Lottie from "lottie-react";
+import { forwardRef } from "react";
 import type { PlayButtonProps } from "./types";
 
 const PlayButton = forwardRef<HTMLButtonElement, PlayButtonProps>(

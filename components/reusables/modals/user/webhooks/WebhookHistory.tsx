@@ -34,7 +34,7 @@ const WebhookHistory = ({
 
 	return (
 		<div className="mt-6">
-			<h3 className="text-lg font-medium dark:text-gray-200">
+			<h3 className="font-medium text-lg dark:text-gray-200">
 				Webhook History
 			</h3>
 			<Separator className="my-2 dark:border-gray-600" />
@@ -63,11 +63,11 @@ const WebhookHistory = ({
 							>
 								<AccordionTrigger className="px-4 text-left">
 									<div className="flex flex-col text-left">
-										<span className="text-sm font-medium">
+										<span className="font-medium text-sm">
 											Webhook sent on {entry.date}
 										</span>
 										{payloadPreview ? (
-											<span className="text-xs text-muted-foreground">
+											<span className="text-muted-foreground text-xs">
 												Fields: {payloadPreview}
 												{Object.keys(entry.payload || {}).length > 4 ? "…" : ""}
 											</span>

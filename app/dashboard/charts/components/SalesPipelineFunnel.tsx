@@ -7,8 +7,8 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-import type { SalesPipeline } from "../types/analytics";
 import { cn } from "@/lib/_utils";
+import type { SalesPipeline } from "../types/analytics";
 
 interface SalesPipelineFunnelProps {
 	data: SalesPipeline;
@@ -94,7 +94,7 @@ export function SalesPipelineFunnel({ data }: SalesPipelineFunnelProps) {
 								<div className="h-12 w-full rounded-md bg-muted">
 									<div
 										className={cn(
-											"h-full rounded-md transition-all duration-500 flex items-center justify-center",
+											"flex h-full items-center justify-center rounded-md transition-all duration-500",
 											stage.color,
 										)}
 										style={{ width: `${widthPercentage}%` }}

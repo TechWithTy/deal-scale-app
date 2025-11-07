@@ -9,7 +9,8 @@
  * @see InviteFriendsCard.feature for Gherkin/Cucumber test scenarios
  */
 
-import React, { useState } from "react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
 	Card,
 	CardContent,
@@ -17,27 +18,27 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/use-toast";
 import {
-	Copy,
 	Check,
-	Mail,
-	MessageSquare,
-	Facebook,
-	Twitter,
-	Linkedin,
-	Share2,
-	Users,
-	Gift,
-	TrendingUp,
-	Edit2,
 	ChevronDown,
 	ChevronUp,
+	Copy,
+	Edit2,
+	Facebook,
+	Gift,
+	Linkedin,
+	Mail,
+	MessageSquare,
+	Share2,
+	TrendingUp,
+	Twitter,
+	Users,
 } from "lucide-react";
+import type React from "react";
+import { useState } from "react";
 
 /**
  * Share platform types
@@ -450,7 +451,7 @@ export const InviteFriendsCard: React.FC<InviteFriendsCardProps> = ({
 					</button>
 
 					{showTerms && (
-						<div className="space-y-3 border-t border-muted p-3">
+						<div className="space-y-3 border-muted border-t p-3">
 							{/* Credit Distribution */}
 							<div>
 								<h4 className="mb-2 font-semibold text-xs">
@@ -486,7 +487,7 @@ export const InviteFriendsCard: React.FC<InviteFriendsCardProps> = ({
 							</div>
 
 							{/* Terms & Conditions */}
-							<div className="border-t border-muted pt-3">
+							<div className="border-muted border-t pt-3">
 								<h4 className="mb-2 font-semibold text-xs">
 									📋 Terms & Conditions
 								</h4>

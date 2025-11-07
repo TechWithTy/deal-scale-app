@@ -1,8 +1,8 @@
-import { Controller, type Control } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useLeadSearchStore } from "@/lib/stores/leadSearch/leadSearch";
 import type { MapFormSchemaType } from "@/types/_dashboard/maps";
+import { type Control, Controller } from "react-hook-form";
 
 interface NumericInputProps {
 	control: Control<MapFormSchemaType>;

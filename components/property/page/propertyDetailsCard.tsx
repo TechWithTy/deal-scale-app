@@ -1,10 +1,9 @@
 "use client";
 
-import type React from "react";
-import { useMemo, useState } from "react";
-import { usePropertyMarketView } from "@/lib/stores/property/marketView";
-import { mockRentCastMappedProperties } from "@/constants/dashboard/rentcast_properties";
 import { ImageModal } from "@/components/images/ImageModal";
+import { Lens } from "@/components/magicui/lens";
+import { mockRentCastMappedProperties } from "@/constants/dashboard/rentcast_properties";
+import { usePropertyMarketView } from "@/lib/stores/property/marketView";
 import type {
 	Property,
 	RealtorProperty,
@@ -14,7 +13,9 @@ import {
 	isRealtorProperty,
 	isRentCastProperty,
 } from "@/types/_dashboard/property";
-import { Lens } from "@/components/magicui/lens";
+import Image from "next/image";
+import type React from "react";
+import { useMemo, useState } from "react";
 interface PropertyCardProps {
 	property: Property;
 }
@@ -269,12 +270,14 @@ const PropertyCardDataComponent: React.FC<PropertyCardProps> = ({
 							}}
 						>
 							<div className="relative mt-2 aspect-video w-full overflow-hidden rounded-lg bg-gray-100 transition-transform hover:scale-[1.01] dark:bg-gray-800">
-								<img
+								<Image
 									alt="Primary property"
 									className="h-full w-full cursor-pointer object-cover"
 									height={400}
 									src={primaryPhotoUrl}
 									width={600}
+									loading="eager"
+									sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
 								/>
 							</div>
 						</button>
@@ -297,11 +300,14 @@ const PropertyCardDataComponent: React.FC<PropertyCardProps> = ({
 										setLightboxOpen(true);
 									}}
 								>
-									<img
+									<Image
 										src={url}
 										alt={`Property thumbnail ${idx + 1}`}
 										className={`h-16 w-24 rounded border-2 object-cover transition-transform hover:scale-105 ${activePhoto === url ? "border-blue-500" : "border-gray-200 dark:border-gray-600"}`}
+										width={96}
+										height={64}
 										loading="lazy"
+										sizes="96px"
 									/>
 								</button>
 							))}

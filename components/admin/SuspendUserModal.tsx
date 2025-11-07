@@ -1,16 +1,16 @@
 "use client";
 
+import type { AdminUser } from "@/components/tables/super-users/types";
+import { Button } from "@/components/ui/button";
 import {
 	Dialog,
 	DialogContent,
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useEffect, useState } from "react";
-import type { AdminUser } from "@/components/tables/super-users/types";
 
 interface SuspendUserModalProps {
 	open: boolean;

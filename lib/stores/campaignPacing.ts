@@ -1,6 +1,6 @@
+import { addDays, isWeekend } from "date-fns";
 // * Campaign pacing calculation utilities and Zustand selector
 import { create } from "zustand";
-import { addDays, isWeekend } from "date-fns";
 import { useCampaignCreationStore } from "./campaignCreation";
 
 export interface PacingInfo {

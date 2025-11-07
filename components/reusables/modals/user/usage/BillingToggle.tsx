@@ -26,7 +26,7 @@ export function BillingToggle({
 					billingCycle === "monthly"
 						? "bg-primary text-primary-foreground shadow-sm"
 						: "text-muted-foreground hover:text-foreground"
-				} disabled:opacity-50 disabled:cursor-not-allowed`}
+				} disabled:cursor-not-allowed disabled:opacity-50`}
 			>
 				Monthly
 			</button>
@@ -38,7 +38,7 @@ export function BillingToggle({
 					billingCycle === "yearly"
 						? "bg-primary text-primary-foreground shadow-sm"
 						: "text-muted-foreground hover:text-foreground"
-				} disabled:opacity-50 disabled:cursor-not-allowed`}
+				} disabled:cursor-not-allowed disabled:opacity-50`}
 			>
 				Yearly
 			</button>

@@ -1,12 +1,12 @@
 "use client";
 
-import { useMemo, useState, type FormEvent } from "react";
-import { signIn } from "next-auth/react";
-import { useSearchParams } from "next/navigation";
-import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { signIn } from "next-auth/react";
+import { useSearchParams } from "next/navigation";
+import { type FormEvent, useMemo, useState } from "react";
+import { toast } from "sonner";
 
 interface CredentialSignInFormProps {
 	defaultEmail?: string;

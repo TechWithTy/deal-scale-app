@@ -26,7 +26,7 @@ export default function AdminNavigation({ items }: AdminNavigationProps) {
 						key={item.href}
 						href={item.href}
 						className={cn(
-							"rounded-md px-3 py-2 text-sm font-medium transition-colors",
+							"rounded-md px-3 py-2 font-medium text-sm transition-colors",
 							isActive
 								? "bg-primary/10 text-primary"
 								: "text-muted-foreground hover:bg-muted/70 hover:text-foreground",

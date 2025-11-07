@@ -11,11 +11,11 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { EvalRunResponse } from "@/types/vapiAi/api/eval/run";
 import {
+	AlertCircle,
 	CheckCircle2,
 	Clock,
-	XCircle,
-	AlertCircle,
 	Loader2,
+	XCircle,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
@@ -362,7 +362,7 @@ export function EvaluationReportModal({
 
 						{error && (
 							<div className="rounded-lg border border-destructive bg-destructive/10 p-4">
-								<p className="text-destructive font-medium">
+								<p className="font-medium text-destructive">
 									Error loading evaluation
 								</p>
 								<p className="text-destructive/80 text-sm">{error}</p>
@@ -385,7 +385,7 @@ export function EvaluationReportModal({
 										</div>
 										<div className="space-y-2">
 											<div className="flex items-baseline gap-2">
-												<span className="text-4xl font-bold">
+												<span className="font-bold text-4xl">
 													{score.percentage}%
 												</span>
 												<span className="text-muted-foreground text-sm">
@@ -447,7 +447,7 @@ export function EvaluationReportModal({
 											<p className="font-medium text-yellow-700 dark:text-yellow-400">
 												Ended Message
 											</p>
-											<p className="text-yellow-600 dark:text-yellow-300 text-sm">
+											<p className="text-sm text-yellow-600 dark:text-yellow-300">
 												{evalRun.endedMessage}
 											</p>
 										</div>
@@ -492,13 +492,13 @@ export function EvaluationReportModal({
 
 													{result.messages.length > 0 && (
 														<div className="space-y-2">
-															<p className="text-muted-foreground text-sm font-medium">
+															<p className="font-medium text-muted-foreground text-sm">
 																Messages:
 															</p>
 															<div className="space-y-1 rounded bg-background p-2">
 																{result.messages.map((msg, msgIndex) => (
 																	<div key={msgIndex} className="text-sm">
-																		<span className="font-medium capitalize text-muted-foreground">
+																		<span className="font-medium text-muted-foreground capitalize">
 																			{msg.role}:
 																		</span>{" "}
 																		{msg.content}

@@ -1,3 +1,4 @@
+import { Checkbox } from "@/components/ui/checkbox";
 import {
 	FormControl,
 	FormField,
@@ -6,7 +7,6 @@ import {
 	FormMessage,
 } from "@/components/ui/form";
 import { Heading } from "@/components/ui/heading";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 import type { TeamMemberFormValues } from "@/types/zod/userSetup/team-member-form-schema";
 import type { UseFormReturn } from "react-hook-form";

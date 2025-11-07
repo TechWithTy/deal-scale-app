@@ -5,7 +5,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useSecurityStore } from "@/lib/stores/dashboard";
-import { Check, Eye, EyeOff, X, AlertCircle } from "lucide-react";
+import { AlertCircle, Check, Eye, EyeOff, X } from "lucide-react";
 import { useMemo } from "react";
 import { toast } from "sonner";
 

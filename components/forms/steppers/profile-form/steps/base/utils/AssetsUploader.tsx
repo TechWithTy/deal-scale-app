@@ -1,8 +1,8 @@
+import { Button } from "@/components/ui/button";
 import type React from "react";
 import { useRef } from "react";
-import { z } from "zod";
 import { useFormContext } from "react-hook-form";
-import { Button } from "@/components/ui/button";
+import { z } from "zod";
 
 export const assetsSchema = z
 	.array(
@@ -70,7 +70,7 @@ export const AssetsUploader: React.FC<AssetsUploaderProps> = ({
 				Company Assets
 			</label>
 			<div
-				className="mb-4 w-full rounded-lg border-2 border-dashed border-border bg-muted/30 p-8 transition-all hover:border-primary/50 hover:bg-muted/50 cursor-pointer"
+				className="mb-4 w-full cursor-pointer rounded-lg border-2 border-border border-dashed bg-muted/30 p-8 transition-all hover:border-primary/50 hover:bg-muted/50"
 				onClick={() => inputRef.current?.click()}
 				onDragOver={(e) => {
 					e.preventDefault();
@@ -125,7 +125,7 @@ export const AssetsUploader: React.FC<AssetsUploaderProps> = ({
 						Upload 3-12 professional images (PNG, JPG, WebP)
 					</span>
 					{value.length > 0 && (
-						<span className="mt-2 text-primary text-xs font-semibold">
+						<span className="mt-2 font-semibold text-primary text-xs">
 							{value.length} file{value.length !== 1 ? "s" : ""} selected
 						</span>
 					)}
@@ -193,8 +193,8 @@ export const AssetsUploader: React.FC<AssetsUploaderProps> = ({
 										/>
 									</svg>
 								</button>
-								<div className="absolute bottom-0 left-0 right-0 bg-black/70 px-2 py-1.5 opacity-0 transition-opacity group-hover:opacity-100">
-									<p className="truncate text-white text-xs font-medium">
+								<div className="absolute right-0 bottom-0 left-0 bg-black/70 px-2 py-1.5 opacity-0 transition-opacity group-hover:opacity-100">
+									<p className="truncate font-medium text-white text-xs">
 										{item.file.name}
 									</p>
 									<p className="text-white/70 text-xs">
@@ -208,7 +208,7 @@ export const AssetsUploader: React.FC<AssetsUploaderProps> = ({
 			)}
 
 			{error && (
-				<p className="mt-2 text-destructive text-sm font-medium">{error}</p>
+				<p className="mt-2 font-medium text-destructive text-sm">{error}</p>
 			)}
 		</div>
 	);

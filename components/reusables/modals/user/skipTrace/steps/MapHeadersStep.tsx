@@ -52,8 +52,8 @@ const MapHeadersStep: React.FC<MapHeadersStepProps> = ({
 
 	return (
 		<div className="space-y-4 p-4 text-foreground">
-			<h3 className="text-lg font-medium">Map Your Headers</h3>
-			<p className="text-sm text-muted-foreground">
+			<h3 className="font-medium text-lg">Map Your Headers</h3>
+			<p className="text-muted-foreground text-sm">
 				Match the columns from your file to the corresponding fields.
 			</p>
 			<div className="space-y-3">

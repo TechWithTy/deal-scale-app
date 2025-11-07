@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -20,10 +19,11 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { Plus } from "lucide-react";
-import type { EditableUser } from "./userHelpers";
-import type { UserRole } from "@/types/user";
 import type { SubscriptionTier } from "@/constants/subscription/tiers";
+import type { UserRole } from "@/types/user";
+import { Plus } from "lucide-react";
+import { useState } from "react";
+import type { EditableUser } from "./userHelpers";
 
 interface NewDemoUserButtonProps {
 	onCreateUser: (user: EditableUser) => void;

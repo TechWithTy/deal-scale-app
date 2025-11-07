@@ -1,5 +1,6 @@
 // columns.tsx
 
+import { ControlPanel } from "@/components/reusables/ControlPanel";
 import { Checkbox } from "@/components/ui/checkbox";
 import { exportEmailCampaignToExcel } from "@/lib/_utils/files/download/email";
 import type {
@@ -7,7 +8,6 @@ import type {
 	GetEmailByIdResponse,
 } from "@/types/goHighLevel/email";
 import type { ColumnDef } from "@tanstack/react-table";
-import { ControlPanel } from "@/components/reusables/ControlPanel";
 
 // Color statuses for the email campaign
 const statusColor: Partial<Record<EmailCampaign["status"], string>> = {

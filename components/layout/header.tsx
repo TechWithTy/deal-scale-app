@@ -1,7 +1,7 @@
 import ThemeToggle from "@/components/layout/ThemeToggle/theme-toggle";
-import NotificationsDropdown from "@/components/notifications/NotificationsDropdown";
 import LeaderboardDropdown from "@/components/navbar/LeaderboardDropdown";
 import WheelSpinnerDropdown from "@/components/navbar/WheelSpinnerDropdown";
+import NotificationsDropdown from "@/components/notifications/NotificationsDropdown";
 import { mockSubscriptions } from "@/constants/_faker/profile/userSubscription";
 import { cn } from "@/lib/_utils";
 import { UpgradeButton } from "../reusables/modals/user/usage/UpgradeModalButton";
@@ -25,7 +25,7 @@ export default function Header() {
 					<NotificationsDropdown />
 					<ThemeToggle />
 				</div>
-				<div className={cn("lg:!hidden mx-5 block")}>
+				<div className={cn("block lg:!hidden")}>
 					<MobileSidebar />
 				</div>
 			</nav>

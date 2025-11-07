@@ -14,8 +14,8 @@ import type {
 	TextMessage,
 } from "@/types/goHighLevel/text";
 import { exportCallCampaignsToExcel } from "./loopDownload/callCampaignExports";
-import { exportCampaignMessagesBulkToExcel } from "./loopDownload/messageExports";
 import { exportEmailCampaignBulkToExcel } from "./loopDownload/emailExports";
+import { exportCampaignMessagesBulkToExcel } from "./loopDownload/messageExports";
 import { exportSocialTableBulkToExcel } from "./loopDownload/socialExports";
 
 // Email campaign columns

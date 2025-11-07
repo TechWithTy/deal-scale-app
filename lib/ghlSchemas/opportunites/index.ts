@@ -1,9 +1,9 @@
 import {
 	type CreateOpportunity,
+	CreateOpportunityResponseSchema,
 	CreateOpportunitySchema,
 	type SearchOpportunitiesQuery,
 	SearchOpportunitiesResponseSchema,
-	CreateOpportunityResponseSchema,
 } from "./schema";
 
 const url = "https://services.leadconnectorhq.com/opportunities";

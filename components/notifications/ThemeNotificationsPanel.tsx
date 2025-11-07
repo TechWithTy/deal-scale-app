@@ -403,17 +403,17 @@ export default function ThemeNotificationsPanel({
 										title: "Credit Offer from Top Leader",
 										description: (
 											<div className="space-y-1.5">
-												<div className="text-sm leading-relaxed break-words">
+												<div className="break-words text-sm leading-relaxed">
 													100 AI credits • 5% monthly • Net 30
 												</div>
-												<div className="text-xs text-muted-foreground">
+												<div className="text-muted-foreground text-xs">
 													Due: {dueDateStr}
 												</div>
 												<a
 													href="https://dealscale.io/credit-terms"
 													target="_blank"
 													rel="noopener noreferrer"
-													className="inline-flex items-center text-xs text-primary hover:underline"
+													className="inline-flex items-center text-primary text-xs hover:underline"
 													onClick={(e) => e.stopPropagation()}
 												>
 													View terms & conditions →
