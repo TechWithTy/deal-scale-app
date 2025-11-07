@@ -7,7 +7,12 @@
 		"dev": "vite",
 		"build": "vite build",
 		"lint": "biome check .",
-		"typecheck": "tsc --noEmit"
+		"typecheck": "tsc --noEmit",
+		"pwa:assets": "vite-pwa generate --config pwa-assets.config.ts",
+		"test:vite-pwa:unit": "vitest run tests/vite-pwa/unit",
+		"test:vite-pwa:int": "vitest run tests/vite-pwa/integration",
+		"test:vite-pwa:e2e": "playwright test tests/vite-pwa/e2e",
+		"test:vite-pwa": "pnpm run test:vite-pwa:unit && pnpm run test:vite-pwa:int && pnpm run test:vite-pwa:e2e"
 	},
 	"dependencies": {
 		"@hookform/resolvers": "^3.3.2",
@@ -47,14 +52,22 @@
 		"zod": "^3.22.4"
 	},
 	"devDependencies": {
+		"@playwright/test": "^1.48.2",
+		"@testing-library/jest-dom": "^6.6.3",
+		"@testing-library/react": "^16.1.0",
 		"@types/node": "^20.5.7",
 		"@vitejs/plugin-react-swc": "^3.11.0",
+		"@vite-pwa/assets-generator": "^0.3.4",
 		"autoprefixer": "^10.4.15",
+		"jsdom": "^24.1.1",
 		"lovable-tagger": "^1.1.9",
+		"playwright": "^1.48.2",
 		"postcss": "^8.4.41",
 		"tailwindcss": "^3.4.0",
 		"typescript": "^5.6.2",
-		"vite": "^5.4.19"
+		"vite": "^5.4.19",
+		"vite-plugin-pwa": "^0.20.5",
+		"vitest": "^2.1.4"
 	},
 	"peerDependencies": {
 		"react": "^18.2.0",
