@@ -18,6 +18,36 @@ const SupademoClient = dynamic(
 	},
 );
 
+const organizationJsonLd = {
+	"@context": "https://schema.org",
+	"@type": "Organization",
+	name: "Deal Scale",
+	url: "https://dealscale.app",
+	logo: "https://dealscale.app/logo/Deal_Scale_Logo.png",
+	description:
+		"AI-powered real estate lead generation and CRM platform for investors, wholesalers, agents, and lenders.",
+	contactPoint: {
+		"@type": "ContactPoint",
+		contactType: "Customer Support",
+		email: "support@dealscale.app",
+		availableLanguage: ["English"],
+	},
+	sameAs: [
+		"https://twitter.com/dealscale",
+		"https://linkedin.com/company/dealscale",
+		"https://facebook.com/dealscale",
+	],
+	address: {
+		"@type": "PostalAddress",
+		addressCountry: "US",
+	},
+	offers: {
+		"@type": "AggregateOffer",
+		priceCurrency: "USD",
+		availability: "https://schema.org/InStock",
+	},
+} as const;
+
 export const metadata: Metadata = {
 	title: "Deal Scale | Real Estate Lead Generation & AI-Powered CRM",
 	description:
@@ -117,40 +147,9 @@ export default async function RootLayout({
 				<link rel="preconnect" href="https://picsum.photos" />
 				<link rel="preconnect" href="https://maps.googleapis.com" />
 				{/* JSON-LD Structured Data for SEO */}
-				<script
-					type="application/ld+json"
-					dangerouslySetInnerHTML={{
-						__html: JSON.stringify({
-							"@context": "https://schema.org",
-							"@type": "Organization",
-							name: "Deal Scale",
-							url: "https://dealscale.app",
-							logo: "https://dealscale.app/logo/Deal_Scale_Logo.png",
-							description:
-								"AI-powered real estate lead generation and CRM platform for investors, wholesalers, agents, and lenders.",
-							contactPoint: {
-								"@type": "ContactPoint",
-								contactType: "Customer Support",
-								email: "support@dealscale.app",
-								availableLanguage: ["English"],
-							},
-							sameAs: [
-								"https://twitter.com/dealscale",
-								"https://linkedin.com/company/dealscale",
-								"https://facebook.com/dealscale",
-							],
-							address: {
-								"@type": "PostalAddress",
-								addressCountry: "US",
-							},
-							offers: {
-								"@type": "AggregateOffer",
-								priceCurrency: "USD",
-								availability: "https://schema.org/InStock",
-							},
-						}),
-					}}
-				/>
+				<Script id="organization-jsonld" type="application/ld+json">
+					{JSON.stringify(organizationJsonLd)}
+				</Script>
 				{isAuthenticated ? (
 					<Script
 						id="supademo-script"

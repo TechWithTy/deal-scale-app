@@ -17,6 +17,7 @@ import { createWithEqualityFn } from "zustand/traditional";
 import type {
 	QuickStartGoalId,
 	QuickStartFlowStepDefinition,
+	QuickStartGoalDefinition,
 } from "@/lib/config/quickstart/wizardFlows";
 
 /**
@@ -70,16 +71,10 @@ interface GoalFlowExecutionState {
 	readonly flowSteps: readonly QuickStartFlowStepDefinition[];
 
 	// Store the complete goal for accessing finalAction later
-	readonly currentGoal:
-		| import("@/lib/config/quickstart/wizardFlows").QuickStartGoalDefinition
-		| null;
+	readonly currentGoal: QuickStartGoalDefinition | null;
 
 	// Actions
-	readonly startHolding: (
-		goal: import(
-			"@/lib/config/quickstart/wizardFlows",
-		).QuickStartGoalDefinition,
-	) => void;
+	readonly startHolding: (goal: QuickStartGoalDefinition) => void;
 	readonly updateHoldProgress: (progress: number) => void;
 	readonly completeHold: () => void;
 	readonly cancelHold: () => void;
