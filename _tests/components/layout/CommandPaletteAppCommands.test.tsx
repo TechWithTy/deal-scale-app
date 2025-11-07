@@ -207,11 +207,14 @@ const getRegisteredCommands = () => {
 	}>;
 };
 
+type CommandTreeItem = {
+	id: string;
+	children?: Array<CommandTreeItem>;
+	[key: string]: unknown;
+};
+
 const findCommandById = (
-	items: Array<{
-		id: string;
-		children?: Array<any>;
-	}> = [],
+	items: Array<CommandTreeItem> = [],
 	id: string,
 ) => {
 	for (const item of items) {
@@ -341,9 +344,10 @@ describe("CommandPaletteAppCommands", () => {
 
 		const campaignsRoot = findCommandById(commands, "campaigns-root");
 		expect(campaignsRoot?.children?.length).toBeGreaterThan(0);
-		const callGroup = campaignsRoot?.children?.find(
-			(child) => child.id === "campaigns-call",
-		);
+		const callGroup = campaignsRoot?.children?.find((child) => {
+			const typedChild = child as CommandTreeItem;
+			return typedChild.id === "campaigns-call";
+		});
 		expect(callGroup?.children?.length).toBeGreaterThan(0);
 		const firstCampaign = callGroup?.children?.[0];
 		pushMock.mockClear();

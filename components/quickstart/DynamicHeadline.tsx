@@ -463,7 +463,6 @@ const DynamicHeadline = ({ personaId }: DynamicHeadlineProps) => {
 						avatarUrls={trustProof.avatars}
 						numPeople={trustProof.numPeople}
 						reviews={trustReviews}
-						interaction="popover"
 						className="justify-center"
 					/>
 					{trustCaption ? (
