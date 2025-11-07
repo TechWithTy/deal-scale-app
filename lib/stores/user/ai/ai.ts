@@ -12,6 +12,7 @@ export interface AISettingsState {
 	voices: AssistantVoice[];
 	avatar?: AIKnowledgebase["aiAvatar"];
 	background?: AIKnowledgebase["background"];
+	preferredProvider: "openai" | "claude" | "gemini" | "dealscale";
 	setAssistantId: (id: string | null) => void;
 	setSquadId: (id: string | null) => void;
 	setCustomVoiceId: (id: string | null) => void;
@@ -19,6 +20,9 @@ export interface AISettingsState {
 	setVoices: (voices: AssistantVoice[]) => void;
 	setAvatar: (avatar?: AIKnowledgebase["aiAvatar"]) => void;
 	setBackground: (bg?: AIKnowledgebase["background"]) => void;
+	setPreferredProvider: (
+		provider: "openai" | "claude" | "gemini" | "dealscale",
+	) => void;
 	hydrateFromProfile: (profile?: UserProfile | null) => void;
 	reset: () => void;
 }
@@ -46,6 +50,7 @@ function initialFromProfile(profile?: UserProfile | null) {
 					colorScheme: kb.background.colorScheme,
 				}
 			: undefined,
+		preferredProvider: kb?.preferredProvider ?? "dealscale",
 	} satisfies Pick<
 		AISettingsState,
 		| "assistantId"
@@ -55,6 +60,7 @@ function initialFromProfile(profile?: UserProfile | null) {
 		| "voices"
 		| "avatar"
 		| "background"
+		| "preferredProvider"
 	>;
 }
 
@@ -68,6 +74,7 @@ export const useAISettingsStore = create<AISettingsState>((set) => ({
 	voices: seeded.voices,
 	avatar: seeded.avatar,
 	background: seeded.background,
+	preferredProvider: seeded.preferredProvider,
 
 	setAssistantId: (assistantId) => set({ assistantId }),
 	setSquadId: (squadId) => set({ squadId }),
@@ -76,7 +83,11 @@ export const useAISettingsStore = create<AISettingsState>((set) => ({
 	setVoices: (voices) => set({ voices }),
 	setAvatar: (avatar) => set({ avatar }),
 	setBackground: (background) => set({ background }),
+	setPreferredProvider: (preferredProvider) => set({ preferredProvider }),
 
-	hydrateFromProfile: (profile) => set(initialFromProfile(profile ?? null)),
-	reset: () => set(initialFromProfile(null)),
+	hydrateFromProfile: (profile) => {
+		const state = initialFromProfile(profile ?? MockUserProfile ?? null);
+		set(state);
+	},
+	reset: () => set(initialFromProfile(MockUserProfile ?? null)),
 }));

@@ -169,6 +169,7 @@ export default async function RootLayout({
 					<Providers session={session}>{children}</Providers>
 				)}
 				<div id="sidebar-portal" />
+				<div id="floating-ui-root" />
 			</body>
 		</html>
 	);

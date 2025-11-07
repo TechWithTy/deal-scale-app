@@ -165,6 +165,10 @@ export default function FloatingHelpSupademo({
 			setDismissed(false);
 			setPos((prev) => prev ?? computeDefaultPos());
 		};
+		const openModal = () => {
+			show();
+			setIsHelpOpen(true);
+		};
 		const hide = () => {
 			try {
 				window.localStorage.setItem(
@@ -176,9 +180,11 @@ export default function FloatingHelpSupademo({
 		};
 		window.addEventListener("dealScale:helpFab:show", show);
 		window.addEventListener("dealScale:helpFab:hide", hide);
+		window.addEventListener("dealScale:helpFab:openModal", openModal);
 		return () => {
 			window.removeEventListener("dealScale:helpFab:show", show);
 			window.removeEventListener("dealScale:helpFab:hide", hide);
+			window.removeEventListener("dealScale:helpFab:openModal", openModal);
 		};
 	}, []);
 

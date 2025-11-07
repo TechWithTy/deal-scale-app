@@ -1,5 +1,11 @@
 import type { ReactNode } from "react";
 
+export type CommandChip = {
+	key: string;
+	label: string;
+	type: string;
+};
+
 export type CommandPreview = {
 	type: "image" | "youtube";
 	// For image, src is the image URL; For youtube, src is a video ID or full URL
@@ -38,6 +44,8 @@ export type CommandItem = {
 	preview?: CommandPreview;
 	// Optional background color for the item row (e.g., "var(--accent)" or "#222")
 	color?: string;
+	// Optional inline chips to visualize metadata (e.g., variables, tags)
+	chips?: CommandChip[];
 	// Optional submenu items
 	children?: CommandItem[];
 };

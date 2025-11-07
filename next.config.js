@@ -24,9 +24,7 @@ const withPWA = require("next-pwa")({
 		cacheId: "deal-scale-app",
 		navigateFallback: offlineFallback,
 		navigateFallbackDenylist: [/^\/api\//],
-		additionalManifestEntries: [
-			{ url: offlineFallback, revision: null },
-		],
+		additionalManifestEntries: [{ url: offlineFallback, revision: null }],
 	},
 	fallbacks: {
 		document: offlineFallback,
@@ -44,7 +42,7 @@ const nextConfig = {
 			{
 				key: "Content-Security-Policy",
 				value:
-					"default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https: blob:; connect-src 'self' https:; img-src 'self' data: https: blob:; style-src 'self' 'unsafe-inline' https:; font-src 'self' data: https:; media-src 'self' https: blob: data:; frame-src 'self' https://app.supademo.com https://www.youtube.com; frame-ancestors 'self'; form-action 'self'; base-uri 'self';",
+					"default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https: blob:; connect-src 'self' https:; img-src 'self' data: https: blob:; style-src 'self' 'unsafe-inline' https:; font-src 'self' data: https:; media-src 'self' https: blob: data:; frame-src 'self' https://app.supademo.com https://www.youtube.com https://open.spotify.com https://sdk.scdn.co; frame-ancestors 'self'; form-action 'self'; base-uri 'self';",
 			},
 			{
 				key: "Strict-Transport-Security",

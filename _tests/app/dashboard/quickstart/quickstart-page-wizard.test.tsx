@@ -179,6 +179,27 @@ describe("QuickStartPage wizard modal", () => {
                 expect(guidedButtons[0]).toBeDefined();
         });
 
+        it("renders quickstart content inside the background collider", async () => {
+                render(<QuickStartPage />);
+
+                act(() => {
+                        useQuickStartWizardStore.getState().reset();
+                        useQuickStartWizardExperienceStore.getState().markWizardSeen();
+                });
+
+                const quickStartHeading = await screen.findByRole("heading", {
+                        name: /quick start/i,
+                        level: 1,
+                });
+
+                const background = document.querySelector(
+                        '[data-testid="quickstart-background"]',
+                );
+
+                expect(background).not.toBeNull();
+                expect(background?.contains(quickStartHeading)).toBe(true);
+        });
+
         it("opens the wizard on the persona step when the guided card is selected", async () => {
                 render(<QuickStartPage />);
 

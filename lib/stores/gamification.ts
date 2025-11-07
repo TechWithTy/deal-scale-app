@@ -9,7 +9,9 @@ import { withAnalytics } from "./_middleware/analytics";
 interface GamificationState {
 	// Leaderboard tracking
 	lastKnownRank: number | null;
+	currentRank: number | null;
 	hasRankChanged: boolean;
+	setCurrentRank: (rank: number | null) => void;
 	setLastKnownRank: (rank: number) => void;
 	checkRankChange: (currentRank: number) => boolean;
 	clearRankChangeIndicator: () => void;
@@ -70,7 +72,12 @@ export const useGamificationStore = createWithEqualityFn<GamificationState>(
 	withAnalytics<GamificationState>("gamification", (set, get) => ({
 		// Leaderboard state
 		lastKnownRank: null,
+		currentRank: null,
 		hasRankChanged: false,
+
+		setCurrentRank: (rank: number | null) => {
+			set({ currentRank: rank });
+		},
 
 		setLastKnownRank: (rank: number) => {
 			try {
@@ -78,38 +85,59 @@ export const useGamificationStore = createWithEqualityFn<GamificationState>(
 					window.localStorage.setItem("ds-last-rank", rank.toString());
 				}
 			} catch {}
-			set({ lastKnownRank: rank, hasRankChanged: false });
+			set({
+				lastKnownRank: rank,
+				currentRank: rank,
+				hasRankChanged: false,
+			});
 		},
 
 		checkRankChange: (currentRank: number) => {
 			const state = get();
 			const lastRank = state.lastKnownRank;
+			set({ currentRank });
 
 			// Load from localStorage if not in memory
-			if (lastRank === null && typeof window !== "undefined") {
+			let previousRank = lastRank;
+			if (previousRank === null && typeof window !== "undefined") {
 				try {
 					const stored = window.localStorage.getItem("ds-last-rank");
 					if (stored) {
 						const storedRank = Number.parseInt(stored, 10);
 						if (!Number.isNaN(storedRank)) {
+							previousRank = storedRank;
 							set({ lastKnownRank: storedRank });
-							const hasChanged = storedRank !== currentRank;
-							set({ hasRankChanged: hasChanged });
-							return hasChanged;
 						}
 					}
 				} catch {}
 			}
 
-			if (lastRank !== null && lastRank !== currentRank) {
+			if (previousRank !== null && previousRank !== currentRank) {
 				set({ hasRankChanged: true });
 				return true;
 			}
 
+			set({ hasRankChanged: false });
 			return false;
 		},
 
 		clearRankChangeIndicator: () => {
+			const { currentRank } = get();
+			if (typeof currentRank === "number" && !Number.isNaN(currentRank)) {
+				try {
+					if (typeof window !== "undefined") {
+						window.localStorage.setItem("ds-last-rank", currentRank.toString());
+					}
+				} catch {
+					/* noop */
+				}
+				set({
+					hasRankChanged: false,
+					lastKnownRank: currentRank,
+				});
+				return;
+			}
+
 			set({ hasRankChanged: false });
 		},
 

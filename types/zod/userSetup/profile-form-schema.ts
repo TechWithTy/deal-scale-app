@@ -45,6 +45,7 @@ const providerEnum = z.enum([
 	"linkedin",
 	"slack",
 	"spotify",
+	"twilio",
 	"workos",
 	"zoom",
 	"azure",
@@ -54,6 +55,10 @@ const providerEnum = z.enum([
 	"tiktok",
 	"salesforce",
 ]);
+
+const aiProviderEnum = z.enum(["dealscale", "openai", "claude", "deepseek"]);
+const aiRoutingEnum = z.enum(["balanced", "quality", "economy"]);
+const aiKnowledgeApprovalEnum = z.enum(["manual", "auto", "turbo"]);
 
 export const profileSchema = z.object({
 	firstName: z
@@ -195,6 +200,18 @@ export const profileSchema = z.object({
 				message: "Cannot exceed 50 concurrent conversations.",
 			}),
 	}),
+	aiProvider: z
+		.object({
+			primary: aiProviderEnum,
+			fallback: z.enum(["none", "dealscale", "openai", "claude", "deepseek"]),
+			routing: aiRoutingEnum,
+		})
+		.default({
+			primary: "dealscale",
+			fallback: "claude",
+			routing: "balanced",
+		}),
+	aiKnowledgeApproval: aiKnowledgeApprovalEnum.default("manual"),
 
 	state: z
 		.string()
@@ -318,6 +335,8 @@ export const profileSchema = z.object({
 		twitter: providerEnum.optional(),
 		instagram: providerEnum.optional(),
 		linkedIn: providerEnum.optional(),
+		spotify: providerEnum.optional(),
+		twilio: providerEnum.optional(),
 	}),
 	socialMediatags: z
 		.array(

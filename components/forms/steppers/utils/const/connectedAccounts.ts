@@ -8,6 +8,8 @@ import type {
 	LinkedInOAuthData,
 	LoftyCRMOAuthData,
 	N8nOAuthData,
+	SpotifyOAuthData,
+	TwilioOAuthData,
 	TwitterOAuthData,
 } from "@/types/userProfile/connectedAccounts";
 
@@ -28,8 +30,15 @@ export interface InitialOauthSetupData {
 		n8n?: N8nOAuthData | null;
 		discord?: DiscordOAuthData | null;
 		kestra?: KestraOAuthData | null;
+		spotify?: SpotifyOAuthData | null;
+		twilio?: TwilioOAuthData | null;
 	};
 	socialMediaTags: string[]; // Social media tags associated with the company's campaigns
+	aiProvider?: {
+		primary: string;
+		fallback: string;
+		routing: string;
+	};
 }
 
 // Function to extract both OAuth data and social media tags
@@ -47,7 +56,10 @@ export const extractOAuthDataFromUserProfile = (
 			n8n: profile?.connectedAccounts?.n8n || null,
 			discord: profile?.connectedAccounts?.discord || null,
 			kestra: profile?.connectedAccounts?.kestra || null,
+			spotify: profile?.connectedAccounts?.spotify || null,
+			twilio: profile?.connectedAccounts?.twilio || null,
 		},
-		socialMediaTags: profile?.companyInfo?.socialMediaTags || [], // Extract social media tags, or use an empty array if not available
+		socialMediaTags: profile?.companyInfo?.socialMediaTags || [],
+		aiProvider: profile?.meta?.aiProvider as any,
 	};
 };

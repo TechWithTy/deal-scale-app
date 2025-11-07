@@ -1,5 +1,6 @@
 "use client";
 
+import { Badge } from "../../../shadcn-table/src/components/ui/badge";
 import { CommandShortcut } from "../../../shadcn-table/src/components/ui/command";
 import { ChevronRight } from "lucide-react";
 import {
@@ -9,7 +10,7 @@ import {
 } from "../../../shadcn-table/src/components/ui/popover";
 import type { CommandItem } from "../../utils/types";
 import { extractYouTubeId } from "../../utils/media";
-import { type ReactNode } from "react";
+import type { ReactNode } from "react";
 
 export type PreviewPopoverProps = {
 	cmd: CommandItem;
@@ -17,7 +18,7 @@ export type PreviewPopoverProps = {
 	setHoveredId: (id: string | null) => void;
 	// Called with whichever command (parent or child) was chosen
 	onSelectCommand: (cmd: CommandItem, source: "list" | "popover") => void;
-	CommandItemUI: (props: any) => ReactNode;
+	CommandItemUI: (props: Record<string, unknown>) => ReactNode;
 };
 
 export default function PreviewPopover({
@@ -39,13 +40,13 @@ export default function PreviewPopover({
 						<img
 							src={preview.placeholder}
 							alt={preview.alt ?? "Placeholder"}
-							className="w-full rounded-md border border-border object-cover max-h-32"
+							className="max-h-32 w-full rounded-md border border-border object-cover"
 						/>
 					) : null}
 					<img
 						src={preview.src}
 						alt={preview.alt ?? "Preview"}
-						className="w-full rounded-md border border-border object-cover max-h-48"
+						className="max-h-48 w-full rounded-md border border-border object-cover"
 						onError={(e) => {
 							if (preview.placeholder)
 								(e.currentTarget as HTMLImageElement).src = preview.placeholder;
@@ -62,7 +63,7 @@ export default function PreviewPopover({
 					<img
 						src={preview.placeholder}
 						alt={preview.alt ?? "Thumbnail"}
-						className="w-full rounded-md border border-border object-cover max-h-32"
+						className="max-h-32 w-full rounded-md border border-border object-cover"
 					/>
 				) : null}
 				<div className="relative h-[180px] w-[320px]">
@@ -100,25 +101,38 @@ export default function PreviewPopover({
 					) : null}
 					<span className="truncate">{cmd.label}</span>
 					{cmd.hint ? (
-						<span className="ml-2 truncate text-muted-foreground">
+						<span className="ml-2 hidden truncate text-muted-foreground sm:inline">
 							{cmd.hint}
+						</span>
+					) : null}
+					{cmd.chips?.length ? (
+						<span className="ml-auto flex max-w-[180px] flex-wrap justify-end gap-1">
+							{cmd.chips.slice(0, 3).map((chip) => (
+								<Badge
+									key={`${cmd.id}-chip-${chip.key}`}
+									variant="secondary"
+									className="h-5 shrink-0 px-1.5 text-[10px] uppercase"
+								>
+									{chip.label}
+								</Badge>
+							))}
 						</span>
 					) : null}
 					{cmd.shortcut ? (
 						<CommandShortcut>{cmd.shortcut}</CommandShortcut>
 					) : null}
-					{cmd.children && cmd.children.length ? (
+					{cmd.children?.length ? (
 						<span className="ml-auto text-muted-foreground">
 							<ChevronRight className="h-4 w-4" />
 						</span>
 					) : null}
 				</CommandItemUI>
 			</PopoverTrigger>
-			{hasPreview || (cmd.children && cmd.children.length) ? (
+			{hasPreview || cmd.children?.length ? (
 				<PopoverContent
 					sideOffset={8}
 					align="start"
-					className="w-auto max-w-[360px] p-2 !bg-background text-foreground ring-1 ring-border shadow-lg backdrop-blur-0"
+					className="!bg-background w-auto max-w-[360px] p-2 text-foreground shadow-lg ring-1 ring-border backdrop-blur-0"
 					style={{
 						backgroundColor: "var(--background)",
 						color: "var(--foreground)",
@@ -132,7 +146,7 @@ export default function PreviewPopover({
 					{hasPreview ? (
 						<button
 							type="button"
-							className="block w-full text-left focus:outline-none mb-2"
+							className="mb-2 block w-full text-left focus:outline-none"
 							onClick={() => onSelectCommand(cmd, "popover")}
 							aria-label={`Use ${cmd.label}`}
 						>
@@ -140,13 +154,13 @@ export default function PreviewPopover({
 						</button>
 					) : null}
 					{/* Submenu (if any) */}
-					{cmd.children && cmd.children.length ? (
+					{cmd.children?.length ? (
 						<div className="flex flex-col gap-1">
 							{cmd.children.map((child) => (
 								<button
 									key={child.id}
 									type="button"
-									className="relative flex cursor-default select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground"
+									className="relative flex cursor-pointer select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground"
 									style={
 										child.color ? { backgroundColor: child.color } : undefined
 									}
@@ -159,8 +173,26 @@ export default function PreviewPopover({
 									) : null}
 									<span className="truncate">{child.label}</span>
 									{child.hint ? (
-										<span className="ml-2 truncate text-muted-foreground">
+										<span className="ml-2 hidden truncate text-muted-foreground sm:inline">
 											{child.hint}
+										</span>
+									) : null}
+									{child.chips?.length ? (
+										<span className="ml-auto flex max-w-[180px] flex-wrap justify-end gap-1">
+											{child.chips.slice(0, 3).map((chip) => (
+												<Badge
+													key={`${child.id}-chip-${chip.key}`}
+													variant="secondary"
+													className="h-5 shrink-0 px-1.5 text-[10px] uppercase"
+												>
+													{chip.label}
+												</Badge>
+											))}
+										</span>
+									) : null}
+									{child.children?.length ? (
+										<span className="ml-auto text-muted-foreground">
+											<ChevronRight className="h-4 w-4" />
 										</span>
 									) : null}
 								</button>

@@ -4,6 +4,7 @@
  * Upload, view, edit, and train AI agents using sales scripts
  */
 
+import { MonetizationToggle } from "@/components/reusables/ai/shared/MonetizationToggle";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -58,7 +59,14 @@ import { toast } from "sonner";
 interface SalesScript {
 	id: string;
 	name: string;
-	type: "Cold Call" | "SMS" | "Follow Up" | "Voicemail" | "Other";
+	type:
+		| "Cold Call"
+		| "Inbound Call"
+		| "Outbound Call"
+		| "SMS"
+		| "Follow Up"
+		| "Voicemail"
+		| "Other";
 	content: string;
 	notes?: string;
 	tags: string[];
@@ -73,7 +81,86 @@ interface SalesScript {
 		avgEngagementDuration: number;
 		lastUsedDate?: Date;
 	};
+	monetization: {
+		enabled: boolean;
+		priceMultiplier: number;
+		acceptedTerms: boolean;
+	};
+	callDirection?: "inbound" | "outbound";
+	funnelStage?: "top" | "middle" | "bottom";
 }
+
+type SalesScriptFormState = {
+	name: string;
+	type: SalesScript["type"];
+	content: string;
+	notes: string;
+	tags: string[];
+	addedToKnowledgeBase: boolean;
+	useForAITraining: boolean;
+	monetizationEnabled: boolean;
+	priceMultiplier: number;
+	acceptedTerms: boolean;
+	callDirection: "inbound" | "outbound";
+	funnelStage: "top" | "middle" | "bottom";
+};
+
+type SalesScriptCreationPreferences = {
+	defaultType: SalesScript["type"];
+	defaultCallDirection: "inbound" | "outbound";
+	defaultFunnelStage: "top" | "middle" | "bottom";
+	knowledgeBaseEnabled: boolean;
+	aiTrainingEnabled: boolean;
+	monetizationEnabled: boolean;
+	priceMultiplier: number;
+	acceptedTerms: boolean;
+};
+
+const isCallScript = (type: SalesScript["type"]) =>
+	type === "Cold Call" || type === "Inbound Call" || type === "Outbound Call";
+
+const createTagKeyList = (tags: string[], prefix: string, limit?: number) => {
+	const registry = new Map<string, number>();
+	const subset = typeof limit === "number" ? tags.slice(0, limit) : tags;
+	return subset.map((tag) => {
+		const count = (registry.get(tag) ?? 0) + 1;
+		registry.set(tag, count);
+		return { tag, key: `${prefix}-${tag}-${count}` };
+	});
+};
+
+const SALES_SCRIPT_TEMPLATE = `Objective: Book a qualified appointment within 48 hours\nAudience: Motivated property sellers (absentee owners)\nTone: Consultative, confident, service-first\nCTA: Schedule a discovery call with acquisitions specialist\n\nOpening\n- Quick rapport: "Hey {{firstName}}, this is {{repName}} with Deal Scale."\n- Permission: "Do you have a quick minute? I noticed your property at {{propertyAddress}}?"\n\nValue Bridge\n- Pain probe: "How has managing the property been lately?"\n- Outcome: "Clients reduce vacancies and net 18% more per door."\n\nDiscovery\n- Motivation, Timeline, Obstacles prompts\n\nOffer + Close\n- Present 3 options and request 15-minute review call\n\nObjection Handling\n- "I need to think about it" → uncover specifics\n- "Not interested" → explore future-fit\n\nNext Steps\n- Confirm preferred follow-up channel\n- Send recap with key motivations, timeline, objections`;
+
+const createNotesPlaceholder = () => {
+	const today = new Date().toISOString().slice(0, 10);
+	return `Last updated: ${today}\nPersona: Absentee Owner\nChannel: Cold Call\nFunnel Stage: Top\nConfidence Score: Pending QA review\nAI Training Signal: High intent phrases tagged for coaching.`;
+};
+
+const createInitialFormState = (
+	defaults?: SalesScriptCreationPreferences,
+): SalesScriptFormState => {
+	const type = defaults?.defaultType ?? "Cold Call";
+	const callDirection = isCallScript(type)
+		? (defaults?.defaultCallDirection ?? "outbound")
+		: "outbound";
+
+	return {
+		name: "",
+		type,
+		content: "",
+		notes: "",
+		tags: [],
+		addedToKnowledgeBase: defaults?.knowledgeBaseEnabled ?? true,
+		useForAITraining: defaults?.aiTrainingEnabled ?? false,
+		monetizationEnabled: defaults?.monetizationEnabled ?? false,
+		priceMultiplier: defaults?.priceMultiplier ?? 1,
+		acceptedTerms: defaults?.monetizationEnabled
+			? (defaults?.acceptedTerms ?? false)
+			: false,
+		callDirection,
+		funnelStage: defaults?.defaultFunnelStage ?? "top",
+	};
+};
 
 export const SalesScriptManager: React.FC = () => {
 	const [scripts, setScripts] = useState<SalesScript[]>([]);
@@ -86,25 +173,50 @@ export const SalesScriptManager: React.FC = () => {
 	const [searchQuery, setSearchQuery] = useState("");
 
 	// Form state for upload/edit
-	const [formData, setFormData] = useState({
-		name: "",
-		type: "Cold Call" as SalesScript["type"],
-		content: "",
-		notes: "",
-		tags: [] as string[],
-		addedToKnowledgeBase: true,
-		useForAITraining: false,
-	});
+	const [creationPreferences, setCreationPreferences] =
+		useState<SalesScriptCreationPreferences>({
+			defaultType: "Cold Call",
+			defaultCallDirection: "outbound",
+			defaultFunnelStage: "top",
+			knowledgeBaseEnabled: true,
+			aiTrainingEnabled: false,
+			monetizationEnabled: false,
+			priceMultiplier: 1,
+			acceptedTerms: false,
+		});
+
+	const [formData, setFormData] = useState<SalesScriptFormState>(
+		createInitialFormState(creationPreferences),
+	);
 	const [tagInput, setTagInput] = useState("");
 	const [isUploading, setIsUploading] = useState(false);
 	const [uploadedFileName, setUploadedFileName] = useState("");
 
 	const scriptTypes: SalesScript["type"][] = [
 		"Cold Call",
+		"Inbound Call",
+		"Outbound Call",
 		"SMS",
 		"Follow Up",
 		"Voicemail",
 		"Other",
+	];
+
+	const funnelStages: Array<{
+		value: SalesScriptFormState["funnelStage"];
+		label: string;
+	}> = [
+		{ value: "top", label: "Top of Funnel" },
+		{ value: "middle", label: "Middle of Funnel" },
+		{ value: "bottom", label: "Bottom of Funnel" },
+	];
+
+	const callDirections: Array<{
+		value: SalesScriptFormState["callDirection"];
+		label: string;
+	}> = [
+		{ value: "outbound", label: "Outbound" },
+		{ value: "inbound", label: "Inbound" },
 	];
 
 	const handleUploadScript = () => {
@@ -130,6 +242,15 @@ export const SalesScriptManager: React.FC = () => {
 				conversionRate: 0,
 				avgEngagementDuration: 0,
 			},
+			monetization: {
+				enabled: formData.monetizationEnabled,
+				priceMultiplier: formData.priceMultiplier,
+				acceptedTerms: formData.monetizationEnabled
+					? formData.acceptedTerms
+					: false,
+			},
+			callDirection: formData.callDirection,
+			funnelStage: formData.funnelStage,
 		};
 
 		setScripts([...scripts, newScript]);
@@ -152,6 +273,15 @@ export const SalesScriptManager: React.FC = () => {
 						tags: formData.tags,
 						addedToKnowledgeBase: formData.addedToKnowledgeBase,
 						useForAITraining: formData.useForAITraining,
+						monetization: {
+							enabled: formData.monetizationEnabled,
+							priceMultiplier: formData.priceMultiplier,
+							acceptedTerms: formData.monetizationEnabled
+								? formData.acceptedTerms
+								: false,
+						},
+						callDirection: formData.callDirection,
+						funnelStage: formData.funnelStage,
 						updatedAt: new Date(),
 					}
 				: script,
@@ -179,6 +309,11 @@ export const SalesScriptManager: React.FC = () => {
 			tags: script.tags,
 			addedToKnowledgeBase: script.addedToKnowledgeBase,
 			useForAITraining: script.useForAITraining,
+			monetizationEnabled: script.monetization?.enabled ?? false,
+			priceMultiplier: script.monetization?.priceMultiplier ?? 1,
+			acceptedTerms: script.monetization?.acceptedTerms ?? false,
+			callDirection: script.callDirection ?? "outbound",
+			funnelStage: script.funnelStage ?? "top",
 		});
 		setTagInput("");
 		setUploadedFileName("");
@@ -191,15 +326,7 @@ export const SalesScriptManager: React.FC = () => {
 	};
 
 	const resetForm = () => {
-		setFormData({
-			name: "",
-			type: "Cold Call",
-			content: "",
-			notes: "",
-			tags: [],
-			addedToKnowledgeBase: true,
-			useForAITraining: false,
-		});
+		setFormData(createInitialFormState(creationPreferences));
 		setTagInput("");
 		setUploadedFileName("");
 	};
@@ -325,10 +452,171 @@ export const SalesScriptManager: React.FC = () => {
 						Manage your sales scripts and train AI agents
 					</p>
 				</div>
-				<Button onClick={() => setIsUploadModalOpen(true)} className="gap-2">
+				<Button
+					onClick={() => {
+						setFormData(createInitialFormState(creationPreferences));
+						setTagInput("");
+						setUploadedFileName("");
+						setIsUploadModalOpen(true);
+					}}
+					className="gap-2"
+				>
 					<Plus className="h-4 w-4" />
 					Upload New Script
 				</Button>
+			</div>
+			<div className="rounded-lg border border-border bg-background/60 p-4">
+				<div className="mb-3 flex items-center justify-between gap-3">
+					<div>
+						<h4 className="font-semibold text-sm">New Script Defaults</h4>
+						<p className="text-muted-foreground text-xs">
+							These settings pre-fill the upload form for faster publishing.
+						</p>
+					</div>
+				</div>
+				<div className="grid gap-4 sm:grid-cols-2">
+					<div>
+						<Label htmlFor="default-script-type" className="text-sm">
+							Script Type
+						</Label>
+						<Select
+							value={creationPreferences.defaultType}
+							onValueChange={(value: SalesScript["type"]) =>
+								setCreationPreferences((prev) => ({
+									...prev,
+									defaultType: value,
+									defaultCallDirection: isCallScript(value)
+										? prev.defaultCallDirection
+										: "outbound",
+								}))
+							}
+						>
+							<SelectTrigger id="default-script-type" className="mt-1">
+								<SelectValue />
+							</SelectTrigger>
+							<SelectContent>
+								{scriptTypes.map((type) => (
+									<SelectItem key={type} value={type}>
+										{type}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
+					</div>
+					<div>
+						<Label htmlFor="default-call-direction" className="text-sm">
+							Call Direction
+						</Label>
+						<Select
+							value={creationPreferences.defaultCallDirection}
+							onValueChange={(value: "inbound" | "outbound") =>
+								setCreationPreferences((prev) => ({
+									...prev,
+									defaultCallDirection: value,
+								}))
+							}
+							disabled={!isCallScript(creationPreferences.defaultType)}
+						>
+							<SelectTrigger id="default-call-direction" className="mt-1">
+								<SelectValue />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem value="outbound">Outbound</SelectItem>
+								<SelectItem value="inbound">Inbound</SelectItem>
+							</SelectContent>
+						</Select>
+					</div>
+					<div>
+						<Label htmlFor="default-funnel-stage" className="text-sm">
+							Funnel Stage
+						</Label>
+						<Select
+							value={creationPreferences.defaultFunnelStage}
+							onValueChange={(
+								value: SalesScriptCreationPreferences["defaultFunnelStage"],
+							) =>
+								setCreationPreferences((prev) => ({
+									...prev,
+									defaultFunnelStage: value,
+								}))
+							}
+						>
+							<SelectTrigger id="default-funnel-stage" className="mt-1">
+								<SelectValue />
+							</SelectTrigger>
+							<SelectContent>
+								{funnelStages.map((option) => (
+									<SelectItem key={option.value} value={option.value}>
+										{option.label}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
+					</div>
+				</div>
+				<div className="mt-4 grid gap-4 sm:grid-cols-2">
+					<div className="flex items-start justify-between rounded-md border border-border bg-card/40 p-3">
+						<div>
+							<Label className="text-sm">Add to Knowledge Base</Label>
+							<p className="text-muted-foreground text-xs">
+								Auto-enable searchability for new scripts.
+							</p>
+						</div>
+						<Switch
+							checked={creationPreferences.knowledgeBaseEnabled}
+							onCheckedChange={(checked) =>
+								setCreationPreferences((prev) => ({
+									...prev,
+									knowledgeBaseEnabled: checked,
+								}))
+							}
+						/>
+					</div>
+					<div className="flex items-start justify-between rounded-md border border-border bg-card/40 p-3">
+						<div>
+							<Label className="text-sm">Enable AI Training</Label>
+							<p className="text-muted-foreground text-xs">
+								Feed scripts into coaching and simulation flows.
+							</p>
+						</div>
+						<Switch
+							checked={creationPreferences.aiTrainingEnabled}
+							onCheckedChange={(checked) =>
+								setCreationPreferences((prev) => ({
+									...prev,
+									aiTrainingEnabled: checked,
+								}))
+							}
+						/>
+					</div>
+				</div>
+				<div className="mt-4">
+					<MonetizationToggle
+						enabled={creationPreferences.monetizationEnabled}
+						onEnabledChange={(enabled) =>
+							setCreationPreferences((prev) => ({
+								...prev,
+								monetizationEnabled: enabled,
+								acceptedTerms: enabled ? prev.acceptedTerms : false,
+							}))
+						}
+						priceMultiplier={creationPreferences.priceMultiplier}
+						onPriceMultiplierChange={(value) =>
+							setCreationPreferences((prev) => ({
+								...prev,
+								priceMultiplier: value,
+							}))
+						}
+						acceptedTerms={creationPreferences.acceptedTerms}
+						onAcceptedTermsChange={(value) =>
+							setCreationPreferences((prev) => ({
+								...prev,
+								acceptedTerms: value,
+							}))
+						}
+						itemType="salesScript"
+					/>
+				</div>
 			</div>
 
 			{/* Search */}
@@ -382,18 +670,36 @@ export const SalesScriptManager: React.FC = () => {
 									</TableCell>
 									<TableCell>
 										<div className="flex flex-wrap gap-1">
-											{script.tags.slice(0, 3).map((tag, idx) => (
-												<Badge
-													key={idx}
-													variant="secondary"
-													className="text-xs"
-												>
-													{tag}
-												</Badge>
-											))}
+											{createTagKeyList(script.tags, script.id, 3).map(
+												({ tag, key }) => (
+													<Badge
+														key={key}
+														variant="secondary"
+														className="text-xs"
+													>
+														{tag}
+													</Badge>
+												),
+											)}
 											{script.tags.length > 3 && (
 												<Badge variant="secondary" className="text-xs">
 													+{script.tags.length - 3}
+												</Badge>
+											)}
+											{script.callDirection && (
+												<Badge variant="outline" className="text-xs">
+													{script.callDirection === "inbound"
+														? "Inbound"
+														: "Outbound"}
+												</Badge>
+											)}
+											{script.funnelStage && (
+												<Badge variant="outline" className="text-xs">
+													{script.funnelStage === "top"
+														? "Top of Funnel"
+														: script.funnelStage === "middle"
+															? "Middle Funnel"
+															: "Bottom Funnel"}
 												</Badge>
 											)}
 										</div>
@@ -408,6 +714,14 @@ export const SalesScriptManager: React.FC = () => {
 											{script.useForAITraining && (
 												<Badge variant="default" className="w-fit text-xs">
 													🤖 AI-Trained
+												</Badge>
+											)}
+											{script.monetization.enabled && (
+												<Badge
+													variant="default"
+													className="w-fit bg-emerald-600 text-white text-xs hover:bg-emerald-600"
+												>
+													${script.monetization.priceMultiplier}x Marketplace
 												</Badge>
 											)}
 										</div>
@@ -478,7 +792,13 @@ export const SalesScriptManager: React.FC = () => {
 							<Select
 								value={formData.type}
 								onValueChange={(value: SalesScript["type"]) =>
-									setFormData({ ...formData, type: value })
+									setFormData({
+										...formData,
+										type: value,
+										callDirection: isCallScript(value)
+											? formData.callDirection
+											: "outbound",
+									})
 								}
 							>
 								<SelectTrigger>
@@ -493,25 +813,70 @@ export const SalesScriptManager: React.FC = () => {
 								</SelectContent>
 							</Select>
 						</div>
+						<div className="grid gap-3 sm:grid-cols-2">
+							<div>
+								<Label htmlFor="call-direction">Call Direction</Label>
+								<Select
+									value={formData.callDirection}
+									onValueChange={(
+										value: SalesScriptFormState["callDirection"],
+									) => setFormData({ ...formData, callDirection: value })}
+									disabled={!isCallScript(formData.type)}
+								>
+									<SelectTrigger>
+										<SelectValue placeholder="Select direction" />
+									</SelectTrigger>
+									<SelectContent>
+										{callDirections.map((option) => (
+											<SelectItem key={option.value} value={option.value}>
+												{option.label}
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+							</div>
+							<div>
+								<Label htmlFor="funnel-stage">Funnel Stage</Label>
+								<Select
+									value={formData.funnelStage}
+									onValueChange={(value: SalesScriptFormState["funnelStage"]) =>
+										setFormData({ ...formData, funnelStage: value })
+									}
+								>
+									<SelectTrigger>
+										<SelectValue placeholder="Select stage" />
+									</SelectTrigger>
+									<SelectContent>
+										{funnelStages.map((option) => (
+											<SelectItem key={option.value} value={option.value}>
+												{option.label}
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+							</div>
+						</div>
 						<div>
 							<Label htmlFor="script-tags">Tags</Label>
 							<div className="flex min-h-[40px] flex-wrap items-center gap-2 rounded-md border border-input bg-background px-3 py-2">
-								{formData.tags.map((tag, idx) => (
-									<Badge
-										key={idx}
-										variant="secondary"
-										className="gap-1 pr-1 pl-2"
-									>
-										{tag}
-										<button
-											type="button"
-											onClick={() => handleRemoveTag(tag)}
-											className="ml-1 rounded-sm hover:bg-muted"
+								{createTagKeyList(formData.tags, "upload-form").map(
+									({ tag, key }) => (
+										<Badge
+											key={key}
+											variant="secondary"
+											className="gap-1 pr-1 pl-2"
 										>
-											<X className="h-3 w-3" />
-										</button>
-									</Badge>
-								))}
+											{tag}
+											<button
+												type="button"
+												onClick={() => handleRemoveTag(tag)}
+												className="ml-1 rounded-sm hover:bg-muted"
+											>
+												<X className="h-3 w-3" />
+											</button>
+										</Badge>
+									),
+								)}
 								<Input
 									id="script-tags"
 									placeholder="Add tag and press Enter..."
@@ -568,12 +933,13 @@ export const SalesScriptManager: React.FC = () => {
 								</div>
 								<Textarea
 									id="script-content"
-									placeholder="Or paste your sales script here..."
+									placeholder={SALES_SCRIPT_TEMPLATE}
 									rows={10}
 									value={formData.content}
 									onChange={(e) =>
 										setFormData({ ...formData, content: e.target.value })
 									}
+									className="placeholder:text-muted-foreground/70"
 								/>
 							</div>
 						</div>
@@ -581,12 +947,13 @@ export const SalesScriptManager: React.FC = () => {
 							<Label htmlFor="script-notes">Notes (Optional)</Label>
 							<Textarea
 								id="script-notes"
-								placeholder="Add any notes about this script..."
+								placeholder={createNotesPlaceholder()}
 								rows={3}
 								value={formData.notes}
 								onChange={(e) =>
 									setFormData({ ...formData, notes: e.target.value })
 								}
+								className="placeholder:text-muted-foreground/70"
 							/>
 						</div>
 						<div className="space-y-4 rounded-lg border p-4">
@@ -619,6 +986,25 @@ export const SalesScriptManager: React.FC = () => {
 								/>
 							</div>
 						</div>
+						<MonetizationToggle
+							enabled={formData.monetizationEnabled}
+							onEnabledChange={(enabled) =>
+								setFormData((prev) => ({
+									...prev,
+									monetizationEnabled: enabled,
+									acceptedTerms: enabled ? prev.acceptedTerms : false,
+								}))
+							}
+							priceMultiplier={formData.priceMultiplier}
+							onPriceMultiplierChange={(value) =>
+								setFormData((prev) => ({ ...prev, priceMultiplier: value }))
+							}
+							acceptedTerms={formData.acceptedTerms}
+							onAcceptedTermsChange={(value) =>
+								setFormData((prev) => ({ ...prev, acceptedTerms: value }))
+							}
+							itemType="salesScript"
+						/>
 						<div className="flex justify-end gap-2">
 							<Button
 								variant="outline"
@@ -660,7 +1046,13 @@ export const SalesScriptManager: React.FC = () => {
 							<Select
 								value={formData.type}
 								onValueChange={(value: SalesScript["type"]) =>
-									setFormData({ ...formData, type: value })
+									setFormData({
+										...formData,
+										type: value,
+										callDirection: isCallScript(value)
+											? formData.callDirection
+											: "outbound",
+									})
 								}
 							>
 								<SelectTrigger>
@@ -675,25 +1067,70 @@ export const SalesScriptManager: React.FC = () => {
 								</SelectContent>
 							</Select>
 						</div>
+						<div className="grid gap-3 sm:grid-cols-2">
+							<div>
+								<Label htmlFor="edit-call-direction">Call Direction</Label>
+								<Select
+									value={formData.callDirection}
+									onValueChange={(
+										value: SalesScriptFormState["callDirection"],
+									) => setFormData({ ...formData, callDirection: value })}
+									disabled={!isCallScript(formData.type)}
+								>
+									<SelectTrigger>
+										<SelectValue placeholder="Select direction" />
+									</SelectTrigger>
+									<SelectContent>
+										{callDirections.map((option) => (
+											<SelectItem key={option.value} value={option.value}>
+												{option.label}
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+							</div>
+							<div>
+								<Label htmlFor="edit-funnel-stage">Funnel Stage</Label>
+								<Select
+									value={formData.funnelStage}
+									onValueChange={(value: SalesScriptFormState["funnelStage"]) =>
+										setFormData({ ...formData, funnelStage: value })
+									}
+								>
+									<SelectTrigger>
+										<SelectValue placeholder="Select stage" />
+									</SelectTrigger>
+									<SelectContent>
+										{funnelStages.map((option) => (
+											<SelectItem key={option.value} value={option.value}>
+												{option.label}
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+							</div>
+						</div>
 						<div>
 							<Label htmlFor="edit-script-tags">Tags</Label>
 							<div className="flex min-h-[40px] flex-wrap items-center gap-2 rounded-md border border-input bg-background px-3 py-2">
-								{formData.tags.map((tag, idx) => (
-									<Badge
-										key={idx}
-										variant="secondary"
-										className="gap-1 pr-1 pl-2"
-									>
-										{tag}
-										<button
-											type="button"
-											onClick={() => handleRemoveTag(tag)}
-											className="ml-1 rounded-sm hover:bg-muted"
+								{createTagKeyList(formData.tags, "edit-form").map(
+									({ tag, key }) => (
+										<Badge
+											key={key}
+											variant="secondary"
+											className="gap-1 pr-1 pl-2"
 										>
-											<X className="h-3 w-3" />
-										</button>
-									</Badge>
-								))}
+											{tag}
+											<button
+												type="button"
+												onClick={() => handleRemoveTag(tag)}
+												className="ml-1 rounded-sm hover:bg-muted"
+											>
+												<X className="h-3 w-3" />
+											</button>
+										</Badge>
+									),
+								)}
 								<Input
 									id="edit-script-tags"
 									placeholder="Add tag and press Enter..."
@@ -750,12 +1187,13 @@ export const SalesScriptManager: React.FC = () => {
 								</div>
 								<Textarea
 									id="edit-script-content"
-									placeholder="Or paste your sales script here..."
+									placeholder={SALES_SCRIPT_TEMPLATE}
 									rows={10}
 									value={formData.content}
 									onChange={(e) =>
 										setFormData({ ...formData, content: e.target.value })
 									}
+									className="placeholder:text-muted-foreground/70"
 								/>
 							</div>
 						</div>
@@ -763,12 +1201,13 @@ export const SalesScriptManager: React.FC = () => {
 							<Label htmlFor="edit-script-notes">Notes (Optional)</Label>
 							<Textarea
 								id="edit-script-notes"
-								placeholder="Add any notes about this script..."
+								placeholder={createNotesPlaceholder()}
 								rows={3}
 								value={formData.notes}
 								onChange={(e) =>
 									setFormData({ ...formData, notes: e.target.value })
 								}
+								className="placeholder:text-muted-foreground/70"
 							/>
 						</div>
 						<div className="space-y-4 rounded-lg border p-4">

@@ -1,13 +1,18 @@
 "use client";
 
-import { HelpCircle } from "lucide-react";
+import { ArrowDown, HelpCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { BackgroundBeamsWithCollision } from "@/components/ui/background-beams-with-collision";
 import { LightRays } from "@/components/ui/light-rays";
 
 import { campaignSteps } from "@/_tests/tours/campaignTour";
+import DynamicHeadline from "@/components/quickstart/DynamicHeadline";
+import QuickStartHeroVideo from "@/components/quickstart/QuickStartHeroVideo";
+import QuickStartCTA from "@/components/quickstart/QuickStartCTA";
 import QuickStartActionsGrid from "@/components/quickstart/QuickStartActionsGrid";
+import { Pointer } from "@/components/ui/pointer";
+import { AvatarCircles } from "@/components/ui/avatar-circles";
 import QuickStartLegacyModals, {
 	type QuickStartCampaignContext,
 } from "@/components/quickstart/QuickStartLegacyModals";
@@ -499,6 +504,7 @@ export default function QuickStartPage() {
 			if (wizardData.channels?.length > 0) {
 				primaryChannel = wizardData.channels[0];
 				if (
+					primaryChannel &&
 					["call", "text", "email", "social", "directmail"].includes(
 						primaryChannel,
 					)
@@ -842,16 +848,14 @@ export default function QuickStartPage() {
 			campaignState.setCampaignName(template.name);
 
 			// Set primary channel from template (use first channel if multiple)
-			let primaryChannel: string | null = null;
-			if (wizardData.channels?.length > 0) {
-				primaryChannel = wizardData.channels[0];
-				if (
-					["call", "text", "email", "social", "directmail"].includes(
-						primaryChannel,
-					)
-				) {
-					campaignState.setPrimaryChannel(primaryChannel as any);
-				}
+			const primaryChannel = wizardData.channels?.[0];
+			if (
+				typeof primaryChannel === "string" &&
+				["call", "text", "email", "social", "directmail"].includes(
+					primaryChannel,
+				)
+			) {
+				campaignState.setPrimaryChannel(primaryChannel as any);
 			}
 
 			// Set campaign goal/description
@@ -1552,7 +1556,7 @@ export default function QuickStartPage() {
 		updateLastTemplateId,
 	]);
 
-	const quickStartCards = useQuickStartCardViewModel({
+	const quickstartCards = useQuickStartCardViewModel({
 		bulkCsvFile,
 		bulkCsvHeaders,
 		onImport: handleImportFromSource,
@@ -1583,305 +1587,349 @@ export default function QuickStartPage() {
 		}, 0);
 	}, [openWebhookModal]);
 
+	const scrollToQuickStartActions = useCallback(() => {
+		if (typeof window === "undefined") {
+			return;
+		}
+		const target = document.getElementById("quickstart-actions");
+		if (target) {
+			target.scrollIntoView({ behavior: "smooth", block: "start" });
+		}
+	}, []);
+
 	return (
-		<div className="relative min-h-screen">
+		<div className="relative min-h-screen overflow-hidden">
 			{/* Base layer: Light rays */}
 			<LightRays className="absolute inset-0 z-0" />
 
-			{/* Middle layer: Collision beams */}
-			<BackgroundBeamsWithCollision className="absolute inset-0 z-0 pb-16" />
+			{/* Middle layer: Collision beams with content */}
+			<BackgroundBeamsWithCollision
+				className="relative z-0 flex min-h-screen w-full justify-center pb-16"
+				data-testid="quickstart-background"
+			>
+				{/* Content layer */}
+				<div className="container relative z-10 mx-auto px-4 py-8">
+					<div className="relative mb-8">
+						<div className="mb-6 flex justify-center">
+							<div className="relative inline-flex items-center">
+								<button
+									type="button"
+									onClick={scrollToQuickStartActions}
+									className="group inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.35em] text-primary transition hover:bg-primary/15"
+								>
+									<ArrowDown className="h-3.5 w-3.5 transition group-hover:translate-y-0.5" />
+									Next
+								</button>
+								<Pointer
+									className="text-primary"
+									initial={{ opacity: 0, scale: 0 }}
+									animate={{ opacity: 0.9, scale: 1 }}
+									exit={{ opacity: 0, scale: 0 }}
+									transition={{ type: "spring", stiffness: 150, damping: 18 }}
+								/>
+							</div>
+						</div>
+						<button
+							onClick={() => {
+								if (typeof window !== "undefined") {
+									window.dispatchEvent(new Event("dealScale:helpFab:show"));
+								}
+							}}
+							className="absolute top-0 right-0 flex h-10 w-10 items-center justify-center rounded-full border border-transparent text-muted-foreground transition hover:bg-muted"
+							type="button"
+							aria-label="Open Quick Start help"
+						>
+							<HelpCircle className="h-5 w-5" />
+						</button>
 
-			{/* Content layer */}
-			<div className="container relative z-20 mx-auto px-4 py-8">
-				<div className="relative mb-8 text-center">
-					<h1 className="mb-2 font-bold text-3xl text-foreground">
-						Quick Start
-					</h1>
-					<p className="text-lg text-muted-foreground">
-						Get up and running in minutes. Choose how you'd like to begin.
-					</p>
-					<button
-						onClick={() => {
-							if (typeof window !== "undefined") {
-								window.dispatchEvent(new Event("dealScale:helpFab:show"));
+						<DynamicHeadline />
+						<QuickStartCTA
+							className="mt-6"
+							displayMode="both"
+							orientation="horizontal"
+						/>
+					</div>
+
+					<div className="mt-12" id="quickstart-actions">
+						<QuickStartActionsGrid
+							cards={quickstartCards}
+							onLaunchGoalFlow={handleLaunchQuickStartFlow}
+							onImport={handleSmartImport}
+							onCampaignCreate={handleSmartCampaign}
+							onOpenWebhookModal={handleSmartWebhook}
+							onStartNewSearch={handleStartNewSearch}
+							onBrowserExtension={handleBrowserExtension}
+							createRouterPush={createRouterPush}
+						/>
+					</div>
+					<QuickStartWizard />
+
+					<input
+						ref={fileInputRef}
+						type="file"
+						accept=".csv,text/csv"
+						onChange={handleCsvUpload}
+						className="hidden"
+					/>
+
+					<QuickStartLegacyModals
+						showLeadModal={showLeadModal}
+						leadModalMode={
+							lookalikeLeadModalMode === "select" ? "select" : leadModalMode
+						}
+						onCloseLeadModal={handleCloseLeadModal}
+						onLaunchCampaign={
+							lookalikeLeadModalMode === "select"
+								? handleSeedListSelected
+								: handleLaunchCampaign
+						}
+						showBulkSuiteModal={showBulkSuiteModal}
+						onCloseBulkSuite={handleCloseBulkModal}
+						bulkCsvFile={bulkCsvFile}
+						bulkCsvHeaders={bulkCsvHeaders}
+						onSuiteLaunchComplete={(payload) => {
+							const result = handleSuiteLaunchComplete(payload);
+							handleCloseBulkModal();
+							return result;
+						}}
+						showCampaignModal={showCampaignModal}
+						onCampaignModalToggle={handleCampaignModalToggle}
+						campaignModalContext={campaignModalContext}
+						variantCampaignData={variantCampaignData}
+						isVariantMode={isVariantMode}
+						savedSearchModalOpen={savedSearchModalOpen}
+						onCloseSavedSearches={handleCloseSavedSearches}
+						savedSearches={savedSearches}
+						onDeleteSavedSearch={deleteSavedSearch}
+						onSelectSavedSearch={handleSelectSavedSearch}
+						onSetSearchPriority={setSearchPriority}
+						showWalkthrough={showWalkthrough}
+						onCloseWalkthrough={() => setShowWalkthrough(false)}
+						isTourOpen={isTourOpen}
+						onStartTour={handleStartTour}
+						onCloseTour={handleCloseTour}
+						campaignSteps={campaignSteps}
+						defaultChannel={(() => {
+							if (!lastTemplateId) return undefined;
+							const t = getQuickStartTemplate(lastTemplateId);
+							if (!t) return undefined;
+							return t.primaryChannel === "call" || t.primaryChannel === "text"
+								? t.primaryChannel
+								: undefined;
+						})()}
+						onCampaignLaunched={() => handlePostLaunch()}
+					/>
+
+					<CampaignSelectorModal
+						isOpen={showCampaignSelectorModal}
+						onOpenChange={setShowCampaignSelectorModal}
+						onSelect={handleCampaignSelected}
+					/>
+
+					<LookalikeConfigModal
+						isOpen={showLookalikeConfigModal}
+						onOpenChange={(open) => {
+							console.log(
+								"[Dashboard] Config modal onOpenChange:",
+								open,
+								"seedLeadListData:",
+								seedLeadListData,
+							);
+							setShowLookalikeConfigModal(open);
+							// Reset seed data when closing
+							if (!open) {
+								setSeedLeadListData(null);
 							}
 						}}
-						className="absolute top-0 right-0 flex h-10 w-10 items-center justify-center rounded-full border border-transparent text-muted-foreground transition hover:bg-muted"
-						type="button"
-					>
-						<HelpCircle className="h-5 w-5" />
-					</button>
-				</div>
-
-				<QuickStartActionsGrid
-					cards={quickStartCards}
-					onLaunchGoalFlow={handleLaunchQuickStartFlow}
-					onImport={handleSmartImport}
-					onCampaignCreate={handleSmartCampaign}
-					onOpenWebhookModal={handleSmartWebhook}
-					onStartNewSearch={handleStartNewSearch}
-					onBrowserExtension={handleBrowserExtension}
-					createRouterPush={createRouterPush}
-				/>
-				<QuickStartWizard />
-
-				<input
-					ref={fileInputRef}
-					type="file"
-					accept=".csv,text/csv"
-					onChange={handleCsvUpload}
-					className="hidden"
-				/>
-
-				<QuickStartLegacyModals
-					showLeadModal={showLeadModal}
-					leadModalMode={
-						lookalikeLeadModalMode === "select" ? "select" : leadModalMode
-					}
-					onCloseLeadModal={handleCloseLeadModal}
-					onLaunchCampaign={
-						lookalikeLeadModalMode === "select"
-							? handleSeedListSelected
-							: handleLaunchCampaign
-					}
-					showBulkSuiteModal={showBulkSuiteModal}
-					onCloseBulkSuite={handleCloseBulkModal}
-					bulkCsvFile={bulkCsvFile}
-					bulkCsvHeaders={bulkCsvHeaders}
-					onSuiteLaunchComplete={(payload) => {
-						const result = handleSuiteLaunchComplete(payload);
-						handleCloseBulkModal();
-						return result;
-					}}
-					showCampaignModal={showCampaignModal}
-					onCampaignModalToggle={handleCampaignModalToggle}
-					campaignModalContext={campaignModalContext}
-					variantCampaignData={variantCampaignData}
-					isVariantMode={isVariantMode}
-					savedSearchModalOpen={savedSearchModalOpen}
-					onCloseSavedSearches={handleCloseSavedSearches}
-					savedSearches={savedSearches}
-					onDeleteSavedSearch={deleteSavedSearch}
-					onSelectSavedSearch={handleSelectSavedSearch}
-					onSetSearchPriority={setSearchPriority}
-					showWalkthrough={showWalkthrough}
-					onCloseWalkthrough={() => setShowWalkthrough(false)}
-					isTourOpen={isTourOpen}
-					onStartTour={handleStartTour}
-					onCloseTour={handleCloseTour}
-					campaignSteps={campaignSteps}
-					defaultChannel={(() => {
-						if (!lastTemplateId) return undefined;
-						const t = getQuickStartTemplate(lastTemplateId);
-						if (!t) return undefined;
-						return t.primaryChannel === "call" || t.primaryChannel === "text"
-							? t.primaryChannel
-							: undefined;
-					})()}
-					onCampaignLaunched={() => handlePostLaunch()}
-				/>
-
-				<CampaignSelectorModal
-					isOpen={showCampaignSelectorModal}
-					onOpenChange={setShowCampaignSelectorModal}
-					onSelect={handleCampaignSelected}
-				/>
-
-				<LookalikeConfigModal
-					isOpen={showLookalikeConfigModal}
-					onOpenChange={(open) => {
-						console.log(
-							"[Dashboard] Config modal onOpenChange:",
-							open,
-							"seedLeadListData:",
-							seedLeadListData,
-						);
-						setShowLookalikeConfigModal(open);
-						// Reset seed data when closing
-						if (!open) {
-							setSeedLeadListData(null);
+						seedListId={seedLeadListData?.listId || ""}
+						seedListName={seedLeadListData?.listName || "Seed List"}
+						seedLeadCount={seedLeadListData?.leadCount || 0}
+						userPersona={
+							useQuickStartWizardDataStore.getState().personaId ?? undefined
 						}
-					}}
-					seedListId={seedLeadListData?.listId || ""}
-					seedListName={seedLeadListData?.listName || "Seed List"}
-					seedLeadCount={seedLeadListData?.leadCount || 0}
-					userPersona={useQuickStartWizardDataStore.getState().personaId}
-					userGoal={useQuickStartWizardDataStore.getState().goalId}
-					onGenerate={handleGenerateLookalike}
-					onSaveConfig={handleSaveLookalikeConfig}
-				/>
-
-				<LookalikeResultsModal
-					isOpen={showLookalikeResultsModal}
-					onOpenChange={(open) => {
-						setShowLookalikeResultsModal(open);
-						// Don't clear candidates while modal is open or closing
-						if (!open) {
-							// Only clear after a delay to allow animations
-							setTimeout(() => {
-								if (!showLookalikeResultsModal) {
-									lookalikeStore.currentCandidates = [];
-									setSeedLeadListData(null);
-								}
-							}, 300);
+						userGoal={
+							useQuickStartWizardDataStore.getState().goalId ?? undefined
 						}
-					}}
-					candidates={lookalikeStore.currentCandidates}
-					seedListName={seedLeadListData?.listName || ""}
-					onSaveAsList={handleSaveLookalikeAsList}
-					onExport={handleExportLookalike}
-					existingLookalikeVersions={
-						// Count existing lookalike versions for this seed list
-						leadListStore.leadLists.filter((list) =>
-							list.listName.startsWith(
-								`Lookalike - ${seedLeadListData?.listName}`,
-							),
-						).length
-					}
-				/>
-
-				<AISavedSearchGenerator
-					isOpen={showAISearchGenerator}
-					onOpenChange={setShowAISearchGenerator}
-					onSearchGenerated={handleAISearchGenerated}
-					availableSeedLists={leadListStore.leadLists.map((list) => ({
-						id: list.id,
-						name: list.listName,
-						leadCount: list.records,
-					}))}
-				/>
-
-				<AICampaignGenerator
-					isOpen={showAICampaignGenerator}
-					onOpenChange={(open) => setShowAICampaignGenerator(open)}
-					onCampaignGenerated={handleCampaignGenerated}
-				/>
-
-				<SavedCampaignTemplatesModal
-					open={showSavedCampaignTemplates}
-					onClose={() => setShowSavedCampaignTemplates(false)}
-					templates={useSavedCampaignTemplatesStore.getState().list()}
-					onDelete={(id) => {
-						useSavedCampaignTemplatesStore.getState().deleteTemplate(id);
-						toast.success("Template Deleted");
-					}}
-					onSelect={handleSelectCampaignTemplate}
-					onSetPriority={(id) => {
-						const templates = useSavedCampaignTemplatesStore.getState().list();
-						const template = templates.find((t) => t.id === id);
-						if (template) {
-							useSavedCampaignTemplatesStore.getState().updateTemplate(id, {
-								priority: !template.priority,
-							});
-							toast.success(
-								template.priority
-									? "Removed from favorites"
-									: "Added to favorites",
-							);
-						}
-					}}
-					onToggleMonetization={(id) => {
-						const templates = useSavedCampaignTemplatesStore.getState().list();
-						const template = templates.find((t) => t.id === id);
-						if (template?.monetization) {
-							const newMonetization = {
-								...template.monetization,
-								enabled: !template.monetization.enabled,
-								isPublic: !template.monetization.enabled,
-							};
-							useSavedCampaignTemplatesStore.getState().updateTemplate(id, {
-								monetization: newMonetization,
-							});
-							toast.success(
-								newMonetization.enabled
-									? "Template is now public in marketplace"
-									: "Template removed from marketplace",
-								{
-									description: newMonetization.enabled
-										? `Earning ${template.monetization.priceMultiplier}x per use`
-										: "Template is now private",
-								},
-							);
-						}
-					}}
-				/>
-
-				{/* Workflow Modals */}
-				<AIWorkflowGenerator
-					isOpen={showAIWorkflowGenerator}
-					onClose={() => setShowAIWorkflowGenerator(false)}
-					onGenerate={async (data) => {
-						console.log("[Workflow] Generating workflow:", data);
-						// Pass the workflow data to the export modal
-						handleWorkflowGenerated(data);
-					}}
-				/>
-
-				{generatedWorkflow && (
-					<WorkflowExportModal
-						isOpen={showWorkflowExportModal}
-						onClose={() => {
-							setShowWorkflowExportModal(false);
-							setGeneratedWorkflow(null);
-						}}
-						generatedWorkflow={generatedWorkflow}
-						onExported={handleWorkflowExported}
-						onRegenerate={handleWorkflowRegenerate}
+						onGenerate={handleGenerateLookalike}
+						onSaveConfig={handleSaveLookalikeConfig}
 					/>
-				)}
 
-				<SavedWorkflowsModal
-					open={showSavedWorkflows}
-					onClose={() => setShowSavedWorkflows(false)}
-					workflows={useSavedWorkflowsStore.getState().list()}
-					onDelete={(id) => {
-						useSavedWorkflowsStore.getState().deleteWorkflow(id);
-						toast.success("Workflow Deleted");
-					}}
-					onSelect={(workflow) => {
-						console.log("[Workflow] Selected workflow:", workflow);
-						toast.info("Workflow Selected", {
-							description: `Using ${workflow.name} workflow`,
-						});
-						setShowSavedWorkflows(false);
-					}}
-					onSetPriority={(id) => {
-						console.log("[Workflow] Toggle priority for:", id);
-						toast.success("Priority toggled");
-					}}
-					onToggleMonetization={(id) => {
-						const workflows = useSavedWorkflowsStore.getState().list();
-						const workflow = workflows.find((w) => w.id === id);
-						if (workflow?.monetization) {
-							useSavedWorkflowsStore.getState().toggleMonetization(id);
-							const newEnabled = !workflow.monetization.enabled;
-							toast.success(
-								newEnabled
-									? "Workflow is now public in marketplace"
-									: "Workflow removed from marketplace",
-								{
-									description: newEnabled
-										? `Earning ${workflow.monetization.priceMultiplier}x per use`
-										: "Workflow is now private",
-								},
-							);
+					<LookalikeResultsModal
+						isOpen={showLookalikeResultsModal}
+						onOpenChange={(open) => {
+							setShowLookalikeResultsModal(open);
+							// Don't clear candidates while modal is open or closing
+							if (!open) {
+								// Only clear after a delay to allow animations
+								setTimeout(() => {
+									if (!showLookalikeResultsModal) {
+										lookalikeStore.currentCandidates = [];
+										setSeedLeadListData(null);
+									}
+								}, 300);
+							}
+						}}
+						candidates={lookalikeStore.currentCandidates}
+						seedListName={seedLeadListData?.listName || ""}
+						onSaveAsList={handleSaveLookalikeAsList}
+						onExport={handleExportLookalike}
+						existingLookalikeVersions={
+							// Count existing lookalike versions for this seed list
+							leadListStore.leadLists.filter((list) =>
+								list.listName.startsWith(
+									`Lookalike - ${seedLeadListData?.listName}`,
+								),
+							).length
 						}
-					}}
-					onReExport={(id, platform) => {
-						console.log(
-							"[Workflow] Re-exporting workflow:",
-							id,
-							"to",
-							platform,
-						);
-						toast.success(`Re-exporting to ${platform}`, {
-							description: "Workflow will be updated on the platform",
-						});
-					}}
-				/>
+					/>
 
-				<QuickStartSupportCard />
-			</div>
+					<AISavedSearchGenerator
+						isOpen={showAISearchGenerator}
+						onOpenChange={setShowAISearchGenerator}
+						onSearchGenerated={handleAISearchGenerated}
+						availableSeedLists={leadListStore.leadLists.map((list) => ({
+							id: list.id,
+							name: list.listName,
+							leadCount: list.records,
+						}))}
+					/>
+
+					<AICampaignGenerator
+						isOpen={showAICampaignGenerator}
+						onOpenChange={(open) => setShowAICampaignGenerator(open)}
+						onCampaignGenerated={handleCampaignGenerated}
+					/>
+
+					<SavedCampaignTemplatesModal
+						open={showSavedCampaignTemplates}
+						onClose={() => setShowSavedCampaignTemplates(false)}
+						templates={useSavedCampaignTemplatesStore.getState().list()}
+						onDelete={(id) => {
+							useSavedCampaignTemplatesStore.getState().deleteTemplate(id);
+							toast.success("Template Deleted");
+						}}
+						onSelect={handleSelectCampaignTemplate}
+						onSetPriority={(id) => {
+							const templates = useSavedCampaignTemplatesStore
+								.getState()
+								.list();
+							const template = templates.find((t) => t.id === id);
+							if (template) {
+								useSavedCampaignTemplatesStore.getState().updateTemplate(id, {
+									priority: !template.priority,
+								});
+								toast.success(
+									template.priority
+										? "Removed from favorites"
+										: "Added to favorites",
+								);
+							}
+						}}
+						onToggleMonetization={(id) => {
+							const templates = useSavedCampaignTemplatesStore
+								.getState()
+								.list();
+							const template = templates.find((t) => t.id === id);
+							if (template?.monetization) {
+								const newMonetization = {
+									...template.monetization,
+									enabled: !template.monetization.enabled,
+									isPublic: !template.monetization.enabled,
+								};
+								useSavedCampaignTemplatesStore.getState().updateTemplate(id, {
+									monetization: newMonetization,
+								});
+								toast.success(
+									newMonetization.enabled
+										? "Template is now public in marketplace"
+										: "Template removed from marketplace",
+									{
+										description: newMonetization.enabled
+											? `Earning ${template.monetization.priceMultiplier}x per use`
+											: "Template is now private",
+									},
+								);
+							}
+						}}
+					/>
+
+					{/* Workflow Modals */}
+					<AIWorkflowGenerator
+						isOpen={showAIWorkflowGenerator}
+						onClose={() => setShowAIWorkflowGenerator(false)}
+						onGenerate={async (data) => {
+							console.log("[Workflow] Generating workflow:", data);
+							// Pass the workflow data to the export modal
+							handleWorkflowGenerated(data);
+						}}
+					/>
+
+					{generatedWorkflow && (
+						<WorkflowExportModal
+							isOpen={showWorkflowExportModal}
+							onClose={() => {
+								setShowWorkflowExportModal(false);
+								setGeneratedWorkflow(null);
+							}}
+							generatedWorkflow={generatedWorkflow}
+							onExported={handleWorkflowExported}
+							onRegenerate={handleWorkflowRegenerate}
+						/>
+					)}
+
+					<SavedWorkflowsModal
+						open={showSavedWorkflows}
+						onClose={() => setShowSavedWorkflows(false)}
+						workflows={useSavedWorkflowsStore.getState().list()}
+						onDelete={(id) => {
+							useSavedWorkflowsStore.getState().deleteWorkflow(id);
+							toast.success("Workflow Deleted");
+						}}
+						onSelect={(workflow) => {
+							console.log("[Workflow] Selected workflow:", workflow);
+							toast.info("Workflow Selected", {
+								description: `Using ${workflow.name} workflow`,
+							});
+							setShowSavedWorkflows(false);
+						}}
+						onSetPriority={(id) => {
+							console.log("[Workflow] Toggle priority for:", id);
+							toast.success("Priority toggled");
+						}}
+						onToggleMonetization={(id) => {
+							const workflows = useSavedWorkflowsStore.getState().list();
+							const workflow = workflows.find((w) => w.id === id);
+							if (workflow?.monetization) {
+								useSavedWorkflowsStore.getState().toggleMonetization(id);
+								const newEnabled = !workflow.monetization.enabled;
+								toast.success(
+									newEnabled
+										? "Workflow is now public in marketplace"
+										: "Workflow removed from marketplace",
+									{
+										description: newEnabled
+											? `Earning ${workflow.monetization.priceMultiplier}x per use`
+											: "Workflow is now private",
+									},
+								);
+							}
+						}}
+						onReExport={(id, platform) => {
+							console.log(
+								"[Workflow] Re-exporting workflow:",
+								id,
+								"to",
+								platform,
+							);
+							toast.success(`Re-exporting to ${platform}`, {
+								description: "Workflow will be updated on the platform",
+							});
+						}}
+					/>
+
+					<QuickStartSupportCard />
+				</div>
+			</BackgroundBeamsWithCollision>
 		</div>
 	);
 }

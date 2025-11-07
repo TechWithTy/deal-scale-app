@@ -51,6 +51,12 @@ const aIKnowledgebase: AIKnowledgebase = {
 	salesScript: "../../staticFiles/voiceCloneScript.txt", // Static or faker.lorem.sentence()
 	assignedAssistantID: faker.helpers.arrayElement(["ai", "female", "male"]), // Randomly chosen from the array
 	assignedSquadID: faker.string.uuid(), // Random UUID for the assigned squad
+	preferredProvider: faker.helpers.arrayElement([
+		"openai",
+		"claude",
+		"gemini",
+		"dealscale",
+	]),
 
 	recordings: {
 		customVoiceID: faker.string.uuid(),

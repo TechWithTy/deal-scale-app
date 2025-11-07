@@ -698,6 +698,31 @@ video {
 		height: 100vh; /* Fallback */
 		height: 100dvh;
 	}
+
+	@keyframes quickstart-meteor {
+		0% {
+			opacity: 0;
+			transform: rotate(var(--meteor-angle, 225deg)) translateX(0);
+		}
+		10% {
+			opacity: 0.85;
+		}
+		70% {
+			opacity: 0.75;
+		}
+		100% {
+			opacity: 0;
+			transform: rotate(var(--meteor-angle, 225deg))
+				translateX(var(--meteor-distance, -640px));
+		}
+	}
+
+	.animate-meteor {
+		animation-name: quickstart-meteor;
+		animation-timing-function: linear;
+		animation-iteration-count: infinite;
+		will-change: transform, opacity;
+	}
 }
 
 /* Custom animations for voice input */

@@ -11,6 +11,7 @@ import { VerticalStickyBanner } from "@/components/ui/vertical-sticky-banner";
 import { CreditsSummary } from "external/credit-view-purchase/components/CreditsSummary";
 import { CrudToggle } from "external/crud-toggle/components/CrudToggle";
 import type { CrudFlags } from "external/crud-toggle/utils/types";
+import SidebarHelpActions from "@/components/layout/SidebarHelpActions";
 import Image from "next/image";
 import Link from "next/link";
 import React, {
@@ -184,6 +185,14 @@ export default function SidebarClient({ user }: { user: UserProfile | null }) {
 									</div>
 								)}
 							</Link>
+						</div>
+
+						<div
+							className="px-3 py-2"
+							onClick={(event) => event.stopPropagation()}
+							onKeyDown={(event) => event.stopPropagation()}
+						>
+							<SidebarHelpActions isCollapsed={isSidebarMinimized} />
 						</div>
 
 						<div className="overflow-visible px-3 py-2">

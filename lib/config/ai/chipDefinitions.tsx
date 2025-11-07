@@ -4,6 +4,7 @@
  * Used across all AI generators (Campaign, Workflow, Search)
  */
 
+import React from "react";
 import type { ChipDefinition } from "@/components/reusables/ai/InlineChipEditor";
 import {
 	Target,
