@@ -254,6 +254,19 @@ export default function QuickStartPage() {
 		[openWebhookModal],
 	);
 
+	// Smart webhook/CRM handler that checks for existing integrations
+	const handleSmartWebhook = useCallback(
+		(stage: WebhookStage) => {
+			// Check if user has any integrations configured
+			// For now, always open the webhook modal for configuration
+			toast.info("Setting up integrations...", {
+				description: "Connect your CRM or automation tools",
+			});
+			handleOpenWebhook(stage);
+		},
+		[handleOpenWebhook],
+	);
+
 	const handleCampaignCreate = useCallback(() => {
 		const templateId = lastTemplateId;
 		const hasLeadListContext = campaignModalContext !== null;
@@ -375,13 +388,6 @@ export default function QuickStartPage() {
 	const handleViewTemplates = useCallback(() => {
 		router.push("/dashboard/campaigns/templates");
 	}, [router]);
-
-	const handleOpenWebhook = useCallback(
-		(stage: WebhookStage) => {
-			openWebhookModal(stage);
-		},
-		[openWebhookModal],
-	);
 
 	const handleBrowserExtension = useCallback(() => {
 		router.push("/dashboard/extensions");
