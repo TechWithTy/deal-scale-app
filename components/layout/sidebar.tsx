@@ -169,6 +169,8 @@ export default function SidebarClient({ user }: { user: UserProfile | null }) {
 										fill="none"
 										stroke="currentColor"
 										viewBox="0 0 24 24"
+										aria-hidden="true"
+										focusable="false"
 									>
 										<path
 											strokeLinecap="round"

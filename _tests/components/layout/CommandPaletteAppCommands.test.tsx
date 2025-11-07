@@ -213,10 +213,7 @@ type CommandTreeItem = {
 	[key: string]: unknown;
 };
 
-const findCommandById = (
-	items: Array<CommandTreeItem> = [],
-	id: string,
-) => {
+const findCommandById = (items: Array<CommandTreeItem> = [], id: string) => {
 	for (const item of items) {
 		if (item.id === id) return item;
 		if (item.children) {

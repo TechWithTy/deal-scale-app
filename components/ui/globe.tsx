@@ -39,12 +39,15 @@ const GLOBE_CONFIG: COBEOptions = {
 export function Globe({
 	className,
 	config = GLOBE_CONFIG,
+	style,
 }: {
 	className?: string;
 	config?: COBEOptions;
+	style?: React.CSSProperties;
 }) {
 	let phi = 0;
 	let width = 0;
+	let pixelRatio = 2;
 	const canvasRef = useRef<HTMLCanvasElement>(null);
 	const pointerInteracting = useRef<number | null>(null);
 	const pointerInteractionMovement = useRef(0);
@@ -55,6 +58,11 @@ export function Globe({
 		damping: 30,
 		stiffness: 100,
 	});
+
+	const baseMarkersRef = useRef(
+		(config.markers ?? []).map((marker) => ({ ...marker })),
+	);
+	const animationStartRef = useRef<number>(Date.now());
 
 	const updatePointerInteraction = (value: number | null) => {
 		pointerInteracting.current = value;
@@ -72,40 +80,61 @@ export function Globe({
 	};
 
 	useEffect(() => {
-		const onResize = () => {
-			if (canvasRef.current) {
-				width = canvasRef.current.offsetWidth;
-			}
+		const resolveDimensions = () => {
+			if (!canvasRef.current) return;
+			const elementWidth = canvasRef.current.offsetWidth;
+			pixelRatio = Math.min(
+				window.devicePixelRatio ?? 1,
+				config.devicePixelRatio ?? 2.5,
+			);
+			width = Math.max(elementWidth * pixelRatio, 320);
+			canvasRef.current.width = width;
+			canvasRef.current.height = width;
 		};
 
-		window.addEventListener("resize", onResize);
-		onResize();
+		window.addEventListener("resize", resolveDimensions);
+		resolveDimensions();
 
 		const globe = createGlobe(canvasRef.current!, {
 			...config,
-			width: width * 2,
-			height: width * 2,
+			devicePixelRatio: pixelRatio,
+			width,
+			height: width,
 			onRender: (state) => {
 				if (!pointerInteracting.current) phi += 0.005;
 				state.phi = phi + rs.get();
-				state.width = width * 2;
-				state.height = width * 2;
+				state.width = width;
+				state.height = width;
+				const elapsedSeconds = (Date.now() - animationStartRef.current) / 1000;
+				state.markers = baseMarkersRef.current.map((marker, index) => {
+					const wave =
+						Math.sin(elapsedSeconds * (0.7 + index * 0.18)) * 0.5 + 0.5;
+					const twinkle =
+						Math.sin(elapsedSeconds * (1 + index * 0.12) + index) * 0.5 + 0.5;
+					const intensity = wave * twinkle;
+					const visibility = intensity > 0.15 ? intensity : 0;
+					return {
+						...marker,
+						size: marker.size * (0.5 + visibility * 1.3),
+					};
+				});
 			},
 		});
 
 		setTimeout(() => (canvasRef.current!.style.opacity = "1"), 0);
 		return () => {
 			globe.destroy();
-			window.removeEventListener("resize", onResize);
+			window.removeEventListener("resize", resolveDimensions);
 		};
 	}, [rs, config]);
 
 	return (
 		<div
 			className={cn(
-				"absolute inset-0 mx-auto aspect-[1/1] w-full max-w-[600px]",
+				"absolute inset-0 mx-auto aspect-square w-full max-w-[600px]",
 				className,
 			)}
+			style={style}
 		>
 			<canvas
 				className={cn(

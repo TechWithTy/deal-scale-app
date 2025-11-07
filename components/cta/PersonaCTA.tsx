@@ -60,8 +60,8 @@ const PersonaCTA: FC<PersonaCTAProps> = ({
 		displayMode !== "primary" && secondary !== undefined;
 	const isHorizontal = orientation === "horizontal";
 	const stackClasses = isHorizontal
-		? "flex-col md:flex-row md:items-center md:justify-center"
-		: "flex-col";
+		? "grid w-full max-w-3xl items-stretch justify-center gap-4 md:[grid-template-columns:repeat(auto-fit,minmax(260px,1fr))] md:gap-6"
+		: "flex w-full max-w-3xl flex-col items-stretch justify-center gap-4";
 	const contentAlignment = isHorizontal
 		? "items-start text-left md:items-center md:text-center"
 		: "items-center text-center";
@@ -115,14 +115,14 @@ const PersonaCTA: FC<PersonaCTAProps> = ({
 
 	return (
 		<div className={cn("flex flex-col items-center gap-6", className)}>
-			<div
-				className={cn(
-					"flex w-full max-w-3xl items-stretch justify-center gap-4",
-					stackClasses,
-				)}
-			>
+			<div className={cn(isHorizontal ? "w-full" : "", stackClasses)}>
 				{shouldRenderPrimary && (
-					<div className="relative flex-1 min-w-[240px]">
+					<div
+						className={cn(
+							"relative w-full",
+							isHorizontal ? "md:min-w-[260px]" : "min-w-[240px]",
+						)}
+					>
 						<Button
 							variant={buttonVariantForEmphasis(primary.emphasis)}
 							onClick={onPrimaryClick}
@@ -155,7 +155,12 @@ const PersonaCTA: FC<PersonaCTAProps> = ({
 					</div>
 				)}
 				{shouldRenderSecondary && secondaryCopy && (
-					<div className="relative flex-1 min-w-[240px]">
+					<div
+						className={cn(
+							"relative w-full",
+							isHorizontal ? "md:min-w-[260px]" : "min-w-[240px]",
+						)}
+					>
 						<Button
 							variant={buttonVariantForEmphasis(secondaryCopy.emphasis)}
 							onClick={onSecondaryClick}

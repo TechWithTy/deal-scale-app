@@ -342,15 +342,28 @@ const DynamicHeadline = ({ personaId }: DynamicHeadlineProps) => {
 
 	return (
 		<div className="relative mx-auto flex max-w-3xl flex-col items-center gap-6 text-center">
-			<div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-				<Globe className="max-w-[520px] opacity-30 saturate-[1.2]" />
+			<div className="pointer-events-none absolute inset-0 flex items-center justify-center overflow-hidden">
+				<Globe
+					className={cn(
+						"opacity-30 saturate-[1.2]",
+						"w-[200vw] max-w-none translate-y-28 -translate-x-[18%]",
+						"sm:w-[160vw] sm:translate-y-20 sm:-translate-x-[12%]",
+						"md:w-[130vw] md:translate-y-12 md:-translate-x-[10%]",
+						"lg:w-[105vw] lg:translate-y-6 lg:-translate-x-[6%]",
+						"xl:w-[95vw] xl:translate-y-2 xl:-translate-x-[4%]",
+					)}
+					style={{
+						maskImage:
+							"radial-gradient(circle at 50% 45%, rgba(0,0,0,1) 45%, rgba(0,0,0,0) 75%)",
+					}}
+				/>
 				<ProgressiveBlur
 					position="bottom"
-					height="45%"
+					height="55%"
 					blurLevels={[0.5, 1, 2, 6, 12, 18, 24, 32]}
-					className="hidden md:block"
+					className="pointer-events-none hidden md:block"
 				/>
-				<div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-b from-transparent via-background/80 to-background" />
+				<div className="absolute inset-x-0 bottom-0 h-36 bg-gradient-to-b from-transparent via-background/85 to-background" />
 			</div>
 
 			<div className="relative z-10 flex w-full flex-col items-center gap-6 text-center">
