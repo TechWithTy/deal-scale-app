@@ -243,6 +243,10 @@ export default function FloatingMusicWidget(): React.ReactNode {
 		console.debug("[FocusWidget] media permission event", event);
 	}, []);
 
+	const handleBrowserAccess = useCallback(() => {
+		console.debug("[FocusWidget] browser assistance requested");
+	}, []);
+
 	const handleResize = (
 		_event: unknown,
 		_direction: unknown,
@@ -405,6 +409,7 @@ export default function FloatingMusicWidget(): React.ReactNode {
 								onAgentSelect={handleAgentSelect}
 								voiceLottieRef={voiceLottieRef}
 								onMediaEvent={handleMediaEvent}
+								onRequestBrowserAccess={handleBrowserAccess}
 							/>
 						)}
 					</div>
