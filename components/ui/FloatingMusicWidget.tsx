@@ -13,7 +13,10 @@ import React, {
 import { createPortal } from "react-dom";
 import { Rnd } from "react-rnd";
 
-import { VoiceModePanel } from "@/components/ui/floating-music-widget/VoiceModePanel";
+import {
+	VoiceModePanel,
+	type VoiceMediaEvent,
+} from "@/components/ui/floating-music-widget/VoiceModePanel";
 import {
 	MAX_WIDGET_HEIGHTS,
 	MIN_WIDGET_HEIGHTS,
@@ -236,6 +239,10 @@ export default function FloatingMusicWidget(): React.ReactNode {
 		console.debug("[FocusWidget] Voice agent selected", agentId);
 	}, []);
 
+	const handleMediaEvent = useCallback((event: VoiceMediaEvent) => {
+		console.debug("[FocusWidget] media permission event", event);
+	}, []);
+
 	const handleResize = (
 		_event: unknown,
 		_direction: unknown,
@@ -397,6 +404,7 @@ export default function FloatingMusicWidget(): React.ReactNode {
 								onToggleAnimation={toggleVoiceAnimation}
 								onAgentSelect={handleAgentSelect}
 								voiceLottieRef={voiceLottieRef}
+								onMediaEvent={handleMediaEvent}
 							/>
 						)}
 					</div>

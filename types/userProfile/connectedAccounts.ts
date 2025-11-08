@@ -79,3 +79,23 @@ export interface TwilioOAuthData extends OAuthData {
 	accountSid: string; // Twilio account SID
 	authToken?: string; // Twilio auth token (masked)
 }
+
+export interface AppleHealthOAuthData extends OAuthData {
+	lastSyncAt?: string; // Timestamp of the last successful sync
+	deviceCount?: number; // Number of paired devices contributing data
+}
+
+export interface DaylioOAuthData extends OAuthData {
+	lastEntryAt?: string; // Timestamp of the last journal entry ingested
+	totalEntries?: number; // Total entries imported for analytics
+}
+
+export interface MakeOAuthData extends OAuthData {
+	scenarioId?: string; // Scenario identifier inside Make
+	organizationId?: string; // Make organization identifier
+}
+
+export interface HabiticaOAuthData extends OAuthData {
+	userId?: string; // Habitica user ID
+	guildIds?: string[]; // Associated guild identifiers
+}

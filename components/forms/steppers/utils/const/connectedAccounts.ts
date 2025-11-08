@@ -1,12 +1,16 @@
 import type { UserProfile } from "@/types/userProfile";
 import type {
+	AppleHealthOAuthData,
+	DaylioOAuthData,
 	DiscordOAuthData,
 	FacebookOAuthData,
 	GoHighLevelOAuthData,
 	InstagramOAuthData,
 	KestraOAuthData,
+	HabiticaOAuthData,
 	LinkedInOAuthData,
 	LoftyCRMOAuthData,
+	MakeOAuthData,
 	N8nOAuthData,
 	SpotifyOAuthData,
 	TwilioOAuthData,
@@ -32,6 +36,10 @@ export interface InitialOauthSetupData {
 		kestra?: KestraOAuthData | null;
 		spotify?: SpotifyOAuthData | null;
 		twilio?: TwilioOAuthData | null;
+		appleHealth?: AppleHealthOAuthData | null;
+		daylio?: DaylioOAuthData | null;
+		make?: MakeOAuthData | null;
+		habitica?: HabiticaOAuthData | null;
 	};
 	socialMediaTags: string[]; // Social media tags associated with the company's campaigns
 	aiProvider?: {
@@ -58,6 +66,10 @@ export const extractOAuthDataFromUserProfile = (
 			kestra: profile?.connectedAccounts?.kestra || null,
 			spotify: profile?.connectedAccounts?.spotify || null,
 			twilio: profile?.connectedAccounts?.twilio || null,
+			appleHealth: profile?.connectedAccounts?.appleHealth || null,
+			daylio: profile?.connectedAccounts?.daylio || null,
+			make: profile?.connectedAccounts?.make || null,
+			habitica: profile?.connectedAccounts?.habitica || null,
 		},
 		socialMediaTags: profile?.companyInfo?.socialMediaTags || [],
 		aiProvider: profile?.meta?.aiProvider as any,

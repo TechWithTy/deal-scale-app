@@ -17,23 +17,23 @@ import {
 	PopoverContent,
 	PopoverTrigger,
 } from "@/components/ui/popover";
+import type { VoicePaletteOption } from "@/types/focus";
 
-export interface TrackAgentOption {
-	id: string;
-	name: string;
-	category: string;
-	types: string[];
-}
+type TrackPaletteTriggerVariant = "default" | "icon";
 
 interface TrackCommandPaletteProps {
 	triggerLabel?: string;
+	triggerVariant?: TrackPaletteTriggerVariant;
+	triggerIcon?: React.ReactNode;
 	placeholder?: string;
-	options: TrackAgentOption[];
-	onSelect?: (agent: TrackAgentOption) => void;
+	options: VoicePaletteOption[];
+	onSelect?: (agent: VoicePaletteOption) => void;
 }
 
 export function TrackCommandPalette({
 	triggerLabel = "Assign agent",
+	triggerVariant = "default",
+	triggerIcon,
 	placeholder = "Search by name or tag…",
 	options,
 	onSelect,
@@ -68,7 +68,8 @@ export function TrackCommandPalette({
 			const value = search.toLowerCase();
 			return (
 				option.name.toLowerCase().includes(value) ||
-				option.types.some((type) => type.toLowerCase().includes(value))
+				option.types.some((type) => type.toLowerCase().includes(value)) ||
+				option.description?.toLowerCase().includes(value)
 			);
 		});
 	}, [activeCategory, activeType, options, search]);
@@ -76,21 +77,34 @@ export function TrackCommandPalette({
 	return (
 		<Popover open={open} onOpenChange={setOpen}>
 			<PopoverTrigger asChild>
-				<Button
-					type="button"
-					variant="outline"
-					className="flex h-9 min-w-[200px] items-center justify-between gap-2 rounded-full border-primary/40 bg-background px-3 font-semibold text-primary text-xs shadow-sm hover:border-primary/60"
-					aria-expanded={open}
-				>
-					<span>{triggerLabel}</span>
-					<Badge
-						suppressHydrationWarning
+				{triggerVariant === "icon" ? (
+					<Button
+						type="button"
+						size="icon"
 						variant="outline"
-						className="rounded-full border-primary/20 bg-primary/10 px-2 py-0 font-medium text-[10px] text-primary uppercase tracking-wide"
+						className="h-10 w-10 rounded-full border-primary/40 bg-primary/10 text-primary shadow-md transition hover:border-primary/60 hover:bg-primary/20"
+						aria-expanded={open}
+						aria-label={triggerLabel}
 					>
-						⌘⇧S
-					</Badge>
-				</Button>
+						{triggerIcon ?? <span className="text-lg">⌘</span>}
+					</Button>
+				) : (
+					<Button
+						type="button"
+						variant="outline"
+						className="flex h-9 min-w-[200px] items-center justify-between gap-2 rounded-full border-primary/40 bg-background px-3 font-semibold text-primary text-xs shadow-sm hover:border-primary/60"
+						aria-expanded={open}
+					>
+						<span>{triggerLabel}</span>
+						<Badge
+							suppressHydrationWarning
+							variant="outline"
+							className="rounded-full border-primary/20 bg-primary/10 px-2 py-0 font-medium text-[10px] text-primary uppercase tracking-wide"
+						>
+							⌘⇧S
+						</Badge>
+					</Button>
+				)}
 			</PopoverTrigger>
 			<PopoverContent
 				className="z-[1400] w-[320px] rounded-2xl border border-primary/20 bg-background/95 p-0 shadow-2xl backdrop-blur"
@@ -168,13 +182,26 @@ export function TrackCommandPalette({
 									}}
 									className="flex items-start justify-between gap-2 rounded-xl px-3 py-2 text-xs"
 								>
-									<span className="flex flex-col text-left">
-										<span className="font-medium text-primary">
-											{option.name}
+									<span className="flex flex-col text-left gap-1">
+										<span className="flex items-center gap-1 text-primary">
+											<span className="font-medium">{option.name}</span>
+											{option.badge ? (
+												<Badge
+													variant="outline"
+													className="border-primary/20 bg-primary/10 text-[9px] uppercase tracking-wide"
+												>
+													{option.badge}
+												</Badge>
+											) : null}
 										</span>
 										<span className="text-[11px] text-muted-foreground">
 											{option.category}
 										</span>
+										{option.description ? (
+											<span className="text-[11px] text-muted-foreground/80">
+												{option.description}
+											</span>
+										) : null}
 									</span>
 									<span className="flex flex-wrap gap-1">
 										{option.types.map((type) => (

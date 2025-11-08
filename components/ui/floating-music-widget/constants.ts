@@ -1,4 +1,4 @@
-import type { TrackAgentOption } from "@/components/ui/track-command-palette";
+import type { VoicePaletteOption } from "@/types/focus";
 import type { MusicWidgetPosition } from "@/lib/stores/musicPreferences";
 
 export const WIDGET_WIDTH = 300;
@@ -27,24 +27,57 @@ export const VOICE_PROMPTS = [
 	"Preparing briefing for next outreach sprint.",
 ] as const;
 
-export const VOICE_AGENT_OPTIONS: TrackAgentOption[] = [
+export const VOICE_SESSION_OPTIONS: VoicePaletteOption[] = [
+	{
+		id: "session-25-5",
+		name: "Deep Focus 25/5",
+		category: "Sessions",
+		types: ["session", "pomodoro", "music"],
+		description:
+			"Structured 25 minute focus blocks followed by 5 minute resets.",
+	},
+	{
+		id: "session-50",
+		name: "Strategy Sprint 50",
+		category: "Sessions",
+		types: ["session", "analysis"],
+		description:
+			"Long-form planning loop for deep work, competitive research, or storyboarding.",
+	},
+	{
+		id: "session-open-collab",
+		name: "Open Collaboration",
+		category: "Sessions",
+		types: ["session", "meet"],
+		description:
+			"Drop-in collaborative flow designed for live coaching or pair sessions.",
+	},
+] as const;
+
+export const VOICE_AGENT_OPTIONS: VoicePaletteOption[] = [
 	{
 		id: "ai-clone",
 		name: "DealScale AI Clone",
 		category: "AI Voices",
 		types: ["clone", "warm-up"],
+		description:
+			"Mirrors your tone to draft scripts, outreach, and agent-ready transcriptions.",
 	},
 	{
 		id: "focus-director",
 		name: "Focus Flow Director",
 		category: "Coaching",
 		types: ["coaching", "analytics"],
+		description:
+			"Guides focus cadence, shares prompts, and tracks progress across sessions.",
 	},
 	{
 		id: "outreach-mentor",
 		name: "Outreach Mentor",
 		category: "Assistants",
 		types: ["voicemail", "scripting"],
+		description:
+			"Generates adaptive call scripts, objection handling, and follow-up prompts.",
 	},
 ] as const;
 
