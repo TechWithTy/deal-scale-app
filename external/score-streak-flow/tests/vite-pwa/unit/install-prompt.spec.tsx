@@ -1,21 +1,11 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-vi.mock("@root/hooks/useInstallPrompt", async () => {
-	const actual = await vi.importActual<Record<string, unknown>>(
-		"@root/hooks/useInstallPrompt",
-	);
+const mockUseInstallPrompt = vi.fn();
 
-	return {
-		...actual,
-		useInstallPrompt: vi.fn(),
-	};
-});
-
-const mockUseInstallPrompt = vi.mocked(
-	// eslint-disable-next-line import/namespace
-	(await import("@root/hooks/useInstallPrompt")).useInstallPrompt,
-);
+vi.mock("@root/hooks/useInstallPrompt", () => ({
+	useInstallPrompt: mockUseInstallPrompt,
+}));
 
 describe("InstallPrompt", () => {
 	beforeEach(() => {

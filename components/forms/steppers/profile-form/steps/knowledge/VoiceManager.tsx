@@ -132,6 +132,25 @@ export const VoiceManager: React.FC = () => {
 			voiceUsage: "call",
 		});
 
+	const handlePreferencesChange = (prefs: VoiceCreationPreferences) => {
+		setCreationPreferences(prefs);
+
+		// When no voice is selected (e.g., creating new defaults), keep the form data in sync
+		if (!selectedVoice) {
+			setFormData((prev) => ({
+				...prev,
+				knowledgeBaseEnabled: prefs.knowledgeBaseEnabled,
+				aiTrainingEnabled: prefs.aiTrainingEnabled,
+				monetizationEnabled: prefs.monetizationEnabled,
+				priceMultiplier: prefs.priceMultiplier,
+				acceptedTerms: prefs.monetizationEnabled ? prefs.acceptedTerms : false,
+				useForCalls: prefs.voiceUsage === "call" || prefs.voiceUsage === "dual",
+				useForVoicemail:
+					prefs.voiceUsage === "voicemail" || prefs.voiceUsage === "dual",
+			}));
+		}
+	};
+
 	const handleAddTag = () => {
 		const input = tagInput.trim();
 		if (!input) return;
@@ -418,7 +437,7 @@ export const VoiceManager: React.FC = () => {
 				</div>
 				<VoicePreferencesForm
 					preferences={creationPreferences}
-					onChange={setCreationPreferences}
+					onChange={handlePreferencesChange}
 					showUsageSelector
 				/>
 			</div>
@@ -826,21 +845,21 @@ export const VoiceManager: React.FC = () => {
 				onClose={() => setShowRecordModal(false)}
 				onSave={handleVoiceRecorded}
 				preferences={creationPreferences}
-				onPreferencesChange={setCreationPreferences}
+				onPreferencesChange={handlePreferencesChange}
 			/>
 			<CloneModal
 				open={showCloneModal}
 				onClose={() => setShowCloneModal(false)}
 				onSave={handleVoiceCloned}
 				preferences={creationPreferences}
-				onPreferencesChange={setCreationPreferences}
+				onPreferencesChange={handlePreferencesChange}
 			/>
 			<CreateVoiceModal
 				open={showCreateModal}
 				onClose={() => setShowCreateModal(false)}
 				onSave={handleVoiceCreated}
 				preferences={creationPreferences}
-				onPreferencesChange={setCreationPreferences}
+				onPreferencesChange={handlePreferencesChange}
 			/>
 		</div>
 	);

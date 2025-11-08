@@ -1648,6 +1648,7 @@ export default function QuickStartPage() {
 							displayMode="both"
 							orientation="horizontal"
 						/>
+						<QuickStartHeroVideo className="mt-10" />
 					</div>
 
 					<div className="mt-12" id="quickstart-actions">

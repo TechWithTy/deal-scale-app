@@ -30,6 +30,17 @@ import type {
 	LinkedInOAuthData,
 	OAuthData,
 	TwitterOAuthData,
+	GoHighLevelOAuthData,
+	LoftyCRMOAuthData,
+	N8nOAuthData,
+	DiscordOAuthData,
+	KestraOAuthData,
+	SpotifyOAuthData,
+	TwilioOAuthData,
+	AppleHealthOAuthData,
+	DaylioOAuthData,
+	MakeOAuthData,
+	HabiticaOAuthData,
 } from "./connectedAccounts";
 
 type HexColor = `#${string}`;
@@ -242,9 +253,23 @@ export interface CompanyInfo {
 export interface AIKnowledgebase {
 	emailTemplate?: string; // Optional email field
 	salesScript?: string; // Optional sales script field
+	description?: string;
 	assignedAssistantID: string; // e.g., 'female', 'male', 'ai'
 	assignedSquadID: string; // UUID for the assigned squad
 	preferredProvider?: "openai" | "claude" | "gemini" | "dealscale";
+	approvalLevel?: "manual" | "auto" | "turbo";
+	mcpAllowList?: {
+		tools?: string[];
+		words?: string[];
+		phrases?: string[];
+		regexes?: string[];
+	};
+	mcpDenyList?: {
+		tools?: string[];
+		words?: string[];
+		phrases?: string[];
+		regexes?: string[];
+	};
 	recordings: {
 		customVoiceID: string;
 		voiceClone?: {
@@ -305,6 +330,17 @@ export interface UserProfile {
 		instagram?: InstagramOAuthData;
 		linkedIn?: LinkedInOAuthData;
 		twitter?: TwitterOAuthData;
+		goHighLevel?: GoHighLevelOAuthData;
+		loftyCRM?: LoftyCRMOAuthData;
+		n8n?: N8nOAuthData;
+		discord?: DiscordOAuthData;
+		kestra?: KestraOAuthData;
+		spotify?: SpotifyOAuthData;
+		twilio?: TwilioOAuthData;
+		appleHealth?: AppleHealthOAuthData;
+		daylio?: DaylioOAuthData;
+		make?: MakeOAuthData;
+		habitica?: HabiticaOAuthData;
 	}; // List of connected accounts
 	// New fields
 	leadPreferences: LeadPreferences; // Preferences for lead generation

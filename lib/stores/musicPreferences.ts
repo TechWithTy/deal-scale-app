@@ -12,6 +12,10 @@ import {
 	WIDGET_MIN_WIDTH,
 } from "@/components/ui/floating-music-widget/constants";
 import type { SnapAnchor } from "@/lib/utils/snapToEdge";
+import type {
+	VoicePaletteOption,
+	VoiceSessionHistoryEntry,
+} from "@/types/focus";
 
 export type MusicWidgetMode = "music" | "voice";
 
@@ -38,6 +42,7 @@ interface MusicPreferencesState {
 	isSyncing: boolean;
 	lastSyncedAt: number | null;
 	mode: MusicWidgetMode;
+	sessionHistory: VoiceSessionHistoryEntry[];
 	setEnabled: (enabled: boolean) => void;
 	setProvider: (provider: "spotify" | "internal" | null) => void;
 	setPlaylistUri: (uri: string | null) => void;
@@ -50,6 +55,8 @@ interface MusicPreferencesState {
 		options?: { sync?: boolean },
 	) => Promise<void>;
 	syncWidgetPosition: () => Promise<void>;
+	addSessionHistory: (entry: VoicePaletteOption) => void;
+	clearSessionHistory: () => void;
 	reset: () => void;
 }
 
@@ -75,6 +82,7 @@ function createDefaultState(): Pick<
 	| "mode"
 	| "widgetHeights"
 	| "widgetWidth"
+	| "sessionHistory"
 > {
 	return {
 		preferences: createDefaultPreferences(),
@@ -84,6 +92,7 @@ function createDefaultState(): Pick<
 		isSyncing: false,
 		lastSyncedAt: null,
 		mode: "music",
+		sessionHistory: [],
 	};
 }
 
@@ -158,6 +167,20 @@ export const useMusicPreferencesStore = create<MusicPreferencesState>()(
 				}
 			},
 			setMode: (mode) => set({ mode }),
+			addSessionHistory: (entry) =>
+				set((state) => {
+					const filtered = state.sessionHistory.filter(
+						(item) => item.id !== entry.id,
+					);
+					const next: VoiceSessionHistoryEntry = {
+						...entry,
+						lastUsed: Date.now(),
+					};
+					return {
+						sessionHistory: [next, ...filtered].slice(0, 8),
+					};
+				}),
+			clearSessionHistory: () => set({ sessionHistory: [] }),
 			reset: () => set(createDefaultState()),
 		}),
 		{

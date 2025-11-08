@@ -3,26 +3,15 @@ import { createRoot, type Root } from "react-dom/client";
 
 import { EmbedChartFrame } from "@/components/external/embed-chart-frame";
 import { parseHostElement, type HostEmbedConfig } from "external/embed/config";
-
-type MountOptions = {
-	selector?: string;
-	onError?: (error: Error) => void;
-};
+import {
+	ensureStylesheet,
+	normalizeError,
+	renderConfigError,
+	type MountOptions,
+} from "external/embed/shared";
 
 const DEFAULT_SELECTOR = "[data-dealscale-chart]";
-const STYLE_IDENTIFIER = "data-dealscale-embed-style";
 const mountedCharts = new Map<Element, { root: Root; config: HostEmbedConfig }>();
-
-function ensureStylesheet() {
-	if (document.querySelector(`link[${STYLE_IDENTIFIER}]`)) {
-		return;
-	}
-	const link = document.createElement("link");
-	link.rel = "stylesheet";
-	link.href = "/embed/deal-scale-charts.css";
-	link.setAttribute(STYLE_IDENTIFIER, "true");
-	document.head.appendChild(link);
-}
 
 function renderHost(
 	host: Element,
@@ -48,16 +37,15 @@ function renderHost(
 		mountedCharts.set(host, { root, config });
 		return config;
 	} catch (error) {
-		const resolved =
-			error instanceof Error ? error : new Error("Invalid chart configuration");
-		host.setAttribute("data-chart-error", "true");
-		host.setAttribute("data-chart-error-message", resolved.message);
+		const resolved = normalizeError(error);
+		renderConfigError(host, resolved, "Invalid chart configuration", {
+			flag: "data-chart-error",
+			message: "data-chart-error-message",
+		});
 		if (process.env.NODE_ENV !== "production") {
 			// eslint-disable-next-line no-console
 			console.error("Deal Scale embed mount error:", resolved);
 		}
-		host.innerHTML =
-			'<div class="deal-scale-embed-error" role="alert">Invalid chart configuration</div>';
 		options.onError?.(resolved);
 		return null;
 	}
@@ -68,7 +56,7 @@ export function mountDealScaleChart(options: MountOptions = {}) {
 		return;
 	}
 
-	ensureStylesheet();
+	ensureStylesheet("dealscale-embed-style", "/embed/deal-scale-charts.css");
 
 	const selector = options.selector ?? DEFAULT_SELECTOR;
 	const hosts = document.querySelectorAll<Element>(selector);

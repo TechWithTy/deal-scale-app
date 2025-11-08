@@ -29,15 +29,19 @@ import {
 	CheckCircle2,
 	Circle,
 	Facebook,
+	HeartPulse,
 	Linkedin,
 	Lock,
 	MessageSquare,
+	Mountain,
 	Music4,
-	Sparkles,
+	BookOpen,
+	Share2,
 	Webhook,
+	Workflow,
 } from "lucide-react";
 import type React from "react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import type { UseFormReturn } from "react-hook-form";
 import { toast } from "sonner";
 import { useUserStore } from "@/lib/stores/userStore";
@@ -82,6 +86,12 @@ interface OAuthProvider {
 	};
 	featureBlocked?: boolean;
 	featureBlockedReason?: string;
+	integrationDetails?: {
+		source: string;
+		metrics: string;
+		frequency: string;
+		integrationType: string;
+	};
 }
 
 const oauthProviders: OAuthProvider[] = [
@@ -94,6 +104,12 @@ const oauthProviders: OAuthProvider[] = [
 		color: "text-blue-600",
 		bgColor: "bg-blue-50 dark:bg-blue-950",
 		borderColor: "border-blue-200 dark:border-blue-800",
+		integrationDetails: {
+			source: "Meta Business Suite",
+			metrics: "Ad sets, lead forms, page engagement",
+			frequency: "Hourly (API quotas apply)",
+			integrationType: "Facebook Marketing API OAuth",
+		},
 	},
 	{
 		id: "linkedIn",
@@ -104,6 +120,12 @@ const oauthProviders: OAuthProvider[] = [
 		color: "text-blue-700",
 		bgColor: "bg-blue-50 dark:bg-blue-950",
 		borderColor: "border-blue-300 dark:border-blue-800",
+		integrationDetails: {
+			source: "LinkedIn Campaign Manager",
+			metrics: "Company followers, campaign conversions, lead gen forms",
+			frequency: "Daily (auto-sync)",
+			integrationType: "LinkedIn Marketing Developer Platform",
+		},
 	},
 	{
 		id: "spotify",
@@ -114,6 +136,12 @@ const oauthProviders: OAuthProvider[] = [
 		color: "text-green-600",
 		bgColor: "bg-green-50 dark:bg-green-950",
 		borderColor: "border-green-200 dark:border-green-800",
+		integrationDetails: {
+			source: "Spotify for Developers",
+			metrics: "Playlists, track analytics, follower counts",
+			frequency: "Daily (user refresh)",
+			integrationType: "Spotify OAuth 2.0",
+		},
 	},
 	{
 		id: "twilio",
@@ -124,6 +152,12 @@ const oauthProviders: OAuthProvider[] = [
 		color: "text-rose-600",
 		bgColor: "bg-rose-50 dark:bg-rose-950",
 		borderColor: "border-rose-200 dark:border-rose-800",
+		integrationDetails: {
+			source: "Twilio Console",
+			metrics: "Call logs, SMS delivery, conversation transcripts",
+			frequency: "Real-time webhooks",
+			integrationType: "Twilio REST + Webhook callbacks",
+		},
 	},
 	{
 		id: "goHighLevel",
@@ -144,6 +178,12 @@ const oauthProviders: OAuthProvider[] = [
 		color: "text-emerald-600",
 		bgColor: "bg-emerald-50 dark:bg-emerald-950",
 		borderColor: "border-emerald-200 dark:border-emerald-800",
+		integrationDetails: {
+			source: "GoHighLevel",
+			metrics: "Pipeline stages, contact events, workflows",
+			frequency: "Hourly (API poll)",
+			integrationType: "GoHighLevel REST API",
+		},
 	},
 	{
 		id: "loftyCRM",
@@ -154,16 +194,28 @@ const oauthProviders: OAuthProvider[] = [
 		color: "text-purple-600",
 		bgColor: "bg-purple-50 dark:bg-purple-950",
 		borderColor: "border-purple-200 dark:border-purple-800",
+		integrationDetails: {
+			source: "Lofty CRM",
+			metrics: "Lead routing, pipeline updates, task activity",
+			frequency: "Daily (auto-sync)",
+			integrationType: "Lofty CRM Partner API",
+		},
 	},
 	{
 		id: "n8n",
 		name: "n8n Workflows",
 		description:
 			"Connect n8n for advanced workflow automation and integration triggers",
-		icon: <Webhook className="h-6 w-6" />,
+		icon: <Share2 className="h-6 w-6" />,
 		color: "text-orange-600",
 		bgColor: "bg-orange-50 dark:bg-orange-950",
 		borderColor: "border-orange-200 dark:border-orange-800",
+		integrationDetails: {
+			source: "n8n Workflows",
+			metrics: "Execution logs, webhook triggers, error rates",
+			frequency: "Event-driven (webhook)",
+			integrationType: "API Key & Webhook ingestion",
+		},
 	},
 	{
 		id: "discord",
@@ -184,6 +236,12 @@ const oauthProviders: OAuthProvider[] = [
 		color: "text-indigo-600",
 		bgColor: "bg-indigo-50 dark:bg-indigo-950",
 		borderColor: "border-indigo-200 dark:border-indigo-800",
+		integrationDetails: {
+			source: "Discord Guilds",
+			metrics: "Channel events, bot interactions, member roles",
+			frequency: "Real-time (Gateway/Bot)",
+			integrationType: "Discord Bot OAuth",
+		},
 	},
 	{
 		id: "kestra",
@@ -221,64 +279,82 @@ const oauthProviders: OAuthProvider[] = [
 			],
 		},
 	},
-];
-
-const aiProviderOptions = [
 	{
-		id: "dealscale",
-		title: "DealScale Fusion",
-		tagline: "Managed AI with guardrails",
+		id: "appleHealth",
+		name: "Apple Health",
 		description:
-			"Adaptive routing across our proprietary models with live observability, safety rails, and cost controls.",
-		recommended: true,
+			"Sync wellness telemetry from Apple devices to personalize concierge outreach and retention campaigns.",
+		icon: <HeartPulse className="h-6 w-6" />,
+		color: "text-rose-600",
+		bgColor: "bg-rose-50 dark:bg-rose-950",
+		borderColor: "border-rose-200 dark:border-rose-800",
+		featureBlocked: true,
+		featureBlockedReason:
+			"Health-grade integrations are in closed beta while we finish HIPAA-compliant safeguards.",
+		integrationDetails: {
+			source: "Apple Health",
+			metrics: "Sleep, heart rate, activity rings, HRV",
+			frequency: "Daily (auto-sync)",
+			integrationType: "Apple HealthKit via DealScale iOS app bridge",
+		},
 	},
 	{
-		id: "openai",
-		title: "OpenAI GPT",
-		tagline: "Best-in-class general reasoning",
+		id: "daylio",
+		name: "Daylio",
 		description:
-			"Use GPT-4.1 for rich conversations, summarization, and knowledge synthesis.",
+			"Ingest mood journals and activity tags to enrich wellness and lifestyle nurture cadences.",
+		icon: <BookOpen className="h-6 w-6" />,
+		color: "text-amber-600",
+		bgColor: "bg-amber-50 dark:bg-amber-950",
+		borderColor: "border-amber-200 dark:border-amber-800",
+		featureBlocked: true,
+		featureBlockedReason:
+			"Daylio mood intelligence is rolling out gradually while we finalize data residency controls.",
+		integrationDetails: {
+			source: "Daylio",
+			metrics: "Mood entries, activity tags, notes",
+			frequency: "Daily (user-driven)",
+			integrationType: "REST API / Zapier export",
+		},
 	},
 	{
-		id: "claude",
-		title: "Anthropic Claude",
-		tagline: "High compliance & long context",
+		id: "make",
+		name: "Make (Integromat)",
 		description:
-			"Great for regulated industries needing alignment and traceable outputs.",
+			"Orchestrate advanced multi-step automations and sync outcomes into DealScale playbooks.",
+		icon: <Workflow className="h-6 w-6" />,
+		color: "text-sky-600",
+		bgColor: "bg-sky-50 dark:bg-sky-950",
+		borderColor: "border-sky-200 dark:border-sky-800",
+		featureBlocked: true,
+		featureBlockedReason:
+			"Make automations are in controlled rollout while we finalize template governance.",
+		integrationDetails: {
+			source: "Make",
+			metrics: "Scenario runs, webhook payloads, automation logs",
+			frequency: "Event-driven (webhook / schedule)",
+			integrationType: "OAuth 2.0 with scenario webhooks",
+		},
 	},
 	{
-		id: "deepseek",
-		title: "DeepSeek",
-		tagline: "Cost-optimized reasoning",
+		id: "habitica",
+		name: "Habitica",
 		description:
-			"Efficient for large-scale lead scoring, enrichment, and outbound personalization.",
+			"Bring in habit streaks and quest progress to trigger motivational outreach sequences.",
+		icon: <Mountain className="h-6 w-6" />,
+		color: "text-violet-600",
+		bgColor: "bg-violet-50 dark:bg-violet-950",
+		borderColor: "border-violet-200 dark:border-violet-800",
+		featureBlocked: true,
+		featureBlockedReason:
+			"Habitica insights are in phased beta while we complete behavioral compliance reviews.",
+		integrationDetails: {
+			source: "Habitica",
+			metrics: "Habit streaks, task completions, quest participation",
+			frequency: "Daily (user-driven)",
+			integrationType: "REST API / Zapier export",
+		},
 	},
-];
-
-const aiRoutingOptions = [
-	{
-		id: "balanced",
-		label: "Balanced",
-		description: "Smartly weights quality vs cost per request.",
-	},
-	{
-		id: "quality",
-		label: "Quality First",
-		description: "Always favor highest-performing models.",
-	},
-	{
-		id: "economy",
-		label: "Cost Saver",
-		description: "Route to cost-effective models unless overridden.",
-	},
-];
-
-const fallbackOptions = [
-	{ id: "none", label: "No Fallback" },
-	...aiProviderOptions.map((option) => ({
-		id: option.id,
-		label: option.title,
-	})),
 ];
 
 /**
@@ -308,6 +384,10 @@ export const OAuthSetup: React.FC<OAuthSetupProps> = ({
 		n8n: null,
 		discord: null,
 		kestra: null,
+		appleHealth: null,
+		daylio: null,
+		make: null,
+		habitica: null,
 	});
 
 	// Generate referral URL client-side only to avoid hydration mismatch
@@ -332,6 +412,10 @@ export const OAuthSetup: React.FC<OAuthSetupProps> = ({
 				n8n: initialData.connectedAccounts.n8n ?? null,
 				discord: initialData.connectedAccounts.discord ?? null,
 				kestra: initialData.connectedAccounts.kestra ?? null,
+				appleHealth: initialData.connectedAccounts.appleHealth ?? null,
+				daylio: initialData.connectedAccounts.daylio ?? null,
+				make: initialData.connectedAccounts.make ?? null,
+				habitica: initialData.connectedAccounts.habitica ?? null,
 			});
 		}
 	}, [initialData]);
@@ -355,6 +439,22 @@ export const OAuthSetup: React.FC<OAuthSetupProps> = ({
 			form.setValue(
 				"socialMediaCampaignAccounts.oauthData.twilio",
 				initialData.connectedAccounts.twilio ?? defaultOAuthData,
+			);
+			form.setValue(
+				"socialMediaCampaignAccounts.oauthData.appleHealth",
+				initialData.connectedAccounts.appleHealth ?? defaultOAuthData,
+			);
+			form.setValue(
+				"socialMediaCampaignAccounts.oauthData.daylio",
+				initialData.connectedAccounts.daylio ?? defaultOAuthData,
+			);
+			form.setValue(
+				"socialMediaCampaignAccounts.oauthData.make",
+				initialData.connectedAccounts.make ?? defaultOAuthData,
+			);
+			form.setValue(
+				"socialMediaCampaignAccounts.oauthData.habitica",
+				initialData.connectedAccounts.habitica ?? defaultOAuthData,
 			);
 			form.setValue("socialMediatags", initialData.socialMediaTags || []);
 			if (initialData.aiProvider) {
@@ -443,6 +543,30 @@ export const OAuthSetup: React.FC<OAuthSetupProps> = ({
 					simulatedOAuthData,
 				);
 				break;
+			case "appleHealth":
+				form.setValue(
+					"socialMediaCampaignAccounts.oauthData.appleHealth",
+					simulatedOAuthData,
+				);
+				break;
+			case "daylio":
+				form.setValue(
+					"socialMediaCampaignAccounts.oauthData.daylio",
+					simulatedOAuthData,
+				);
+				break;
+			case "make":
+				form.setValue(
+					"socialMediaCampaignAccounts.oauthData.make",
+					simulatedOAuthData,
+				);
+				break;
+			case "habitica":
+				form.setValue(
+					"socialMediaCampaignAccounts.oauthData.habitica",
+					simulatedOAuthData,
+				);
+				break;
 			default:
 				break;
 		}
@@ -511,24 +635,34 @@ export const OAuthSetup: React.FC<OAuthSetupProps> = ({
 					defaultOAuthData,
 				);
 				break;
+			case "appleHealth":
+				form.setValue(
+					"socialMediaCampaignAccounts.oauthData.appleHealth",
+					defaultOAuthData,
+				);
+				break;
+			case "daylio":
+				form.setValue(
+					"socialMediaCampaignAccounts.oauthData.daylio",
+					defaultOAuthData,
+				);
+				break;
+			case "make":
+				form.setValue(
+					"socialMediaCampaignAccounts.oauthData.make",
+					defaultOAuthData,
+				);
+				break;
+			case "habitica":
+				form.setValue(
+					"socialMediaCampaignAccounts.oauthData.habitica",
+					defaultOAuthData,
+				);
+				break;
 			default:
 				break;
 		}
 	};
-
-	const selectedPrimary = form.watch("aiProvider.primary");
-	const selectedFallback = form.watch("aiProvider.fallback");
-	const selectedRouting = form.watch("aiProvider.routing");
-
-	const primaryInfo = useMemo(
-		() => aiProviderOptions.find((option) => option.id === selectedPrimary),
-		[selectedPrimary],
-	);
-
-	const fallbackInfo = useMemo(
-		() => aiProviderOptions.find((option) => option.id === selectedFallback),
-		[selectedFallback],
-	);
 
 	return (
 		<div className="space-y-6">
@@ -540,7 +674,7 @@ export const OAuthSetup: React.FC<OAuthSetupProps> = ({
 				</p>
 			</div>
 
-			<div className="grid gap-4 md:grid-cols-2">
+			<div className="grid items-start gap-4 md:grid-cols-2">
 				{oauthProviders.map((provider) => {
 					const isConnected = !!oauthStates[provider.id];
 					const hasAccess = provider.featureBlocked
@@ -549,10 +683,49 @@ export const OAuthSetup: React.FC<OAuthSetupProps> = ({
 							? hasRequiredTier(userTier, provider.requiredTier)
 							: true;
 					const isLocked = !hasAccess;
+					const integrationPanel = provider.integrationDetails ? (
+						<div className="rounded-lg border border-muted-foreground/20 bg-muted/30 p-3 text-xs">
+							<dl className="space-y-2">
+								<div className="flex items-start justify-between gap-3">
+									<dt className="font-semibold text-muted-foreground">
+										Source
+									</dt>
+									<dd className="text-right text-foreground/80">
+										{provider.integrationDetails.source}
+									</dd>
+								</div>
+								<div className="flex items-start justify-between gap-3">
+									<dt className="font-semibold text-muted-foreground">
+										Metrics
+									</dt>
+									<dd className="text-right text-foreground/80">
+										{provider.integrationDetails.metrics}
+									</dd>
+								</div>
+								<div className="flex items-start justify-between gap-3">
+									<dt className="font-semibold text-muted-foreground">
+										Frequency
+									</dt>
+									<dd className="text-right text-foreground/80">
+										{provider.integrationDetails.frequency}
+									</dd>
+								</div>
+								<div className="flex items-start justify-between gap-3">
+									<dt className="font-semibold text-muted-foreground">
+										Integration Type
+									</dt>
+									<dd className="text-right text-foreground/80">
+										{provider.integrationDetails.integrationType}
+									</dd>
+								</div>
+							</dl>
+						</div>
+					) : null;
 
 					return (
 						<Card
 							key={provider.id}
+							data-testid={`oauth-card-${provider.id}`}
 							className={`transition-all ${
 								isConnected
 									? `border-2 shadow-lg hover:shadow-xl ${provider.bgColor} ${provider.borderColor}`
@@ -627,6 +800,7 @@ export const OAuthSetup: React.FC<OAuthSetupProps> = ({
 													"We're polishing this integration before opening access."}
 											</p>
 										</div>
+										{integrationPanel}
 										<Button
 											type="button"
 											className="w-full"
@@ -654,6 +828,7 @@ export const OAuthSetup: React.FC<OAuthSetupProps> = ({
 												})}
 											</p>
 										</div>
+										{integrationPanel}
 										<div className="flex gap-2">
 											<Button
 												type="button"
@@ -685,6 +860,7 @@ export const OAuthSetup: React.FC<OAuthSetupProps> = ({
 												Not Connected
 											</p>
 										</div>
+										{integrationPanel}
 										<Button
 											type="button"
 											className="w-full"
@@ -699,141 +875,6 @@ export const OAuthSetup: React.FC<OAuthSetupProps> = ({
 						</Card>
 					);
 				})}
-			</div>
-
-			{/* AI Provider Orchestration */}
-			<div className="mt-8 space-y-5">
-				<div>
-					<h3 className="mb-1 font-semibold text-base">
-						AI Provider Orchestration
-					</h3>
-					<p className="text-muted-foreground text-sm">
-						Choose how DealScale orchestrates large language model calls. Mix
-						and match providers and routing rules to balance cost, latency, and
-						compliance.
-					</p>
-				</div>
-				<div className="grid gap-4 md:grid-cols-3">
-					<FormField
-						control={form.control}
-						name="aiProvider.primary"
-						render={({ field }) => (
-							<FormItem>
-								<FormLabel className="text-sm font-medium">
-									Primary Provider
-								</FormLabel>
-								<FormControl>
-									<Select onValueChange={field.onChange} value={field.value}>
-										<SelectTrigger className="mt-1">
-											<SelectValue placeholder="Select primary" />
-										</SelectTrigger>
-										<SelectContent>
-											{aiProviderOptions.map((option) => (
-												<SelectItem key={option.id} value={option.id}>
-													{option.title}
-												</SelectItem>
-											))}
-										</SelectContent>
-									</Select>
-								</FormControl>
-								<FormMessage />
-							</FormItem>
-						)}
-					/>
-					<FormField
-						control={form.control}
-						name="aiProvider.fallback"
-						render={({ field }) => (
-							<FormItem>
-								<FormLabel className="text-sm font-medium">
-									Fallback Provider
-								</FormLabel>
-								<FormControl>
-									<Select onValueChange={field.onChange} value={field.value}>
-										<SelectTrigger className="mt-1">
-											<SelectValue placeholder="Select fallback" />
-										</SelectTrigger>
-										<SelectContent>
-											{fallbackOptions.map((option) => (
-												<SelectItem key={option.id} value={option.id}>
-													{option.label}
-												</SelectItem>
-											))}
-										</SelectContent>
-									</Select>
-								</FormControl>
-								<FormMessage />
-							</FormItem>
-						)}
-					/>
-					<FormField
-						control={form.control}
-						name="aiProvider.routing"
-						render={({ field }) => (
-							<FormItem>
-								<FormLabel className="text-sm font-medium">
-									Routing Strategy
-								</FormLabel>
-								<FormControl>
-									<Select onValueChange={field.onChange} value={field.value}>
-										<SelectTrigger className="mt-1">
-											<SelectValue placeholder="Select strategy" />
-										</SelectTrigger>
-										<SelectContent>
-											{aiRoutingOptions.map((option) => (
-												<SelectItem key={option.id} value={option.id}>
-													{option.label}
-												</SelectItem>
-											))}
-										</SelectContent>
-									</Select>
-								</FormControl>
-								<FormMessage />
-							</FormItem>
-						)}
-					/>
-				</div>
-
-				<div className="rounded-lg border border-border/60 bg-card/50 p-4">
-					<div className="flex items-center gap-2">
-						<Sparkles className="h-4 w-4 text-primary" />
-						<p className="font-semibold text-sm text-foreground">
-							Execution Plan
-						</p>
-						{primaryInfo?.recommended && (
-							<Badge
-								variant="default"
-								className="ml-auto bg-primary/10 text-primary"
-							>
-								Recommended
-							</Badge>
-						)}
-					</div>
-					<p className="mt-2 text-muted-foreground text-xs leading-relaxed">
-						Requests start with{" "}
-						<strong>{primaryInfo?.title ?? "DealScale Fusion"}</strong>
-						{selectedFallback !== "none" && fallbackInfo ? (
-							<>
-								, then automatically fail over to{" "}
-								<strong>{fallbackInfo.title}</strong> if a call fails.
-							</>
-						) : (
-							" with no failover configured."
-						)}
-					</p>
-					<p className="text-muted-foreground text-xs leading-relaxed">
-						Routing mode:{" "}
-						<strong>
-							{aiRoutingOptions.find((option) => option.id === selectedRouting)
-								?.label ?? "Balanced"}
-						</strong>
-						—{" "}
-						{
-							aiRoutingOptions.find((option) => option.id === selectedRouting)
-								?.description
-						}
-					</p>
-				</div>
 			</div>
 
 			{/* Social Media Configuration */}

@@ -57,7 +57,7 @@
 		"@testing-library/react": "^16.1.0",
 		"@types/node": "^20.5.7",
 		"@vitejs/plugin-react-swc": "^3.11.0",
-		"@vite-pwa/assets-generator": "^0.3.4",
+		"@vite-pwa/assets-generator": "^1.0.2",
 		"autoprefixer": "^10.4.15",
 		"jsdom": "^24.1.1",
 		"lovable-tagger": "^1.1.9",

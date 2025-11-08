@@ -33,7 +33,19 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { AlertTriangle, Gauge, Sparkle } from "lucide-react";
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
+	AlertTriangle,
+	Gauge,
+	HelpCircle,
+	Sparkle,
+	Sparkles,
+} from "lucide-react";
 import { KnowledgeEmailUpload } from "./KnowledgeEmailUpload";
 import { KnowledgeSalesScriptUpload } from "./KnowledgeSalesScriptUpload";
 
@@ -49,6 +61,7 @@ import { CloneModal } from "@/external/teleprompter-modal";
 import { KnowledgeVoiceSelector } from "./KnowledgeVoiceSelector";
 import { SalesScriptManager } from "./SalesScriptManager";
 import { VoiceManager } from "./VoiceManager";
+import { McpAllowListSection } from "./McpAllowListSection";
 
 const approvalOptions = [
 	{
@@ -74,6 +87,87 @@ const approvalOptions = [
 			"Streamline go-live workflows with immediate approvals and proactive alerts.",
 		badge: "Fastest",
 	},
+];
+
+const aiProviderOptions = [
+	{
+		id: "dealscale",
+		title: "DealScale Fusion",
+		tagline: "Managed AI with guardrails",
+		description:
+			"Adaptive routing across our proprietary models with live observability, safety rails, and cost controls.",
+		recommended: true,
+	},
+	{
+		id: "openai",
+		title: "OpenAI GPT",
+		tagline: "Best-in-class general reasoning",
+		description:
+			"Use GPT-4.1 for rich conversations, summarization, and knowledge synthesis.",
+	},
+	{
+		id: "claude",
+		title: "Anthropic Claude",
+		tagline: "High compliance & long context",
+		description:
+			"Great for regulated industries needing alignment and traceable outputs.",
+	},
+	{
+		id: "deepseek",
+		title: "DeepSeek",
+		tagline: "Cost-optimized reasoning",
+		description:
+			"Efficient for large-scale lead scoring, enrichment, and outbound personalization.",
+	},
+	{
+		id: "free",
+		title: "Community Free Tier",
+		tagline: "Zero-cost sandbox",
+		description:
+			"Great for demos, staging, and lightweight experimentation with shared capacity.",
+	},
+];
+
+const aiRoutingOptions = [
+	{
+		id: "balanced",
+		label: "Balanced",
+		description: "Smartly weights quality vs cost per request.",
+	},
+	{
+		id: "quality",
+		label: "Quality First",
+		description: "Always favor highest-performing models.",
+	},
+	{
+		id: "economy",
+		label: "Cost Saver",
+		description: "Route to cost-effective models unless overridden.",
+	},
+	{
+		id: "speed",
+		label: "Speed Boost",
+		description: "Prioritize the lowest latency models for rapid responses.",
+	},
+	{
+		id: "personalization",
+		label: "Personalization",
+		description: "Bias selection toward models tuned on your account data.",
+	},
+	{
+		id: "contextWindow",
+		label: "Max Context",
+		description:
+			"Favor models with the largest context window for long inputs.",
+	},
+];
+
+const fallbackOptions = [
+	{ id: "none", label: "No Fallback" },
+	...aiProviderOptions.map((option) => ({
+		id: option.id,
+		label: option.title,
+	})),
 ];
 
 export interface KnowledgeBaseMainProps {
@@ -114,6 +208,22 @@ export const KnowledgeBaseMain: React.FC<KnowledgeBaseMainProps> = ({
 			if (initialData.approvalLevel) {
 				form.setValue("aiKnowledgeApproval", initialData.approvalLevel);
 			}
+			if (initialData.mcpAllowList) {
+				form.setValue("mcpAllowList", {
+					tools: initialData.mcpAllowList.tools ?? [],
+					words: initialData.mcpAllowList.words ?? [],
+					phrases: initialData.mcpAllowList.phrases ?? [],
+					regexes: initialData.mcpAllowList.regexes ?? [],
+				});
+			}
+			if (initialData.mcpDenyList) {
+				form.setValue("mcpDenyList", {
+					tools: initialData.mcpDenyList.tools ?? [],
+					words: initialData.mcpDenyList.words ?? [],
+					phrases: initialData.mcpDenyList.phrases ?? [],
+					regexes: initialData.mcpDenyList.regexes ?? [],
+				});
+			}
 		}
 	}, [initialData, form]);
 
@@ -140,6 +250,20 @@ export const KnowledgeBaseMain: React.FC<KnowledgeBaseMainProps> = ({
 		setShowVoicemailModal(false);
 	};
 
+	const selectedPrimary = form.watch("aiProvider.primary");
+	const selectedFallback = form.watch("aiProvider.fallback");
+	const selectedRouting = form.watch("aiProvider.routing");
+
+	const primaryInfo = useMemo(
+		() => aiProviderOptions.find((option) => option.id === selectedPrimary),
+		[selectedPrimary],
+	);
+
+	const fallbackInfo = useMemo(
+		() => aiProviderOptions.find((option) => option.id === selectedFallback),
+		[selectedFallback],
+	);
+
 	return (
 		<div className="mx-auto flex w-full max-w-5xl flex-col gap-8">
 			<Card>
@@ -161,7 +285,7 @@ export const KnowledgeBaseMain: React.FC<KnowledgeBaseMainProps> = ({
 							const Icon = selected?.icon ?? AlertTriangle;
 							return (
 								<FormItem>
-									<FormLabel className="text-sm font-medium">
+									<FormLabel className="font-medium text-sm">
 										Approval Level
 									</FormLabel>
 									<FormControl>
@@ -184,7 +308,7 @@ export const KnowledgeBaseMain: React.FC<KnowledgeBaseMainProps> = ({
 											<div className="mt-0.5">
 												<Icon className="h-4 w-4 text-primary" />
 											</div>
-											<div className="space-y-1 text-xs text-muted-foreground">
+											<div className="space-y-1 text-muted-foreground text-xs">
 												<div className="flex items-center gap-2 font-semibold text-foreground">
 													{selected.title}
 													{selected.badge && (
@@ -208,6 +332,168 @@ export const KnowledgeBaseMain: React.FC<KnowledgeBaseMainProps> = ({
 					/>
 				</CardContent>
 			</Card>
+			<Card>
+				<CardHeader className="pb-3">
+					<CardTitle>AI Provider Orchestration</CardTitle>
+					<CardDescription>
+						Choose how DealScale orchestrates large language model calls. Mix
+						and match providers and routing rules to balance cost, latency, and
+						compliance.
+					</CardDescription>
+				</CardHeader>
+				<CardContent className="space-y-5">
+					<div className="grid gap-4 md:grid-cols-3">
+						<FormField
+							control={form.control}
+							name="aiProvider.primary"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel className="font-medium text-sm">
+										Primary Provider
+									</FormLabel>
+									<FormControl>
+										<Select onValueChange={field.onChange} value={field.value}>
+											<SelectTrigger className="mt-1">
+												<SelectValue placeholder="Select primary" />
+											</SelectTrigger>
+											<SelectContent>
+												{aiProviderOptions.map((option) => (
+													<SelectItem key={option.id} value={option.id}>
+														{option.title}
+													</SelectItem>
+												))}
+											</SelectContent>
+										</Select>
+									</FormControl>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
+						<FormField
+							control={form.control}
+							name="aiProvider.fallback"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel className="font-medium text-sm">
+										Fallback Provider
+									</FormLabel>
+									<FormControl>
+										<Select onValueChange={field.onChange} value={field.value}>
+											<SelectTrigger className="mt-1">
+												<SelectValue placeholder="Select fallback" />
+											</SelectTrigger>
+											<SelectContent>
+												{fallbackOptions.map((option) => (
+													<SelectItem key={option.id} value={option.id}>
+														{option.label}
+													</SelectItem>
+												))}
+											</SelectContent>
+										</Select>
+									</FormControl>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
+						<FormField
+							control={form.control}
+							name="aiProvider.routing"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel className="font-medium text-sm">
+										Routing Strategy
+									</FormLabel>
+									<FormControl>
+										<Select onValueChange={field.onChange} value={field.value}>
+											<SelectTrigger className="mt-1">
+												<SelectValue placeholder="Select strategy" />
+											</SelectTrigger>
+											<SelectContent>
+												{aiRoutingOptions.map((option) => (
+													<SelectItem key={option.id} value={option.id}>
+														{option.label}
+													</SelectItem>
+												))}
+											</SelectContent>
+										</Select>
+									</FormControl>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
+					</div>
+					<div className="rounded-lg border border-border/60 bg-card/50 p-4">
+						<div className="flex items-center gap-2">
+							<Sparkles className="h-4 w-4 text-primary" />
+							<p className="font-semibold text-foreground text-sm">
+								Execution Plan
+							</p>
+							{primaryInfo?.recommended && (
+								<Badge
+									variant="default"
+									className="ml-auto bg-primary/10 text-primary"
+								>
+									Recommended
+								</Badge>
+							)}
+						</div>
+						<p className="mt-2 text-muted-foreground text-xs leading-relaxed">
+							Requests start with{" "}
+							<strong>{primaryInfo?.title ?? "DealScale Fusion"}</strong>
+							{selectedFallback !== "none" && fallbackInfo ? (
+								<>
+									, then automatically fail over to{" "}
+									<strong>{fallbackInfo.title}</strong> if a call fails.
+								</>
+							) : (
+								" with no failover configured."
+							)}
+						</p>
+						<p className="text-muted-foreground text-xs leading-relaxed">
+							Routing mode:{" "}
+							<strong>
+								{aiRoutingOptions.find(
+									(option) => option.id === selectedRouting,
+								)?.label ?? "Balanced"}
+							</strong>
+							—{" "}
+							{
+								aiRoutingOptions.find((option) => option.id === selectedRouting)
+									?.description
+							}
+						</p>
+					</div>
+					{(selectedPrimary === "free" || selectedFallback === "free") && (
+						<TooltipProvider delayDuration={150}>
+							<div className="flex items-start gap-3 rounded-md border border-amber-300 bg-amber-50/80 p-3 text-amber-900">
+								<Tooltip>
+									<TooltipTrigger asChild>
+										<button
+											type="button"
+											aria-label="Community free tier details"
+											className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-amber-200 text-amber-800 transition-colors hover:bg-amber-300 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2"
+										>
+											<HelpCircle className="h-4 w-4" />
+										</button>
+									</TooltipTrigger>
+									<TooltipContent className="max-w-xs text-xs leading-relaxed">
+										The Community Free Tier shares infrastructure with our QA
+										cluster. Throughput and feature coverage fluctuate, and some
+										specialized automations may return partial results.
+									</TooltipContent>
+								</Tooltip>
+								<p className="text-xs leading-relaxed">
+									Use the Community Free Tier for sandboxing or internal demos.
+									Production-grade cadences should stay on DealScale Fusion or
+									other paid providers—we can’t guarantee uptime or remediation
+									for free-tier misfires.
+								</p>
+							</div>
+						</TooltipProvider>
+					)}
+				</CardContent>
+			</Card>
+			<McpAllowListSection loading={loading} />
 			<Tabs defaultValue="voice-library" className="w-full">
 				<TabsList className="grid w-full grid-cols-2">
 					<TabsTrigger value="voice-library">

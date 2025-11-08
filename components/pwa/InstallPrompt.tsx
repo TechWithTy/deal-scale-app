@@ -1,7 +1,5 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import { useInstallPrompt } from "@/hooks/useInstallPrompt";
 import { Button } from "@/components/ui/button";
 import {
 	Card,
@@ -11,7 +9,14 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
+import { useInstallPrompt } from "@/hooks/useInstallPrompt";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
+
+export const WAITLIST_CALLBACK = "/app?source=pwa_waitlist";
+export const WAITLIST_URL = `https://www.dealscale.io/auth?callback=${encodeURIComponent(
+	WAITLIST_CALLBACK,
+)}`;
 
 const DISMISS_EVENT = "pwa:install:dismiss";
 const ENGAGEMENT_EVENT = "pwa:engagement";
@@ -63,6 +68,13 @@ export function InstallPrompt(): React.ReactElement | null {
 		dismissBanner();
 	}, [dismissBanner]);
 
+	const handleWaitlist = useCallback(() => {
+		markEngagement();
+		if (typeof window !== "undefined") {
+			window.open(WAITLIST_URL, "_blank", "noopener,noreferrer");
+		}
+	}, [markEngagement]);
+
 	if (isInstalled || hasDismissedSession || !shouldShowBanner) {
 		return null;
 	}
@@ -71,7 +83,7 @@ export function InstallPrompt(): React.ReactElement | null {
 		<div className="fixed inset-x-0 bottom-4 z-40 flex justify-center px-4">
 			<Card className="w-full max-w-xl border-primary/40 bg-background/95 backdrop-blur">
 				<CardHeader className="pb-2">
-					<CardTitle className="text-base font-semibold">
+					<CardTitle className="font-semibold text-base">
 						Install Deal Scale for faster access
 					</CardTitle>
 					<CardDescription>
@@ -79,7 +91,7 @@ export function InstallPrompt(): React.ReactElement | null {
 						access.
 					</CardDescription>
 				</CardHeader>
-				<CardContent className="space-y-2 text-sm text-muted-foreground">
+				<CardContent className="space-y-2 text-muted-foreground text-sm">
 					{isIosEligible ? (
 						<ol className="list-decimal space-y-1 pl-5">
 							<li>Tap the share icon in Safari.</li>
@@ -107,6 +119,9 @@ export function InstallPrompt(): React.ReactElement | null {
 							{isPrompting ? "Preparing…" : "Install now"}
 						</Button>
 					)}
+					<Button variant="outline" size="sm" onClick={handleWaitlist}>
+						Get notified
+					</Button>
 					<Button variant="ghost" size="sm" onClick={handleDismiss}>
 						Maybe later
 					</Button>

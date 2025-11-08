@@ -56,8 +56,45 @@ const providerEnum = z.enum([
 	"salesforce",
 ]);
 
-const aiProviderEnum = z.enum(["dealscale", "openai", "claude", "deepseek"]);
-const aiRoutingEnum = z.enum(["balanced", "quality", "economy"]);
+const aiProviderEnum = z.enum([
+	"dealscale",
+	"openai",
+	"claude",
+	"deepseek",
+	"free",
+]);
+const aiRoutingEnum = z.enum([
+	"balanced",
+	"quality",
+	"economy",
+	"speed",
+	"personalization",
+	"contextWindow",
+]);
+const maxAllowListItems = 50;
+const allowListValueSchema = z
+	.string()
+	.trim()
+	.min(1, { message: "Value cannot be empty." })
+	.max(160, { message: "Keep entries under 160 characters." });
+const mcpAllowListSchema = z.object({
+	tools: z
+		.array(allowListValueSchema)
+		.max(maxAllowListItems, { message: "Limit 50 tool entries." })
+		.default([]),
+	words: z
+		.array(allowListValueSchema)
+		.max(maxAllowListItems, { message: "Limit 50 word entries." })
+		.default([]),
+	phrases: z
+		.array(allowListValueSchema)
+		.max(maxAllowListItems, { message: "Limit 50 phrase entries." })
+		.default([]),
+	regexes: z
+		.array(allowListValueSchema)
+		.max(maxAllowListItems, { message: "Limit 50 regex entries." })
+		.default([]),
+});
 const aiKnowledgeApprovalEnum = z.enum(["manual", "auto", "turbo"]);
 
 export const profileSchema = z.object({
@@ -203,7 +240,14 @@ export const profileSchema = z.object({
 	aiProvider: z
 		.object({
 			primary: aiProviderEnum,
-			fallback: z.enum(["none", "dealscale", "openai", "claude", "deepseek"]),
+			fallback: z.enum([
+				"none",
+				"dealscale",
+				"openai",
+				"claude",
+				"deepseek",
+				"free",
+			]),
 			routing: aiRoutingEnum,
 		})
 		.default({
@@ -350,6 +394,8 @@ export const profileSchema = z.object({
 		.min(3, { message: "You must add at least 3 search terms." })
 		.max(15, { message: "You can add a maximum of 15 search terms." })
 		.optional(), // Google search terms / SEO keywords
+	mcpAllowList: mcpAllowListSchema,
+	mcpDenyList: mcpAllowListSchema,
 });
 
 // Export the inferred form values type for use in React Hook Form

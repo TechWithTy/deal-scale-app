@@ -9,6 +9,7 @@ import { Shield } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import type React from "react";
 import { useEffect, useMemo, useState } from "react";
+import type { FieldPath } from "react-hook-form";
 import { FormProvider, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { OAuthMain } from "./steps/Oauth/OAuthMain";
@@ -70,7 +71,6 @@ export const ProfileStepper: React.FC = () => {
 				personalNum: "",
 				companyName: "",
 				companyWebsite: "",
-				profileType: "" as any,
 				profileGoal: "",
 				companyLogo: undefined,
 				// outreachEmailAddress: "",
@@ -108,6 +108,24 @@ export const ProfileStepper: React.FC = () => {
 					timezone: "",
 					maxConcurrentConversations: 5,
 				},
+				aiProvider: {
+					primary: "dealscale",
+					fallback: "claude",
+					routing: "balanced",
+				},
+				aiKnowledgeApproval: "manual",
+				mcpAllowList: {
+					tools: [],
+					words: [],
+					phrases: [],
+					regexes: [],
+				},
+				mcpDenyList: {
+					tools: [],
+					words: [],
+					phrases: [],
+					regexes: [],
+				},
 			}) as Partial<ProfileFormValues>,
 		[],
 	);
@@ -126,7 +144,7 @@ export const ProfileStepper: React.FC = () => {
 
 	// * Stepper header UI
 	// Only include required and rendered fields for each step
-	const stepFields: (keyof ProfileFormValues)[][] = [
+	const stepFields: string[][] = [
 		["firstName", "lastName", "email", "personalNum", "state", "city"], // Step 0
 		[
 			"profileType",
@@ -140,9 +158,16 @@ export const ProfileStepper: React.FC = () => {
 			"platformSettings.timezone",
 			"platformSettings.maxConcurrentConversations",
 		], // Step 1
-		["selectedVoice", "exampleSalesScript"], // Step 2 (adjust if any are optional)
-		[], // Step 3 (OAuth, add required fields if any)
+		["selectedVoice", "exampleSalesScript", "aiKnowledgeApproval"], // Step 2 (adjust if any are optional)
+		["aiProvider.primary"], // Step 3 (OAuth & AI providers)
 	];
+	stepFields[2] = [
+		"selectedVoice",
+		"exampleSalesScript",
+		"aiKnowledgeApproval",
+	];
+
+	const toFieldPath = (path: string) => path as FieldPath<ProfileFormValues>;
 
 	// Helper to map field names to user-friendly labels for error hints
 	const fieldLabels: Record<string, string> = {
@@ -173,6 +198,10 @@ export const ProfileStepper: React.FC = () => {
 		"platformSettings.timezone": "Timezone",
 		"platformSettings.maxConcurrentConversations":
 			"Max Concurrent Conversations",
+		"aiProvider.primary": "Primary AI Provider",
+		"aiProvider.fallback": "Fallback AI Provider",
+		"aiProvider.routing": "Routing Strategy",
+		aiKnowledgeApproval: "AI Approval Mode",
 	};
 
 	const StepperHeader = () => {
@@ -276,7 +305,7 @@ export const ProfileStepper: React.FC = () => {
 					<span className="font-semibold">Required fields:</span>
 					<ul className="flex flex-wrap gap-2">
 						{stepFields[currentStep].map((field) => {
-							const hasError = !!form.getFieldState(field).error;
+							const hasError = !!form.getFieldState(toFieldPath(field)).error;
 							return (
 								<li
 									key={field}
@@ -330,24 +359,26 @@ export const ProfileStepper: React.FC = () => {
 						</button>
 						{/* --- Next/Save button --- */}
 						{(() => {
-							const watchedFields = form.watch(stepFields[currentStep]);
+							const fieldsForStep = stepFields[currentStep];
+							const fieldPaths = fieldsForStep.map(toFieldPath);
+							const watchedFields = fieldPaths.map((path) => form.watch(path));
 							const isCurrentStepValid =
 								bypassValidation ||
-								stepFields[currentStep].length === 0 ||
-								stepFields[currentStep].every((field, i) => {
+								fieldsForStep.length === 0 ||
+								fieldPaths.every((path, i) => {
 									const value = watchedFields?.[i];
 									return (
 										value !== undefined &&
 										value !== "" &&
-										!form.getFieldState(field).error
+										!form.getFieldState(path).error
 									);
 								});
 
 							// Find invalid fields for the current step
-							const invalidFields = stepFields[currentStep].filter((field) => {
-								const state = form.getFieldState(field);
-								return state.error;
-							});
+							const invalidFields = fieldPaths
+								.map((path, index) => ({ path, label: fieldsForStep[index] }))
+								.filter(({ path }) => form.getFieldState(path).error)
+								.map(({ label }) => label);
 
 							const isLastStep = currentStep === steps.length - 1;
 
@@ -369,9 +400,7 @@ export const ProfileStepper: React.FC = () => {
 											onClick={async () => {
 												setStepError(null);
 												if (!bypassValidation) {
-													const valid = await form.trigger(
-														stepFields[currentStep],
-													);
+													const valid = await form.trigger(fieldPaths);
 													if (!valid) {
 														setStepError(
 															"Please fill in all required fields for this step.",
