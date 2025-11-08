@@ -2,7 +2,10 @@ import React from "react";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi, afterEach, beforeEach } from "vitest";
 
-import { VoiceModePanel } from "@/components/ui/floating-music-widget/VoiceModePanel";
+import {
+	VoiceModePanel,
+	type VoiceMediaEvent,
+} from "@/components/ui/floating-music-widget/VoiceModePanel";
 import { resetMusicPreferencesStore } from "@/lib/stores/musicPreferences";
 
 vi.mock("motion/react", () => ({
@@ -91,13 +94,17 @@ describe("VoiceModePanel media permissions", () => {
 		vi.clearAllMocks();
 	});
 
-	const renderPanel = (onMediaEvent?: (event: VoiceMediaEvent) => void) =>
+	const renderPanel = (
+		onMediaEvent?: (event: VoiceMediaEvent) => void,
+		onRequestBrowserAccess?: () => void,
+	) =>
 		render(
 			<VoiceModePanel
 				isAnimating
 				onToggleAnimation={vi.fn()}
 				voiceLottieRef={{ current: { play: vi.fn(), pause: vi.fn() } } as any}
 				onMediaEvent={onMediaEvent}
+				onRequestBrowserAccess={onRequestBrowserAccess}
 			/>,
 		);
 
@@ -137,6 +144,24 @@ describe("VoiceModePanel media permissions", () => {
 				}),
 			),
 		);
+	});
+
+	it("fires browser access callback after press-and-hold", () => {
+		vi.useFakeTimers();
+		const onBrowserAccess = vi.fn();
+
+		renderPanel(undefined, onBrowserAccess);
+
+		const browserButton = screen.getByLabelText(
+			/press and hold to enable browser assistance/i,
+		);
+		fireEvent.pointerDown(browserButton);
+		vi.advanceTimersByTime(1500);
+		fireEvent.pointerUp(browserButton);
+
+		expect(onBrowserAccess).toHaveBeenCalledTimes(1);
+
+		vi.useRealTimers();
 	});
 
 	it("handles webcam permission denial and retries", async () => {
