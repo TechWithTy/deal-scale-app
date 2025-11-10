@@ -41,3 +41,4 @@ pnpm vitest --watch --run tests/external/embed-chart.spec.tsx
 - Add integration coverage that mounts the generated bundle in a JSDOM-like page to ensure stylesheet injection and host attributes behave as expected.
 - Introduce Playwright smoke to load the mock API route (`/api/charts/live/:chartId`) and verify the embedded script inside a real browser frame.
 
+

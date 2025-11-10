@@ -2,7 +2,7 @@
 
 import { ArrowDown, HelpCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { BackgroundBeamsWithCollision } from "@/components/ui/background-beams-with-collision";
 import { LightRays } from "@/components/ui/light-rays";
 
@@ -11,6 +11,8 @@ import DynamicHeadline from "@/components/quickstart/DynamicHeadline";
 import QuickStartHeroVideo from "@/components/quickstart/QuickStartHeroVideo";
 import QuickStartCTA from "@/components/quickstart/QuickStartCTA";
 import QuickStartActionsGrid from "@/components/quickstart/QuickStartActionsGrid";
+import QuickStartCrmSyncModal from "@/components/quickstart/QuickStartCrmSyncModal";
+import { computeSmartImportDecision } from "@/components/quickstart/utils/smartImportDecision";
 import { Pointer } from "@/components/ui/pointer";
 import { AvatarCircles } from "@/components/ui/avatar-circles";
 import QuickStartLegacyModals, {
@@ -61,6 +63,7 @@ import type {
 import { useSavedCampaignTemplatesStore } from "@/lib/stores/user/campaigns/savedTemplates";
 import { useSavedWorkflowsStore } from "@/lib/stores/user/workflows/savedWorkflows";
 import { useWorkflowPlatformsStore } from "@/lib/stores/user/workflows/platforms";
+import { useUserProfileStore } from "@/lib/stores/user/userProfile";
 import { mapTemplateToCampaignWizard } from "@/lib/utils/campaign/templateParser";
 import { toast } from "sonner";
 import { shallow } from "zustand/shallow";
@@ -70,6 +73,7 @@ let lastAppliedTemplateIdGlobal: QuickStartTemplateId | null = null;
 export default function QuickStartPage() {
 	const router = useRouter();
 	const [showLeadModal, setShowLeadModal] = useState(false);
+	const [showCrmSyncModal, setShowCrmSyncModal] = useState(false);
 	const [leadModalMode, setLeadModalMode] = useState<"select" | "create">(
 		"create",
 	);
@@ -154,6 +158,40 @@ export default function QuickStartPage() {
 	const lookalikeStore = useLookalikeStore();
 	const leadListStore = useLeadListStore();
 	const leadSearchStore = useLeadSearchStore();
+	const userProfile = useUserProfileStore((state) => state.userProfile);
+
+	const connectedCrmNames = useMemo(() => {
+		const accounts = userProfile?.connectedAccounts;
+		if (!accounts) {
+			return [] as string[];
+		}
+
+		const names: string[] = [];
+		if (accounts.goHighLevel) {
+			names.push("GoHighLevel");
+		}
+		if (accounts.loftyCRM) {
+			names.push("Lofty CRM");
+		}
+
+		return names;
+	}, [userProfile]);
+	const hasConnectedCrm = connectedCrmNames.length > 0;
+	const crmDisplayLabel = useMemo(() => {
+		if (!connectedCrmNames.length) {
+			return "your CRM";
+		}
+
+		if (connectedCrmNames.length === 1) {
+			return connectedCrmNames[0] ?? "your CRM";
+		}
+
+		const head = connectedCrmNames.slice(0, -1).join(", ");
+		const tail = connectedCrmNames[connectedCrmNames.length - 1];
+		return `${head} and ${tail}`;
+	}, [connectedCrmNames]);
+	const leadListCount = leadListStore.leadLists.length;
+	const hasLeadListsAvailable = leadListCount > 0;
 
 	const {
 		savedSearches,
@@ -228,25 +266,35 @@ export default function QuickStartPage() {
 
 	// Smart import handler that adapts based on user's existing data
 	const handleSmartImport = useCallback(() => {
-		const hasLeadLists =
-			leadListStore.leadLists && leadListStore.leadLists.length > 0;
+		const decision = computeSmartImportDecision({
+			hasConnectedCrm,
+			hasLeadLists: hasLeadListsAvailable,
+			crmDisplayLabel,
+		});
 
-		console.log("[QuickStart] Smart import - Has lead lists:", hasLeadLists);
+		toast.info(decision.toastTitle, {
+			description: decision.toastDescription,
+		});
 
-		if (hasLeadLists) {
-			// User has existing lists, let them select
-			toast.info("Opening lead list selector...", {
-				description: "Select from your existing lists or upload a new one",
-			});
-			handleSelectList();
-		} else {
-			// No existing lists, trigger upload
-			toast.info("Upload your first lead list", {
-				description: "Import leads from CSV to get started",
-			});
-			handleImportFromSource();
+		if (decision.type === "crm") {
+			setShowCrmSyncModal(true);
+			return;
 		}
-	}, [leadListStore.leadLists, handleSelectList, handleImportFromSource]);
+
+		if (decision.type === "select") {
+			handleSelectList();
+			return;
+		}
+
+		handleImportFromSource();
+	}, [
+		hasConnectedCrm,
+		hasLeadListsAvailable,
+		crmDisplayLabel,
+		setShowCrmSyncModal,
+		handleSelectList,
+		handleImportFromSource,
+	]);
 
 	const handleConfigureConnections = useCallback(() => {
 		router.push("/dashboard/integrations");
@@ -358,6 +406,35 @@ export default function QuickStartPage() {
 		handleSmartImport,
 		handleCampaignCreate,
 	]);
+
+	const handleCrmSyncCancel = useCallback(() => {
+		setShowCrmSyncModal(false);
+	}, []);
+
+	const handleCrmSyncConfirm = useCallback(() => {
+		setShowCrmSyncModal(false);
+		toast.success("CRM sync ready", {
+			description: `Select the segments to import directly from ${crmDisplayLabel}.`,
+		});
+		handleSelectList();
+	}, [crmDisplayLabel, handleSelectList]);
+
+	const handleCrmAutoSelect = useCallback(() => {
+		if (!hasLeadListsAvailable) {
+			toast.warning("No lead lists available yet", {
+				description: "Connect a CRM segment to auto-select.",
+			});
+			return;
+		}
+
+		setShowCrmSyncModal(false);
+		toast.success("AI auto select engaged", {
+			description: "We’ll prime your first CRM list for downstream flows.",
+		});
+		setTimeout(() => {
+			handleSmartCampaign();
+		}, 0);
+	}, [hasLeadListsAvailable, handleSmartCampaign]);
 
 	useEffect(() => {
 		if (!showCampaignModal || campaignModalContext) {
@@ -1615,7 +1692,7 @@ export default function QuickStartPage() {
 								<button
 									type="button"
 									onClick={scrollToQuickStartActions}
-									className="group inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.35em] text-primary transition hover:bg-primary/15"
+									className="group inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-4 py-2 font-semibold text-primary text-xs uppercase tracking-[0.35em] transition hover:bg-primary/15"
 								>
 									<ArrowDown className="h-3.5 w-3.5 transition group-hover:translate-y-0.5" />
 									Next
@@ -1671,6 +1748,15 @@ export default function QuickStartPage() {
 						accept=".csv,text/csv"
 						onChange={handleCsvUpload}
 						className="hidden"
+					/>
+
+					<QuickStartCrmSyncModal
+						isOpen={showCrmSyncModal}
+						connectedCrmNames={connectedCrmNames}
+						onCancel={handleCrmSyncCancel}
+						onConfirm={handleCrmSyncConfirm}
+						onAutoSelect={handleCrmAutoSelect}
+						isAutoSelectDisabled={!hasLeadListsAvailable}
 					/>
 
 					<QuickStartLegacyModals

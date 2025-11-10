@@ -102,3 +102,14 @@ export const useAIChatStore = create<AIChatState>()(
 		},
 	),
 );
+
+export function resetAIChatStore(): void {
+	useAIChatStore.setState({ threads: [], currentThreadId: undefined });
+	if (typeof window !== "undefined") {
+		try {
+			localStorage.removeItem("ai-chat-store");
+		} catch (error) {
+			console.warn("[AIChatStore] failed to clear persisted state", error);
+		}
+	}
+}

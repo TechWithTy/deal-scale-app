@@ -5,7 +5,9 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./*"],
-      "@root/*": ["./*"]
+      "@root/*": ["./*"],
+      "@external/dynamic-hero": ["external/dynamic-hero/src/index.ts"],
+      "@external/dynamic-hero/*": ["external/dynamic-hero/src/*"]
     }
   },
   "include": [

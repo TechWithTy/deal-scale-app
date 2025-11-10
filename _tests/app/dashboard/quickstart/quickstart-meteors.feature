@@ -15,3 +15,4 @@ Feature: Quick Start meteor highlights
     When I reload the Quick Start dashboard page
     Then at least one non-guided card has a different meteor configuration seed
 
+

@@ -47,7 +47,7 @@ describe("helpActions utilities", () => {
 		const next = useMusicPreferencesStore.getState();
 		expect(next.preferences.enabled).toBe(true);
 		expect(next.preferences.provider).toBe("internal");
-		expect(next.mode).toBe("music");
+		expect(next.mode).toBe("voice");
 	});
 
 	it("sets a sensible default provider when none is configured", () => {

@@ -12,7 +12,8 @@ import {
 	CardTitle,
 } from "@root/components/ui/card";
 
-const WAITLIST_URL = "https://www.dealscale.io/auth?callback=/score-streak-flow";
+const WAITLIST_URL =
+	"https://www.dealscale.io/auth?callback=/score-streak-flow";
 
 const InstallPrompt = (): React.ReactElement | null => {
 	const {
@@ -115,4 +116,3 @@ const InstallPrompt = (): React.ReactElement | null => {
 };
 
 export default InstallPrompt;
-

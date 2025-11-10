@@ -132,6 +132,7 @@ const PersonaCTA: FC<PersonaCTAProps> = ({
 								"bg-gradient-to-r from-emerald-500 via-emerald-400 to-lime-400",
 								isHorizontal ? "sm:px-9 sm:py-6" : "",
 								shouldRenderSecondary ? "ring-2 ring-emerald-200" : "",
+								"whitespace-normal text-balance",
 								contentAlignment,
 							)}
 						>
@@ -144,7 +145,7 @@ const PersonaCTA: FC<PersonaCTAProps> = ({
 								{primary.label}
 							</span>
 							{primary.description ? (
-								<span className="text-sm text-emerald-50/90">
+								<span className="text-sm text-emerald-50/90 text-pretty">
 									{primary.description}
 								</span>
 							) : null}
@@ -152,6 +153,14 @@ const PersonaCTA: FC<PersonaCTAProps> = ({
 								<span className="absolute inset-0 bg-gradient-to-br from-white/30 via-white/10 to-transparent" />
 							</span>
 						</Button>
+						<Pointer
+							className="text-emerald-200"
+							transition={{
+								type: "spring",
+								stiffness: 130,
+								damping: 16,
+							}}
+						/>
 					</div>
 				)}
 				{shouldRenderSecondary && secondaryCopy && (
@@ -169,6 +178,7 @@ const PersonaCTA: FC<PersonaCTAProps> = ({
 								"relative flex h-full w-full flex-col justify-center gap-1 rounded-3xl border border-primary/25 bg-gradient-to-br from-slate-50 via-white to-slate-100 px-6 py-5 text-primary shadow-[0_12px_30px_-16px_rgba(37,99,235,0.3)] transition hover:border-primary/35",
 								isHorizontal ? "sm:px-8 sm:py-5" : "",
 								"backdrop-blur-md",
+								"whitespace-normal text-balance",
 								contentAlignment,
 							)}
 						>
@@ -181,7 +191,7 @@ const PersonaCTA: FC<PersonaCTAProps> = ({
 								{secondaryCopy.label}
 							</span>
 							{secondaryCopy.description ? (
-								<span className="text-sm text-primary/75">
+								<span className="text-sm text-primary/75 text-pretty">
 									{secondaryCopy.description}
 								</span>
 							) : null}

@@ -25,6 +25,8 @@
 			"@root/*": ["./*"],
 			"@ssf/*": ["external/score-streak-flow/src/*"],
 			"external/*": ["external/*"],
+			"@external/dynamic-hero": ["external/dynamic-hero/src/index.ts"],
+			"@external/dynamic-hero/*": ["external/dynamic-hero/src/*"],
 			"@/store/*": ["lib/stores/*"],
 			"@/store/user": ["lib/stores/userStore"]
 		}

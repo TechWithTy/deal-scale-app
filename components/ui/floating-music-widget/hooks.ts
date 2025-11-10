@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 
 import {
 	DEFAULT_PLAYLIST_URI,
@@ -56,8 +56,15 @@ export function useFloatingMusicDebug(): {
 	const debugPlaylist =
 		process.env.NEXT_PUBLIC_MUSIC_WIDGET_DEBUG_PLAYLIST ?? DEFAULT_PLAYLIST_URI;
 
+	const debugInitializedRef = useRef(false);
+
 	useEffect(() => {
-		if (!debugEnabled) return;
+		if (!debugEnabled) {
+			debugInitializedRef.current = false;
+			return;
+		}
+		if (debugInitializedRef.current) return;
+		debugInitializedRef.current = true;
 		if (!preferences.enabled) setEnabled(true);
 		if (preferences.provider !== "spotify") setProvider("spotify");
 		if (preferences.playlistUri !== debugPlaylist)
@@ -77,7 +84,7 @@ export function useFloatingMusicDebug(): {
 	const effectivePlaylistUri =
 		(debugEnabled ? debugPlaylist : preferences.playlistUri) ??
 		DEFAULT_PLAYLIST_URI;
-	const shouldRender = debugEnabled || preferences.enabled;
+	const shouldRender = preferences.enabled;
 
 	return {
 		debugEnabled,

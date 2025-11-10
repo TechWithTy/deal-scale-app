@@ -15,3 +15,4 @@ Last updated: 2025-11-07
 - Run Lighthouse in an incognito Chrome window (install Score Streak Flow and confirm score ≥ 95).
 - Manually toggle offline mode after the first load to confirm cached dashboards render and the offline toast appears.
 
+

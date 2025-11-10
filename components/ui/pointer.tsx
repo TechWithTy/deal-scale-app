@@ -1,14 +1,11 @@
 "use client";
 
+import { AnimatePresence, motion, useMotionValue } from "motion/react";
 import { useEffect, useRef, useState } from "react";
-import {
-	AnimatePresence,
-	HTMLMotionProps,
-	motion,
-	useMotionValue,
-} from "motion/react";
 
 import { cn } from "@/lib/utils/index";
+
+import type { HTMLMotionProps } from "motion/react";
 
 /**
  * A custom pointer component that displays an animated cursor.
@@ -70,11 +67,14 @@ export function Pointer({
 
 	return (
 		<>
-			<div ref={containerRef} />
+			<span
+				ref={containerRef}
+				className="pointer-events-none inline-block align-middle"
+			/>
 			<AnimatePresence>
 				{isActive && (
-					<motion.div
-						className="pointer-events-none fixed z-50 transform-[translate(-50%,-50%)]"
+					<motion.span
+						className="transform-[translate(-50%,-50%)] pointer-events-none fixed z-50"
 						style={{
 							top: y,
 							left: x,
@@ -103,15 +103,18 @@ export function Pointer({
 								height="24"
 								width="24"
 								xmlns="http://www.w3.org/2000/svg"
+								aria-hidden="true"
+								focusable="false"
 								className={cn(
 									"rotate-[-70deg] stroke-white text-black",
 									className,
 								)}
 							>
+								<title>Pointer cursor</title>
 								<path d="M14.082 2.182a.5.5 0 0 1 .103.557L8.528 15.467a.5.5 0 0 1-.917-.007L5.57 10.694.803 8.652a.5.5 0 0 1-.006-.916l12.728-5.657a.5.5 0 0 1 .556.103z" />
 							</svg>
 						)}
-					</motion.div>
+					</motion.span>
 				)}
 			</AnimatePresence>
 		</>

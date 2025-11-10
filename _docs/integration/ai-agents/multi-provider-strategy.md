@@ -538,3 +538,4 @@ All providers have access to DealScale chip variables:
 **Start with OpenAI** (ChatGPT integration), **expand to Claude** (complex reasoning), and **add Gemini** (multimodal + cost optimization).
 
 
+

@@ -31,16 +31,20 @@ export default defineConfig({
 		setupFiles: ["lib/stores/user/_tests/_steps/setup.ts"],
 	},
 	resolve: {
-                alias: {
-                        "@": path.resolve(rootDir, "."),
-                        "@root": path.resolve(rootDir, "."),
-                        external: path.resolve(rootDir, "external"),
-                        react: path.resolve(rootDir, "node_modules/react"),
-                        "react-dom": path.resolve(rootDir, "node_modules/react-dom"),
-                        "react/jsx-runtime": path.resolve(
-                                rootDir,
-                                "node_modules/react/jsx-runtime",
-                        ),
-                },
-        },
+		alias: {
+			"@": path.resolve(rootDir, "."),
+			"@root": path.resolve(rootDir, "."),
+			external: path.resolve(rootDir, "external"),
+			"@external/dynamic-hero": path.resolve(
+				rootDir,
+				"external/dynamic-hero/src",
+			),
+			react: path.resolve(rootDir, "node_modules/react"),
+			"react-dom": path.resolve(rootDir, "node_modules/react-dom"),
+			"react/jsx-runtime": path.resolve(
+				rootDir,
+				"node_modules/react/jsx-runtime",
+			),
+		},
+	},
 });

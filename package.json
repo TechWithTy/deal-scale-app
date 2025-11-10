@@ -11,8 +11,8 @@
 		"build": "next build",
 		"build:analyze": "ANALYZE=true next build",
 		"start": "next start",
-		"lint": "biome check lib types hooks components app api actions",
-		"format": "biome format --write --no-errors-on-unmatched lib types hooks components app api actions",
+		"lint": "biome check lib types hooks components app api actions external packages",
+		"format": "biome format --write --no-errors-on-unmatched lib types hooks components app api actions external packages",
 		"prepare": "husky",
 		"test": "set TS_NODE_PROJECT=tsconfig.cucumber.json&& cucumber-js lib/stores/user/_tests/_features --require-module ts-node/register/transpile-only --require-module tsconfig-paths/register --require lib/stores/user/_tests/_steps/support.ts",
 		"test:watch": "vitest --watch --config vitest.config.ts",
@@ -27,7 +27,7 @@
 		"bdd:stores": "set TS_NODE_PROJECT=tsconfig.cucumber.json&& cucumber-js --tags '@stores' --require-module ts-node/register/transpile-only --require-module tsconfig-paths/register --require lib/stores/user/_tests/_steps/support.ts"
 	},
 	"lint-staged": {
-		"{app,components,lib,types,hooks,api,actions}/**/*.{js,jsx,ts,tsx,json,css,md,html,scss}": [
+		"{app,components,lib,types,hooks,api,actions,external,packages}/**/*.{js,jsx,ts,tsx,json,css,md,html,scss}": [
 			"biome format --write --no-errors-on-unmatched"
 		]
 	},
@@ -66,6 +66,7 @@
 		"@radix-ui/react-toggle-group": "^1.1.11",
 		"@radix-ui/react-tooltip": "^1.2.6",
 		"@react-google-maps/api": "^2.19.3",
+		"@rspack/core": "^1.6.1",
 		"@spotify/web-api-ts-sdk": "^1.2.0",
 		"@tabler/icons-react": "^3.35.0",
 		"@tanstack/react-query": "^5.90.7",
@@ -150,6 +151,7 @@
 		"zustand": "^4.4.6"
 	},
 	"devDependencies": {
+		"@babel/core": "^7.28.5",
 		"@biomejs/biome": "1.9.4",
 		"@cucumber/cucumber": "^10.0.0",
 		"@fullhuman/postcss-purgecss": "^5.0.0",
@@ -164,6 +166,7 @@
 		"@types/uuid": "^9.0.7",
 		"@vite-pwa/assets-generator": "^1.0.2",
 		"@vitejs/plugin-react-swc": "^4.2.1",
+		"babel-loader": "^10.0.0",
 		"husky": "^9.0.11",
 		"jsdom": "^24.1.3",
 		"lint-staged": "^15.2.7",

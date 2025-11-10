@@ -106,4 +106,3 @@ if (typeof window !== "undefined") {
 	window.remountDealScaleFocusWidget = remountDealScaleFocusWidget;
 	window.unmountDealScaleFocusWidgets = unmountDealScaleFocusWidgets;
 }
-

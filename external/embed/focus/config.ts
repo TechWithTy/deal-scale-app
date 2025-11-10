@@ -13,7 +13,8 @@ const playlistSchema = z
 	.trim()
 	.refine((value) => value.length > 0, { message: "Playlist cannot be empty" })
 	.refine(
-		(value) => value.startsWith("spotify:playlist:") || value.startsWith("http"),
+		(value) =>
+			value.startsWith("spotify:playlist:") || value.startsWith("http"),
 		{
 			message: "Playlist must be a Spotify URI or HTTPS URL",
 		},
@@ -101,13 +102,10 @@ export function parseFocusHost(element: Element): FocusEmbedConfig {
 	return {
 		mode: parsed.data.mode ?? "music",
 		theme: parsed.data.theme ?? "light",
-		playlist:
-			parsed.data.playlist ??
-			"spotify:playlist:37i9dQZF1DX8Uebhn9wzrS",
+		playlist: parsed.data.playlist ?? "spotify:playlist:37i9dQZF1DX8Uebhn9wzrS",
 		openOnLoad: parsed.data.openOnLoad ?? false,
 		voiceWebhook: parsed.data.voiceWebhook,
 		voiceToken: parsed.data.voiceToken,
 		advancedConfig: advanced,
 	};
 }
-
