@@ -22,7 +22,16 @@ setCacheNameDetails({
 self.skipWaiting();
 clientsClaim();
 
-precacheAndRoute(self.__WB_MANIFEST || []);
+const precacheManifest = [...(self.__WB_MANIFEST || [])];
+
+if (offlineFallback) {
+	precacheManifest.push({
+		url: offlineFallback,
+		revision: null,
+	});
+}
+
+precacheAndRoute(precacheManifest);
 cleanupOutdatedCaches();
 
 self.addEventListener("activate", (event) => {

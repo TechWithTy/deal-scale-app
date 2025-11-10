@@ -44,3 +44,4 @@ Legacy store Playwright specs remain under `pnpm test:stores:playwright`.
 2. **Triggering new notifications** – leverage `lib/server/push/notificationFactory.ts` to compose payloads and call `/api/push/send`.
 3. **Offline-first features** – persist state via `zustand` stores with `persist`, and synchronize using Workbox background sync queues.
 4. **Testing hooks** – create additional Vitest specs alongside `tests/pwa/pwa.spec.ts` to validate edge cases before shipping.
+

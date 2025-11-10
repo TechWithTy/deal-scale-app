@@ -3,8 +3,8 @@
 import React, { useMemo, useEffect } from "react";
 
 import {
-	QuickStartVideoPreview,
 	QUICKSTART_DEFAULT_VIDEO,
+	QuickStartVideoPreview,
 } from "@/components/quickstart/QuickStartVideoPreview";
 import { getQuickStartHeadlineCopy } from "@/lib/config/quickstart/headlines";
 import type { QuickStartPersonaId } from "@/lib/config/quickstart/wizardFlows";

@@ -1,8 +1,14 @@
-import { act, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import React, { type CSSProperties, type ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { WIDGET_WIDTH } from "@/components/ui/floating-music-widget/constants";
+import {
+	VOICE_HEIGHT,
+	VOICE_MAX_HEIGHT,
+	WIDGET_MAX_WIDTH,
+	WIDGET_MINIMIZED_HEIGHT,
+	WIDGET_WIDTH,
+} from "@/components/ui/floating-music-widget/constants";
 import {
 	resetMusicPreferencesStore,
 	useMusicPreferencesStore,
@@ -14,6 +20,10 @@ vi.mock("lottie-react", () => {
 		default: vi.fn(() => <div data-testid="voice-lottie" />),
 	};
 });
+
+vi.mock("@/components/ui/typewriter-effect", () => ({
+	TypewriterEffect: () => <div data-testid="typewriter" />,
+}));
 
 vi.mock("react-rnd", () => {
 	let capturedProps: MockRndProps | null = null;
@@ -99,7 +109,10 @@ describe("FloatingMusicWidget", () => {
 			}
 		).__capturedProps();
 		expect(captured?.position).toEqual({ x: 16, y: 16 });
-		expect(captured?.size).toEqual({ width: WIDGET_WIDTH, height: 180 });
+		expect(captured?.size).toEqual({
+			width: WIDGET_WIDTH,
+			height: VOICE_HEIGHT,
+		});
 	});
 
 	it("updates width and height on resize stop", async () => {
@@ -131,7 +144,7 @@ describe("FloatingMusicWidget", () => {
 				{ x: 24, y: 32 },
 			);
 		});
-		expect(useMusicPreferencesStore.getState().widgetHeights.music).toBe(260);
+		expect(useMusicPreferencesStore.getState().widgetHeights.voice).toBe(260);
 		expect(useMusicPreferencesStore.getState().widgetWidth).toBe(350);
 	});
 
@@ -140,8 +153,22 @@ describe("FloatingMusicWidget", () => {
 		const warnSpy = vi
 			.spyOn(console, "warn")
 			.mockImplementation(() => undefined);
+		const loadSpy = vi
+			.spyOn(HTMLIFrameElement.prototype, "addEventListener")
+			.mockImplementation(function addEventListener(type, listener, options) {
+				if (type === "load") {
+					return;
+				}
+				return EventTarget.prototype.addEventListener.call(
+					this,
+					type,
+					listener as EventListenerOrEventListenerObject,
+					options,
+				);
+			});
 		await act(async () => {
 			useMusicPreferencesStore.getState().setEnabled(true);
+			useMusicPreferencesStore.getState().setMode("music");
 			useMusicPreferencesStore.getState().setProvider("spotify");
 		});
 		const { default: FloatingMusicWidget } = await import(
@@ -150,12 +177,135 @@ describe("FloatingMusicWidget", () => {
 		render(<FloatingMusicWidget />);
 		await act(async () => {
 			vi.advanceTimersByTime(3200);
+			await Promise.resolve();
 		});
+		vi.useRealTimers();
 		const fallback = await screen.findByText(
 			/Spotify embed blocked by Content Security Policy/i,
 		);
 		expect(fallback).toBeInTheDocument();
+		expect(warnSpy).toHaveBeenCalled();
+		loadSpy.mockRestore();
 		warnSpy.mockRestore();
 		vi.useRealTimers();
+	});
+
+	it("minimizes and restores via header controls", async () => {
+		await act(async () => {
+			useMusicPreferencesStore.getState().setEnabled(true);
+		});
+		const { default: FloatingMusicWidget } = await import(
+			"@/components/ui/FloatingMusicWidget"
+		);
+		render(<FloatingMusicWidget />);
+
+		const minimizeButton = await screen.findByRole("button", {
+			name: /minimize focus widget/i,
+		});
+
+		await act(async () => {
+			fireEvent.click(minimizeButton);
+		});
+
+		expect(useMusicPreferencesStore.getState().widgetView.voice).toBe(
+			"minimized",
+		);
+		{
+			const { Rnd } = await import("react-rnd");
+			const captured = (
+				Rnd as unknown as {
+					__capturedProps: () => MockRndProps | null;
+				}
+			).__capturedProps();
+			expect(captured?.size).toEqual({
+				width: WIDGET_WIDTH,
+				height: WIDGET_MINIMIZED_HEIGHT,
+			});
+		}
+
+		await act(async () => {
+			fireEvent.click(minimizeButton);
+		});
+
+		expect(useMusicPreferencesStore.getState().widgetView.voice).toBe(
+			"default",
+		);
+		{
+			const { Rnd } = await import("react-rnd");
+			const captured = (
+				Rnd as unknown as {
+					__capturedProps: () => MockRndProps | null;
+				}
+			).__capturedProps();
+			expect(captured?.size).toEqual({
+				width: WIDGET_WIDTH,
+				height: VOICE_HEIGHT,
+			});
+		}
+	});
+
+	it("maximizes and restores via header controls", async () => {
+		await act(async () => {
+			useMusicPreferencesStore.getState().setEnabled(true);
+		});
+		const { default: FloatingMusicWidget } = await import(
+			"@/components/ui/FloatingMusicWidget"
+		);
+		render(<FloatingMusicWidget />);
+
+		const maximizeButton = await screen.findByRole("button", {
+			name: /maximize focus widget/i,
+		});
+
+		await act(async () => {
+			fireEvent.click(maximizeButton);
+		});
+
+		expect(useMusicPreferencesStore.getState().widgetView.voice).toBe(
+			"maximized",
+		);
+		expect(useMusicPreferencesStore.getState().widgetWidth).toBe(
+			WIDGET_MAX_WIDTH,
+		);
+		expect(useMusicPreferencesStore.getState().widgetHeights.voice).toBe(
+			VOICE_MAX_HEIGHT,
+		);
+
+		const restoreButton = await screen.findByRole("button", {
+			name: /restore focus widget size/i,
+		});
+
+		await act(async () => {
+			fireEvent.click(restoreButton);
+		});
+
+		expect(useMusicPreferencesStore.getState().widgetView.voice).toBe(
+			"default",
+		);
+		expect(useMusicPreferencesStore.getState().widgetWidth).toBe(WIDGET_WIDTH);
+		expect(useMusicPreferencesStore.getState().widgetHeights.voice).toBe(
+			VOICE_HEIGHT,
+		);
+	});
+
+	it("closes the widget via the header control", async () => {
+		await act(async () => {
+			useMusicPreferencesStore.getState().setEnabled(true);
+		});
+		const { default: FloatingMusicWidget } = await import(
+			"@/components/ui/FloatingMusicWidget"
+		);
+		render(<FloatingMusicWidget />);
+
+		const closeButton = await screen.findByRole("button", {
+			name: /close focus widget/i,
+		});
+
+		await act(async () => {
+			fireEvent.click(closeButton);
+		});
+
+		expect(useMusicPreferencesStore.getState().preferences.enabled).toBe(false);
+		expect(screen.queryByTestId("floating-music-widget")).toBeNull();
 	});
 });

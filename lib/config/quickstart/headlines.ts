@@ -4,6 +4,13 @@ import {
 	type QuickStartPersonaId,
 	getPersonaDefinition,
 } from "@/lib/config/quickstart/wizardFlows";
+import {
+	type HeroCopy,
+	type HeroVideoConfig,
+	heroChipSchema,
+	heroVideoConfigSchema,
+	resolveHeroCopy,
+} from "@external/dynamic-hero";
 
 const BASE_TITLE_TEMPLATE =
 	"Stop {{problem}}, start {{solution}} - before {{fear}}.";
@@ -18,6 +25,7 @@ const headlineValuesSchema = z.object({
 	socialProof: z.string(),
 	benefit: z.string(),
 	time: z.string(),
+	hope: z.string().optional(),
 });
 
 const headlineRotationsSchema = z.object({
@@ -26,22 +34,7 @@ const headlineRotationsSchema = z.object({
 	fears: z.array(z.string()).optional(),
 });
 
-const headlineChipSchema = z
-	.object({
-		label: z.string(),
-		sublabel: z.string().optional(),
-		variant: z.enum(["default", "secondary", "outline"]).optional(),
-	})
-	.refine(
-		(chip) => chip.label.trim().split(/\s+/).length <= 6,
-		"Chip label must not exceed six words.",
-	);
-
-const headlineVideoSchema = z.object({
-	src: z.string().url(),
-	poster: z.string().optional(),
-	provider: z.enum(["youtube", "supademo", "other"]).default("youtube"),
-});
+const headlineChipSchema = heroChipSchema;
 
 const headlineCtaSchema = z.object({
 	orientation: z.enum(["vertical", "horizontal"]).optional(),
@@ -54,7 +47,7 @@ const headlineSchema = z.object({
 	rotations: headlineRotationsSchema.optional(),
 	primaryChip: headlineChipSchema.optional(),
 	secondaryChip: headlineChipSchema.optional(),
-	video: headlineVideoSchema.optional(),
+	video: heroVideoConfigSchema.optional(),
 	cta: headlineCtaSchema.optional(),
 });
 
@@ -64,10 +57,38 @@ export type QuickStartHeadlineRotations = z.infer<
 	typeof headlineRotationsSchema
 >;
 export type QuickStartHeadlineChip = z.infer<typeof headlineChipSchema>;
-export type QuickStartHeadlineVideo = z.infer<typeof headlineVideoSchema>;
+export type QuickStartHeadlineVideo = HeroVideoConfig;
 export type QuickStartHeadlineCta = z.infer<typeof headlineCtaSchema>;
 
 type QuickStartHeadlineKey = QuickStartPersonaId | "default";
+
+const PERSONA_VIDEO_LIBRARY: Record<QuickStartHeadlineKey, HeroVideoConfig> = {
+	default: {
+		src: "https://www.youtube.com/embed/qh3NGpYRG3I?rel=0&controls=1&modestbranding=1&feature=quickstart-overview",
+		poster: DEFAULT_THUMBNAIL_SRC,
+		provider: "youtube",
+	},
+	agent: {
+		src: "https://www.youtube.com/embed/qh3NGpYRG3I?rel=0&controls=1&modestbranding=1&feature=agent-followup",
+		poster: DEFAULT_THUMBNAIL_SRC,
+		provider: "youtube",
+	},
+	investor: {
+		src: "https://www.youtube.com/embed/qh3NGpYRG3I?rel=0&controls=1&modestbranding=1&feature=investor-pipeline",
+		poster: DEFAULT_THUMBNAIL_SRC,
+		provider: "youtube",
+	},
+	wholesaler: {
+		src: "https://www.youtube.com/embed/qh3NGpYRG3I?rel=0&controls=1&modestbranding=1&feature=wholesaler-dispo",
+		poster: DEFAULT_THUMBNAIL_SRC,
+		provider: "youtube",
+	},
+	lender: {
+		src: "https://www.youtube.com/embed/qh3NGpYRG3I?rel=0&controls=1&modestbranding=1&feature=lender-approvals",
+		poster: DEFAULT_THUMBNAIL_SRC,
+		provider: "youtube",
+	},
+};
 
 const RAW_COPY: Record<QuickStartHeadlineKey, QuickStartHeadlineCopy> = {
 	default: {
@@ -78,6 +99,7 @@ const RAW_COPY: Record<QuickStartHeadlineKey, QuickStartHeadlineCopy> = {
 			socialProof: "Join 200+ dealmakers already automating.",
 			benefit: "Launch your first AI campaign with DealScale Quick Start",
 			time: "5",
+			hope: "Give your team back the focus to work the right deals.",
 		},
 		primaryChip: {
 			label: "AI Seller Qualification",
@@ -106,11 +128,7 @@ const RAW_COPY: Record<QuickStartHeadlineKey, QuickStartHeadlineCopy> = {
 				"you fall behind teams scaling with AI",
 			],
 		},
-		video: {
-			src: "https://www.youtube.com/embed/qh3NGpYRG3I?rel=0&controls=1&modestbranding=1",
-			poster: DEFAULT_THUMBNAIL_SRC,
-			provider: "youtube",
-		},
+		video: PERSONA_VIDEO_LIBRARY.default,
 		cta: {
 			orientation: "horizontal",
 		},
@@ -123,6 +141,7 @@ const RAW_COPY: Record<QuickStartHeadlineKey, QuickStartHeadlineCopy> = {
 			socialProof: "Join 200+ top agents scaling with AI follow-ups.",
 			benefit: "Automate your outreach",
 			time: "3",
+			hope: "Show up in every inbox before your competition does.",
 		},
 		primaryChip: {
 			label: "AI Follow-Up Engine",
@@ -151,11 +170,7 @@ const RAW_COPY: Record<QuickStartHeadlineKey, QuickStartHeadlineCopy> = {
 				"clients forget why they loved you",
 			],
 		},
-		video: {
-			src: "https://www.youtube.com/embed/qh3NGpYRG3I?rel=0&controls=1&modestbranding=1",
-			poster: DEFAULT_THUMBNAIL_SRC,
-			provider: "youtube",
-		},
+		video: PERSONA_VIDEO_LIBRARY.agent,
 	},
 	investor: {
 		values: {
@@ -165,6 +180,7 @@ const RAW_COPY: Record<QuickStartHeadlineKey, QuickStartHeadlineCopy> = {
 			socialProof: "Trusted by investors keeping their pipeline full.",
 			benefit: "Turn missed calls into closed deals",
 			time: "5",
+			hope: "Keep capital deployed with alerts that surface the right asset.",
 		},
 		primaryChip: {
 			label: "Pipeline Automation",
@@ -193,11 +209,7 @@ const RAW_COPY: Record<QuickStartHeadlineKey, QuickStartHeadlineCopy> = {
 				"you miss the next breakout opportunity",
 			],
 		},
-		video: {
-			src: "https://www.youtube.com/embed/qh3NGpYRG3I?rel=0&controls=1&modestbranding=1",
-			poster: DEFAULT_THUMBNAIL_SRC,
-			provider: "youtube",
-		},
+		video: PERSONA_VIDEO_LIBRARY.investor,
 	},
 	wholesaler: {
 		values: {
@@ -207,6 +219,7 @@ const RAW_COPY: Record<QuickStartHeadlineKey, QuickStartHeadlineCopy> = {
 			socialProof: "Stay ahead of fast-moving buyers and sellers.",
 			benefit: "Coordinate dispositions with AI follow-ups",
 			time: "4",
+			hope: "Keep your buyers hot without adding another coordinator.",
 		},
 		primaryChip: {
 			label: "Acquisition AI",
@@ -235,11 +248,7 @@ const RAW_COPY: Record<QuickStartHeadlineKey, QuickStartHeadlineCopy> = {
 				"competitors lock up inventory first",
 			],
 		},
-		video: {
-			src: "https://www.youtube.com/embed/qh3NGpYRG3I?rel=0&controls=1&modestbranding=1",
-			poster: DEFAULT_THUMBNAIL_SRC,
-			provider: "youtube",
-		},
+		video: PERSONA_VIDEO_LIBRARY.wholesaler,
 	},
 	lender: {
 		values: {
@@ -249,6 +258,7 @@ const RAW_COPY: Record<QuickStartHeadlineKey, QuickStartHeadlineCopy> = {
 			socialProof: "Private lenders trust DealScale to keep capital deployed.",
 			benefit: "Route borrowers to the right team",
 			time: "6",
+			hope: "Keep every borrower warm while the paperwork catches up.",
 		},
 		subtitleTemplate:
 			"{{socialProof}} {{benefit}} in under {{time}} minutes so deals stay funded.",
@@ -279,43 +289,16 @@ const RAW_COPY: Record<QuickStartHeadlineKey, QuickStartHeadlineCopy> = {
 				"borrowers look elsewhere for speed",
 			],
 		},
-		video: {
-			src: "https://www.youtube.com/embed/qh3NGpYRG3I?rel=0&controls=1&modestbranding=1",
-			poster: DEFAULT_THUMBNAIL_SRC,
-			provider: "youtube",
-		},
+		video: PERSONA_VIDEO_LIBRARY.lender,
 	},
 };
 
 const COPY = Object.fromEntries(
-	Object.entries(RAW_COPY).map(([key, definition]) => {
-		const parsed = headlineSchema.parse(definition);
-		return [
-			key,
-			{
-				...parsed,
-				rotations: {
-					problems: parsed.rotations?.problems ?? [parsed.values.problem],
-					solutions: parsed.rotations?.solutions ?? [parsed.values.solution],
-					fears: parsed.rotations?.fears ?? [parsed.values.fear],
-				},
-			},
-		];
-	}),
+	Object.entries(RAW_COPY).map(([key, definition]) => [
+		key,
+		headlineSchema.parse(definition),
+	]),
 ) as Record<QuickStartHeadlineKey, QuickStartHeadlineCopy>;
-
-const applyTemplate = (
-	template: string,
-	values: QuickStartHeadlineValues,
-): string =>
-	template.replace(/{{\s*(\w+)\s*}}/g, (match, token) => {
-		const value = values[token as keyof QuickStartHeadlineValues];
-		return value ?? match;
-	});
-
-const sanitizeText = (value: string) => value.replace(/\u2014/g, "-");
-const sanitizeArray = (input: readonly string[]) =>
-	input.map((value) => sanitizeText(value));
 
 export const getQuickStartHeadlineCopy = (
 	personaId: QuickStartPersonaId | null | undefined,
@@ -326,54 +309,28 @@ export const getQuickStartHeadlineCopy = (
 	const subtitleTemplate = raw.subtitleTemplate ?? BASE_SUBTITLE_TEMPLATE;
 	const personaDefinition = personaId ? getPersonaDefinition(personaId) : null;
 
-	const sanitizedValues = {
-		problem: sanitizeText(raw.values.problem),
-		solution: sanitizeText(raw.values.solution),
-		fear: sanitizeText(raw.values.fear),
-		socialProof: sanitizeText(raw.values.socialProof),
-		benefit: sanitizeText(raw.values.benefit),
-		time: raw.values.time,
-	} satisfies QuickStartHeadlineValues;
-
-	const sanitizedRotations: QuickStartHeadlineRotations = {
-		problems: sanitizeArray(raw.rotations.problems ?? [raw.values.problem]),
-		solutions: sanitizeArray(raw.rotations.solutions ?? [raw.values.solution]),
-		fears: sanitizeArray(raw.rotations.fears ?? [raw.values.fear]),
-	};
-
-	const sanitizeChip = (
-		chip: QuickStartHeadlineChip | undefined,
-	): QuickStartHeadlineChip | undefined =>
-		chip
+	const heroCopy = resolveHeroCopy(raw, {
+		fallbackPrimaryChip: {
+			label: "AI Deal Automation",
+			sublabel: "Launch in minutes",
+			variant: "secondary",
+		},
+		fallbackSecondaryChip: personaDefinition
 			? {
-					label: sanitizeText(chip.label),
-					sublabel: chip.sublabel,
-					variant: chip.variant,
+					label: personaDefinition.title,
+					variant: "outline",
 				}
-			: undefined;
+			: undefined,
+	});
 
 	return {
-		title: sanitizeText(applyTemplate(titleTemplate, sanitizedValues)),
-		subtitle: sanitizeText(applyTemplate(subtitleTemplate, sanitizedValues)),
-		values: sanitizedValues,
-		rotations: sanitizedRotations,
+		title: heroCopy.title,
+		subtitle: heroCopy.subtitle,
+		values: heroCopy.values,
+		rotations: heroCopy.rotations,
 		chips: {
-			primary:
-				sanitizeChip(raw.primaryChip) ??
-				({
-					label: "AI Deal Automation",
-					sublabel: "Launch in minutes",
-					variant: "secondary",
-				} satisfies QuickStartHeadlineChip),
-			secondary:
-				sanitizeChip(raw.secondaryChip) ??
-				(personaDefinition
-					? ({
-							label: sanitizeText(personaDefinition.title),
-							sublabel: undefined,
-							variant: "outline",
-						} satisfies QuickStartHeadlineChip)
-					: undefined),
+			primary: heroCopy.chips.primary,
+			secondary: heroCopy.chips.secondary,
 		},
 		video: raw.video,
 		cta: raw.cta,

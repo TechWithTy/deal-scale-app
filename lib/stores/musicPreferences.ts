@@ -8,6 +8,7 @@ import {
 	DEFAULT_WIDGET_WIDTH,
 	MAX_WIDGET_HEIGHTS,
 	MIN_WIDGET_HEIGHTS,
+	VOICE_ASSET_OPTIONS,
 	WIDGET_MAX_WIDTH,
 	WIDGET_MIN_WIDTH,
 } from "@/components/ui/floating-music-widget/constants";
@@ -17,7 +18,43 @@ import type {
 	VoiceSessionHistoryEntry,
 } from "@/types/focus";
 
-export type MusicWidgetMode = "music" | "voice";
+export type VoiceConnectionStatus =
+	| "connecting"
+	| "streaming"
+	| "listening"
+	| "processing"
+	| "reconnecting"
+	| "disconnected"
+	| "idle"
+	| "attention";
+
+export const VOICE_STATUS_PRIORITY: Record<VoiceConnectionStatus, number> = {
+	disconnected: 100,
+	reconnecting: 90,
+	connecting: 80,
+	processing: 75,
+	streaming: 70,
+	listening: 60,
+	attention: 55,
+	idle: 40,
+};
+
+export const VOICE_STATUS_DEFAULT_MESSAGES: Record<
+	VoiceConnectionStatus,
+	string
+> = {
+	connecting: "Establishing secure voice link…",
+	streaming: "Streaming DealScale insights in real time.",
+	listening: "Standing by for your next instruction.",
+	processing: "Composing the next response…",
+	reconnecting: "Reconnecting to the voice pipeline…",
+	disconnected: "Voice channel offline. Retry to resume.",
+	idle: "Voice co-pilot is idle.",
+	attention: "Action required to continue voice support.",
+};
+
+export type MusicWidgetMode = "music" | "voice" | "video" | "phone";
+export type MusicWidgetView = "default" | "minimized" | "maximized";
 
 export interface MusicWidgetPosition {
 	x: number;
@@ -43,6 +80,13 @@ interface MusicPreferencesState {
 	lastSyncedAt: number | null;
 	mode: MusicWidgetMode;
 	sessionHistory: VoiceSessionHistoryEntry[];
+	assetLibrary: VoicePaletteOption[];
+	bookmarkedSessionIds: string[];
+	widgetView: Record<MusicWidgetMode, MusicWidgetView>;
+	voiceStatus: VoiceConnectionStatus;
+	voiceStatusMessage: string;
+	voiceStatusPriority: number;
+	voiceStatusUpdatedAt: number | null;
 	setEnabled: (enabled: boolean) => void;
 	setProvider: (provider: "spotify" | "internal" | null) => void;
 	setPlaylistUri: (uri: string | null) => void;
@@ -57,6 +101,21 @@ interface MusicPreferencesState {
 	syncWidgetPosition: () => Promise<void>;
 	addSessionHistory: (entry: VoicePaletteOption) => void;
 	clearSessionHistory: () => void;
+	setAssetLibrary: (assets: VoicePaletteOption[]) => void;
+	addAssetToLibrary: (asset: VoicePaletteOption) => void;
+	removeAssetFromLibrary: (id: string) => void;
+	toggleSessionBookmark: (sessionId: string) => void;
+	setBookmarkedSessions: (sessionIds: string[]) => void;
+	setWidgetView: (mode: MusicWidgetMode, view: MusicWidgetView) => void;
+	setVoiceStatus: (
+		status: VoiceConnectionStatus,
+		options?: {
+			message?: string;
+			priority?: number;
+			force?: boolean;
+		},
+	) => void;
+	setVoiceStatusMessage: (message: string) => void;
 	reset: () => void;
 }
 
@@ -83,6 +142,13 @@ function createDefaultState(): Pick<
 	| "widgetHeights"
 	| "widgetWidth"
 	| "sessionHistory"
+	| "assetLibrary"
+	| "bookmarkedSessionIds"
+	| "widgetView"
+	| "voiceStatus"
+	| "voiceStatusMessage"
+	| "voiceStatusPriority"
+	| "voiceStatusUpdatedAt"
 > {
 	return {
 		preferences: createDefaultPreferences(),
@@ -91,8 +157,20 @@ function createDefaultState(): Pick<
 		widgetWidth: DEFAULT_WIDGET_WIDTH,
 		isSyncing: false,
 		lastSyncedAt: null,
-		mode: "music",
+		mode: "voice",
 		sessionHistory: [],
+		assetLibrary: [...VOICE_ASSET_OPTIONS],
+		bookmarkedSessionIds: [],
+		widgetView: {
+			music: "default",
+			voice: "default",
+			video: "default",
+			phone: "default",
+		},
+		voiceStatus: "streaming",
+		voiceStatusMessage: VOICE_STATUS_DEFAULT_MESSAGES.streaming,
+		voiceStatusPriority: VOICE_STATUS_PRIORITY.streaming,
+		voiceStatusUpdatedAt: Date.now(),
 	};
 }
 
@@ -181,6 +259,64 @@ export const useMusicPreferencesStore = create<MusicPreferencesState>()(
 					};
 				}),
 			clearSessionHistory: () => set({ sessionHistory: [] }),
+			setAssetLibrary: (assets) => set({ assetLibrary: [...assets] }),
+			addAssetToLibrary: (asset) =>
+				set((state) => {
+					const exists = state.assetLibrary.some(
+						(existing) => existing.id === asset.id,
+					);
+					if (exists) {
+						return {
+							assetLibrary: state.assetLibrary.map((existing) =>
+								existing.id === asset.id ? { ...asset } : existing,
+							),
+						};
+					}
+					return {
+						assetLibrary: [{ ...asset }, ...state.assetLibrary],
+					};
+				}),
+			removeAssetFromLibrary: (id) =>
+				set((state) => ({
+					assetLibrary: state.assetLibrary.filter((asset) => asset.id !== id),
+				})),
+			toggleSessionBookmark: (sessionId) =>
+				set((state) => {
+					const exists = state.bookmarkedSessionIds.includes(sessionId);
+					const next = exists
+						? state.bookmarkedSessionIds.filter((id) => id !== sessionId)
+						: [sessionId, ...state.bookmarkedSessionIds];
+					return { bookmarkedSessionIds: next };
+				}),
+			setBookmarkedSessions: (sessionIds) =>
+				set({
+					bookmarkedSessionIds: Array.from(new Set(sessionIds)),
+				}),
+			setWidgetView: (mode, view) =>
+				set((state) => ({
+					widgetView: { ...state.widgetView, [mode]: view },
+				})),
+			setVoiceStatus: (status, options = {}) =>
+				set((state) => {
+					const priority =
+						options.priority ?? VOICE_STATUS_PRIORITY[status] ?? 0;
+					if (!options.force && priority < state.voiceStatusPriority) {
+						return state;
+					}
+					const message =
+						options.message ?? VOICE_STATUS_DEFAULT_MESSAGES[status];
+					return {
+						voiceStatus: status,
+						voiceStatusMessage: message,
+						voiceStatusPriority: priority,
+						voiceStatusUpdatedAt: Date.now(),
+					};
+				}),
+			setVoiceStatusMessage: (message) =>
+				set(() => ({
+					voiceStatusMessage: message,
+					voiceStatusUpdatedAt: Date.now(),
+				})),
 			reset: () => set(createDefaultState()),
 		}),
 		{

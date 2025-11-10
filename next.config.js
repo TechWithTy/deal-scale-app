@@ -1,6 +1,6 @@
 const path = require("node:path");
 const { buildCacheControl } = require("./utils/http/cacheControl.js");
-const { runtimeCaching, offlineFallback } = require("./public/sw-config.js");
+const { offlineFallback } = require("./public/sw-config.js");
 
 // Bundle analyzer (run with: ANALYZE=true pnpm build)
 const withBundleAnalyzer = require("@next/bundle-analyzer")({
@@ -14,18 +14,7 @@ const withPWA = require("next-pwa")({
 	register: true,
 	skipWaiting: true,
 	swSrc: "./public/sw-custom.js",
-	runtimeCaching,
 	buildExcludes: [/middleware-manifest\.json$/],
-	workboxOptions: {
-		navigationPreload: true,
-		cleanupOutdatedCaches: true,
-		clientsClaim: true,
-		skipWaiting: true,
-		cacheId: "deal-scale-app",
-		navigateFallback: offlineFallback,
-		navigateFallbackDenylist: [/^\/api\//],
-		additionalManifestEntries: [{ url: offlineFallback, revision: null }],
-	},
 	fallbacks: {
 		document: offlineFallback,
 	},
@@ -86,6 +75,7 @@ const nextConfig = {
 		domains: [
 			"utfs.io",
 			"www.realtor.com",
+			"images.unsplash.com",
 			"unsplash.com",
 			"pixabay.com",
 			"ap.rdcpix.com",
@@ -128,6 +118,14 @@ const nextConfig = {
 			...(config.resolve.alias || {}),
 			"@": path.resolve(__dirname),
 			external: path.resolve(__dirname, "external"),
+			"@external/dynamic-hero": path.resolve(
+				__dirname,
+				"external/dynamic-hero/src/index.ts",
+			),
+			"@external/dynamic-hero/": path.resolve(
+				__dirname,
+				"external/dynamic-hero/src",
+			),
 		};
 
 		return config;

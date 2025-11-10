@@ -41,3 +41,4 @@ describe("baseGlobalCommands", () => {
 		expect(openWheelSpinnerModalMock).toHaveBeenCalled();
 	});
 });
+

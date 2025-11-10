@@ -1,12 +1,17 @@
 import { expect, test } from "@playwright/test";
 
 test.describe("PWA installability", () => {
-	test("exposes manifest link and registers a service worker", async ({ page }) => {
+	test("exposes manifest link and registers a service worker", async ({
+		page,
+	}) => {
 		await page.goto("/");
 
 		const manifestLink = page.locator('link[rel="manifest"]');
 
-		await expect(manifestLink).toHaveAttribute("href", /manifest\.webmanifest$/);
+		await expect(manifestLink).toHaveAttribute(
+			"href",
+			/manifest\.webmanifest$/,
+		);
 
 		await page.waitForTimeout(1500);
 
@@ -18,4 +23,3 @@ test.describe("PWA installability", () => {
 		expect(registrationCount).toBeGreaterThan(0);
 	});
 });
-

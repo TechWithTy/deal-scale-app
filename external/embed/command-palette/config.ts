@@ -70,7 +70,9 @@ export type CommandPaletteEmbedConfig = {
 	advancedConfig: z.infer<typeof advancedConfigSchema>;
 };
 
-export function parseCommandPaletteHost(element: Element): CommandPaletteEmbedConfig {
+export function parseCommandPaletteHost(
+	element: Element,
+): CommandPaletteEmbedConfig {
 	const raw = {
 		variant: element.getAttribute("data-variant") ?? undefined,
 		keyboard: element.getAttribute("data-keyboard") ?? undefined,
@@ -102,4 +104,3 @@ export function parseCommandPaletteHost(element: Element): CommandPaletteEmbedCo
 		advancedConfig: advanced,
 	};
 }
-

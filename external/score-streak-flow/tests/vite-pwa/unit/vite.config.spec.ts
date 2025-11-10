@@ -2,7 +2,9 @@ import type { PluginOption } from "vite";
 import { describe, expect, it } from "vitest";
 import config from "../../../vite.config";
 
-const extractPluginNames = (plugins: PluginOption | PluginOption[] | undefined) => {
+const extractPluginNames = (
+	plugins: PluginOption | PluginOption[] | undefined,
+) => {
 	if (!plugins) {
 		return [];
 	}
@@ -39,4 +41,3 @@ describe("vite.config.ts", () => {
 		expect(pluginNames).toContain("vite-plugin-pwa");
 	});
 });
-

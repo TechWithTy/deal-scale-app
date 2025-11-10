@@ -41,8 +41,11 @@ describe("musicPreferences store", () => {
 		expect(state.widgetPosition).toBeNull();
 		expect(state.widgetHeights.music).toBeGreaterThan(0);
 		expect(state.widgetHeights.voice).toBeGreaterThan(0);
+		expect(state.widgetHeights.video).toBeGreaterThan(0);
 		expect(state.widgetWidth).toBe(WIDGET_WIDTH);
-		expect(state.mode).toBe("music");
+		expect(state.mode).toBe("voice");
+		expect(state.bookmarkedSessionIds).toEqual([]);
+		expect(state.widgetView.video).toBe("default");
 		resetMusicPreferencesStore();
 	});
 
@@ -99,8 +102,8 @@ describe("musicPreferences store", () => {
 			useMusicPreferencesStore,
 			resetMusicPreferencesStore,
 		} = await loadModule();
-		useMusicPreferencesStore.getState().setMode("voice");
-		expect(useMusicPreferencesStore.getState().mode).toBe("voice");
+		useMusicPreferencesStore.getState().setMode("phone");
+		expect(useMusicPreferencesStore.getState().mode).toBe("phone");
 		const persisted = localStorage.getItem(MUSIC_PREFERENCES_STORAGE_KEY);
 		expect(persisted).toBeTruthy();
 		if (!persisted) throw new Error("expected persisted value");
@@ -121,7 +124,7 @@ describe("musicPreferences store", () => {
 		expect(state.preferences.provider).toBe("spotify");
 		expect(state.preferences.playlistUri).toBe("spotify:playlist:debug");
 		expect(state.preferences.volume).toBe(0.35);
-		expect(state.mode).toBe("music");
+		expect(state.mode).toBe("voice");
 		resetMusicPreferencesStore();
 	});
 
@@ -136,6 +139,14 @@ describe("musicPreferences store", () => {
 		expect(useMusicPreferencesStore.getState().widgetHeights.voice).toBe(
 			MIN_WIDGET_HEIGHTS.voice,
 		);
+		useMusicPreferencesStore.getState().setWidgetHeight("video", 1000);
+		expect(useMusicPreferencesStore.getState().widgetHeights.video).toBe(
+			MAX_WIDGET_HEIGHTS.video,
+		);
+		useMusicPreferencesStore.getState().setWidgetHeight("video", 40);
+		expect(useMusicPreferencesStore.getState().widgetHeights.video).toBe(
+			MIN_WIDGET_HEIGHTS.video,
+		);
 		resetMusicPreferencesStore();
 	});
 
@@ -149,6 +160,53 @@ describe("musicPreferences store", () => {
 		useMusicPreferencesStore.getState().setWidgetWidth(120);
 		expect(useMusicPreferencesStore.getState().widgetWidth).toBe(
 			WIDGET_MIN_WIDTH,
+		);
+		resetMusicPreferencesStore();
+	});
+
+	it("toggles session bookmarks", async () => {
+		const { useMusicPreferencesStore, resetMusicPreferencesStore } =
+			await loadModule();
+		useMusicPreferencesStore.getState().toggleSessionBookmark("session-1");
+		expect(
+			useMusicPreferencesStore
+				.getState()
+				.bookmarkedSessionIds.includes("session-1"),
+		).toBe(true);
+		useMusicPreferencesStore.getState().toggleSessionBookmark("session-1");
+		expect(
+			useMusicPreferencesStore
+				.getState()
+				.bookmarkedSessionIds.includes("session-1"),
+		).toBe(false);
+		resetMusicPreferencesStore();
+	});
+
+	it("updates widget view state", async () => {
+		const { useMusicPreferencesStore, resetMusicPreferencesStore } =
+			await loadModule();
+		expect(useMusicPreferencesStore.getState().widgetView.voice).toBe(
+			"default",
+		);
+		expect(useMusicPreferencesStore.getState().widgetView.video).toBe(
+			"default",
+		);
+		useMusicPreferencesStore.getState().setWidgetView("voice", "minimized");
+		expect(useMusicPreferencesStore.getState().widgetView.voice).toBe(
+			"minimized",
+		);
+		useMusicPreferencesStore.getState().setWidgetView("voice", "maximized");
+		expect(useMusicPreferencesStore.getState().widgetView.voice).toBe(
+			"maximized",
+		);
+		useMusicPreferencesStore.getState().setWidgetView("video", "maximized");
+		expect(useMusicPreferencesStore.getState().widgetView.video).toBe(
+			"maximized",
+		);
+		useMusicPreferencesStore.getState().setWidgetView("video", "default");
+		useMusicPreferencesStore.getState().setWidgetView("phone", "minimized");
+		expect(useMusicPreferencesStore.getState().widgetView.phone).toBe(
+			"minimized",
 		);
 		resetMusicPreferencesStore();
 	});

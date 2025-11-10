@@ -89,3 +89,4 @@ embeddable charts in polling mode.
 - Enrich analytics (render duration, error rate) via custom events
 - Provide React helper package for first-party apps
 
+

@@ -67,4 +67,3 @@ const ServiceWorkerToasts = () => {
 };
 
 export default ServiceWorkerToasts;
-

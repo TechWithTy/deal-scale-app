@@ -82,3 +82,4 @@ All attributes are validated via Zod. Invalid values render an inline error and 
 - Provide an npm wrapper (`@dealscale/command-palette-embed`) for React-first hosts.
 
 
+

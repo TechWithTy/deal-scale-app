@@ -17,7 +17,7 @@ export function openHelpModal(): void {
 }
 
 export function openFocusWidget(): void {
-	const { preferences, setEnabled, setMode, setProvider } =
+	const { preferences, setEnabled, setMode, setProvider, setWidgetView } =
 		useMusicPreferencesStore.getState();
 	console.debug("[FocusWidget] openFocusWidget invoked", {
 		enabled: preferences.enabled,
@@ -28,7 +28,9 @@ export function openFocusWidget(): void {
 	if (!preferences.provider) {
 		setProvider("internal");
 	}
-	setMode("music");
+	setMode("voice");
+	setWidgetView("music", "default");
+	setWidgetView("voice", "default");
 	const afterState = useMusicPreferencesStore.getState();
 	console.debug("[FocusWidget] state after enable", {
 		enabled: afterState.preferences.enabled,
