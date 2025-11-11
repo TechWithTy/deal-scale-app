@@ -22,15 +22,16 @@ import type {
 } from "../types/social-proof";
 import type { ResolvedHeroCopy } from "../utils/copy";
 
-const PROBLEM_INTERVAL_MS = 5200;
-const SOLUTION_INTERVAL_MS = 6800;
-const FEAR_INTERVAL_MS = 6000;
+const PROBLEM_INTERVAL_MS = 8200;
+const SOLUTION_INTERVAL_MS = 10200;
+const FEAR_INTERVAL_MS = 9400;
+const MAX_PHRASE_LENGTH = 64;
 
 const baseSpanAnimation = {
 	initial: { opacity: 0, y: -10, filter: "blur(6px)" },
 	animate: { opacity: 1, y: 0, filter: "blur(0px)" },
 	exit: { opacity: 0, y: 10, filter: "blur(8px)" },
-	transition: { duration: 0.32 },
+	transition: { duration: 0.46, ease: "easeInOut" as const },
 };
 
 interface HeroHeadlineProps {
@@ -56,12 +57,23 @@ export function HeroHeadline({
 	personaDescription,
 	reviews,
 }: HeroHeadlineProps): JSX.Element {
+	const truncate = useMemo(
+		() => (value: string) => {
+			const normalized = value.trim();
+			if (normalized.length <= MAX_PHRASE_LENGTH) {
+				return normalized;
+			}
+			return `${normalized.slice(0, MAX_PHRASE_LENGTH - 1).trimEnd()}…`;
+		},
+		[],
+	);
+
 	const problems = useMemo(() => {
 		const source = copy.rotations?.problems ?? [copy.values.problem];
 		const cleaned = source
 			.map((phrase, index) => ({
 				index,
-				text: phrase?.trim() ?? "",
+				text: truncate(phrase ?? ""),
 			}))
 			.filter((entry, position, arr) => {
 				if (!entry.text.length) {
@@ -73,15 +85,21 @@ export function HeroHeadline({
 				return firstMatch?.index === entry.index;
 			})
 			.map((entry) => entry.text);
-		return cleaned.length ? cleaned : [copy.values.problem.trim()];
-	}, [copy.rotations?.problems, copy.values.problem]);
+		return cleaned.length ? cleaned : [truncate(copy.values.problem)];
+	}, [copy.rotations?.problems, copy.values.problem, truncate]);
 	const solutions = useMemo(
-		() => copy.rotations?.solutions ?? [copy.values.solution],
-		[copy.rotations?.solutions, copy.values.solution],
+		() =>
+			(copy.rotations?.solutions ?? [copy.values.solution]).map((value) =>
+				truncate(value ?? ""),
+			),
+		[copy.rotations?.solutions, copy.values.solution, truncate],
 	);
 	const fears = useMemo(
-		() => copy.rotations?.fears ?? [copy.values.fear],
-		[copy.rotations?.fears, copy.values.fear],
+		() =>
+			(copy.rotations?.fears ?? [copy.values.fear]).map((value) =>
+				truncate(value ?? ""),
+			),
+		[copy.rotations?.fears, copy.values.fear, truncate],
 	);
 
 	const problemIndex = useRotatingIndex(problems, PROBLEM_INTERVAL_MS);
@@ -120,13 +138,13 @@ export function HeroHeadline({
 	const primaryChipClasses = primaryChip
 		? cn(
 				badgeVariants({ variant: primaryChip.variant ?? "secondary" }),
-				"border border-white/40 bg-primary/90 px-4 py-[6px] text-xs font-semibold uppercase tracking-wide text-primary-foreground shadow-[0_8px_24px_rgba(32,99,255,0.35)]",
+				"rounded-full border border-primary/40 bg-primary/90 px-5 py-[7px] text-[11px] font-semibold uppercase tracking-[0.28em] text-primary-foreground shadow-[0_8px_24px_rgba(32,99,255,0.35)]",
 			)
 		: undefined;
 	const secondaryChipClasses = secondaryChip
 		? cn(
 				badgeVariants({ variant: secondaryChip.variant ?? "outline" }),
-				"border border-primary/40 bg-background/65 px-4 py-[6px] text-xs font-semibold uppercase tracking-wide text-foreground shadow-[0_6px_16px_rgba(15,23,42,0.2)]",
+				"rounded-full border border-primary/35 bg-background/70 px-5 py-[7px] text-[11px] font-semibold uppercase tracking-[0.28em] text-foreground shadow-[0_6px_16px_rgba(15,23,42,0.2)]",
 			)
 		: undefined;
 
@@ -137,7 +155,7 @@ export function HeroHeadline({
 		(personaChipLabel ? `${personaChipLabel} persona` : undefined);
 	const personaChipClasses = cn(
 		badgeVariants({ variant: "secondary" }),
-		"border border-primary/45 bg-gradient-to-r from-primary/95 via-primary to-primary/85 px-6 py-2 text-lg font-semibold uppercase tracking-[0.4em] text-primary-foreground shadow-[0_18px_55px_rgba(64,106,255,0.45)]",
+		"rounded-full border border-primary/45 bg-gradient-to-r from-primary/95 via-primary to-primary/85 px-6 py-2 text-sm font-semibold uppercase tracking-[0.32em] text-primary-foreground shadow-[0_18px_55px_rgba(64,106,255,0.45)]",
 	);
 
 	return (
@@ -226,56 +244,43 @@ export function HeroHeadline({
 					</TooltipProvider>
 				) : null}
 
+				<div className="h-px w-20 bg-gradient-to-r from-transparent via-primary/60 to-transparent md:w-32" />
 				<motion.h1
 					initial={{ opacity: 0, y: 8 }}
 					animate={{ opacity: 1, y: 0 }}
 					transition={{ duration: 0.24 }}
-					className="text-balance font-bold text-3xl text-foreground drop-shadow-[0_3px_12px_rgba(8,8,24,0.35)] md:text-4xl"
+					className="text-balance font-semibold leading-tight text-foreground drop-shadow-[0_3px_12px_rgba(8,8,24,0.35)] text-[clamp(2rem,4vw,2.75rem)]"
 				>
-					<span className="whitespace-pre-wrap">Stop </span>
-					<span
-						className="relative inline-flex items-center overflow-hidden rounded-[1.25rem] px-6 py-2 shadow-[0_18px_44px_-18px_rgba(239,68,68,0.55)]"
-						style={{
-							backgroundColor:
-								"var(--hero-problem-bg, rgba(220, 38, 38, 0.96))",
-							color: "var(--hero-problem-text, #ffffff)",
-						}}
-					>
-						<AnimatePresence mode="wait" initial={false}>
-							<motion.span
-								key={`${problemIndex}-${problemDisplayText}`}
-								{...baseSpanAnimation}
-								className="relative text-lg font-semibold text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.55)] md:text-xl"
-								style={{
-									color: "var(--hero-problem-text, #ffffff)",
-								}}
-							>
-								{problemDisplayText}
-							</motion.span>
-						</AnimatePresence>
-					</span>
+					<span className="font-semibold">Stop </span>
+					<AnimatePresence mode="wait" initial={false}>
+						<motion.span
+							key={`${problemIndex}-${problemDisplayText}`}
+							{...baseSpanAnimation}
+							className="inline-flex min-h-[calc(1em+0.35rem)] items-center bg-gradient-to-r from-rose-400 to-rose-600 bg-clip-text px-1 text-transparent font-semibold"
+						>
+							{problemDisplayText}
+						</motion.span>
+					</AnimatePresence>
 					<span>, start </span>
-					<span className="font-semibold text-primary">
-						<AnimatePresence mode="sync" initial={false}>
-							<motion.span
-								key={`${solutionIndex}-${solutionText}`}
-								{...baseSpanAnimation}
-							>
-								{solutionText}
-							</motion.span>
-						</AnimatePresence>
-					</span>
+					<AnimatePresence mode="sync" initial={false}>
+						<motion.span
+							key={`${solutionIndex}-${solutionText}`}
+							{...baseSpanAnimation}
+							className="inline-flex min-h-[calc(1em+0.35rem)] items-center px-1 text-primary font-semibold"
+						>
+							{solutionText}
+						</motion.span>
+					</AnimatePresence>
 					<span> before </span>
-					<span className="font-semibold text-amber-400 dark:text-amber-300">
-						<AnimatePresence mode="sync" initial={false}>
-							<motion.span
-								key={`${fearIndex}-${fearText}`}
-								{...baseSpanAnimation}
-							>
-								{fearText}
-							</motion.span>
-						</AnimatePresence>
-					</span>
+					<AnimatePresence mode="sync" initial={false}>
+						<motion.span
+							key={`${fearIndex}-${fearText}`}
+							{...baseSpanAnimation}
+							className="inline-flex min-h-[calc(1em+0.35rem)] items-center bg-gradient-to-r from-amber-300 to-amber-500 bg-clip-text px-1 text-transparent font-semibold"
+						>
+							{fearText}
+						</motion.span>
+					</AnimatePresence>
 					<span>.</span>
 				</motion.h1>
 

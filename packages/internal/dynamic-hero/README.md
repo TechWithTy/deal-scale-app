@@ -33,3 +33,5 @@ const copy = resolveHeroCopy(heroCopyDefinition, {
 > Note: This package is private to the monorepo and assumes the shared design system (Tailwind tokens, Radix primitives, and motion). Ensure these dependencies are present in any consumer application.
 
 
+
+

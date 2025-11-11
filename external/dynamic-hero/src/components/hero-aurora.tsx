@@ -11,7 +11,7 @@ const LAYERS = [
 		size: 720,
 		top: "-20%",
 		left: "-10%",
-		duration: 18,
+		duration: 28,
 		background:
 			"radial-gradient(circle at 20% 20%, rgba(59,130,246,0.35), rgba(16,185,129,0))",
 	},
@@ -20,7 +20,7 @@ const LAYERS = [
 		size: 680,
 		top: "45%",
 		left: "55%",
-		duration: 22,
+		duration: 34,
 		background:
 			"radial-gradient(circle at 80% 20%, rgba(168,85,247,0.28), rgba(14,165,233,0))",
 	},
@@ -29,7 +29,7 @@ const LAYERS = [
 		size: 760,
 		top: "10%",
 		left: "55%",
-		duration: 26,
+		duration: 38,
 		background:
 			"radial-gradient(circle at 50% 80%, rgba(244,114,182,0.22), rgba(14,116,144,0))",
 	},
@@ -63,8 +63,8 @@ export function HeroAurora({
 						filter: "blur(80px)",
 					}}
 					animate={{
-						rotate: [0, 30, -12, 0],
-						scale: [1, 1.08, 0.96, 1],
+						rotate: [0, 18, -8, 0],
+						scale: [1, 1.04, 0.98, 1],
 					}}
 					transition={{
 						duration: layer.duration,

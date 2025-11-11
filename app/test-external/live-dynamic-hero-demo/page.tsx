@@ -1,132 +1,37 @@
 "use client";
 
-import { ArrowDown } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 
 import {
-	DEFAULT_HERO_SOCIAL_PROOF,
 	HeroAurora,
 	HeroHeadline,
-	type HeroVideoConfig,
 	HeroVideoPreview,
-	resolveHeroCopy,
 } from "@external/dynamic-hero";
 
 import PersonaCTA from "@/components/cta/PersonaCTA";
 import { AvatarCircles } from "@/components/ui/avatar-circles";
 import { BackgroundBeamsWithCollision } from "@/components/ui/background-beams-with-collision";
-import { LightRays } from "@/components/ui/light-rays";
-import { Pointer } from "@/components/ui/pointer";
 import { Separator } from "@/components/ui/separator";
-import { cn } from "@/lib/utils/index";
 
-const LIVE_VIDEO: HeroVideoConfig = {
-	src: "https://www.youtube.com/embed/O-3Mxf_kKQc?rel=0&controls=1&modestbranding=1",
-	poster:
-		"https://images.unsplash.com/photo-1545239351-1141bd82e8a6?q=80&w=1920&auto=format&fit=crop",
-	provider: "youtube",
-};
+import {
+	LIVE_COPY,
+	LIVE_MICROCOPY,
+	LIVE_PRIMARY_CTA,
+	LIVE_SECONDARY_CTA,
+	LIVE_SOCIAL_PROOF,
+	LIVE_VIDEO,
+} from "./_config";
+import { MetricBlock } from "./_components/metric-block";
+import {
+	ScrollProgressIndicator,
+	type ScrollProgressSection,
+} from "./_components/scroll-progress-indicator";
 
-const V6_SCHEMA = {
-	template:
-		"Automate {problem} with AI-powered {solution} — try DealScale free with 5 AI calls before {fear}.",
-	persona: {
-		problems: [
-			"spending hours calling borrowers who never answer",
-			"losing track of loan applications across multiple CRM systems",
-			"manually following up with pre-approved clients who go cold",
-			"juggling borrower outreach, referrals, and realtor relationships without automation",
-		],
-		solutions: [
-			"AI-powered borrower follow-up that runs automatically from your mortgage CRM",
-			"automated call, text, and email sequences that keep loan applicants engaged",
-			"AI lending assistant that nurtures prospects until they’re ready to close",
-			"real-time lead routing and pipeline automation for mortgage teams",
-		],
-		fears: [
-			"competitors capture your pre-approved borrowers first",
-			"your pipeline dries up when rates change or leads go cold",
-			"realtor partners switch to faster loan officers",
-			"you lose repeat borrowers because follow-up slips through the cracks",
-		],
-	},
-	ctas: {
-		primary: [
-			"Try DealScale Free",
-			"Automate My Real Estate Outreach",
-			"Launch My First AI Campaign",
-			"Start 5 Free AI Calls",
-			"Automate Borrower Follow-Up",
-		],
-		secondary: [
-			"See How AI Real Estate Outreach Works",
-			"Watch a 1-Minute AI Demo",
-			"Take the Quick Start Tour",
-			"View Real Estate Case Studies",
-			"See Mortgage Automation in Action",
-		],
-	},
-};
-
-const TEMPLATE_PROBLEM = V6_SCHEMA.persona.problems[0];
-const TEMPLATE_SOLUTION = V6_SCHEMA.persona.solutions[0];
-const TEMPLATE_FEAR = V6_SCHEMA.persona.fears[0];
-
-const LIVE_COPY = resolveHeroCopy(
-	{
-		values: {
-			problem: TEMPLATE_PROBLEM,
-			solution: TEMPLATE_SOLUTION,
-			fear: TEMPLATE_FEAR,
-			socialProof:
-				"Loan officers trust DealScale to automate borrower outreach.",
-			benefit: "Automate borrower conversations",
-			time: "5",
-			hope: "Keep borrowers engaged before competitors get there first.",
-			headline: V6_SCHEMA.template
-				.replace("{problem}", TEMPLATE_PROBLEM)
-				.replace("{solution}", TEMPLATE_SOLUTION)
-				.replace("{fear}", TEMPLATE_FEAR),
-		},
-		rotations: {
-			problems: V6_SCHEMA.persona.problems,
-			solutions: V6_SCHEMA.persona.solutions,
-			fears: V6_SCHEMA.persona.fears,
-		},
-	},
-	{
-		fallbackPrimaryChip: {
-			label: "Loan Officer Persona",
-			sublabel: "Mortgage automation",
-			variant: "secondary",
-		},
-		fallbackSecondaryChip: {
-			label: "Production Ready",
-			variant: "outline",
-		},
-	},
-);
-
-const LIVE_PRIMARY_CTA = {
-	label: V6_SCHEMA.ctas.primary[4],
-	description: "Put AI borrower follow-up on autopilot with DealScale.",
-	emphasis: "solid" as const,
-	badge: "Mortgage AI",
-};
-
-const LIVE_SECONDARY_CTA = {
-	label: V6_SCHEMA.ctas.secondary[4],
-	description: "See mortgage automation workflows in a live control center.",
-	emphasis: "outline" as const,
-	badge: "Live Demo",
-};
-
-const LIVE_MICROCOPY =
-	'Automate borrower outreach and mortgage follow-up with DealScale AI. <link href="#live-hero-details">Review the rollout steps</link>.';
-
-const LIVE_SOCIAL_PROOF = {
-	...DEFAULT_HERO_SOCIAL_PROOF,
-	caption: "Reusable hero experiences adopted by DealScale builders.",
-};
+const SCROLL_SECTIONS: ScrollProgressSection[] = [
+	{ id: "loan-officer-hero-top", label: "Hero" },
+	{ id: "loan-officer-cta", label: "CTA" },
+	{ id: "live-hero-details", label: "Metrics" },
+];
 
 export default function LiveDynamicHeroDemoPage(): JSX.Element {
 	const handleScrollToDetails = () => {
@@ -136,36 +41,47 @@ export default function LiveDynamicHeroDemoPage(): JSX.Element {
 		}
 	};
 
+	const sections = useMemo(() => SCROLL_SECTIONS, []);
+	const [activeSection, setActiveSection] = useState(sections[0]?.id ?? "");
+
+	useEffect(() => {
+		const observer = new IntersectionObserver(
+			(entries) => {
+				const visible = entries
+					.filter((entry) => entry.isIntersecting)
+					.sort((a, b) => b.intersectionRatio - a.intersectionRatio);
+				const current = visible[0];
+				if (current?.target?.id) {
+					setActiveSection(current.target.id);
+				}
+			},
+			{ threshold: 0.42 },
+		);
+
+		sections.forEach((section) => {
+			const element = document.getElementById(section.id);
+			if (element) {
+				observer.observe(element);
+			}
+		});
+
+		return () => observer.disconnect();
+	}, [sections]);
+
 	return (
-		<div className="relative min-h-screen overflow-hidden bg-gradient-to-b from-background via-background to-background/95 text-foreground">
-			<LightRays className="pointer-events-none absolute inset-0 opacity-70" />
-			<HeroAurora className="z-0" />
+		<div className="relative min-h-screen overflow-hidden bg-gradient-to-b from-background via-muted/40 to-background text-foreground">
+			<HeroAurora className="z-0 opacity-80 dark:opacity-90" />
 
 			<BackgroundBeamsWithCollision className="relative z-0 flex min-h-screen w-full items-center justify-center pb-20">
 				<div className="container relative z-10 mx-auto flex w-full flex-col items-center gap-12 px-4 py-16 md:px-8">
-					<div className="flex w-full flex-col items-center gap-4 text-center md:max-w-3xl">
-						<div className="flex flex-wrap items-center justify-center gap-3 text-primary text-xs uppercase tracking-[0.35em]">
-							<span className="rounded-full border border-foreground/15 bg-foreground/10 px-4 py-1 font-semibold text-foreground/70">
-								Loan Officer Hero
-							</span>
-						</div>
-
-						<div className="relative inline-flex items-center justify-center">
-							<button
-								type="button"
-								onClick={handleScrollToDetails}
-								className="group inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-4 py-2 font-semibold text-primary text-xs uppercase tracking-[0.35em] transition hover:bg-primary/15"
-							>
-								<ArrowDown className="h-3.5 w-3.5 transition group-hover:translate-y-0.5" />
-								Next
-							</button>
-							<Pointer className="text-primary">
-								<div className="flex size-9 items-center justify-center rounded-full border border-primary/40 bg-primary/30 text-primary backdrop-blur-md">
-									<ArrowDown className="h-4 w-4" />
-								</div>
-							</Pointer>
-						</div>
-
+					<div
+						id="loan-officer-hero-top"
+						className="flex w-full flex-col items-center gap-6 text-center md:max-w-3xl"
+					>
+						<ScrollProgressIndicator
+							sections={sections}
+							activeId={activeSection}
+						/>
 						<HeroHeadline
 							copy={LIVE_COPY}
 							socialProof={LIVE_SOCIAL_PROOF}
@@ -175,7 +91,14 @@ export default function LiveDynamicHeroDemoPage(): JSX.Element {
 						/>
 					</div>
 
-					<div className="flex w-full flex-col items-center gap-8">
+					<div
+						id="loan-officer-cta"
+						className="flex w-full flex-col items-center gap-8"
+					>
+						<p className="max-w-2xl text-center text-base text-muted-foreground">
+							Automated borrower follow-up from your mortgage CRM, orchestrated
+							by DealScale so loan officers focus on closing conversations.
+						</p>
 						<PersonaCTA
 							className="w-full"
 							displayMode="both"
@@ -189,6 +112,17 @@ export default function LiveDynamicHeroDemoPage(): JSX.Element {
 						<p className="max-w-xl text-center text-muted-foreground text-sm">
 							Reusable hero experiences adopted by DealScale builders.
 						</p>
+
+						<div className="max-w-2xl rounded-3xl border border-border/45 bg-background/85 px-6 py-5 text-center shadow-[0_16px_55px_-35px_rgba(37,99,235,0.35)] backdrop-blur-md md:px-10">
+							<p className="text-sm font-medium text-foreground">
+								Start with a 90-second walkthrough of the automation control
+								center.
+							</p>
+							<p className="mt-2 text-sm text-muted-foreground">
+								Watch the demo, then review the rollout checklist below to keep
+								your borrower outreach consistent across loan programs.
+							</p>
+						</div>
 
 						<div className="w-full max-w-5xl" data-beam-collider="true">
 							<HeroVideoPreview
@@ -250,23 +184,6 @@ export default function LiveDynamicHeroDemoPage(): JSX.Element {
 					</section>
 				</div>
 			</BackgroundBeamsWithCollision>
-		</div>
-	);
-}
-
-function MetricBlock({
-	label,
-	value,
-}: {
-	label: string;
-	value: string;
-}): JSX.Element {
-	return (
-		<div className="flex flex-col items-center gap-2 rounded-2xl border border-border/40 bg-background/80 px-4 py-4 shadow-[0_20px_60px_-30px_rgba(34,197,94,0.45)] backdrop-blur-md">
-			<span className="text-[11px] font-semibold uppercase tracking-[0.32em] text-muted-foreground">
-				{label}
-			</span>
-			+ <span className="text-lg font-semibold text-foreground">{value}</span>
 		</div>
 	);
 }
