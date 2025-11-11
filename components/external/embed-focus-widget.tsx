@@ -155,30 +155,32 @@ export function EmbedFocusWidget({ config, onError }: EmbedFocusWidgetProps) {
 						</button>
 					</nav>
 					<div className="deal-scale-focus-content">
-						{mode === "music" ? (
-							<iframe
-								key={playlistSrc}
-								title="Focus playlist"
-								src={playlistSrc}
-								loading="lazy"
-								allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-							/>
-						) : (
-							<VoicePanel
-								screenState={screenState}
-								cameraState={cameraState}
-								voiceStatus={voiceStatus}
-								voiceAgents={voiceAgents}
-								voiceError={voiceError}
-								onScreenShare={() => void requestScreenShare()}
-								onCameraShare={() => void requestCameraShare()}
-								onRetryAgents={() => {
-									void loadVoiceAgents();
-								}}
-								showClose={showClose}
-								onClose={() => setIsOpen(false)}
-							/>
-						)}
+						<div className="deal-scale-focus-scroll">
+							{mode === "music" ? (
+								<iframe
+									key={playlistSrc}
+									title="Focus playlist"
+									src={playlistSrc}
+									loading="lazy"
+									allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+								/>
+							) : (
+								<VoicePanel
+									screenState={screenState}
+									cameraState={cameraState}
+									voiceStatus={voiceStatus}
+									voiceAgents={voiceAgents}
+									voiceError={voiceError}
+									onScreenShare={() => void requestScreenShare()}
+									onCameraShare={() => void requestCameraShare()}
+									onRetryAgents={() => {
+										void loadVoiceAgents();
+									}}
+									showClose={showClose}
+									onClose={() => setIsOpen(false)}
+								/>
+							)}
+						</div>
 					</div>
 					{mode === "music" && showClose ? (
 						<button

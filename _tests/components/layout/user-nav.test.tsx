@@ -57,4 +57,25 @@ describe("UserNav", () => {
                 const fallback = trigger?.querySelector("span span");
                 expect(fallback?.textContent).toContain("A");
         });
+
+	it("renders the demo company logo in the avatar when available", () => {
+		const companyLogo = "https://example.com/logo.svg";
+		act(() => {
+			useSessionStore
+				.getState()
+				.setFromSession({
+					user: {
+						id: "demo-user",
+						name: "Demo User",
+						email: "demo@example.com",
+						demoConfig: { companyLogo },
+					},
+				} as any);
+		});
+
+		render(<UserNav />);
+
+		const avatarImg = screen.getByRole("img", { name: /demo user/i });
+		expect(avatarImg?.getAttribute("src")).toBe(companyLogo);
+	});
 });

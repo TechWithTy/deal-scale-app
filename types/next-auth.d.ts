@@ -1,5 +1,10 @@
 import type { ImpersonationIdentity } from "@/types/impersonation";
 import type {
+	QuickStartGoalId,
+	QuickStartPersonaId,
+} from "@/lib/config/quickstart/wizardFlows";
+import type { UserProfileSubscription } from "@/constants/_faker/profile/userSubscription";
+import type {
 	DemoConfig,
 	PermissionMatrix,
 	UserQuotas,
@@ -26,9 +31,10 @@ declare module "next-auth" {
 			isBetaTester?: boolean;
 			isPilotTester?: boolean;
 			demoConfig?: DemoConfig;
+			subscription?: UserProfileSubscription;
 			quickStartDefaults?: {
-				personaId?: "investor" | "wholesaler" | "lender" | "agent";
-				goalId?: string;
+				personaId?: QuickStartPersonaId;
+				goalId?: QuickStartGoalId;
 			};
 		} & DefaultSession["user"];
 	}
@@ -44,9 +50,10 @@ declare module "next-auth" {
 		isBetaTester?: boolean;
 		isPilotTester?: boolean;
 		demoConfig?: DemoConfig;
+		subscription?: UserProfileSubscription;
 		quickStartDefaults?: {
-			personaId?: "investor" | "wholesaler" | "lender" | "agent";
-			goalId?: string;
+			personaId?: QuickStartPersonaId;
+			goalId?: QuickStartGoalId;
 		};
 	}
 }
@@ -64,9 +71,10 @@ declare module "next-auth/jwt" {
 		isBetaTester?: boolean;
 		isPilotTester?: boolean;
 		demoConfig?: DemoConfig;
+		subscription?: UserProfileSubscription;
 		quickStartDefaults?: {
-			personaId?: "investor" | "wholesaler" | "lender" | "agent";
-			goalId?: string;
+			personaId?: QuickStartPersonaId;
+			goalId?: QuickStartGoalId;
 		};
 	}
 }

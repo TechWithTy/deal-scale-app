@@ -84,4 +84,34 @@ describe("Sidebar", () => {
                         "admin.user@example.com",
                 );
         });
+
+		it("uses the demo company logo when provided in the session", () => {
+			const companyLogo = "https://example.com/brand.svg";
+			act(() => {
+				useSessionStore.getState().setFromSession({
+					user: {
+						id: "demo-user",
+						email: "demo@example.com",
+						role: "member",
+						permissions: [],
+						permissionMatrix: {},
+						subscription: {
+							aiCredits: { allotted: 0, used: 0 },
+							leads: { allotted: 0, used: 0 },
+							skipTraces: { allotted: 0, used: 0 },
+						},
+						demoConfig: {
+							companyName: "Demo Co",
+							companyLogo,
+						},
+					},
+				} as any);
+			});
+
+			render(<Sidebar user={null} />);
+
+			const logo = screen.getByTestId("sidebar-logo") as HTMLImageElement;
+			expect(logo?.getAttribute("src")).toBe(companyLogo);
+		});
+	});
 });

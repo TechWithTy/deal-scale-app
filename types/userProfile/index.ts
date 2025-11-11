@@ -234,6 +234,7 @@ export interface CompanyInfo {
 	socialMediaTags: string[];
 
 	companyLogo: string | undefined;
+	website?: string;
 	GHLID: GetSubAccountPathParams;
 	campaigns: CompanyCampaignsUserProfile;
 	forwardingNumber: string;

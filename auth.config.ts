@@ -10,6 +10,12 @@ import {
 	ensureValidTier,
 	type SubscriptionTier,
 } from "@/constants/subscription/tiers";
+import {
+	deriveQuickStartDefaults,
+	mergeQuotaOverrides,
+	normalizeTesterFlags,
+	resolveDemoLogoUrl,
+} from "@/lib/demo/normalizeDemoPayload";
 import type {
 	PermissionAction,
 	PermissionMatrix,
@@ -18,10 +24,7 @@ import type {
 	UserQuotas,
 	UserRole,
 } from "@/types/user";
-import type {
-	ImpersonationIdentity,
-	ImpersonationSessionPayload,
-} from "@/types/impersonation";
+import type { ImpersonationSessionPayload } from "@/types/impersonation";
 
 const VALID_ROLES: UserRole[] = [
         "admin",
@@ -117,36 +120,6 @@ function mergeMatrix(
 		result[resource as PermissionResource] = Array.from(existing);
 	}
 	return result;
-}
-
-function normalizeQuotas(
-	base: UserQuotas,
-	overrides: {
-		aiAllotted?: number;
-		aiUsed?: number;
-		leadsAllotted?: number;
-		leadsUsed?: number;
-		skipAllotted?: number;
-		skipUsed?: number;
-	},
-): UserQuotas {
-	const clamp = (used: number | undefined, allotted: number | undefined) => {
-		if (allotted === undefined || used === undefined) return used;
-		return Math.min(used, allotted);
-	};
-	const aiAllotted = overrides.aiAllotted ?? base.ai.allotted;
-	const aiUsed = clamp(overrides.aiUsed, aiAllotted) ?? base.ai.used;
-	const leadsAllotted = overrides.leadsAllotted ?? base.leads.allotted;
-	const leadsUsed =
-		clamp(overrides.leadsUsed, leadsAllotted) ?? base.leads.used;
-	const skipAllotted = overrides.skipAllotted ?? base.skipTraces.allotted;
-	const skipUsed =
-		clamp(overrides.skipUsed, skipAllotted) ?? base.skipTraces.used;
-	return {
-		ai: { ...base.ai, allotted: aiAllotted, used: aiUsed },
-		leads: { ...base.leads, allotted: leadsAllotted, used: leadsUsed },
-		skipTraces: { ...base.skipTraces, allotted: skipAllotted, used: skipUsed },
-	};
 }
 
 type ExtendedJWT = JWT & {
@@ -406,36 +379,67 @@ const authConfig = {
                                 const betaOverride = bool(credentials?.isBetaTester);
                                 const pilotOverride = bool(credentials?.isPilotTester);
 
-				const overrides = {
-					aiAllotted,
-					aiUsed,
-					leadsAllotted,
-					leadsUsed,
-					skipAllotted,
-					skipUsed,
-				};
+		const quotaOverrides: Record<string, unknown> = {
+			aiAllotted,
+			aiUsed,
+			leadsAllotted,
+			leadsUsed,
+			skipAllotted,
+			skipUsed,
+		};
 
-				const updatedQuotas = normalizeQuotas(user.quotas, overrides);
+		const customPayloadRaw = credentials?.customUserData as string | undefined;
+		let customPayload: Partial<User> | null = null;
+		if (customPayloadRaw) {
+			try {
+				customPayload = JSON.parse(customPayloadRaw) as Partial<User>;
+			} catch (_error) {
+				customPayload = null;
+			}
+		}
 
-				const sub = user.subscription;
-				const updatedSub = {
-					...sub,
-					aiCredits: {
-						...sub.aiCredits,
-						allotted: updatedQuotas.ai.allotted,
-						used: updatedQuotas.ai.used,
-					},
-					leads: {
-						...sub.leads,
-						allotted: updatedQuotas.leads.allotted,
-						used: updatedQuotas.leads.used,
-					},
-					skipTraces: {
-						...sub.skipTraces,
-						allotted: updatedQuotas.skipTraces.allotted,
-						used: updatedQuotas.skipTraces.used,
-					},
-				};
+		if (customPayload?.quotas) {
+			quotaOverrides.aiAllotted =
+				customPayload.quotas.ai?.allotted ?? quotaOverrides.aiAllotted;
+			quotaOverrides.aiUsed =
+				customPayload.quotas.ai?.used ?? quotaOverrides.aiUsed;
+			quotaOverrides.leadsAllotted =
+				customPayload.quotas.leads?.allotted ?? quotaOverrides.leadsAllotted;
+			quotaOverrides.leadsUsed =
+				customPayload.quotas.leads?.used ?? quotaOverrides.leadsUsed;
+			quotaOverrides.skipAllotted =
+				customPayload.quotas.skipTraces?.allotted ?? quotaOverrides.skipAllotted;
+			quotaOverrides.skipUsed =
+				customPayload.quotas.skipTraces?.used ?? quotaOverrides.skipUsed;
+		}
+
+		const updatedQuotas = mergeQuotaOverrides({
+			base: user.quotas,
+			overrides: quotaOverrides,
+		});
+
+		const sub = {
+			...user.subscription,
+			...(customPayload?.subscription ?? {}),
+		};
+		const updatedSub = {
+			...sub,
+			aiCredits: {
+				...sub.aiCredits,
+				allotted: updatedQuotas.ai.allotted,
+				used: updatedQuotas.ai.used,
+			},
+			leads: {
+				...sub.leads,
+				allotted: updatedQuotas.leads.allotted,
+				used: updatedQuotas.leads.used,
+			},
+			skipTraces: {
+				...sub.skipTraces,
+				allotted: updatedQuotas.skipTraces.allotted,
+				used: updatedQuotas.skipTraces.used,
+			},
+		};
 
 				const mergedMatrix = mergeMatrix(user.permissions, permsOverrideMatrix);
 				const permissionList = permsOverrideList ?? flattenMatrix(mergedMatrix);
@@ -443,29 +447,53 @@ const authConfig = {
 				const role = VALID_ROLES.includes(roleOverride as UserRole)
 					? (roleOverride as UserRole)
 					: user.role;
-                                const tier: SubscriptionTier = tierOverride
-                                        ? ensureValidTier(tierOverride)
-                                        : user.tier;
-                                const isBetaTester = betaOverride ?? Boolean(user.isBetaTester);
-                                const isPilotTester = pilotOverride ?? Boolean(user.isPilotTester);
+		const tierCandidate = customPayload?.tier ?? tierOverride;
+		const tier: SubscriptionTier = tierCandidate
+			? ensureValidTier(tierCandidate)
+			: user.tier;
+		const testerFlags = normalizeTesterFlags({
+			isBetaTester: customPayload?.isBetaTester ?? betaOverride,
+			isPilotTester: customPayload?.isPilotTester ?? pilotOverride,
+			fallback: {
+				isBetaTester: Boolean(user.isBetaTester),
+				isPilotTester: Boolean(user.isPilotTester),
+			},
+		});
 
-                                return {
-                                        id: user.id,
-                                        name: user.name,
-                                        email: user.email,
-                                        role,
-                                        tier,
-                                        permissions: permissionList,
-                                        permissionMatrix: mergedMatrix,
-                                        permissionList,
-                                        quotas: updatedQuotas,
-                                        subscription: updatedSub,
-                                        isBetaTester,
-                                        isPilotTester,
-                                        demoConfig: user.demoConfig,
-					quickStartDefaults: user.quickStartDefaults,
-                                } as NextAuthUser;
-                        },
+		const resolvedDemoConfig = customPayload?.demoConfig
+			? {
+				...user.demoConfig,
+				...customPayload.demoConfig,
+				companyLogo: resolveDemoLogoUrl({
+					demoConfig: customPayload.demoConfig,
+					fallback: user.demoConfig?.companyLogo,
+				}),
+			}
+			: user.demoConfig;
+
+		const derivedQuickStart = deriveQuickStartDefaults({
+			demoConfig: resolvedDemoConfig,
+			fallback:
+				customPayload?.quickStartDefaults ?? user.quickStartDefaults ?? undefined,
+		});
+
+		return {
+			id: user.id,
+			name: user.name,
+			email: user.email,
+			role,
+			tier,
+			permissions: permissionList,
+			permissionMatrix: mergedMatrix,
+			permissionList,
+			quotas: updatedQuotas,
+			subscription: updatedSub,
+			isBetaTester: testerFlags.isBetaTester,
+			isPilotTester: testerFlags.isPilotTester,
+			demoConfig: resolvedDemoConfig,
+			quickStartDefaults: derivedQuickStart ?? undefined,
+		} as NextAuthUser;
+	},
                 }),
 	],
 	callbacks: {
