@@ -11,9 +11,19 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import {
+	getGoalDefinition,
+	getGoalsForPersona,
+	quickStartGoals,
+	quickStartPersonas,
+} from "@/lib/config/quickstart/wizardFlows";
 import type { ClientType, DemoConfig } from "@/types/user";
+import type {
+	QuickStartGoalId,
+	QuickStartPersonaId,
+} from "@/lib/config/quickstart/wizardFlows";
 import { Building2, ChevronDown, ChevronUp } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 interface DemoConfigEditorProps {
 	demoConfig?: DemoConfig;
@@ -21,11 +31,18 @@ interface DemoConfigEditorProps {
 	onUpdate: (config: DemoConfig) => void;
 }
 
-const CLIENT_TYPE_LABELS: Record<ClientType, string> = {
-	investor: "Investor",
-	wholesaler: "Wholesaler",
-	agent: "Real Estate Agent",
-	loan_officer: "Loan Officer",
+const PERSONA_TO_CLIENT_TYPE: Record<QuickStartPersonaId, ClientType> = {
+	investor: "investor",
+	wholesaler: "wholesaler",
+	agent: "agent",
+	lender: "loan_officer",
+};
+
+const CLIENT_TYPE_TO_PERSONA: Record<ClientType, QuickStartPersonaId> = {
+	investor: "investor",
+	wholesaler: "wholesaler",
+	agent: "agent",
+	loan_officer: "lender",
 };
 
 export function DemoConfigEditor({
@@ -36,6 +53,29 @@ export function DemoConfigEditor({
 	const [isExpanded, setIsExpanded] = useState(false);
 	const [localConfig, setLocalConfig] = useState<DemoConfig>(demoConfig || {});
 
+	const personaOptions = useMemo(
+		() =>
+			quickStartPersonas.filter((persona) =>
+				Object.prototype.hasOwnProperty.call(
+					PERSONA_TO_CLIENT_TYPE,
+					persona.id,
+				),
+			),
+		[],
+	);
+
+	const selectedPersona: QuickStartPersonaId | undefined =
+		localConfig.clientType
+			? CLIENT_TYPE_TO_PERSONA[localConfig.clientType]
+			: undefined;
+
+	const personaGoals = useMemo(() => {
+		if (!selectedPersona) {
+			return quickStartGoals;
+		}
+		return getGoalsForPersona(selectedPersona);
+	}, [selectedPersona]);
+
 	const handleFieldChange = (
 		field: keyof DemoConfig,
 		value: string | undefined,
@@ -44,6 +84,35 @@ export function DemoConfigEditor({
 		setLocalConfig(updated);
 		onUpdate(updated);
 	};
+
+	const handlePersonaSelect = (personaId: QuickStartPersonaId) => {
+		const clientType = PERSONA_TO_CLIENT_TYPE[personaId];
+		const goals = getGoalsForPersona(personaId);
+		const currentGoal = localConfig.goal;
+		const hasCurrentGoal = goals.some((goal) => goal.title === currentGoal);
+		const fallbackGoal = goals[0]?.title ?? undefined;
+
+		const updated: DemoConfig = {
+			...localConfig,
+			clientType,
+			goal: hasCurrentGoal ? currentGoal : fallbackGoal,
+		};
+		setLocalConfig(updated);
+		onUpdate(updated);
+	};
+
+	const handleGoalSelect = (goalId: QuickStartGoalId) => {
+		const goal = getGoalDefinition(goalId);
+		handleFieldChange("goal", goal?.title ?? undefined);
+	};
+
+	const selectedGoalId = useMemo(() => {
+		if (!localConfig.goal) return "";
+		const goal = personaGoals.find(
+			(definition) => definition.title === localConfig.goal,
+		);
+		return goal?.id ?? "";
+	}, [localConfig.goal, personaGoals]);
 
 	const handleSocialChange = (
 		platform: keyof NonNullable<DemoConfig["social"]>,
@@ -133,21 +202,21 @@ export function DemoConfigEditor({
 								Client Type
 							</Label>
 							<Select
-								value={localConfig.clientType || ""}
+								value={selectedPersona ?? ""}
 								onValueChange={(value) =>
-									handleFieldChange("clientType", value as ClientType)
+									handlePersonaSelect(value as QuickStartPersonaId)
 								}
 							>
 								<SelectTrigger
 									id={`client-type-${userId}`}
 									className="h-8 text-sm"
 								>
-									<SelectValue placeholder="Select type" />
+									<SelectValue placeholder="Select persona" />
 								</SelectTrigger>
 								<SelectContent>
-									{Object.entries(CLIENT_TYPE_LABELS).map(([value, label]) => (
-										<SelectItem key={value} value={value}>
-											{label}
+									{personaOptions.map((persona) => (
+										<SelectItem key={persona.id} value={persona.id}>
+											{persona.title}
 										</SelectItem>
 									))}
 								</SelectContent>
@@ -160,13 +229,28 @@ export function DemoConfigEditor({
 							>
 								Primary Goal
 							</Label>
-							<Input
-								id={`goal-${userId}`}
-								value={localConfig.goal || ""}
-								onChange={(e) => handleFieldChange("goal", e.target.value)}
-								placeholder="Generate 50 leads/month"
-								className="h-8 text-sm"
-							/>
+							<Select
+								value={selectedGoalId}
+								onValueChange={(value) =>
+									handleGoalSelect(value as QuickStartGoalId)
+								}
+								disabled={!selectedPersona || personaGoals.length === 0}
+							>
+								<SelectTrigger id={`goal-${userId}`} className="h-8 text-sm">
+									<SelectValue
+										placeholder={
+											selectedPersona ? "Select goal" : "Select a persona first"
+										}
+									/>
+								</SelectTrigger>
+								<SelectContent>
+									{personaGoals.map((goal) => (
+										<SelectItem key={goal.id} value={goal.id}>
+											{goal.title}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
 						</div>
 					</div>
 
