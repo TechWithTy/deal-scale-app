@@ -1,11 +1,11 @@
 "use client";
 
-import React, { Fragment, useMemo } from "react";
+import React, { Fragment, useEffect, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 
 import { groupCalculatorsByCategory } from "../registry";
 import type { CalculatorComponentProps, CalculatorDefinition } from "../types";
-import { parseCalculatorSearchParams } from "../utils";
+import { getActiveCalculatorId, parseCalculatorSearchParams } from "../utils";
 
 interface CalculatorHubProps {
 	calculators: CalculatorDefinition[];
@@ -14,7 +14,7 @@ interface CalculatorHubProps {
 export function CalculatorHub({ calculators }: CalculatorHubProps) {
 	const grouped = groupCalculatorsByCategory(calculators);
 	const searchParams = useSearchParams();
-	const serializedParams = searchParams.toString();
+	const serializedParams = searchParams ? searchParams.toString() : "";
 
 	const prefillMap = useMemo(
 		() =>
@@ -25,16 +25,42 @@ export function CalculatorHub({ calculators }: CalculatorHubProps) {
 		[serializedParams, calculators],
 	);
 
+	const requestedCalculatorId = useMemo(
+		() =>
+			getActiveCalculatorId(
+				serializedParams,
+				calculators.map((calculator) => calculator.id),
+			),
+		[serializedParams, calculators],
+	);
+
+	const firstPrefilledId = useMemo(() => {
+		const keys = Object.keys(prefillMap);
+		return keys.length > 0 ? keys[0] : undefined;
+	}, [prefillMap]);
+
+	useEffect(() => {
+		const targetId = requestedCalculatorId ?? firstPrefilledId;
+		if (!targetId) return;
+		const element =
+			typeof document !== "undefined"
+				? document.getElementById(`calculator-${targetId}`)
+				: null;
+		if (element && typeof element.scrollIntoView === "function") {
+			element.scrollIntoView({ behavior: "smooth", block: "start" });
+		}
+	}, [requestedCalculatorId, firstPrefilledId]);
+
 	return (
 		<div className="space-y-8">
 			<nav
 				aria-label="Calculator navigation"
-				className="flex w-full gap-6 overflow-x-auto rounded-xl border border-border bg-card/40 p-4 shadow-sm"
+				className="flex w-full flex-col gap-4 overflow-x-auto rounded-xl border border-border bg-card/40 p-4 shadow-sm md:flex-row md:flex-wrap md:overflow-x-visible"
 			>
 				{grouped.map(({ category, items }) => (
 					<section
 						key={category}
-						className="min-w-[200px] space-y-2"
+						className="min-w-0 space-y-2 md:min-w-[160px]"
 					>
 						<h2 className="text-muted-foreground text-xs font-semibold uppercase tracking-wide">
 							{category}
@@ -69,7 +95,9 @@ export function CalculatorHub({ calculators }: CalculatorHubProps) {
 								>
 									<Component
 										initialValues={
-											prefillMap[id] as CalculatorComponentProps["initialValues"]
+											prefillMap[
+												id
+											] as CalculatorComponentProps["initialValues"]
 										}
 									/>
 								</div>

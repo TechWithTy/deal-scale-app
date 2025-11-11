@@ -53,3 +53,10 @@ export default function CalculatorsPage() {
 }
 ```
 
+## URL Prefill
+
+- Support query params like `?calc=fix-flip-roi&fix-flip-roi[arv]=350000&fix-flip-roi[purchasePrice]=200000`.
+- Each calculator reads namespaced values using its ID (e.g., `wholesale[arv]`, `ltv[propertyValue]`).
+- Omitted/invalid values are ignored; inputs remain editable.
+- For deal comparison, use indexed keys (e.g., `deal-comparison[deal0.id]=my-deal&deal-comparison[deal0.cost]=190000`).
+

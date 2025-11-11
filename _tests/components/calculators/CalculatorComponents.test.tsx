@@ -73,9 +73,10 @@ describe("calculator component behavior", () => {
 		const { Component } = getCalculator("fix-flip-roi");
 		render(<Component />);
 
-		const card = screen
-			.getByRole("heading", { name: /fix & flip roi calculator/i })
-			.closest("section");
+		const cardHeading = screen.getAllByRole("heading", {
+			name: /fix & flip roi calculator/i,
+		})[0];
+		const card = cardHeading.closest("section");
 		if (!card) {
 			throw new Error("Expected calculator card not found");
 		}
@@ -114,9 +115,10 @@ describe("calculator component behavior", () => {
 		};
 		render(<Component initialValues={initialValues} />);
 
-		const card = screen
-			.getByRole("heading", { name: /fix & flip roi calculator/i })
-			.closest("section");
+		const cardHeading = screen.getAllByRole("heading", {
+			name: /fix & flip roi calculator/i,
+		})[0];
+		const card = cardHeading.closest("section");
 		if (!card) {
 			throw new Error("Expected calculator card not found");
 		}
