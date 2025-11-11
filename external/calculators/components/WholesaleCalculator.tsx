@@ -5,6 +5,7 @@ import React, { useMemo, useState } from "react";
 import { cn } from "@/lib/_utils";
 
 import { CalculatorCard } from "./CalculatorCard";
+import type { CalculatorComponentProps } from "../types";
 
 const currencyFormatter = new Intl.NumberFormat("en-US", {
 	style: "currency",
@@ -18,11 +19,26 @@ const PROFIT_MARGIN_OPTIONS = [
 	{ label: "80%", value: 0.8 },
 ];
 
-export function WholesaleCalculator() {
-	const [afterRepairValue, setAfterRepairValue] = useState<string>("");
-	const [repairCost, setRepairCost] = useState<string>("");
-	const [assignmentFee, setAssignmentFee] = useState<string>("");
-	const [profitMargin, setProfitMargin] = useState<number>(0.7);
+const toInputValue = (value: string | number | undefined) =>
+	value === undefined || value === null ? "" : String(value);
+
+export function WholesaleCalculator({
+	initialValues,
+}: CalculatorComponentProps) {
+	const [afterRepairValue, setAfterRepairValue] = useState<string>(
+		toInputValue(initialValues?.arv),
+	);
+	const [repairCost, setRepairCost] = useState<string>(
+		toInputValue(initialValues?.repairs),
+	);
+	const [assignmentFee, setAssignmentFee] = useState<string>(
+		toInputValue(initialValues?.assignmentFee),
+	);
+	const [profitMargin, setProfitMargin] = useState<number>(
+		initialValues?.profitMargin !== undefined
+			? Number(initialValues.profitMargin)
+			: 0.7,
+	);
 
 	const maxAllowableOffer = useMemo(() => {
 		const arv = Number(afterRepairValue);

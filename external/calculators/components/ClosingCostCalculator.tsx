@@ -4,16 +4,21 @@ import React, { useMemo, useState } from "react";
 
 import { estimateClosingCosts, formatCurrency } from "../formulas";
 import { CalculatorCard } from "./CalculatorCard";
+import type { CalculatorComponentProps } from "../types";
 
 const parseNumber = (value: string) => Number.parseFloat(value) || 0;
+const toInputValue = (value: string | number | undefined) =>
+	value === undefined || value === null ? "" : String(value);
 
-export function ClosingCostCalculator() {
+export function ClosingCostCalculator({
+	initialValues,
+}: CalculatorComponentProps) {
 	const [inputs, setInputs] = useState({
-		salePrice: "",
-		propertyTaxes: "",
-		titleFees: "",
-		transferTaxRate: "",
-		miscFees: "",
+		salePrice: toInputValue(initialValues?.salePrice),
+		propertyTaxes: toInputValue(initialValues?.propertyTaxes),
+		titleFees: toInputValue(initialValues?.titleFees),
+		transferTaxRate: toInputValue(initialValues?.transferTaxRate),
+		miscFees: toInputValue(initialValues?.miscFees),
 	});
 
 	const result = useMemo(

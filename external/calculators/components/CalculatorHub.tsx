@@ -1,9 +1,11 @@
 "use client";
 
-import React, { Fragment } from "react";
+import React, { Fragment, useMemo } from "react";
+import { useSearchParams } from "next/navigation";
 
 import { groupCalculatorsByCategory } from "../registry";
-import type { CalculatorDefinition } from "../types";
+import type { CalculatorComponentProps, CalculatorDefinition } from "../types";
+import { parseCalculatorSearchParams } from "../utils";
 
 interface CalculatorHubProps {
 	calculators: CalculatorDefinition[];
@@ -11,12 +13,29 @@ interface CalculatorHubProps {
 
 export function CalculatorHub({ calculators }: CalculatorHubProps) {
 	const grouped = groupCalculatorsByCategory(calculators);
+	const searchParams = useSearchParams();
+	const serializedParams = searchParams.toString();
+
+	const prefillMap = useMemo(
+		() =>
+			parseCalculatorSearchParams(
+				serializedParams,
+				calculators.map((calculator) => calculator.id),
+			),
+		[serializedParams, calculators],
+	);
 
 	return (
-		<div className="grid gap-8 lg:grid-cols-[minmax(0,240px)_minmax(0,1fr)]">
-			<nav aria-label="Calculator navigation" className="space-y-6">
+		<div className="space-y-8">
+			<nav
+				aria-label="Calculator navigation"
+				className="flex w-full gap-6 overflow-x-auto rounded-xl border border-border bg-card/40 p-4 shadow-sm"
+			>
 				{grouped.map(({ category, items }) => (
-					<section key={category} className="space-y-2">
+					<section
+						key={category}
+						className="min-w-[200px] space-y-2"
+					>
 						<h2 className="text-muted-foreground text-xs font-semibold uppercase tracking-wide">
 							{category}
 						</h2>
@@ -24,7 +43,7 @@ export function CalculatorHub({ calculators }: CalculatorHubProps) {
 							{items.map((item) => (
 								<li key={item.id}>
 									<a
-										className="block rounded-md px-2 py-1 text-sm text-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+										className="block rounded-md px-3 py-1 text-sm text-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
 										href={`#calculator-${item.id}`}
 									>
 										{item.title}
@@ -42,9 +61,18 @@ export function CalculatorHub({ calculators }: CalculatorHubProps) {
 						<h2 className="text-muted-foreground text-sm font-semibold uppercase tracking-wide">
 							{category}
 						</h2>
-						<div className="grid gap-6 lg:grid-cols-2">
-							{items.map(({ Component, id }) => (
-								<Component key={id} />
+						<div className="grid gap-6 md:grid-cols-2">
+							{items.map(({ Component, id }, index) => (
+								<div
+									key={id}
+									className={`min-w-0 ${index < 2 ? "md:col-span-2" : ""}`}
+								>
+									<Component
+										initialValues={
+											prefillMap[id] as CalculatorComponentProps["initialValues"]
+										}
+									/>
+								</div>
 							))}
 						</div>
 					</Fragment>

@@ -8,17 +8,22 @@ import {
 	formatPercent,
 } from "../formulas";
 import { CalculatorCard } from "./CalculatorCard";
+import type { CalculatorComponentProps } from "../types";
 
 const parseNumber = (value: string) => Number.parseFloat(value) || 0;
+const toInputValue = (value: string | number | undefined) =>
+	value === undefined || value === null ? "" : String(value);
 
-export function RentalCashFlowCalculator() {
+export function RentalCashFlowCalculator({
+	initialValues,
+}: CalculatorComponentProps) {
 	const [inputs, setInputs] = useState({
-		monthlyRent: "",
-		vacancyRate: "",
-		monthlyExpenses: "",
-		loanPayment: "",
-		propertyValue: "",
-		downPayment: "",
+		monthlyRent: toInputValue(initialValues?.monthlyRent),
+		vacancyRate: toInputValue(initialValues?.vacancyRate),
+		monthlyExpenses: toInputValue(initialValues?.monthlyExpenses),
+		loanPayment: toInputValue(initialValues?.loanPayment),
+		propertyValue: toInputValue(initialValues?.propertyValue),
+		downPayment: toInputValue(initialValues?.downPayment),
 	});
 
 	const result = useMemo(() => {

@@ -103,6 +103,30 @@ describe("calculator component behavior", () => {
 		expect(totals.length).toBeGreaterThanOrEqual(1);
 	});
 
+	it("prefills fix & flip calculator when initial values are provided", () => {
+		const { Component } = getCalculator("fix-flip-roi");
+		const initialValues = {
+			arv: 350000,
+			purchasePrice: 200000,
+			rehabCost: 50000,
+			holdingCost: 15000,
+			sellingFees: 20000,
+		};
+		render(<Component initialValues={initialValues} />);
+
+		const card = screen
+			.getByRole("heading", { name: /fix & flip roi calculator/i })
+			.closest("section");
+		if (!card) {
+			throw new Error("Expected calculator card not found");
+		}
+		const scoped = within(card);
+
+		expect(scoped.getByDisplayValue("350000")).toBeInTheDocument();
+		expect(scoped.getByText(/\$65,000/)).toBeInTheDocument();
+		expect(scoped.getByText(/22\.81%/)).toBeInTheDocument();
+	});
+
 	it("computes rental cash flow metrics", () => {
 		const { Component } = getCalculator("rental-cashflow");
 		render(<Component />);
