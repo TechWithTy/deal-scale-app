@@ -17,13 +17,13 @@ import {
 	quickStartGoals,
 	quickStartPersonas,
 } from "@/lib/config/quickstart/wizardFlows";
-import type { ClientType, DemoConfig } from "@/types/user";
+import type { ClientType, DemoCRMProvider, DemoConfig } from "@/types/user";
 import type {
 	QuickStartGoalId,
 	QuickStartPersonaId,
 } from "@/lib/config/quickstart/wizardFlows";
 import { Building2, ChevronDown, ChevronUp } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 interface DemoConfigEditorProps {
 	demoConfig?: DemoConfig;
@@ -53,6 +53,10 @@ export function DemoConfigEditor({
 	const [isExpanded, setIsExpanded] = useState(false);
 	const [localConfig, setLocalConfig] = useState<DemoConfig>(demoConfig || {});
 
+	useEffect(() => {
+		setLocalConfig(demoConfig || {});
+	}, [demoConfig]);
+
 	const personaOptions = useMemo(
 		() =>
 			quickStartPersonas.filter((persona) =>
@@ -75,6 +79,15 @@ export function DemoConfigEditor({
 		}
 		return getGoalsForPersona(selectedPersona);
 	}, [selectedPersona]);
+
+	const CRM_OPTIONS: Array<{ value: DemoCRMProvider; label: string }> = [
+		{ value: "gohighlevel", label: "GoHighLevel" },
+		{ value: "salesforce", label: "Salesforce" },
+		{ value: "hubspot", label: "HubSpot" },
+		{ value: "close", label: "Close CRM" },
+		{ value: "zoho", label: "Zoho" },
+		{ value: "other", label: "Other" },
+	];
 
 	const handleFieldChange = (
 		field: keyof DemoConfig,
@@ -252,6 +265,41 @@ export function DemoConfigEditor({
 								</SelectContent>
 							</Select>
 						</div>
+					</div>
+
+					<div className="space-y-1">
+						<Label
+							htmlFor={`crm-provider-${userId}`}
+							className="text-muted-foreground text-xs"
+						>
+							CRM Provider (optional)
+						</Label>
+						<Select
+							value={localConfig.crmProvider ?? ""}
+							onValueChange={(value) =>
+								handleFieldChange(
+									"crmProvider",
+									value ? (value as DemoCRMProvider) : undefined,
+								)
+							}
+						>
+							<SelectTrigger
+								id={`crm-provider-${userId}`}
+								className="h-8 text-sm"
+							>
+								<SelectValue placeholder="Select CRM" />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem key="none" value="">
+									No CRM / Not specified
+								</SelectItem>
+								{CRM_OPTIONS.map((option) => (
+									<SelectItem key={option.value} value={option.value}>
+										{option.label}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
 					</div>
 
 					{/* Contact Info */}
