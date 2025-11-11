@@ -13,16 +13,20 @@
 - `getCalculatorComponent(id)`: convenient helper that returns the React component or `null`.
 - `groupCalculatorsByCategory(definitions?)`: utility for building grouped navigation UIs.
 
-## Components
+## Components (UI)
 
-- `AmortizationCalculator`
-  - Inputs: Loan amount, term (years), interest rate.
-  - Outputs: Monthly payment with validation on term (<= 60 years) and rate (<= 100%).
-- `WholesaleCalculator`
-  - Inputs: After Repair Value, repair costs, assignment fee, profit margin (selectable).
-  - Outputs: Max Allowable Offer (MAO) formatted as a whole-dollar amount.
-- `CalculatorHub`
-  - Client component that renders a sidebar navigation and calculator grid given a list of calculator definitions.
+- `AmortizationCalculator` — mortgage payment modeling.
+- `WholesaleCalculator` — MAO computations for assignment deals.
+- `FixFlipROICalculator` — investment, profit, and ROI for fix & flips.
+- `RentalCashFlowCalculator` — cash flow, cap rate, and cash-on-cash returns.
+- `BRRRRCalculator` — cash out, retained equity, NOI, and refinance payments.
+- `DealComparisonCalculator` — efficiency scoring and ranking across deals.
+- `OfferEstimatorCalculator` — MAO + AI adjustments using comparable sales.
+- `LTVCalculator` — loan-to-value ratios.
+- `DSCRCalculator` — debt service coverage ratios.
+- `CommissionSplitCalculator` — broker/agent split breakdowns.
+- `ClosingCostCalculator` — transfer taxes, total closing costs, and net proceeds.
+- `CalculatorHub` — renders sidebar navigation plus grouped calculator grid.
 
 ## Usage Examples
 
