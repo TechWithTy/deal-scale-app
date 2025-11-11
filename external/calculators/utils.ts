@@ -34,4 +34,3 @@ export function getActiveCalculatorId(
 	if (!requested) return undefined;
 	return validCalculatorIds.includes(requested) ? requested : undefined;
 }
-

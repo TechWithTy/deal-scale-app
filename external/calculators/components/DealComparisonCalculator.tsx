@@ -8,6 +8,7 @@ import {
 	formatPercent,
 } from "../formulas";
 import { CalculatorCard } from "./CalculatorCard";
+import type { CalculatorComponentProps } from "../types";
 
 type DealInput = DealComparisonInput[number];
 
@@ -43,8 +44,49 @@ const defaultDeals: DealInput[] = [
 
 const parseNumber = (value: string) => Number.parseFloat(value) || 0;
 
-export function DealComparisonCalculator() {
-	const [deals, setDeals] = useState(defaultDeals);
+const toInputValue = (value: string | number | undefined) =>
+	value === undefined || value === null ? "" : String(value);
+
+const hydrateDealsFromInitialValues = (
+	values: Record<string, string | number> | undefined,
+) => {
+	if (!values) return defaultDeals;
+
+	const hydrated = defaultDeals.map((deal, index) => ({ ...deal }));
+	for (const [key, rawValue] of Object.entries(values)) {
+		const match = key.match(/^deal(\d+)\.(.+)$/);
+		if (!match) continue;
+		const [, dealIndexString, field] = match;
+		const dealIndex = Number.parseInt(dealIndexString, 10);
+		if (
+			Number.isNaN(dealIndex) ||
+			dealIndex < 0 ||
+			dealIndex >= hydrated.length
+		) {
+			continue;
+		}
+		const value =
+			typeof rawValue === "string" && rawValue.trim() === ""
+				? undefined
+				: rawValue;
+		if (value === undefined) continue;
+
+		if (field === "id") {
+			hydrated[dealIndex].id = String(value);
+		} else if (field in hydrated[dealIndex]) {
+			(hydrated[dealIndex] as Record<string, unknown>)[field] =
+				typeof value === "number" ? value : parseNumber(String(value));
+		}
+	}
+	return hydrated;
+};
+
+export function DealComparisonCalculator({
+	initialValues,
+}: CalculatorComponentProps) {
+	const [deals, setDeals] = useState(() =>
+		hydrateDealsFromInitialValues(initialValues),
+	);
 
 	const ranked = useMemo(() => compareDeals(deals), [deals]);
 
