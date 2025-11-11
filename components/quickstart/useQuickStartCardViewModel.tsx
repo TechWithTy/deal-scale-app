@@ -42,6 +42,7 @@ const enhanceCard = (
 		preset: QuickStartWizardPreset | undefined,
 		action: () => void,
 	) => void,
+	onLaunchQuickStartFlow: () => void,
 ): QuickStartCardConfig => {
 	const footer =
 		card.key === "import" && bulkCsvFile ? (
@@ -62,7 +63,7 @@ const enhanceCard = (
 				icon: Sparkles,
 				variant: "default" as const,
 				onClick: () => {
-					onLaunchWizard(card.wizardPreset, () => {});
+					onLaunchWizard(card.wizardPreset, onLaunchQuickStartFlow);
 				},
 			},
 		];
@@ -101,8 +102,20 @@ export const useQuickStartCardViewModel = (
 	return useMemo(
 		() =>
 			cards.map((card) =>
-				enhanceCard(card, bulkCsvFile, bulkCsvHeaders, onLaunchWizard),
+				enhanceCard(
+					card,
+					bulkCsvFile,
+					bulkCsvHeaders,
+					onLaunchWizard,
+					params.onLaunchQuickStartFlow,
+				),
 			),
-		[cards, bulkCsvFile, bulkCsvHeaders, onLaunchWizard],
+		[
+			cards,
+			bulkCsvFile,
+			bulkCsvHeaders,
+			onLaunchWizard,
+			params.onLaunchQuickStartFlow,
+		],
 	);
 };
