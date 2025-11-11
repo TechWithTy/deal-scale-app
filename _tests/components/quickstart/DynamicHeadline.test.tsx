@@ -1,21 +1,13 @@
-import React, { act } from "react";
-import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import React from "react";
+import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import DynamicHeadline from "@/components/quickstart/DynamicHeadline";
+import { getQuickStartHeadlineCopy } from "@/lib/config/quickstart/headlines";
 import { useQuickStartWizardDataStore } from "@/lib/stores/quickstartWizardData";
 
 vi.mock("@/components/ui/globe", () => ({
-  Globe: () => <div data-testid="globe-mock" />,
-}));
-
-const layoutCalls: Array<{ text: string; words: string[]; duration?: number }> = [];
-
-vi.mock("@/src/components/ui/layout-text-flip", () => ({
-  LayoutTextFlip: (props: { text: string; words: string[]; duration?: number }) => {
-    layoutCalls.push(props);
-    return <div data-testid="layout-text-flip-mock">{props.text}</div>;
-  },
+	Globe: () => <div data-testid="globe-mock" />,
 }));
 
 describe("DynamicHeadline", () => {
@@ -26,15 +18,15 @@ describe("DynamicHeadline", () => {
 			goalId: null,
 		});
 		vi.useRealTimers();
-		layoutCalls.length = 0;
 	});
 
 	it("renders the default segmented copy when no persona is selected", () => {
 		render(<DynamicHeadline />);
 
-		expect(screen.getByText("AI Seller Qualification")).toBeTruthy();
-		const chips = screen.getAllByText("Dealmakers");
-		expect(chips.length).toBeGreaterThan(0);
+		expect(screen.getAllByText("AI Seller Qualification").length).toBeGreaterThan(
+			0,
+		);
+		expect(screen.getAllByText("Dealmakers").length).toBeGreaterThan(0);
 
 		expect(screen.getByTestId("quickstart-problem").textContent).toBe(
 			"juggling tools",
@@ -55,17 +47,17 @@ describe("DynamicHeadline", () => {
 		);
 	});
 
-	it("passes highlight words to the animated headline", () => {
+	it("registers interval rotations when multiple variants exist", () => {
+		vi.useFakeTimers();
+		const setIntervalSpy = vi.spyOn(globalThis, "setInterval");
+
 		render(<DynamicHeadline />);
 
-		const latestCall = layoutCalls.at(-1);
-		expect(latestCall).toBeDefined();
-		expect(latestCall?.words).toEqual([
-			"Start automating your pipeline",
-			"Start closing more deals",
-			"Start syncing every CRM automatically",
-		]);
-		expect(latestCall?.duration).toBe(3200);
+		expect(setIntervalSpy).toHaveBeenCalledWith(expect.any(Function), 5200);
+		expect(setIntervalSpy).toHaveBeenCalledWith(expect.any(Function), 6800);
+		expect(setIntervalSpy).toHaveBeenCalledWith(expect.any(Function), 6000);
+
+		setIntervalSpy.mockRestore();
 	});
 
 	it("switches to agent persona copy when store persona changes", () => {

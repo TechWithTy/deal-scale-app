@@ -40,7 +40,10 @@ import {
 	applyQuickStartTemplatePreset,
 	getQuickStartTemplate,
 } from "@/lib/config/quickstart/templates";
-import { getGoalDefinition } from "@/lib/config/quickstart/wizardFlows";
+import {
+	type QuickStartGoalId,
+	getGoalDefinition,
+} from "@/lib/config/quickstart/wizardFlows";
 import { useCampaignCreationStore } from "@/lib/stores/campaignCreation";
 import { useModalStore } from "@/lib/stores/dashboard";
 import type { WebhookStage } from "@/lib/stores/dashboard";
@@ -67,6 +70,8 @@ import { useUserProfileStore } from "@/lib/stores/user/userProfile";
 import { mapTemplateToCampaignWizard } from "@/lib/utils/campaign/templateParser";
 import { toast } from "sonner";
 import { shallow } from "zustand/shallow";
+import LaunchOverlay from "@/components/quickstart/launch/LaunchOverlay";
+import { useLaunchProgressMachine } from "@/hooks/useLaunchProgressMachine";
 
 let lastAppliedTemplateIdGlobal: QuickStartTemplateId | null = null;
 
@@ -1585,52 +1590,84 @@ export default function QuickStartPage() {
 		[router],
 	);
 
+	const {
+		status: launchStatus,
+		open: isLaunchOverlayOpen,
+		start: startLaunchProgress,
+		reset: resetLaunchProgress,
+		setOpen: setLaunchOverlayOpen,
+	} = useLaunchProgressMachine({
+		onError: (error) => {
+			console.error("[QuickStartPage] Workspace launch failed", error);
+			toast.error("We couldn't launch your AI workspace. Please try again.");
+		},
+	});
+
+	const performLaunchQuickStartFlow = useCallback(
+		async (goalId: QuickStartGoalId) => {
+			const goalDefinition = getGoalDefinition(goalId);
+			if (!goalDefinition || goalDefinition.flow.length === 0) {
+				throw new Error("QuickStart goal is missing a launch flow definition.");
+			}
+
+			if (goalDefinition.templateId) {
+				const campaignState = useCampaignCreationStore.getState();
+				campaignState.reset();
+				applyQuickStartTemplatePreset(goalDefinition.templateId, campaignState);
+				updateLastTemplateId(goalDefinition.templateId);
+			}
+
+			const [firstStep] = goalDefinition.flow;
+			const launchers: Record<string, () => void> = {
+				import: handleImportFromSource,
+				campaign: handleCampaignCreate,
+				webhooks: () => handleOpenWebhook("incoming"),
+				"market-deals": handleStartPropertySearch,
+				extension: handleBrowserExtension,
+			};
+
+			const launch = launchers[firstStep.cardId];
+			if (!launch) {
+				throw new Error(
+					`Missing quickstart launcher implementation for "${firstStep.cardId}".`,
+				);
+			}
+
+			launch();
+		},
+		[
+			handleImportFromSource,
+			handleCampaignCreate,
+			handleOpenWebhook,
+			handleStartPropertySearch,
+			handleBrowserExtension,
+			updateLastTemplateId,
+		],
+	);
+
 	const handleLaunchQuickStartFlow = useCallback(() => {
 		const { goalId } = useQuickStartWizardDataStore.getState();
 		if (!goalId) {
+			toast.error("Select a QuickStart goal to launch your workspace.");
 			return;
 		}
 
-		const goalDefinition = getGoalDefinition(goalId);
-		if (!goalDefinition || goalDefinition.flow.length === 0) {
-			return;
-		}
-
-		if (goalDefinition.templateId) {
-			const campaignState = useCampaignCreationStore.getState();
-			campaignState.reset();
-			applyQuickStartTemplatePreset(goalDefinition.templateId, campaignState);
-			updateLastTemplateId(goalDefinition.templateId);
-		}
-
-		const [firstStep] = goalDefinition.flow;
-		const launchers: Record<string, () => void> = {
-			import: handleImportFromSource,
-			campaign: handleCampaignCreate,
-			webhooks: () => handleOpenWebhook("incoming"),
-			"market-deals": handleStartPropertySearch,
-			extension: handleBrowserExtension,
-		};
-
-		const launch = launchers[firstStep.cardId];
-
-		if (launch) {
-			launch();
-			return;
-		}
-
-		if (process.env.NODE_ENV !== "production") {
-			console.warn(
-				`[QuickStartPage] Missing launcher for QuickStart flow card "${firstStep.cardId}".`,
-			);
-		}
+		startLaunchProgress(() => performLaunchQuickStartFlow(goalId)).then(
+			(success) => {
+				if (!success) {
+					return;
+				}
+				window.setTimeout(() => {
+					setLaunchOverlayOpen(false);
+					resetLaunchProgress();
+				}, 800);
+			},
+		);
 	}, [
-		handleImportFromSource,
-		handleCampaignCreate,
-		handleOpenWebhook,
-		handleStartPropertySearch,
-		handleBrowserExtension,
-		updateLastTemplateId,
+		performLaunchQuickStartFlow,
+		resetLaunchProgress,
+		setLaunchOverlayOpen,
+		startLaunchProgress,
 	]);
 
 	const quickstartCards = useQuickStartCardViewModel({
@@ -1741,6 +1778,14 @@ export default function QuickStartPage() {
 						/>
 					</div>
 					<QuickStartWizard />
+					<LaunchOverlay
+						open={isLaunchOverlayOpen}
+						status={launchStatus}
+						onClose={() => {
+							setLaunchOverlayOpen(false);
+							resetLaunchProgress();
+						}}
+					/>
 
 					<input
 						ref={fileInputRef}

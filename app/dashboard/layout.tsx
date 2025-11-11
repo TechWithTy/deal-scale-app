@@ -7,6 +7,7 @@ import {
 	mockUserProfile,
 } from "@/constants/_faker/profile/userProfile";
 import { useSessionStore } from "@/lib/stores/user/useSessionStore";
+import { DemoRevealWrapper } from "@/components/demo/DemoRevealWrapper";
 import type { Metadata } from "next";
 import dynamic from "next/dynamic";
 
@@ -94,29 +95,31 @@ export default async function DashboardLayout({
 	const user = MockUserProfile || null;
 
 	return (
-		<div className="flex">
-			{/* Pass only a valid UserProfile or null to Sidebar */}
-			<Sidebar user={user} />
-			<main className="w-full flex-1 overflow-x-hidden overflow-y-auto">
-				<ImpersonationBanner />
-				<Header />
-				{children}
-			</main>
-			<AiUsageModal />
-			{user && (
-				<BillingModalMain
-					billingHistory={user.billingHistory}
-					paymentDetails={user.paymentDetails}
-					subscription={user.subscription}
-				/>
-			)}
-			<InviteEmployeeModal />
-			<SecurityModal />
-			<WebhookModal />
-			<UpgradeModal trial={false} />
-			<LeaderboardModal />
-			<WheelSpinnerModal />
-			<SkipTraceDialog />
-		</div>
+		<DemoRevealWrapper>
+			<div className="flex">
+				{/* Pass only a valid UserProfile or null to Sidebar */}
+				<Sidebar user={user} />
+				<main className="w-full flex-1 overflow-x-hidden overflow-y-auto">
+					<ImpersonationBanner />
+					<Header />
+					{children}
+				</main>
+				<AiUsageModal />
+				{user && (
+					<BillingModalMain
+						billingHistory={user.billingHistory}
+						paymentDetails={user.paymentDetails}
+						subscription={user.subscription}
+					/>
+				)}
+				<InviteEmployeeModal />
+				<SecurityModal />
+				<WebhookModal />
+				<UpgradeModal trial={false} />
+				<LeaderboardModal />
+				<WheelSpinnerModal />
+				<SkipTraceDialog />
+			</div>
+		</DemoRevealWrapper>
 	);
 }

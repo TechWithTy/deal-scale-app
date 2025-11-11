@@ -822,6 +822,14 @@ export const generateMockUserProfile = (): UserProfile => {
 			personaId: "investor",
 			goalId: "investor-pipeline",
 		},
+		roiProfileOverrides: {
+			dealsPerMonth: faker.number.int({ min: 4, max: 12 }),
+			avgDealValue: faker.number.int({ min: 15000, max: 75000 }),
+			months: 12,
+			profitMarginPercent: faker.number.int({ min: 15, max: 35 }),
+			monthlyOverhead: faker.number.int({ min: 2000, max: 5000 }),
+			hoursPerDeal: faker.number.int({ min: 12, max: 24 }),
+		},
 	};
 };
 

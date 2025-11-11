@@ -4,6 +4,7 @@ import type {
 } from "@/lib/config/quickstart/wizardFlows";
 import type VoiceClone from "@/public/lottie/RecordingButton.json";
 import type { GetSubAccountPathParams } from "@/types/goHighLevel/subAccounts";
+import type { DemoROIProfileConfig } from "@/types/user";
 import type {
 	BillingHistoryItem,
 	PaymentDetails,
@@ -360,4 +361,5 @@ export interface UserProfile {
 	activityLog?: ActivityLog[]; // Log of user activities
 	securitySettings?: SecuritySettings; // Security settings such as last login
 	quickStartDefaults?: QuickStartDefaults;
+	roiProfileOverrides?: DemoROIProfileConfig;
 }

@@ -1,5 +1,6 @@
 import type { FC } from "react";
 
+import PrefilledROICalculator from "@/components/quickstart/roi/PrefilledROICalculator";
 import type { QuickStartTemplateDefinition } from "@/lib/config/quickstart/templates";
 import type {
 	QuickStartFlowStepDefinition,
@@ -55,6 +56,7 @@ const SummaryStep: FC<SummaryStepProps> = ({ goal, steps, template }) => {
 					</li>
 				))}
 			</ol>
+			<PrefilledROICalculator />
 			{template ? (
 				<div
 					className="space-y-2 rounded-lg border bg-muted/10 p-4"

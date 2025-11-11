@@ -1,5 +1,11 @@
 "use client";
 
+import {
+	Accordion,
+	AccordionContent,
+	AccordionItem,
+	AccordionTrigger,
+} from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,7 +23,12 @@ import {
 	quickStartGoals,
 	quickStartPersonas,
 } from "@/lib/config/quickstart/wizardFlows";
-import type { ClientType, DemoCRMProvider, DemoConfig } from "@/types/user";
+import type {
+	ClientType,
+	DemoCRMProvider,
+	DemoConfig,
+	DemoROIProfileConfig,
+} from "@/types/user";
 import type {
 	QuickStartGoalId,
 	QuickStartPersonaId,
@@ -43,6 +54,52 @@ const CLIENT_TYPE_TO_PERSONA: Record<ClientType, QuickStartPersonaId> = {
 	wholesaler: "wholesaler",
 	agent: "agent",
 	loan_officer: "lender",
+};
+
+const ROI_FIELDS: Array<{
+	key: keyof DemoROIProfileConfig;
+	label: string;
+	placeholder?: string;
+	helper?: string;
+}> = [
+	{
+		key: "dealsPerMonth",
+		label: "Deals per month",
+		placeholder: "8",
+	},
+	{
+		key: "avgDealValue",
+		label: "Avg deal value ($)",
+		placeholder: "45000",
+	},
+	{
+		key: "months",
+		label: "Months in plan",
+		placeholder: "12",
+	},
+	{
+		key: "profitMarginPercent",
+		label: "Profit margin (%)",
+		placeholder: "25",
+	},
+	{
+		key: "monthlyOverhead",
+		label: "Monthly overhead ($)",
+		placeholder: "2500",
+	},
+	{
+		key: "hoursPerDeal",
+		label: "Hours per deal",
+		placeholder: "18",
+		helper: "Used to estimate time savings from automation.",
+	},
+];
+
+const parseNumericInput = (value: string): number | undefined => {
+	const sanitized = value.replace(/[^\d.-]/g, "").trim();
+	if (!sanitized) return undefined;
+	const numeric = Number.parseFloat(sanitized);
+	return Number.isFinite(numeric) ? numeric : undefined;
 };
 
 export function DemoConfigEditor({
@@ -117,6 +174,35 @@ export function DemoConfigEditor({
 	const handleGoalSelect = (goalId: QuickStartGoalId) => {
 		const goal = getGoalDefinition(goalId);
 		handleFieldChange("goal", goal?.title ?? undefined);
+	};
+
+	const handleRoiFieldChange = (
+		field: keyof DemoROIProfileConfig,
+		rawValue: string,
+	) => {
+		const nextProfile: DemoROIProfileConfig = {
+			...(localConfig.roiProfile ?? {}),
+		};
+		const numericValue = parseNumericInput(rawValue);
+
+		if (numericValue === undefined) {
+			delete nextProfile[field];
+		} else {
+			nextProfile[field] = numericValue;
+		}
+
+		const cleanedProfile =
+			Object.keys(nextProfile).length > 0 ? nextProfile : undefined;
+
+		const updated: DemoConfig = { ...localConfig };
+		if (cleanedProfile) {
+			updated.roiProfile = cleanedProfile;
+		} else {
+			delete updated.roiProfile;
+		}
+
+		setLocalConfig(updated);
+		onUpdate(updated);
 	};
 
 	const selectedGoalId = useMemo(() => {
@@ -301,6 +387,56 @@ export function DemoConfigEditor({
 							</SelectContent>
 						</Select>
 					</div>
+
+					<Accordion
+						type="single"
+						collapsible
+						defaultValue={localConfig.roiProfile ? "roi-overrides" : undefined}
+						className="rounded-md border border-border bg-background/50"
+					>
+						<AccordionItem value="roi-overrides">
+							<AccordionTrigger className="text-left text-sm font-medium">
+								ROI Calculator Overrides
+							</AccordionTrigger>
+							<AccordionContent>
+								<p className="mb-3 text-muted-foreground text-xs">
+									Provide optional ROI inputs to prefill the QuickStart ROI
+									calculator. Leave blank to rely on persona/goal presets.
+								</p>
+								<div className="grid gap-3 sm:grid-cols-2">
+									{ROI_FIELDS.map(({ key, label, placeholder, helper }) => {
+										const value = localConfig.roiProfile?.[key];
+										return (
+											<div key={key} className="space-y-1">
+												<Label
+													htmlFor={`${String(key)}-${userId}`}
+													className="text-muted-foreground text-xs"
+												>
+													{label}
+												</Label>
+												<Input
+													id={`${String(key)}-${userId}`}
+													type="number"
+													inputMode="decimal"
+													value={value === undefined ? "" : String(value)}
+													onChange={(event) =>
+														handleRoiFieldChange(key, event.target.value)
+													}
+													placeholder={placeholder}
+													className="h-8 text-sm"
+												/>
+												{helper ? (
+													<p className="text-muted-foreground text-[11px] leading-snug">
+														{helper}
+													</p>
+												) : null}
+											</div>
+										);
+									})}
+								</div>
+							</AccordionContent>
+						</AccordionItem>
+					</Accordion>
 
 					{/* Contact Info */}
 					<div className="space-y-1">
