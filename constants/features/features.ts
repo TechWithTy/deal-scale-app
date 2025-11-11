@@ -63,6 +63,10 @@ export const featureAccessConfig: FeatureAccessConfig = {
 			requiredTier: "Starter",
 			mode: "overlay",
 		},
+		calculators: {
+			requiredTier: "Starter",
+			mode: "none",
+		},
 		employee: {
 			requiredTier: "Enterprise",
 			mode: "none",

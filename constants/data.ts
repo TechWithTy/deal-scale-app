@@ -239,6 +239,13 @@ export const navItems: NavItem[] = [
 		featureKey: "navigation.charts",
 	},
 	{
+		title: "Calculators",
+		href: "/dashboard/calculators",
+		icon: "calculator",
+		label: "Calculators",
+		featureKey: "navigation.calculators",
+	},
+	{
 		title: "Employee",
 		href: "/dashboard/employee",
 		icon: "employee",

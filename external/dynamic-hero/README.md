@@ -12,6 +12,34 @@ Shared React utilities for building reusable hero sections with configurable vid
 - `heroCopySchema`, related types — shared schema for copy configuration.
 - `resolveHeroThumbnailSrc`, `resolveHeroVideoSrc` — helpers for media URLs.
 
+## HeroHeadline styling system
+
+The `HeroHeadline` component separates structure from theme so rotating copy stays readable across personas and themes.
+
+### Feature-scoped tokens
+
+`HeroHeadline` sets CSS custom properties that can be overridden by consumers:
+
+```css
+:root {
+  --hero-accent-persona: linear-gradient(90deg, #ef4444, #f87171);
+  --hero-accent-action: linear-gradient(90deg, #38bdf8, #2563eb);
+  --hero-accent-risk: linear-gradient(90deg, #facc15, #f97316);
+  --hero-tag-persona-bg: rgba(59, 130, 246, 0.9);
+  --hero-tag-persona-text: rgba(255, 255, 255, 0.95);
+  --hero-tag-persona-border: rgba(59, 130, 246, 0.4);
+}
+```
+
+### Structural classes (CSS module)
+
+- `heroHeadline` — clamps font size, centers copy, enables balanced wrapping.
+- `heroHeadlineBlock` — stacked rows (`Stop`, `Start`, `Before`).
+- `heroHeadlineAccent*` — gradient text spans driven by the tokens.
+- `tag`, `tagSecondary`, `tagPersona` — standardized persona chips.
+
+Override the tokens or extend the classes if a new persona needs custom branding.
+
 ## Usage
 
 ```tsx
