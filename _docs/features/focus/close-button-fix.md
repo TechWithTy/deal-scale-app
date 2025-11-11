@@ -16,3 +16,5 @@ When the environment variable `NEXT_PUBLIC_MUSIC_WIDGET_DEBUG` was enabled, the 
 These changes make the close button reliable in all modes while preserving the optional debug conveniences.
 
 
+
+

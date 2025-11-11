@@ -16,3 +16,5 @@ Last updated: 2025-11-07
 - Manually toggle offline mode after the first load to confirm cached dashboards render and the offline toast appears.
 
 
+
+

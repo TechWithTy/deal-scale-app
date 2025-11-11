@@ -97,3 +97,5 @@ If your project does not already include Magic UI or Aceternity UI:
 
 Keep this guide alongside the copied module to ensure future teams can drop the package into new surfaces quickly.
 
+
+
