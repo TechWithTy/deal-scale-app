@@ -88,6 +88,18 @@ export function HeroVideoDialog({
 		[animationStyle],
 	);
 
+	const trackElement = (
+		captions: NonNullable<HeroVideoConfig["captions"]>,
+	): JSX.Element => (
+		<track
+			src={captions.src}
+			kind={captions.kind}
+			label={captions.label}
+			srcLang={captions.srclang}
+			default={captions.default}
+		/>
+	);
+
 	const videoSrc = resolveHeroVideoSrc(video);
 	const thumbnailSrc = resolveHeroThumbnailSrc(video);
 	const unoptimizedThumbnail = shouldBypassImageOptimization(thumbnailSrc);
@@ -114,14 +126,26 @@ export function HeroVideoDialog({
 					className="group absolute inset-0 z-20 cursor-pointer overflow-hidden rounded-[28px] border-0 bg-transparent p-0 transition duration-200 ease-out"
 					onClick={openModal}
 				>
-					<Image
-						src={thumbnailSrc}
-						alt={thumbnailAlt}
-						fill
-						unoptimized={unoptimizedThumbnail}
-						priority
-						className="object-cover transition-all duration-200 ease-out group-hover:brightness-[0.92]"
-					/>
+					{video.thumbnailVideo ? (
+						<video
+							className="absolute inset-0 size-full object-cover transition-all duration-200 ease-out group-hover:brightness-[0.92]"
+							src={video.thumbnailVideo}
+							poster={thumbnailSrc}
+							autoPlay
+							muted
+							loop
+							playsInline
+						/>
+					) : (
+						<Image
+							src={thumbnailSrc}
+							alt={video.posterAlt ?? thumbnailAlt}
+							fill
+							unoptimized={unoptimizedThumbnail}
+							priority
+							className="object-cover transition-all duration-200 ease-out group-hover:brightness-[0.92]"
+						/>
+					)}
 					<span
 						aria-hidden
 						className="pointer-events-none absolute inset-x-0 bottom-[-2px] h-[22%] rounded-t-[32px] bg-gradient-to-t from-background/90 via-background/60 to-transparent opacity-95 transition duration-200 ease-out"
@@ -176,13 +200,28 @@ export function HeroVideoDialog({
 								<XIcon className="size-5" />
 							</motion.button>
 							<div className="relative isolate z-[1] size-full overflow-hidden rounded-2xl border-2 border-white">
-								<iframe
-									src={videoSrc}
-									title="Hero Video player"
-									className="size-full rounded-2xl"
-									allowFullScreen
-									allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-								/>
+								{video.provider === "html5" ? (
+									<video
+										className="size-full rounded-2xl"
+										controls
+										playsInline
+										autoPlay
+										poster={thumbnailSrc}
+										data-testid="hero-video-html5"
+									>
+										<source src={videoSrc} type="video/mp4" />
+										{video.captions ? trackElement(video.captions) : null}
+										Sorry, your browser doesn't support embedded videos.
+									</video>
+								) : (
+									<iframe
+										src={videoSrc}
+										title="Hero Video player"
+										className="size-full rounded-2xl"
+										allowFullScreen
+										allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+									/>
+								)}
 							</div>
 						</motion.div>
 					</motion.div>

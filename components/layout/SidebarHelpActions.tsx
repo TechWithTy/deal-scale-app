@@ -9,6 +9,100 @@ import { cn } from "@/lib/_utils";
 import { openFocusWidget } from "@/lib/ui/helpActions";
 import { useCommandPalette } from "external/action-bar/components/providers/CommandPaletteProvider";
 
+type ShortcutKey =
+	| { type: "icon"; name: "command" | "shift"; label: string }
+	| { type: "text"; label: string };
+
+interface ShortcutMeta {
+	aria: string;
+	description: string;
+	keys: ShortcutKey[];
+}
+
+function ShortcutGlyph({
+	name,
+}: { name: "command" | "shift" }): React.ReactElement {
+	if (name === "command") {
+		return (
+			<svg
+				aria-hidden
+				width="12"
+				height="12"
+				viewBox="0 0 24 24"
+				fill="none"
+				xmlns="http://www.w3.org/2000/svg"
+				className="stroke-current"
+			>
+				<path
+					d="M9 9v6h6V9m-6 0H7a3 3 0 1 1 2-5.196m0 5.196h6m0 0h2a3 3 0 1 0-2-5.196M9 15H7a3 3 0 1 0 2 5.196M15 9h2a3 3 0 1 1-2 5.196M9 15h6m0 0h2a3 3 0 1 1-2 5.196M9 15H7a3 3 0 1 1 2 5.196"
+					strokeWidth="2"
+					strokeLinecap="round"
+					strokeLinejoin="round"
+				/>
+			</svg>
+		);
+	}
+
+	return (
+		<svg
+			aria-hidden
+			width="12"
+			height="12"
+			viewBox="0 0 24 24"
+			fill="none"
+			xmlns="http://www.w3.org/2000/svg"
+			className="stroke-current"
+		>
+			<path
+				d="M12 4l7 7h-4v9h-6v-9H5l7-7z"
+				fill="currentColor"
+				stroke="currentColor"
+				strokeLinecap="round"
+				strokeLinejoin="round"
+				strokeWidth="1"
+			/>
+		</svg>
+	);
+}
+
+function ShortcutBadge({
+	isCollapsed,
+	keys,
+}: {
+	isCollapsed: boolean;
+	keys: ShortcutKey[];
+}): React.ReactElement {
+	return (
+		<span
+			aria-hidden
+			className={cn(
+				"inline-flex items-center gap-1 rounded border border-border bg-muted px-1.5 py-0.5 text-muted-foreground",
+				isCollapsed ? "mt-1" : "ml-auto",
+			)}
+		>
+			{keys.map((key, index) => (
+				<span
+					key={`${key.label}-${index.toString()}`}
+					className="inline-flex items-center gap-1"
+				>
+					<kbd className="flex h-4 min-w-[1.25rem] items-center justify-center rounded-sm bg-card px-1 text-[10px] font-semibold leading-none shadow-sm">
+						{key.type === "icon" ? (
+							<ShortcutGlyph name={key.name} />
+						) : (
+							key.label
+						)}
+					</kbd>
+					{index < keys.length - 1 ? (
+						<span className="-mx-0.5 text-[9px] font-semibold leading-none text-muted-foreground">
+							+
+						</span>
+					) : null}
+				</span>
+			))}
+		</span>
+	);
+}
+
 interface SidebarHelpActionsProps {
 	isCollapsed?: boolean;
 }
@@ -18,18 +112,42 @@ export default function SidebarHelpActions({
 }: SidebarHelpActionsProps): React.ReactElement {
 	const { setOpen, setInitialQuery } = useCommandPalette();
 	const descriptionId = useId();
-	const [shortcut, setShortcut] = useState({
-		display: "Ctrl+Shift+D",
+	const [shortcut, setShortcut] = useState<ShortcutMeta>({
 		aria: "Control+Shift+D",
+		description: "⌘+Shift+D",
+		keys: [
+			{ type: "text", label: "⌘" },
+			{ type: "text", label: "Shift" },
+			{ type: "text", label: "D" },
+		],
 	});
 
 	useEffect(() => {
 		if (typeof navigator === "undefined") return;
-		const isMac = /mac|iphone|ipad|ipod/i.test(navigator.platform);
+		const platform =
+			// @ts-expect-error Support Chromium UA data
+			navigator.userAgentData?.platform ?? navigator.platform ?? "";
+		const isApple = /mac|iphone|ipad|ipod/i.test(platform);
 		setShortcut(
-			isMac
-				? { display: "⌘⇧ D", aria: "Meta+Shift+D" }
-				: { display: "Ctrl+Shift+D", aria: "Control+Shift+D" },
+			isApple
+				? {
+						aria: "Meta+Shift+D",
+						description: "⌘+⇧+D",
+						keys: [
+							{ type: "text", label: "⌘" },
+							{ type: "text", label: "⇧" },
+							{ type: "text", label: "D" },
+						],
+					}
+				: {
+						aria: "Control+Shift+D",
+						description: "⌘+Shift+D",
+						keys: [
+							{ type: "text", label: "⌘" },
+							{ type: "text", label: "Shift" },
+							{ type: "text", label: "D" },
+						],
+					},
 		);
 	}, []);
 
@@ -38,7 +156,7 @@ export default function SidebarHelpActions({
 			{
 				key: "assist",
 				label: "Assist",
-				description: `Use ${shortcut.display.replace(" ", "")} to open the Assist command palette.`,
+				description: `Use ${shortcut.description.replace(" ", "")} to open the Assist command palette.`,
 				icon: LifeBuoy,
 				onSelect: () => {
 					setInitialQuery("");
@@ -71,17 +189,13 @@ export default function SidebarHelpActions({
 		>
 			{actions.map((action) => {
 				const ActionIcon = action.icon;
-				const shortcutBadge = action.supportsShortcut ? (
-					<kbd
-						aria-hidden
-						className={cn(
-							"rounded border border-border bg-muted px-1.5 py-0.5 font-semibold text-[10px] text-muted-foreground",
-							isCollapsed ? "mt-1" : "ml-auto",
-						)}
-					>
-						{action.shortcut?.display}
-					</kbd>
-				) : null;
+				const shortcutBadge =
+					action.supportsShortcut && action.shortcut ? (
+						<ShortcutBadge
+							isCollapsed={isCollapsed}
+							keys={action.shortcut.keys}
+						/>
+					) : null;
 
 				return (
 					<button
