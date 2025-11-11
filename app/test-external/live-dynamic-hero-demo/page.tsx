@@ -95,9 +95,9 @@ export default function LiveDynamicHeroDemoPage(): JSX.Element {
 						id="loan-officer-cta"
 						className="flex w-full flex-col items-center gap-8"
 					>
-						<p className="max-w-2xl text-center text-base text-muted-foreground">
+						<p className="max-w-2xl text-center text-lg text-neutral-300">
 							Automated borrower follow-up from your mortgage CRM, orchestrated
-							by DealScale so loan officers focus on closing conversations.
+							so loan officers focus on closing conversations.
 						</p>
 						<PersonaCTA
 							className="w-full"
@@ -109,7 +109,7 @@ export default function LiveDynamicHeroDemoPage(): JSX.Element {
 							onPrimaryClick={handleScrollToDetails}
 							onSecondaryClick={handleScrollToDetails}
 						/>
-						<p className="max-w-xl text-center text-muted-foreground text-sm">
+						<p className="max-w-xl text-center text-neutral-400 text-sm">
 							Reusable hero experiences adopted by DealScale builders.
 						</p>
 
