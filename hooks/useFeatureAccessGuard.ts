@@ -13,6 +13,8 @@ import {
 	hasRequiredTier,
 } from "@/constants/subscription/tiers";
 import { useUserSubscriptionStore } from "@/lib/stores/user/subscription";
+import { useUserStore } from "@/lib/stores/userStore";
+import { useSessionStore } from "@/lib/stores/user/useSessionStore";
 import type { PermissionAction, PermissionResource } from "@/types/user";
 import { useMemo } from "react";
 
@@ -45,9 +47,22 @@ export function useFeatureAccessGuard(
 	}: UseFeatureAccessGuardOptions = {},
 ): UseFeatureAccessGuardResult {
 	const planName = useUserSubscriptionStore((state) => state.planName());
+	const userStoreTier = useUserStore((state) => state.tier);
+	const sessionStoreTier = useSessionStore((state) => state.user?.tier);
 
 	return useMemo(() => {
-		const userTier = ensureValidTier(planName);
+		const tierCandidates: TierInput[] = [
+			planName,
+			userStoreTier,
+			sessionStoreTier,
+			fallbackTier,
+		];
+		const resolvedTierInput =
+			tierCandidates.find(
+				(candidate) =>
+					typeof candidate === "string" && candidate.trim().length > 0,
+			) ?? planName;
+		const userTier = ensureValidTier(resolvedTierInput);
 		const rule = getFeatureAccessRule(featureKey);
 		const effectiveMode = rule?.mode ?? fallbackMode;
 		const requiredTier = rule
@@ -65,7 +80,14 @@ export function useFeatureAccessGuard(
 			permissionRequirement: rule?.permission,
 			quotaKey: rule?.quota,
 		};
-	}, [featureKey, fallbackMode, fallbackTier, planName]);
+	}, [
+		featureKey,
+		fallbackMode,
+		fallbackTier,
+		planName,
+		userStoreTier,
+		sessionStoreTier,
+	]);
 }
 
 export type { FeatureGuardMode };

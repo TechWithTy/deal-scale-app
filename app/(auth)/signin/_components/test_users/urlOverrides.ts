@@ -82,6 +82,8 @@ const hasRelevantParams = (params: URLSearchParams): boolean => {
 		"tier",
 		"beta",
 		"pilot",
+		"free",
+		"freeTier",
 		"persona",
 		"goal",
 		"company",
@@ -152,6 +154,7 @@ export interface DemoLinkOverrides {
 	readonly tier?: string;
 	readonly isBetaTester?: boolean;
 	readonly isPilotTester?: boolean;
+	readonly isFreeTier?: boolean;
 	readonly quickStartDefaults?: QuickStartDefaults;
 	readonly demoConfig?: Partial<DemoConfig>;
 	readonly quotas?: {
@@ -365,6 +368,12 @@ export const parseDemoLinkOverrides = (
 	const pilot = coerceBoolean(params.get("pilot"));
 	if (pilot !== undefined) {
 		overrides.isPilotTester = pilot;
+	}
+
+	const freeTier =
+		coerceBoolean(params.get("freeTier")) ?? coerceBoolean(params.get("free"));
+	if (freeTier !== undefined) {
+		overrides.isFreeTier = freeTier;
 	}
 
 	const personaId =
@@ -624,6 +633,10 @@ export const applyDemoLinkOverrides = (
 		});
 		user.isBetaTester = testerFlags.isBetaTester;
 		user.isPilotTester = testerFlags.isPilotTester;
+	}
+
+	if (overrides.isFreeTier !== undefined) {
+		user.isFreeTier = overrides.isFreeTier;
 	}
 
 	if (overrides.demoConfig) {

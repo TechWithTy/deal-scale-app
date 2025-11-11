@@ -17,6 +17,7 @@ export interface AdminDirectoryUser extends AdminUser {
 	permissionList: User["permissionList"];
 	isBetaTester?: boolean;
 	isPilotTester?: boolean;
+	isFreeTier?: boolean;
 }
 
 interface DirectoryMetadata {
@@ -175,6 +176,7 @@ function decorateUser(user: User): AdminDirectoryUser {
 		permissionList: user.permissionList,
 		isBetaTester: user.isBetaTester,
 		isPilotTester: user.isPilotTester,
+		isFreeTier: user.isFreeTier,
 	};
 }
 

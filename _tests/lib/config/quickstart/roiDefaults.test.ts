@@ -4,7 +4,7 @@ import { getQuickStartROIPreset } from "@/lib/config/quickstart/roiDefaults";
 
 describe("getQuickStartROIPreset", () => {
 	it("returns goal-specific overrides when available", () => {
-		const preset = getQuickStartROIPreset("lender", "lender-fund-fast");
+		const preset = getQuickStartROIPreset("loan_officer", "lender-fund-fast");
 
 		expect(preset.profileInputs.goalId).toBe("lender-fund-fast");
 		expect(preset.profileInputs.dealsPerMonth).toBeGreaterThan(10);

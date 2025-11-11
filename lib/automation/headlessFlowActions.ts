@@ -72,7 +72,7 @@ export const createMockLeadList = async (
 		investor: "Motivated Sellers - Demo List",
 		wholesaler: "Buyer Network - Demo List",
 		agent: "Sphere of Influence - Demo List",
-		lender: "Borrower Pipeline - Demo List",
+		loan_officer: "Borrower Pipeline - Demo List",
 	};
 
 	const mockList: MockLeadList = {
@@ -119,7 +119,7 @@ export const createMockCampaign = async (
 		investor: "call",
 		wholesaler: "text",
 		agent: "email",
-		lender: "call",
+		loan_officer: "call",
 	};
 
 	const mockCampaign: MockCampaign = {

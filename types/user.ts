@@ -117,10 +117,12 @@ export interface User {
 	tier: UserTier;
 	isBetaTester?: boolean;
 	isPilotTester?: boolean;
+	isFreeTier?: boolean;
 	permissions: PermissionMatrix;
 	permissionList: string[]; // Derived list (e.g., ["leads:read"]) for legacy checks
 	quotas: UserQuotas;
 	subscription: {
+		name?: string;
 		aiCredits: { allotted: number; used: number; resetInDays: number };
 		leads: { allotted: number; used: number; resetInDays: number };
 		skipTraces: { allotted: number; used: number; resetInDays: number };
@@ -129,7 +131,7 @@ export interface User {
 	demoConfig?: DemoConfig;
 	/** QuickStart wizard preferences - automatically pre-selects persona/goal */
 	quickStartDefaults?: {
-		personaId?: "investor" | "wholesaler" | "lender" | "agent";
+		personaId?: "investor" | "wholesaler" | "loan_officer" | "agent";
 		goalId?: string;
 	};
 }

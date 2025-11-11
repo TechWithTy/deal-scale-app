@@ -62,7 +62,7 @@ describe("useQuickStartWizardDataStore", () => {
                                         },
                                         teamMembers: [],
                                         quickStartDefaults: {
-                                                personaId: "lender",
+                                                personaId: "loan_officer",
                                                 goalId: "lender-fund-fast",
                                         },
                                 } as never,
@@ -72,7 +72,7 @@ describe("useQuickStartWizardDataStore", () => {
 
                 const state = getState();
 
-                expect(state.personaId).toBe("lender");
+                expect(state.personaId).toBe("loan_officer");
                 expect(state.goalId).toBe("lender-fund-fast");
         });
 

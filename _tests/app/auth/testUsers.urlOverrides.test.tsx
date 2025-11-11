@@ -129,5 +129,21 @@ describe("demo link overrides", () => {
 			hoursPerDeal: 20,
 		});
 	});
+
+	it("parses and applies free tier overrides", () => {
+		const params = new URLSearchParams(
+			"demoUser=free@example.com&freeTier=true&beta=false",
+		);
+		const overrides = parseDemoLinkOverrides(params);
+		expect(overrides?.isFreeTier).toBe(true);
+		expect(overrides?.isBetaTester).toBe(false);
+
+		const editableUsers = createEditableUsers();
+		const seed = selectSeedUser(editableUsers, overrides!);
+		const applied = applyDemoLinkOverrides(seed!, overrides!);
+
+		expect(applied.isFreeTier).toBe(true);
+		expect(applied.isBetaTester).toBe(false);
+	});
 });
 

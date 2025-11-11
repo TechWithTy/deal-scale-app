@@ -3,7 +3,7 @@ import type { QuickStartTemplateId } from "./templates";
 export type QuickStartPersonaId =
 	| "investor"
 	| "wholesaler"
-	| "lender"
+	| "loan_officer"
 	| "agent";
 
 export interface QuickStartPersonaDefinition {
@@ -63,11 +63,11 @@ const PERSONAS: readonly QuickStartPersonaDefinition[] = [
 			"Prioritize high-intent leads, prep them for disposition, and automate buyer follow-up sequences.",
 	},
 	{
-		id: "lender",
-		title: "Private Lender",
-		headline: "Keep capital deployed and approvals moving",
+		id: "loan_officer",
+		title: "Loan Officer",
+		headline: "Automate borrower follow-up that closes faster",
 		description:
-			"Route borrowers to the right team instantly and automate the follow-up that closes loans faster.",
+			"Connect your mortgage systems, triage borrowers instantly, and keep every deal moving without manual chase.",
 	},
 	{
 		id: "agent",
@@ -243,7 +243,7 @@ const GOALS: readonly QuickStartGoalDefinition[] = [
 	},
 	{
 		id: "lender-fund-fast",
-		personaId: "lender",
+		personaId: "loan_officer",
 		title: "Fund deals faster",
 		description:
 			"Stand up borrower intake flows, automate triage, and alert your capital partners without manual work.",

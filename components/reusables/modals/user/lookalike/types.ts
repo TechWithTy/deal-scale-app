@@ -231,7 +231,7 @@ export const DISTRESSED_SIGNALS = [
 export const BUYER_PERSONAS = [
 	"investor",
 	"wholesaler",
-	"lender",
+	"loan_officer",
 	"agent",
 	"owner-occupant",
 ];

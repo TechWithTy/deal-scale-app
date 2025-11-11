@@ -21,6 +21,7 @@ export const heroCopyRotationsSchema = z.object({
 	problems: z.array(z.string()).optional(),
 	solutions: z.array(z.string()).optional(),
 	fears: z.array(z.string()).optional(),
+	hopes: z.array(z.string()).optional(),
 });
 
 export const heroCopyValuesSchema = z.object({

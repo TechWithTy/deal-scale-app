@@ -132,9 +132,10 @@ type ExtendedJWT = JWT & {
         subscription?: UserProfileSubscription;
         isBetaTester?: boolean;
         isPilotTester?: boolean;
+        isFreeTier?: boolean;
         demoConfig?: DemoConfig;
-        quickStartDefaults?: {
-                personaId?: "investor" | "wholesaler" | "lender" | "agent";
+		quickStartDefaults?: {
+                personaId?: "investor" | "wholesaler" | "loan_officer" | "agent";
                 goalId?: string;
         };
         impersonator?: ImpersonationIdentity | null;
@@ -151,9 +152,10 @@ type ExtendedUserLike = {
         subscription?: UserProfileSubscription;
         isBetaTester?: boolean;
         isPilotTester?: boolean;
+        isFreeTier?: boolean;
         demoConfig?: DemoConfig;
-        quickStartDefaults?: {
-                personaId?: "investor" | "wholesaler" | "lender" | "agent";
+		quickStartDefaults?: {
+                personaId?: "investor" | "wholesaler" | "loan_officer" | "agent";
                 goalId?: string;
         };
         name?: string | null;
@@ -171,9 +173,10 @@ type SessionUserLike = {
         subscription?: UserProfileSubscription;
         isBetaTester?: boolean;
         isPilotTester?: boolean;
+        isFreeTier?: boolean;
         demoConfig?: DemoConfig;
-        quickStartDefaults?: {
-                personaId?: "investor" | "wholesaler" | "lender" | "agent";
+		quickStartDefaults?: {
+                personaId?: "investor" | "wholesaler" | "loan_officer" | "agent";
                 goalId?: string;
         };
         name?: string | null;
@@ -199,6 +202,7 @@ function applyExtendedUserToToken(
         token.subscription = userData.subscription;
         token.isBetaTester = userData.isBetaTester;
         token.isPilotTester = userData.isPilotTester;
+        token.isFreeTier = userData.isFreeTier;
         token.demoConfig = userData.demoConfig;
 	token.quickStartDefaults = userData.quickStartDefaults;
         if (userData.id) {
@@ -225,6 +229,7 @@ function applyTokenToSessionUser(
         sessionUser.subscription = token.subscription;
         sessionUser.isBetaTester = token.isBetaTester;
         sessionUser.isPilotTester = token.isPilotTester;
+        sessionUser.isFreeTier = token.isFreeTier;
         sessionUser.demoConfig = token.demoConfig;
 	sessionUser.quickStartDefaults = token.quickStartDefaults;
         if (typeof token.sub === "string" && token.sub) {
@@ -258,22 +263,27 @@ const authConfig = {
 					required: false,
 				},
 				leadsUsed: { label: "Leads Used", type: "number", required: false },
-                                skipAllotted: {
-                                        label: "Skip Allotted",
-                                        type: "number",
-                                        required: false,
-                                },
-                                skipUsed: { label: "Skip Used", type: "number", required: false },
-                                isBetaTester: {
-                                        label: "Beta Tester",
-                                        type: "text",
-                                        required: false,
-                                },
-                                isPilotTester: {
-                                        label: "Pilot Tester",
-                                        type: "text",
-                                        required: false,
-                                },
+				skipAllotted: {
+					label: "Skip Allotted",
+					type: "number",
+					required: false,
+				},
+				skipUsed: { label: "Skip Used", type: "number", required: false },
+				isBetaTester: {
+					label: "Beta Tester",
+					type: "text",
+					required: false,
+				},
+				isPilotTester: {
+					label: "Pilot Tester",
+					type: "text",
+					required: false,
+				},
+				isFreeTier: {
+					label: "Free Tier",
+					type: "text",
+					required: false,
+				},
                         },
 			async authorize(credentials) {
 				const email = credentials?.email as string | undefined;
@@ -310,6 +320,7 @@ const authConfig = {
 							},
 							isBetaTester: customData.isBetaTester,
 							isPilotTester: customData.isPilotTester,
+							isFreeTier: customData.isFreeTier,
 							demoConfig: customData.demoConfig,
 						};
 					} catch (error) {
@@ -378,6 +389,7 @@ const authConfig = {
                                 const skipUsed = num(credentials?.skipUsed);
                                 const betaOverride = bool(credentials?.isBetaTester);
                                 const pilotOverride = bool(credentials?.isPilotTester);
+                                const freeTierOverride = bool(credentials?.isFreeTier);
 
 		const quotaOverrides: Record<string, unknown> = {
 			aiAllotted,
@@ -418,12 +430,30 @@ const authConfig = {
 			overrides: quotaOverrides,
 		});
 
+				const mergedMatrix = mergeMatrix(user.permissions, permsOverrideMatrix);
+				const permissionList = permsOverrideList ?? flattenMatrix(mergedMatrix);
+
+				const role = VALID_ROLES.includes(roleOverride as UserRole)
+					? (roleOverride as UserRole)
+					: user.role;
+		const tierCandidate = customPayload?.tier ?? tierOverride;
+		const tier: SubscriptionTier = tierCandidate
+			? ensureValidTier(tierCandidate)
+			: user.tier;
 		const sub = {
 			...user.subscription,
 			...(customPayload?.subscription ?? {}),
 		};
+		const normalizedSubscriptionName =
+			typeof customPayload?.subscription?.name === "string" &&
+			customPayload.subscription.name.trim().length > 0
+				? customPayload.subscription.name
+				: typeof sub.name === "string" && sub.name.trim().length > 0
+					? sub.name
+					: tier;
 		const updatedSub = {
 			...sub,
+			name: normalizedSubscriptionName,
 			aiCredits: {
 				...sub.aiCredits,
 				allotted: updatedQuotas.ai.allotted,
@@ -440,17 +470,6 @@ const authConfig = {
 				used: updatedQuotas.skipTraces.used,
 			},
 		};
-
-				const mergedMatrix = mergeMatrix(user.permissions, permsOverrideMatrix);
-				const permissionList = permsOverrideList ?? flattenMatrix(mergedMatrix);
-
-				const role = VALID_ROLES.includes(roleOverride as UserRole)
-					? (roleOverride as UserRole)
-					: user.role;
-		const tierCandidate = customPayload?.tier ?? tierOverride;
-		const tier: SubscriptionTier = tierCandidate
-			? ensureValidTier(tierCandidate)
-			: user.tier;
 		const testerFlags = normalizeTesterFlags({
 			isBetaTester: customPayload?.isBetaTester ?? betaOverride,
 			isPilotTester: customPayload?.isPilotTester ?? pilotOverride,
@@ -459,6 +478,8 @@ const authConfig = {
 				isPilotTester: Boolean(user.isPilotTester),
 			},
 		});
+		const isFreeTier =
+			customPayload?.isFreeTier ?? freeTierOverride ?? user.isFreeTier ?? false;
 
 		const resolvedDemoConfig = customPayload?.demoConfig
 			? {
@@ -490,6 +511,7 @@ const authConfig = {
 			subscription: updatedSub,
 			isBetaTester: testerFlags.isBetaTester,
 			isPilotTester: testerFlags.isPilotTester,
+			isFreeTier,
 			demoConfig: resolvedDemoConfig,
 			quickStartDefaults: derivedQuickStart ?? undefined,
 		} as NextAuthUser;

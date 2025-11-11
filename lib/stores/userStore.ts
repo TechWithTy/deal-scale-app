@@ -53,6 +53,7 @@ interface UserState {
 	};
 	isBetaTester: boolean;
 	isPilotTester: boolean;
+	isFreeTier: boolean;
 	setUser: (
 		session: {
 			user?: {
@@ -69,6 +70,7 @@ interface UserState {
 				};
 				isBetaTester?: boolean;
 				isPilotTester?: boolean;
+				isFreeTier?: boolean;
 			};
 		} | null,
 	) => void;
@@ -94,6 +96,7 @@ const createBaseState = () => ({
 	},
 	isBetaTester: false,
 	isPilotTester: false,
+	isFreeTier: false,
 });
 
 export const useUserStore = create<UserState>((set, get) => ({
@@ -149,6 +152,7 @@ export const useUserStore = create<UserState>((set, get) => ({
 			},
 			isBetaTester: Boolean(u.isBetaTester),
 			isPilotTester: Boolean(u.isPilotTester),
+			isFreeTier: Boolean(u.isFreeTier),
 		});
 	},
 	consumeLeads: (amount) => {

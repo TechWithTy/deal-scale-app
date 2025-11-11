@@ -89,5 +89,5 @@ export const VALID_GOAL_PERSONA_MAPPINGS = {
 	investor: ["investor-pipeline", "investor-market"],
 	wholesaler: ["wholesaler-dispositions", "wholesaler-acquisitions"],
 	agent: ["agent-sphere", "agent-expansion"],
-	lender: ["lender-fund-fast"],
+	loan_officer: ["lender-fund-fast"],
 } as const;

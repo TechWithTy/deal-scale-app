@@ -114,7 +114,7 @@ const formatStatus = (status?: string) => {
 const personaIconMap: Record<QuickStartPersonaId, JSX.Element> = {
 	investor: <LineChart className={ICON_CLASS} aria-hidden />,
 	wholesaler: <Briefcase className={ICON_CLASS} aria-hidden />,
-	lender: <Banknote className={ICON_CLASS} aria-hidden />,
+	loan_officer: <Banknote className={ICON_CLASS} aria-hidden />,
 	agent: <Home className={ICON_CLASS} aria-hidden />,
 };
 
@@ -529,7 +529,7 @@ export default function CommandPaletteAppCommands(): null {
 				}
 				return acc;
 			},
-			{ investor: [], wholesaler: [], lender: [], agent: [] },
+			{ investor: [], wholesaler: [], loan_officer: [], agent: [] },
 		);
 
 		const goalPersonaChildren: CommandItem[] = [];

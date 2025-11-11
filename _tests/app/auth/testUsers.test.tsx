@@ -53,6 +53,8 @@ describe("demo test user helpers", () => {
 			goalId: "wholesaler-acquisitions",
 		});
 		expect(payload.demoConfig.goal).toBe("Source new inventory across counties");
+		expect(payload.isFreeTier).toBe(false);
+		expect(params.isFreeTier).toBe("false");
 		expect(params.isCustomUser).toBeDefined();
 	});
 
@@ -67,8 +69,21 @@ describe("demo test user helpers", () => {
 		const [updated] = initializeEditableUsers([editable]);
 
 		expect(updated.quickStartDefaults).toEqual({
-			personaId: "lender",
+			personaId: "loan_officer",
 			goalId: "lender-fund-fast",
 		});
+	});
+
+	it("serializes free tier overrides when logging in", async () => {
+		const editable = cloneSeedUser(2);
+		editable.isFreeTier = true;
+
+		await handleLogin(editable);
+
+		const params = vi.mocked(signIn).mock.calls[0]?.[1] ?? {};
+		expect(params.isFreeTier).toBe("true");
+
+		const payload = JSON.parse(params.customUserData as string);
+		expect(payload.isFreeTier).toBe(true);
 	});
 });

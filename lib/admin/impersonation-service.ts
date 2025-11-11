@@ -50,6 +50,7 @@ function toSessionSnapshot(user: User): ImpersonationSessionUserSnapshot {
 		subscription: user.subscription,
 		isBetaTester: user.isBetaTester,
 		isPilotTester: user.isPilotTester,
+		isFreeTier: user.isFreeTier,
 	};
 }
 

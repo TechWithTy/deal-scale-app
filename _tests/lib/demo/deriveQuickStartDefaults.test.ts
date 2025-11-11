@@ -64,7 +64,7 @@ describe("deriveQuickStartDefaults", () => {
 		});
 
 		expect(result).toEqual<QuickStartDefaults>({
-			personaId: "lender",
+			personaId: "loan_officer",
 		});
 	});
 

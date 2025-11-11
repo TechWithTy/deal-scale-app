@@ -24,6 +24,7 @@ const impersonatedSnapshot = {
         },
         isBetaTester: false,
         isPilotTester: false,
+        isFreeTier: false,
 } as const;
 
 const impersonatorSnapshot = {

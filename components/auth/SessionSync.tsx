@@ -13,6 +13,7 @@ import { useSession } from "next-auth/react";
 import { useEffect } from "react";
 import type { Session } from "next-auth";
 import type { UserProfile } from "@/types/userProfile";
+import type { UserProfileSubscription } from "@/types/userProfile/subscriptions";
 
 const cloneProfileTemplate = (): UserProfile | null => {
 	if (!MockUserProfile) {
@@ -117,6 +118,21 @@ const buildProfileFromSession = (
 	base.lastName = familyName ?? base.lastName;
 	base.quickStartDefaults = quickStartDefaults ?? base.quickStartDefaults;
 	base.subscription = session.user.subscription ?? base.subscription;
+	const hydratedSubscription = base.subscription as
+		| (UserProfileSubscription & Record<string, unknown>)
+		| undefined;
+	if (hydratedSubscription) {
+		const sessionSubscriptionName = session.user.subscription?.name;
+		const fallbackTierName = session.user.tier;
+		const normalizedName =
+			typeof sessionSubscriptionName === "string" &&
+			sessionSubscriptionName.trim().length > 0
+				? sessionSubscriptionName
+				: fallbackTierName;
+		if (normalizedName && normalizedName.trim().length > 0) {
+			hydratedSubscription.name = normalizedName;
+		}
+	}
 
 	return base;
 };

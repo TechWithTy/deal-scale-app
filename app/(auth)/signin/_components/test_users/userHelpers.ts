@@ -34,6 +34,7 @@ export type EditableUser = TestUser & {
 	leadsCredits: Credits;
 	skipTracesCredits: Credits;
 	newPermission?: string;
+	isFreeTier?: boolean;
 };
 
 const CLASSIC_ADMIN_LABEL = "Classic";
@@ -151,6 +152,7 @@ export const handleLogin = async (user: EditableUser) => {
 			isBetaTester: user.isBetaTester,
 			isPilotTester: user.isPilotTester,
 		});
+		const isFreeTier = Boolean(user.isFreeTier);
 		const quickStartDefaults = deriveQuickStartDefaults({
 			demoConfig: user.demoConfig,
 			fallback: user.quickStartDefaults,
@@ -169,6 +171,11 @@ export const handleLogin = async (user: EditableUser) => {
 		});
 		const normalizedSubscription = {
 			...user.subscription,
+			name:
+				typeof user.subscription?.name === "string" &&
+				user.subscription.name.trim().length > 0
+					? user.subscription.name
+					: user.tier,
 			aiCredits: normalizedQuotas.ai,
 			leads: normalizedQuotas.leads,
 			skipTraces: normalizedQuotas.skipTraces,
@@ -184,6 +191,7 @@ export const handleLogin = async (user: EditableUser) => {
 			tier: normalizedTier,
 			isBetaTester: testerFlags.isBetaTester,
 			isPilotTester: testerFlags.isPilotTester,
+			isFreeTier,
 			demoConfig: normalizedDemoConfig,
 			quickStartDefaults: quickStartDefaults ?? undefined,
 			quotas: normalizedQuotas,
@@ -204,6 +212,7 @@ export const handleLogin = async (user: EditableUser) => {
 			skipUsed: String(user.skipTracesCredits.used),
 			isBetaTester: String(testerFlags.isBetaTester),
 			isPilotTester: String(testerFlags.isPilotTester),
+			isFreeTier: String(isFreeTier),
 			quickStartDefaults: quickStartDefaults
 				? JSON.stringify(quickStartDefaults)
 				: undefined,
@@ -258,6 +267,7 @@ export const initializeEditableUsers = (testUsers: TestUser[]) =>
 			...u,
 			isBetaTester: Boolean(u.isBetaTester),
 			isPilotTester: Boolean(u.isPilotTester),
+			isFreeTier: Boolean(u.isFreeTier),
 			aiCredits:
 				// Prefer subscription credits if available (UserType includes subscription)
 				u.subscription?.aiCredits ??
