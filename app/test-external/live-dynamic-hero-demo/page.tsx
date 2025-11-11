@@ -12,10 +12,10 @@ import PersonaCTA from "@/components/cta/PersonaCTA";
 import { AvatarCircles } from "@/components/ui/avatar-circles";
 import { BackgroundBeamsWithCollision } from "@/components/ui/background-beams-with-collision";
 import { Separator } from "@/components/ui/separator";
+import { Pointer } from "@/components/ui/pointer";
 
 import {
 	LIVE_COPY,
-	LIVE_MICROCOPY,
 	LIVE_PRIMARY_CTA,
 	LIVE_SECONDARY_CTA,
 	LIVE_SOCIAL_PROOF,
@@ -105,13 +105,34 @@ export default function LiveDynamicHeroDemoPage(): JSX.Element {
 							orientation="horizontal"
 							primary={LIVE_PRIMARY_CTA}
 							secondary={LIVE_SECONDARY_CTA}
-							microcopy={LIVE_MICROCOPY}
 							onPrimaryClick={handleScrollToDetails}
 							onSecondaryClick={handleScrollToDetails}
 						/>
-						<p className="max-w-xl text-center text-neutral-400 text-sm">
-							Reusable hero experiences adopted by DealScale builders.
+						<p className="max-w-xl text-balance text-center text-sm text-muted-foreground">
+							Automate borrower outreach and mortgage follow-up with DealScale AI.{" "}
+							<span className="relative inline-flex items-center">
+								<a
+									href="#live-hero-details"
+									className="relative inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-1 text-sm font-semibold text-primary no-underline transition hover:bg-primary/15"
+								>
+									Review the rollout steps
+								</a>
+								<Pointer
+									className="text-primary"
+									initial={{ opacity: 0, scale: 0 }}
+									animate={{ opacity: 0.9, scale: 1 }}
+									exit={{ opacity: 0, scale: 0 }}
+									transition={{ type: "spring", stiffness: 160, damping: 20 }}
+								/>
+							</span>
+							.
 						</p>
+						<div className="w-full max-w-5xl" data-beam-collider="true">
+							<HeroVideoPreview
+								video={LIVE_VIDEO}
+								thumbnailAlt="Live dynamic hero video preview"
+							/>
+						</div>
 
 						<div className="max-w-2xl rounded-3xl border border-border/45 bg-background/85 px-6 py-5 text-center shadow-[0_16px_55px_-35px_rgba(37,99,235,0.35)] backdrop-blur-md md:px-10">
 							<p className="font-medium text-foreground text-sm">
@@ -122,13 +143,6 @@ export default function LiveDynamicHeroDemoPage(): JSX.Element {
 								Watch the demo, then review the rollout checklist below to keep
 								your borrower outreach consistent across loan programs.
 							</p>
-						</div>
-
-						<div className="w-full max-w-5xl" data-beam-collider="true">
-							<HeroVideoPreview
-								video={LIVE_VIDEO}
-								thumbnailAlt="Live dynamic hero video preview"
-							/>
 						</div>
 
 						<div
@@ -171,6 +185,7 @@ export default function LiveDynamicHeroDemoPage(): JSX.Element {
 								/>
 							</div>
 						</div>
+
 					</div>
 
 					<section className="mt-6 max-w-4xl rounded-3xl border border-border/40 bg-muted/40 px-6 py-6 text-muted-foreground text-sm lg:px-10 lg:py-8">

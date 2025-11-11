@@ -4,13 +4,16 @@ import React, { useMemo, useState } from "react";
 
 import { calculateDSCR } from "../formulas";
 import { CalculatorCard } from "./CalculatorCard";
+import type { CalculatorComponentProps } from "../types";
 
 const parseNumber = (value: string) => Number.parseFloat(value) || 0;
+const toInputValue = (value: string | number | undefined) =>
+	value === undefined || value === null ? "" : String(value);
 
-export function DSCRCalculator() {
+export function DSCRCalculator({ initialValues }: CalculatorComponentProps) {
 	const [inputs, setInputs] = useState({
-		noi: "",
-		annualDebtService: "",
+		noi: toInputValue(initialValues?.noi),
+		annualDebtService: toInputValue(initialValues?.annualDebtService),
 	});
 
 	const result = useMemo(

@@ -4,15 +4,20 @@ import React, { useMemo, useState } from "react";
 
 import { calculateCommissionSplit, formatCurrency } from "../formulas";
 import { CalculatorCard } from "./CalculatorCard";
+import type { CalculatorComponentProps } from "../types";
 
 const parseNumber = (value: string) => Number.parseFloat(value) || 0;
+const toInputValue = (value: string | number | undefined, fallback = "") =>
+	value === undefined || value === null ? fallback : String(value);
 
-export function CommissionSplitCalculator() {
+export function CommissionSplitCalculator({
+	initialValues,
+}: CalculatorComponentProps) {
 	const [inputs, setInputs] = useState({
-		salePrice: "",
-		commissionRate: "6",
-		agentSplit: "70",
-		teamFee: "",
+		salePrice: toInputValue(initialValues?.salePrice),
+		commissionRate: toInputValue(initialValues?.commissionRate, "6"),
+		agentSplit: toInputValue(initialValues?.agentSplit, "70"),
+		teamFee: toInputValue(initialValues?.teamFee),
 	});
 
 	const result = useMemo(

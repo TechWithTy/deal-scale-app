@@ -4,13 +4,16 @@ import React, { useMemo, useState } from "react";
 
 import { calculateLTV, formatPercent } from "../formulas";
 import { CalculatorCard } from "./CalculatorCard";
+import type { CalculatorComponentProps } from "../types";
 
 const parseNumber = (value: string) => Number.parseFloat(value) || 0;
+const toInputValue = (value: string | number | undefined) =>
+	value === undefined || value === null ? "" : String(value);
 
-export function LTVCalculator() {
+export function LTVCalculator({ initialValues }: CalculatorComponentProps) {
 	const [inputs, setInputs] = useState({
-		loanAmount: "",
-		propertyValue: "",
+		loanAmount: toInputValue(initialValues?.loanAmount),
+		propertyValue: toInputValue(initialValues?.propertyValue),
 	});
 
 	const result = useMemo(

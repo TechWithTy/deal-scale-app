@@ -5,6 +5,7 @@ import React, { useMemo, useState } from "react";
 import { cn } from "@/lib/_utils";
 
 import { CalculatorCard } from "./CalculatorCard";
+import type { CalculatorComponentProps } from "../types";
 
 const currencyFormatter = new Intl.NumberFormat("en-US", {
 	style: "currency",
@@ -13,10 +14,21 @@ const currencyFormatter = new Intl.NumberFormat("en-US", {
 	minimumFractionDigits: 2,
 });
 
-export function AmortizationCalculator() {
-	const [loanAmount, setLoanAmount] = useState<string>("");
-	const [loanTermYears, setLoanTermYears] = useState<string>("");
-	const [interestRate, setInterestRate] = useState<string>("");
+const toInputValue = (value: string | number | undefined) =>
+	value === undefined || value === null ? "" : String(value);
+
+export function AmortizationCalculator({
+	initialValues,
+}: CalculatorComponentProps) {
+	const [loanAmount, setLoanAmount] = useState<string>(
+		toInputValue(initialValues?.loanAmount),
+	);
+	const [loanTermYears, setLoanTermYears] = useState<string>(
+		toInputValue(initialValues?.loanTermYears),
+	);
+	const [interestRate, setInterestRate] = useState<string>(
+		toInputValue(initialValues?.interestRate),
+	);
 	const [errorMessage, setErrorMessage] = useState({
 		loanTerm: "",
 		interestRate: "",

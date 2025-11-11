@@ -4,18 +4,23 @@ import React, { useEffect, useMemo, useState } from "react";
 
 import { estimateOfferPrice, formatCurrency } from "../formulas";
 import { CalculatorCard } from "./CalculatorCard";
+import type { CalculatorComponentProps } from "../types";
 
 const parseNumber = (value: string) => Number.parseFloat(value) || 0;
+const toInputValue = (value: string | number | undefined, fallback = "") =>
+	value === undefined || value === null ? fallback : String(value);
 
-export function OfferEstimatorCalculator() {
+export function OfferEstimatorCalculator({
+	initialValues,
+}: CalculatorComponentProps) {
 	const [inputs, setInputs] = useState({
-		arv: "",
-		repairCost: "",
-		desiredProfit: "",
-		aiConfidence: "0.8",
-		comp1: "",
-		comp2: "",
-		comp3: "",
+		arv: toInputValue(initialValues?.arv),
+		repairCost: toInputValue(initialValues?.repairCost),
+		desiredProfit: toInputValue(initialValues?.desiredProfit),
+		aiConfidence: toInputValue(initialValues?.aiConfidence, "0.8"),
+		comp1: toInputValue(initialValues?.comp1),
+		comp2: toInputValue(initialValues?.comp2),
+		comp3: toInputValue(initialValues?.comp3),
 	});
 
 	const comps = useMemo(

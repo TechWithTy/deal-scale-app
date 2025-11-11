@@ -4,19 +4,22 @@ import React, { useMemo, useState } from "react";
 
 import { calculateBRRRR, formatCurrency, formatPercent } from "../formulas";
 import { CalculatorCard } from "./CalculatorCard";
+import type { CalculatorComponentProps } from "../types";
 
 const parseNumber = (value: string) => Number.parseFloat(value) || 0;
+const toInputValue = (value: string | number | undefined, fallback = "") =>
+	value === undefined || value === null ? fallback : String(value);
 
-export function BRRRRCalculator() {
+export function BRRRRCalculator({ initialValues }: CalculatorComponentProps) {
 	const [inputs, setInputs] = useState({
-		purchasePrice: "",
-		rehabCost: "",
-		rent: "",
-		arv: "",
-		refinanceLTV: "75",
-		loanRate: "6.5",
-		termYears: "30",
-		closingCosts: "",
+		purchasePrice: toInputValue(initialValues?.purchasePrice),
+		rehabCost: toInputValue(initialValues?.rehabCost),
+		rent: toInputValue(initialValues?.rent),
+		arv: toInputValue(initialValues?.arv),
+		refinanceLTV: toInputValue(initialValues?.refinanceLTV, "75"),
+		loanRate: toInputValue(initialValues?.loanRate, "6.5"),
+		termYears: toInputValue(initialValues?.termYears, "30"),
+		closingCosts: toInputValue(initialValues?.closingCosts),
 	});
 
 	const result = useMemo(

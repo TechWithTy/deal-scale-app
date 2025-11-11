@@ -8,16 +8,21 @@ import {
 	formatPercent,
 } from "../formulas";
 import { CalculatorCard } from "./CalculatorCard";
+import type { CalculatorComponentProps } from "../types";
 
 const parseNumber = (value: string) => Number.parseFloat(value) || 0;
+const toInputValue = (value: string | number | undefined) =>
+	value === undefined || value === null ? "" : String(value);
 
-export function FixFlipROICalculator() {
+export function FixFlipROICalculator({
+	initialValues,
+}: CalculatorComponentProps) {
 	const [inputs, setInputs] = useState({
-		arv: "",
-		purchasePrice: "",
-		rehabCost: "",
-		holdingCost: "",
-		sellingFees: "",
+		arv: toInputValue(initialValues?.arv),
+		purchasePrice: toInputValue(initialValues?.purchasePrice),
+		rehabCost: toInputValue(initialValues?.rehabCost),
+		holdingCost: toInputValue(initialValues?.holdingCost),
+		sellingFees: toInputValue(initialValues?.sellingFees),
 	});
 
 	const result = useMemo(() => {

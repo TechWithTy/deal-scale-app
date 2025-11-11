@@ -7,13 +7,19 @@ export type CalculatorCategory =
 	| "Investment Strategy"
 	| "Operations";
 
+export type CalculatorInitialValues = Record<string, string | number>;
+
+export interface CalculatorComponentProps {
+	initialValues?: CalculatorInitialValues;
+}
+
 export interface CalculatorDefinition {
 	id: string;
 	title: string;
 	description: string;
 	category: CalculatorCategory;
 	keywords: string[];
-	Component: ComponentType;
+	Component: ComponentType<CalculatorComponentProps>;
 	cta?: {
 		label: string;
 		href: string;
