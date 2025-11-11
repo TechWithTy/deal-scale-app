@@ -35,6 +35,13 @@ export function VoicePanel({
 	showClose,
 	onClose,
 }: VoicePanelProps) {
+	if (process.env.NODE_ENV !== "production") {
+		// eslint-disable-next-line no-console
+		console.info("[VoicePanel] render", {
+			voiceStatus,
+			agents: voiceAgents.length,
+		});
+	}
 	return (
 		<div className="deal-scale-focus-voice">
 			<div
@@ -90,40 +97,42 @@ export function VoicePanel({
 					<span>Share camera</span>
 				</button>
 			</div>
-			{screenState.message ? (
-				<p className="deal-scale-focus-status">{screenState.message}</p>
-			) : null}
-			{cameraState.message ? (
-				<p className="deal-scale-focus-status">{cameraState.message}</p>
-			) : null}
-			{voiceStatus === "loading" ? (
-				<p className="deal-scale-focus-status">Loading agents…</p>
-			) : null}
-			{voiceStatus === "error" ? (
-				<div className="deal-scale-focus-error" role="alert">
-					<p>{voiceError ?? "Unable to load voice agents."}</p>
-					<button type="button" onClick={onRetryAgents}>
-						Try again
-					</button>
-				</div>
-			) : null}
-			{voiceStatus === "success" && voiceAgents.length === 0 ? (
-				<p className="deal-scale-focus-status">
-					No agents available right now.
-				</p>
-			) : null}
-			{voiceAgents.length > 0 ? (
-				<ul>
-					{voiceAgents.map((agent) => (
-						<li key={agent.id}>
-							<span>{agent.name}</span>
-							{agent.status ? (
-								<span className="deal-scale-focus-chip">{agent.status}</span>
-							) : null}
-						</li>
-					))}
-				</ul>
-			) : null}
+			<div className="deal-scale-focus-voice-body">
+				{screenState.message ? (
+					<p className="deal-scale-focus-status">{screenState.message}</p>
+				) : null}
+				{cameraState.message ? (
+					<p className="deal-scale-focus-status">{cameraState.message}</p>
+				) : null}
+				{voiceStatus === "loading" ? (
+					<p className="deal-scale-focus-status">Loading agents…</p>
+				) : null}
+				{voiceStatus === "error" ? (
+					<div className="deal-scale-focus-error" role="alert">
+						<p>{voiceError ?? "Unable to load voice agents."}</p>
+						<button type="button" onClick={onRetryAgents}>
+							Try again
+						</button>
+					</div>
+				) : null}
+				{voiceStatus === "success" && voiceAgents.length === 0 ? (
+					<p className="deal-scale-focus-status">
+						No agents available right now.
+					</p>
+				) : null}
+				{voiceAgents.length > 0 ? (
+					<ul>
+						{voiceAgents.map((agent) => (
+							<li key={agent.id}>
+								<span>{agent.name}</span>
+								{agent.status ? (
+									<span className="deal-scale-focus-chip">{agent.status}</span>
+								) : null}
+							</li>
+						))}
+					</ul>
+				) : null}
+			</div>
 			{showClose ? (
 				<button
 					type="button"

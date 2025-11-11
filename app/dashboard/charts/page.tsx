@@ -17,6 +17,7 @@ import {
 import { RefreshCw } from "lucide-react";
 import { KPICard } from "./components/KPICard";
 import { useAnalyticsData } from "./hooks/useAnalyticsData";
+import { useNetworkQuality } from "@/hooks/useNetworkQuality";
 
 const CampaignPerformanceChart = dynamic(
 	() =>
@@ -88,6 +89,8 @@ const AdvancedAnalyticsTab = dynamic(
 
 export default function ChartsPage() {
 	const { data, loading, error, refetch } = useAnalyticsData();
+	const { tier: networkTier } = useNetworkQuality();
+	const isSlowNetwork = networkTier === "slow";
 
 	if (error) {
 		return (
