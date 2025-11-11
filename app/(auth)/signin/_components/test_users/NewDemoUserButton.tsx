@@ -55,6 +55,7 @@ export function NewDemoUserButton({ onCreateUser }: NewDemoUserButtonProps) {
 			tier: formData.tier,
 			isBetaTester: true,
 			isPilotTester: false,
+			isFreeTier: false,
 			permissions: {
 				leads: fullCrud,
 				campaigns: fullCrud,

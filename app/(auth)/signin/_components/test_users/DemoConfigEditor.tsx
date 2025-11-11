@@ -46,14 +46,14 @@ const PERSONA_TO_CLIENT_TYPE: Record<QuickStartPersonaId, ClientType> = {
 	investor: "investor",
 	wholesaler: "wholesaler",
 	agent: "agent",
-	lender: "loan_officer",
+	loan_officer: "loan_officer",
 };
 
 const CLIENT_TYPE_TO_PERSONA: Record<ClientType, QuickStartPersonaId> = {
 	investor: "investor",
 	wholesaler: "wholesaler",
 	agent: "agent",
-	loan_officer: "lender",
+	loan_officer: "loan_officer",
 };
 
 const ROI_FIELDS: Array<{

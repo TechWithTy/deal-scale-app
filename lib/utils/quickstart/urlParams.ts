@@ -33,7 +33,7 @@ const VALID_PERSONA_IDS: readonly QuickStartPersonaId[] = [
 	"investor",
 	"wholesaler",
 	"agent",
-	"lender",
+	"loan_officer",
 ] as const;
 
 /**

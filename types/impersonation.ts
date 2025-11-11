@@ -25,6 +25,7 @@ export interface ImpersonationSessionUserSnapshot {
 	subscription: User["subscription"];
 	isBetaTester?: boolean;
 	isPilotTester?: boolean;
+	isFreeTier?: boolean;
 }
 
 export interface ImpersonationSessionPayload {

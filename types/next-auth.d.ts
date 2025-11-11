@@ -30,6 +30,7 @@ declare module "next-auth" {
 			quotas?: UserQuotas;
 			isBetaTester?: boolean;
 			isPilotTester?: boolean;
+			isFreeTier?: boolean;
 			demoConfig?: DemoConfig;
 			subscription?: UserProfileSubscription;
 			quickStartDefaults?: {
@@ -49,6 +50,7 @@ declare module "next-auth" {
 		quotas?: UserQuotas;
 		isBetaTester?: boolean;
 		isPilotTester?: boolean;
+		isFreeTier?: boolean;
 		demoConfig?: DemoConfig;
 		subscription?: UserProfileSubscription;
 		quickStartDefaults?: {
@@ -70,6 +72,7 @@ declare module "next-auth/jwt" {
 		quotas?: UserQuotas;
 		isBetaTester?: boolean;
 		isPilotTester?: boolean;
+		isFreeTier?: boolean;
 		demoConfig?: DemoConfig;
 		subscription?: UserProfileSubscription;
 		quickStartDefaults?: {

@@ -81,7 +81,7 @@ export const useQuickStartROIProfile = (): ROIProfileOverrides => {
 		wizardPersona,
 		userProfile?.quickStartDefaults?.personaId ??
 			(userProfile?.companyInfo?.clientType === "loan_officer"
-				? "lender"
+				? "loan_officer"
 				: ((userProfile?.companyInfo?.clientType as
 						| QuickStartPersonaId
 						| undefined) ?? null)),

@@ -51,6 +51,7 @@ export function Globe({
 	const canvasRef = useRef<HTMLCanvasElement>(null);
 	const pointerInteracting = useRef<number | null>(null);
 	const pointerInteractionMovement = useRef(0);
+	const opacityTimeoutRef = useRef<number | null>(null);
 
 	const r = useMotionValue(0);
 	const rs = useSpring(r, {
@@ -95,7 +96,14 @@ export function Globe({
 		window.addEventListener("resize", resolveDimensions);
 		resolveDimensions();
 
-		const globe = createGlobe(canvasRef.current!, {
+		const canvas = canvasRef.current;
+		if (!canvas) {
+			return () => {
+				window.removeEventListener("resize", resolveDimensions);
+			};
+		}
+
+		const globe = createGlobe(canvas, {
 			...config,
 			devicePixelRatio: pixelRatio,
 			width,
@@ -121,9 +129,17 @@ export function Globe({
 			},
 		});
 
-		setTimeout(() => (canvasRef.current!.style.opacity = "1"), 0);
+		opacityTimeoutRef.current = window.setTimeout(() => {
+			if (canvasRef.current) {
+				canvasRef.current.style.opacity = "1";
+			}
+		}, 0);
 		return () => {
 			globe.destroy();
+			if (opacityTimeoutRef.current !== null) {
+				window.clearTimeout(opacityTimeoutRef.current);
+				opacityTimeoutRef.current = null;
+			}
 			window.removeEventListener("resize", resolveDimensions);
 		};
 	}, [rs, config]);

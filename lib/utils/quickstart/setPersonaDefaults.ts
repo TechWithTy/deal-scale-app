@@ -27,7 +27,7 @@ export function clientTypeToPersonaId(
 		investor: "investor",
 		wholesaler: "wholesaler",
 		agent: "agent",
-		loan_officer: "lender", // Note: lender persona for loan officers
+		loan_officer: "loan_officer", // Loan officer persona mapping
 	};
 
 	return mapping[clientType] ?? null;
@@ -46,7 +46,7 @@ export function personaIdToClientType(
 		investor: "investor",
 		wholesaler: "wholesaler",
 		agent: "agent",
-		lender: "loan_officer",
+		loan_officer: "loan_officer",
 	};
 
 	return mapping[personaId] ?? null;

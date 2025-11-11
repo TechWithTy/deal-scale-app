@@ -12,6 +12,7 @@ import { CreditsSummary } from "external/credit-view-purchase/components/Credits
 import { CrudToggle } from "external/crud-toggle/components/CrudToggle";
 import type { CrudFlags } from "external/crud-toggle/utils/types";
 import SidebarHelpActions from "@/components/layout/SidebarHelpActions";
+import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
 import Link from "next/link";
 import React, {
@@ -25,6 +26,49 @@ void React;
 export default function SidebarClient({ user }: { user: UserProfile | null }) {
 	const { isSidebarMinimized, toggleSidebar } = useNavbarStore();
 	const sessionUser = useSessionStore((state) => state.user);
+	const statusBadges = React.useMemo(() => {
+		if (!sessionUser) return [];
+
+		const badges: Array<{
+			key: string;
+			label: string;
+			variant?: "default" | "secondary" | "outline" | "destructive";
+		}> = [];
+
+		if (sessionUser.tier) {
+			badges.push({
+				key: `tier-${sessionUser.tier}`,
+				label: `${sessionUser.tier} Tier`,
+				variant: "default",
+			});
+		}
+
+		if (sessionUser.isBetaTester) {
+			badges.push({
+				key: "beta-tester",
+				label: "Beta Tester",
+				variant: "secondary",
+			});
+		}
+
+		if (sessionUser.isPilotTester) {
+			badges.push({
+				key: "pilot-tester",
+				label: "Pilot Tester",
+				variant: "secondary",
+			});
+		}
+
+		if (sessionUser.isFreeTier) {
+			badges.push({
+				key: "free-tier",
+				label: "Free Tier",
+				variant: "outline",
+			});
+		}
+
+		return badges;
+	}, [sessionUser]);
 
 	const [showPerms, setShowPerms] = useState(false);
 	const [showCredits, setShowCredits] = useState(false);
@@ -239,6 +283,22 @@ export default function SidebarClient({ user }: { user: UserProfile | null }) {
 										{sessionUser?.role ?? ""}
 									</span>
 								</div>
+								{statusBadges.length > 0 && (
+									<div
+										className="mt-2 flex flex-wrap gap-2"
+										data-testid="sidebar-status-badges"
+									>
+										{statusBadges.map(({ key, label, variant }) => (
+											<Badge
+												key={key}
+												variant={variant}
+												className="text-[10px] font-medium uppercase tracking-wide"
+											>
+												{label}
+											</Badge>
+										))}
+									</div>
+								)}
 							</div>
 						)}
 

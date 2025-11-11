@@ -58,75 +58,79 @@ const RAW_CTA_COPY: Record<QuickStartCTAKey, QuickStartCTAConfig> = {
 			badge: "3 min setup",
 		},
 		secondary: {
-			label: "See How It Works",
+			label: "See How QuickStart Works",
 			emphasis: "outline",
 			description:
-				"We\u2019ll walk you through every step in under five minutes.",
-			badge: "Watch demo",
+				"Watch the guided setup agents, investors, and lenders follow.",
+			badge: "1 min demo",
 		},
-		microcopy: "We\u2019ll handle the hard parts; you just click start.",
+		microcopy: "Stop guessing. QuickStart handles the busywork for you.",
 	},
 	agent: {
 		primary: {
-			label: "Start Closing More, Chasing Less",
+			label: "Start My AI Workflow",
 			emphasis: "solid",
-			description: "Launch your AI follow-ups in under three minutes.",
-			badge: "Agents love this",
+			description:
+				"Import seller leads, sync your CRM, and see appointments fill in.",
+			badge: "4 min process",
 		},
 		secondary: {
-			label: "See How Top Agents Scale",
+			label: "Watch the 1-Minute Setup Demo",
 			emphasis: "outline",
-			description: "Watch the short walkthrough teams like yours rely on.",
-			badge: "Play guided demo",
+			description: "Preview the guided QuickStart sellers rave about.",
+			badge: "Guided tour",
 		},
 		microcopy:
-			'Less chasing. <link href="#automation">More closing</link>. Your ISA will thank you.',
+			'Less chasing. <link href="#automation">More closing</link>. QuickStart keeps every rep on pace.',
 	},
 	investor: {
 		primary: {
-			label: "Automate My Next Deal",
+			label: "Set Up My First Campaign",
 			emphasis: "solid",
-			description: "Never miss a motivated seller again.",
+			description:
+				"Turn raw lists into an AI deal pipeline that surfaces hot sellers.",
 			badge: "Deal flow boost",
 		},
 		secondary: {
-			label: "See How It Works",
+			label: "Preview an AI Call Script",
 			emphasis: "outline",
-			description: "See how top investors keep their pipeline warm.",
-			badge: "Invest smarter",
+			description: "See the outreach sequences that run while you sleep.",
+			badge: "Script preview",
 		},
-		microcopy: "Dealmakers like you don\u2019t wait - they automate.",
+		microcopy: "Dealmakers like you do not wait - they automate.",
 	},
 	wholesaler: {
 		primary: {
-			label: "Outwork Everyone - Automatically",
+			label: "Launch My QuickStart",
 			emphasis: "solid",
-			description: "Spin up dispositions without burning out.",
-			badge: "Dispo in sync",
+			description:
+				"Import skip traced lists and launch AI calls that keep pace.",
+			badge: "Skip trace ready",
 		},
 		secondary: {
-			label: "See the Hustle in Action",
+			label: "View Onboarding Checklist",
 			emphasis: "outline",
-			description: "Peek the 3-minute setup wholesalers swear by.",
-			badge: "Hands-on demo",
+			description:
+				"See the repeatable steps high-volume wholesalers follow daily.",
+			badge: "3 min checklist",
 		},
 		microcopy: "Keep your buyers and sellers warm while you sleep.",
 	},
-	lender: {
+	loan_officer: {
 		primary: {
-			label: "Keep My Capital Deployed",
+			label: "Automate Borrower Follow-Up",
 			emphasis: "solid",
-			description: "Automate intake and approvals in minutes.",
+			description:
+				"Connect your mortgage CRM and launch AI nurture in minutes.",
 			badge: "Faster approvals",
 		},
 		secondary: {
-			label: "See the Borrower Flow",
+			label: "See Mortgage QuickStart in Action",
 			emphasis: "outline",
-			description: "Watch how lenders route borrowers without bottlenecks.",
+			description: "Watch the borrower journey stay warm from lead to close.",
 			badge: "Borrower tour",
 		},
-		microcopy:
-			"We\u2019ll help you close loans faster without adding headcount.",
+		microcopy: "Close loans faster without adding headcount or manual chase.",
 	},
 };
 

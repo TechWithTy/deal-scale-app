@@ -32,9 +32,13 @@ describe("auth config authorized callback", () => {
 });
 
 describe("auth config credentials authorize", () => {
-	const credentialsProvider = authConfig.providers?.find(
-		(provider) => typeof (provider as any).authorize === "function",
-	) as { authorize: (credentials: Record<string, unknown>) => Promise<any> };
+const credentialsProvider = authConfig.providers?.find(
+	(provider) => typeof (provider as any).options?.authorize === "function",
+) as {
+	options: {
+		authorize: (credentials: Record<string, unknown>) => Promise<any>;
+	};
+};
 
 	it("merges custom payload overrides before issuing the session user", async () => {
 		const starter = seedUsers[1];
@@ -62,9 +66,10 @@ describe("auth config credentials authorize", () => {
 			},
 			isBetaTester: true,
 			isPilotTester: false,
+			isFreeTier: true,
 		};
 
-		const result = await credentialsProvider.authorize({
+		const result = await credentialsProvider.options.authorize({
 			email: starter.email,
 			password: starter.password,
 			role: starter.role,
@@ -78,6 +83,7 @@ describe("auth config credentials authorize", () => {
 			skipUsed: "10",
 			isBetaTester: "true",
 			isPilotTester: "false",
+			isFreeTier: "true",
 			customUserData: JSON.stringify(customPayload),
 			isCustomUser: "false",
 		} as any);
@@ -86,9 +92,10 @@ describe("auth config credentials authorize", () => {
 		expect(result.tier).toBe("Starter");
 		expect(result.quickStartDefaults).toEqual({
 			personaId: "wholesaler",
-			goalId: "wholesaler-acquisitions",
+		goalId: "wholesaler-dispositions",
 		});
 		expect(result.demoConfig?.companyLogo).toBe("https://example.com/brand.svg");
-		expect(result.quotas.ai).toEqual({ allotted: 300, used: 150, resetInDays: 7 });
+	expect(result.quotas.ai).toEqual({ allotted: 300, used: 150, resetInDays: 30 });
+		expect(result.isFreeTier).toBe(true);
 	});
 });

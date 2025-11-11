@@ -40,6 +40,7 @@ export const sessionUserSchema = z
 		}),
 		isBetaTester: z.boolean().optional(),
 		isPilotTester: z.boolean().optional(),
+		isFreeTier: z.boolean().optional(),
 	})
 	.strict();
 

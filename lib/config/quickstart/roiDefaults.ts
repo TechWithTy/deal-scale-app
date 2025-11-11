@@ -91,7 +91,7 @@ const PERSONA_PRESETS: Partial<
 	lender: {
 		profileInputs: {
 			...BASE_PRESET.profileInputs,
-			personaId: "lender",
+			personaId: "loan_officer",
 			dealsPerMonth: 14,
 			avgDealValue: 5000,
 			profitMarginPercent: 35,

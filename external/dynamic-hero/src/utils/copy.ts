@@ -56,6 +56,9 @@ const ensureRotations = (
 	problems: (rotations.problems ?? [values.problem]).map(sanitizeText),
 	solutions: (rotations.solutions ?? [values.solution]).map(sanitizeText),
 	fears: (rotations.fears ?? [values.fear]).map(sanitizeText),
+	hopes: (rotations.hopes ?? [values.hope ?? values.solution]).map(
+		sanitizeText,
+	),
 });
 
 const applyTemplate = (
@@ -81,7 +84,14 @@ export const resolveHeroCopy = (
 ): ResolvedHeroCopy => {
 	const parsed = heroCopySchema.parse(copy);
 	const values = sanitizeValues(parsed.values);
-	const resolvedRotations = ensureRotations(parsed.rotations ?? {}, values);
+	const resolvedValues = {
+		...values,
+		hope: values.hope ?? values.solution,
+	};
+	const resolvedRotations = ensureRotations(
+		parsed.rotations ?? {},
+		resolvedValues,
+	);
 
 	const resolvedPrimaryChip =
 		sanitizeChip(parsed.primaryChip) ?? sanitizeChip(fallbackPrimaryChip);
@@ -91,17 +101,17 @@ export const resolveHeroCopy = (
 	return {
 		title: applyTemplate(
 			parsed.titleTemplate,
-			values,
+			resolvedValues,
 			titleTemplate ??
-				"Stop {{problem}}, start {{solution}} - before {{fear}}.",
+				"Stop {{problem}}, start {{solution}} - before {{fear}}. Imagine {{hope}}.",
 		),
 		subtitle: applyTemplate(
 			parsed.subtitleTemplate,
-			values,
+			resolvedValues,
 			subtitleTemplate ??
 				"{{socialProof}} {{benefit}} in under {{time}} minutes.",
 		),
-		values,
+		values: resolvedValues,
 		rotations: resolvedRotations,
 		chips: {
 			primary: resolvedPrimaryChip,

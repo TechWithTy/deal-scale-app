@@ -110,7 +110,7 @@ const TRUST_SOCIAL_PROOF: Record<
 		],
 		numPeople: 75,
 	},
-	lender: {
+	loan_officer: {
 		avatars: [
 			{
 				imageUrl: "https://i.pravatar.cc/80?img=7",
@@ -203,7 +203,7 @@ const TRUST_REVIEWS: Record<
 			rating: 5,
 		},
 	],
-	lender: [
+	loan_officer: [
 		{
 			title: "Derek • Private Lender",
 			quote: "Borrowers get routed in minutes instead of hours.",
@@ -219,6 +219,7 @@ interface DynamicHeadlineProps {
 const PROBLEM_INTERVAL_MS = 5200;
 const SOLUTION_INTERVAL_MS = 6800;
 const FEAR_INTERVAL_MS = 6000;
+const HOPE_INTERVAL_MS = 6400;
 
 const baseSpanAnimation = {
 	initial: { opacity: 0, y: -10 },
@@ -246,6 +247,10 @@ const DynamicHeadline = ({ personaId }: DynamicHeadlineProps) => {
 		() => copy.rotations.problems.join("|"),
 		[copy.rotations.problems],
 	);
+	const hopesKey = useMemo(
+		() => copy.rotations.hopes?.join("|") ?? copy.values.hope,
+		[copy.rotations.hopes, copy.values.hope],
+	);
 	const solutionsKey = useMemo(
 		() => copy.rotations.solutions.join("|"),
 		[copy.rotations.solutions],
@@ -258,16 +263,22 @@ const DynamicHeadline = ({ personaId }: DynamicHeadlineProps) => {
 	const problems = useMemo(() => copy.rotations.problems, [problemsKey]);
 	const solutions = useMemo(() => copy.rotations.solutions, [solutionsKey]);
 	const fears = useMemo(() => copy.rotations.fears, [fearsKey]);
+	const hopes = useMemo(
+		() => copy.rotations.hopes ?? [copy.values.hope],
+		[hopesKey],
+	);
 
 	const [problemIndex, setProblemIndex] = useState(0);
 	const [solutionIndex, setSolutionIndex] = useState(0);
 	const [fearIndex, setFearIndex] = useState(0);
+	const [hopeIndex, setHopeIndex] = useState(0);
 
 	useEffect(() => {
 		setProblemIndex(0);
 		setSolutionIndex(0);
 		setFearIndex(0);
-	}, [problemsKey, solutionsKey, fearsKey]);
+		setHopeIndex(0);
+	}, [problemsKey, solutionsKey, fearsKey, hopesKey]);
 
 	useEffect(() => {
 		const intervals: Array<ReturnType<typeof setInterval>> = [];
@@ -299,6 +310,15 @@ const DynamicHeadline = ({ personaId }: DynamicHeadlineProps) => {
 			);
 		}
 
+		if (hopes.length > 1) {
+			intervals.push(
+				setInterval(
+					() => setHopeIndex((current) => (current + 1) % hopes.length),
+					HOPE_INTERVAL_MS,
+				),
+			);
+		}
+
 		return () => {
 			intervals.forEach((timer) => clearInterval(timer));
 		};
@@ -306,14 +326,17 @@ const DynamicHeadline = ({ personaId }: DynamicHeadlineProps) => {
 		problems.length,
 		solutions.length,
 		fears.length,
+		hopes.length,
 		problemsKey,
 		solutionsKey,
 		fearsKey,
+		hopesKey,
 	]);
 
 	const problemCopy = problems[problemIndex] ?? copy.values.problem;
 	const solutionCopy = solutions[solutionIndex] ?? copy.values.solution;
 	const fearCopy = fears[fearIndex] ?? copy.values.fear;
+	const hopeCopy = hopes[hopeIndex] ?? copy.values.hope;
 
 	const personaBaseline = copy.chips?.primary?.label ?? "AI Agents";
 	const personaChipTitle = `${personaBaseline} persona`;
@@ -455,6 +478,19 @@ const DynamicHeadline = ({ personaId }: DynamicHeadlineProps) => {
 								{...baseSpanAnimation}
 							>
 								{fearCopy}
+							</motion.span>
+						</AnimatePresence>
+					</span>
+					<span>. </span>
+					<span>Imagine </span>
+					<span className="font-semibold text-emerald-400 dark:text-emerald-300">
+						<AnimatePresence mode="wait">
+							<motion.span
+								key={hopeCopy}
+								data-testid="quickstart-hope"
+								{...baseSpanAnimation}
+							>
+								{hopeCopy}
 							</motion.span>
 						</AnimatePresence>
 					</span>

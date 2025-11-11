@@ -48,7 +48,7 @@ function createQuickStartDefaults(
 		investor: "investor",
 		wholesaler: "wholesaler",
 		agent: "agent",
-		loan_officer: "lender",
+		loan_officer: "loan_officer",
 	} as const;
 
 	const personaId = mapping[clientType];
@@ -143,6 +143,7 @@ export const users: User[] = [
 		tier: "Enterprise",
 		isBetaTester: true,
 		isPilotTester: true,
+		isFreeTier: false,
 		permissions: adminPermissions,
 		permissionList: flattenPermissionMatrix(adminPermissions),
 		quotas: {
@@ -170,6 +171,7 @@ export const users: User[] = [
 		tier: "Starter",
 		isBetaTester: true,
 		isPilotTester: false,
+		isFreeTier: false,
 		permissions: {
 			leads: ["read", "create"],
 			campaigns: ["read"],
@@ -206,6 +208,7 @@ export const users: User[] = [
 		tier: "Basic",
 		isBetaTester: false,
 		isPilotTester: false,
+		isFreeTier: true,
 		permissions: {
 			leads: ["read"],
 		},
@@ -238,6 +241,7 @@ export const users: User[] = [
 		tier: "Enterprise",
 		isBetaTester: true,
 		isPilotTester: false,
+		isFreeTier: false,
 		permissions: adminPermissions,
 		permissionList: flattenPermissionMatrix(adminPermissions),
 		quotas: {
@@ -261,6 +265,7 @@ export const users: User[] = [
 		tier: "Enterprise",
 		isBetaTester: false,
 		isPilotTester: false,
+		isFreeTier: false,
 		permissions: supportPermissions,
 		permissionList: flattenPermissionMatrix(supportPermissions),
 		quotas: {

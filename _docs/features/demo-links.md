@@ -22,6 +22,7 @@ Append query parameters to control the seed user and overrides. The parser lives
 | `tier` | Subscription tier (`Basic`, `Starter`, `Enterprise`). Case-insensitive. | `tier=Enterprise` |
 | `beta` | Beta tester flag (`true`, `false`, `1`, `0`). | `beta=true` |
 | `pilot` | Pilot tester flag. | `pilot=false` |
+| `freeTier` / `free` | Marks the user as a free tier demo account. | `freeTier=1` |
 | `autoLogin` | Automatically triggers the credentials sign-in flow after hydration. | `autoLogin=1` |
 
 ## QuickStart Defaults
@@ -110,7 +111,7 @@ config=%7B%22brandColor%22%3A%22%2300B4D8%22%2C%22social%22%3A%7B%22linkedin%22%
 ## Full Example
 
 ```
-http://localhost:3000/signin?demoUser=admin@example.com&name=Demo%20Sales%20User&email=demo@dealscale.example.com&password=demo123&role=admin&tier=Enterprise&beta=true&pilot=true&persona=agent&goal=agent-sphere&clientType=agent&company=Deal%20Scale%20Demo&logo=https%3A%2F%2Fvia.placeholder.com%2F200x60%2F3b82f6%2Fffffff%3Ftext%3DDEALSCALE&website=https%3A%2F%2Fdealscale.example.com&industry=Real%20Estate%20Technology&crmProvider=gohighlevel&roiDealsPerMonth=12&roiAvgDealValue=75000&roiMonths=12&roiProfitMargin=28&roiMonthlyOverhead=4000&roiHoursPerDeal=18&phone=%28555%29%20988-7654&contactEmail=contact%40dealscale.example.com&address=789%20Demo%20Street&city=San%20Francisco&state=CA&zip=94105&notes=Full%20feature%20demo%20for%20sales%20presentation&facebook=https%3A%2F%2Ffacebook.com%2Fdealscale&instagram=https%3A%2F%2Finstagram.com%2Fdealscale&linkedin=https%3A%2F%2Flinkedin.com%2Fcompany%2Fdealscale&twitter=https%3A%2F%2Ftwitter.com%2Fdealscale&youtube=https%3A%2F%2Fyoutube.com%2F%40dealscale&tiktok=https%3A%2F%2Ftiktok.com%2F%40dealscale&aiAllotted=1500&aiUsed=200&leadsAllotted=800&leadsUsed=150&skipAllotted=300&skipUsed=45&autoLogin=1
+http://localhost:3000/signin?demoUser=admin@example.com&name=Demo%20Sales%20User&email=demo@dealscale.example.com&password=demo123&role=admin&tier=Enterprise&beta=true&pilot=true&freeTier=1&persona=agent&goal=agent-sphere&clientType=agent&company=Deal%20Scale%20Demo&logo=https%3A%2F%2Fvia.placeholder.com%2F200x60%2F3b82f6%2Fffffff%3Ftext%3DDEALSCALE&website=https%3A%2F%2Fdealscale.example.com&industry=Real%20Estate%20Technology&crmProvider=gohighlevel&roiDealsPerMonth=12&roiAvgDealValue=75000&roiMonths=12&roiProfitMargin=28&roiMonthlyOverhead=4000&roiHoursPerDeal=18&phone=%28555%29%20988-7654&contactEmail=contact%40dealscale.example.com&address=789%20Demo%20Street&city=San%20Francisco&state=CA&zip=94105&notes=Full%20feature%20demo%20for%20sales%20presentation&facebook=https%3A%2F%2Ffacebook.com%2Fdealscale&instagram=https%3A%2F%2Finstagram.com%2Fdealscale&linkedin=https%3A%2F%2Flinkedin.com%2Fcompany%2Fdealscale&twitter=https%3A%2F%2Ftwitter.com%2Fdealscale&youtube=https%3A%2F%2Fyoutube.com%2F%40dealscale&tiktok=https%3A%2F%2Ftiktok.com%2F%40dealscale&aiAllotted=1500&aiUsed=200&leadsAllotted=800&leadsUsed=150&skipAllotted=300&skipUsed=45&autoLogin=1
 ```
 
 Opening this link:

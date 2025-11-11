@@ -24,7 +24,7 @@ const CLIENT_TYPE_TO_PERSONA: Record<string, QuickStartPersonaId> = {
 	investor: "investor",
 	wholesaler: "wholesaler",
 	agent: "agent",
-	loan_officer: "lender",
+	loan_officer: "loan_officer",
 };
 
 const GOAL_RULES: readonly GoalRule[] = [
@@ -83,7 +83,7 @@ const GOAL_RULES: readonly GoalRule[] = [
 		],
 	},
 	{
-		personaId: "lender",
+		personaId: "loan_officer",
 		goalId: "lender-fund-fast",
 		matchers: [["loan"], ["fund"], ["deploy", "capital"], ["close", "loan"]],
 	},

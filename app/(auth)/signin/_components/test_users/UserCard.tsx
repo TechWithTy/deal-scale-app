@@ -269,6 +269,24 @@ export function UserCard({ user, onUpdateUser, onLogin }: UserCardProps) {
 								}
 							/>
 						</div>
+						<div className="flex items-center justify-between">
+							<Label
+								htmlFor={`free-tier-${user.id}`}
+								className="font-medium text-sm"
+							>
+								Free tier
+							</Label>
+							<Switch
+								id={`free-tier-${user.id}`}
+								checked={Boolean(user.isFreeTier)}
+								onCheckedChange={(checked) =>
+									onUpdateUser(user.id, (u: EditableUser) => ({
+										...u,
+										isFreeTier: checked,
+									}))
+								}
+							/>
+						</div>
 					</div>
 
 					<DemoConfigEditor
