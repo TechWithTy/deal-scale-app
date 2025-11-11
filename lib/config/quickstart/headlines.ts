@@ -63,31 +63,45 @@ export type QuickStartHeadlineCta = z.infer<typeof headlineCtaSchema>;
 
 type QuickStartHeadlineKey = QuickStartPersonaId | "default";
 
+const DEMO_SUPADEMO_SRC =
+	"https://app.supademo.com/embed/JZP1_tcJNyZaQHtc8ZL9p?embed_v=2&panel=false&autoplay=1&loop=1";
+const DEMO_POSTER_WEBP = "/demos/svgs/JZP1_tcJNyZaQHtc8ZL9p.webp";
+
 const PERSONA_VIDEO_LIBRARY: Record<QuickStartHeadlineKey, HeroVideoConfig> = {
 	default: {
-		src: "https://www.youtube.com/embed/qh3NGpYRG3I?rel=0&controls=1&modestbranding=1&feature=quickstart-overview",
-		poster: DEFAULT_THUMBNAIL_SRC,
-		provider: "youtube",
+		src: DEMO_SUPADEMO_SRC,
+		poster: DEMO_POSTER_WEBP,
+		thumbnailVideo: "/demos/gifs/SVGv2r.mp4",
+		posterAlt: "Watch DealScale QuickStart automate onboarding",
+		provider: "supademo",
 	},
 	agent: {
-		src: "https://www.youtube.com/embed/qh3NGpYRG3I?rel=0&controls=1&modestbranding=1&feature=agent-followup",
-		poster: DEFAULT_THUMBNAIL_SRC,
-		provider: "youtube",
+		src: DEMO_SUPADEMO_SRC,
+		poster: DEMO_POSTER_WEBP,
+		thumbnailVideo: "/demos/gifs/SVGv2r.mp4",
+		posterAlt: "Agent QuickStart guided workflow preview",
+		provider: "supademo",
 	},
 	investor: {
-		src: "https://www.youtube.com/embed/qh3NGpYRG3I?rel=0&controls=1&modestbranding=1&feature=investor-pipeline",
-		poster: DEFAULT_THUMBNAIL_SRC,
-		provider: "youtube",
+		src: DEMO_SUPADEMO_SRC,
+		poster: DEMO_POSTER_WEBP,
+		thumbnailVideo: "/demos/gifs/SVGv2r.mp4",
+		posterAlt: "Investor QuickStart guided workflow preview",
+		provider: "supademo",
 	},
 	wholesaler: {
-		src: "https://www.youtube.com/embed/qh3NGpYRG3I?rel=0&controls=1&modestbranding=1&feature=wholesaler-dispo",
-		poster: DEFAULT_THUMBNAIL_SRC,
-		provider: "youtube",
+		src: DEMO_SUPADEMO_SRC,
+		poster: DEMO_POSTER_WEBP,
+		thumbnailVideo: "/demos/gifs/SVGv2r.mp4",
+		posterAlt: "Wholesaler QuickStart guided workflow preview",
+		provider: "supademo",
 	},
 	loan_officer: {
-		src: "https://www.youtube.com/embed/qh3NGpYRG3I?rel=0&controls=1&modestbranding=1&feature=lender-approvals",
-		poster: DEFAULT_THUMBNAIL_SRC,
-		provider: "youtube",
+		src: DEMO_SUPADEMO_SRC,
+		poster: DEMO_POSTER_WEBP,
+		thumbnailVideo: "/demos/gifs/SVGv2r.mp4",
+		posterAlt: "Loan officer QuickStart borrower automation demo",
+		provider: "supademo",
 	},
 };
 

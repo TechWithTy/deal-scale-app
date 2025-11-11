@@ -62,9 +62,7 @@ const PersonaCTA: FC<PersonaCTAProps> = ({
 	const stackClasses = isHorizontal
 		? "grid w-full max-w-3xl items-stretch justify-center gap-4 md:[grid-template-columns:repeat(auto-fit,minmax(260px,1fr))] md:gap-6"
 		: "flex w-full max-w-3xl flex-col items-stretch justify-center gap-4";
-	const contentAlignment = isHorizontal
-		? "items-start text-left md:items-center md:text-center"
-		: "items-center text-center";
+	const contentAlignment = "items-center text-center";
 	const secondaryCopy = useMemo(() => secondary, [secondary]);
 
 	const renderMicrocopy = useCallback((copy?: string): ReactNode[] | null => {
@@ -138,7 +136,27 @@ const PersonaCTA: FC<PersonaCTAProps> = ({
 							)}
 						>
 							{primary.badge ? (
-								<span className="inline-flex items-center justify-center rounded-full bg-white/20 px-3 py-[4px] font-semibold text-[10px] text-white uppercase tracking-[0.28em] shadow-[0_6px_20px_rgba(255,255,255,0.45)]">
+								<span
+									className={cn(
+										"inline-flex",
+										"items-center",
+										"justify-center",
+										"rounded-full",
+										"bg-white/18",
+										"px-3",
+										"py-[3px]",
+										"font-semibold",
+										"text-[10px]",
+										"text-white",
+										"tracking-[0.2em]",
+										"uppercase",
+										"shadow-[0_6px_20px_rgba(255,255,255,0.42)]",
+										"md:px-4",
+										"md:py-[5px]",
+										"md:text-[11px]",
+										"md:tracking-[0.28em]",
+									)}
+								>
 									{primary.badge}
 								</span>
 							) : null}
@@ -184,7 +202,27 @@ const PersonaCTA: FC<PersonaCTAProps> = ({
 							)}
 						>
 							{secondaryCopy.badge ? (
-								<span className="inline-flex items-center justify-center rounded-full bg-primary/15 px-3 py-[4px] font-semibold text-[10px] text-primary uppercase tracking-[0.25em] shadow-[0_4px_12px_rgba(31,141,255,0.3)]">
+								<span
+									className={cn(
+										"inline-flex",
+										"items-center",
+										"justify-center",
+										"rounded-full",
+										"bg-primary/12",
+										"px-3",
+										"py-[3px]",
+										"font-semibold",
+										"text-[10px]",
+										"text-primary",
+										"tracking-[0.2em]",
+										"uppercase",
+										"shadow-[0_4px_12px_rgba(31,141,255,0.28)]",
+										"md:px-4",
+										"md:py-[5px]",
+										"md:text-[11px]",
+										"md:tracking-[0.25em]",
+									)}
+								>
 									{secondaryCopy.badge}
 								</span>
 							) : null}
