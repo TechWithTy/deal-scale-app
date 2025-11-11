@@ -114,11 +114,11 @@ export default function LiveDynamicHeroDemoPage(): JSX.Element {
 						</p>
 
 						<div className="max-w-2xl rounded-3xl border border-border/45 bg-background/85 px-6 py-5 text-center shadow-[0_16px_55px_-35px_rgba(37,99,235,0.35)] backdrop-blur-md md:px-10">
-							<p className="text-sm font-medium text-foreground">
+							<p className="font-medium text-foreground text-sm">
 								Start with a 90-second walkthrough of the automation control
 								center.
 							</p>
-							<p className="mt-2 text-sm text-muted-foreground">
+							<p className="mt-2 text-muted-foreground text-sm">
 								Watch the demo, then review the rollout checklist below to keep
 								your borrower outreach consistent across loan programs.
 							</p>

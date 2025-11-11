@@ -26,8 +26,14 @@
 }
 
 .heroHeadlineAccentPersona {
-	color: rgba(255, 255, 255, 0.92);
-	text-shadow: 0 0 12px rgba(255, 255, 255, 0.12);
+	color: var(--hero-accent-problem-fallback, #f97316);
+	background: var(
+		--hero-accent-problem,
+		linear-gradient(92deg, #f97316, #ef4444 55%, #fb7185)
+	);
+	-webkit-background-clip: text;
+	-webkit-text-fill-color: transparent;
+	text-shadow: 0 0 16px rgba(249, 115, 22, 0.28);
 }
 
 .heroHeadlineAccentAction {
@@ -41,8 +47,14 @@
 }
 
 .heroHeadlineAccentRisk {
-	color: rgba(255, 255, 255, 0.85);
-	text-shadow: 0 0 10px rgba(251, 191, 36, 0.2);
+	color: var(--hero-accent-risk-fallback, #facc15);
+	background: var(
+		--hero-accent-risk,
+		linear-gradient(95deg, #facc15, #f97316 60%, #fb923c)
+	);
+	-webkit-background-clip: text;
+	-webkit-text-fill-color: transparent;
+	text-shadow: 0 0 14px rgba(251, 191, 36, 0.32);
 }
 
 .tagRow {
