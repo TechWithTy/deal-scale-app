@@ -1,6 +1,6 @@
 "use client";
 
-import React, { FC, useMemo, useCallback, ReactNode } from "react";
+import React, { type FC, useMemo, useCallback, type ReactNode } from "react";
 
 import { cn } from "@/lib/utils/index";
 import { Pointer } from "@/components/ui/pointer";
@@ -74,8 +74,8 @@ const PersonaCTA: FC<PersonaCTAProps> = ({
 		const elements: ReactNode[] = [];
 		let lastIndex = 0;
 		const linkRegex = /<link\s+href="([^"]+)">(.*?)<\/link>/gi;
-		let match: RegExpExecArray | null;
-		while ((match = linkRegex.exec(copy)) !== null) {
+		let match: RegExpExecArray | null = linkRegex.exec(copy);
+		while (match !== null) {
 			const [fullMatch, href, text] = match;
 			if (match.index > lastIndex) {
 				elements.push(copy.slice(lastIndex, match.index));
@@ -87,7 +87,7 @@ const PersonaCTA: FC<PersonaCTAProps> = ({
 				>
 					<a
 						href={href}
-						className="relative inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-1 text-sm font-semibold text-primary no-underline transition hover:bg-primary/15"
+						className="relative inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-1 font-semibold text-primary text-sm no-underline transition hover:bg-primary/15"
 					>
 						{text}
 					</a>
@@ -101,6 +101,7 @@ const PersonaCTA: FC<PersonaCTAProps> = ({
 				</span>,
 			);
 			lastIndex = match.index + fullMatch.length;
+			match = linkRegex.exec(copy);
 		}
 		if (lastIndex < copy.length) {
 			elements.push(copy.slice(lastIndex));
@@ -137,19 +138,19 @@ const PersonaCTA: FC<PersonaCTAProps> = ({
 							)}
 						>
 							{primary.badge ? (
-								<span className="inline-flex items-center justify-center rounded-full bg-white/20 px-3 py-[4px] text-[10px] font-semibold uppercase tracking-[0.28em] text-white shadow-[0_6px_20px_rgba(255,255,255,0.45)]">
+								<span className="inline-flex items-center justify-center rounded-full bg-white/20 px-3 py-[4px] font-semibold text-[10px] text-white uppercase tracking-[0.28em] shadow-[0_6px_20px_rgba(255,255,255,0.45)]">
 									{primary.badge}
 								</span>
 							) : null}
-							<span className="text-lg font-semibold md:text-xl">
+							<span className="font-semibold text-lg md:text-xl">
 								{primary.label}
 							</span>
 							{primary.description ? (
-								<span className="text-sm text-emerald-50/90 text-pretty">
+								<span className="text-pretty text-emerald-50/90 text-sm">
 									{primary.description}
 								</span>
 							) : null}
-							<span className="absolute inset-0 -z-10 opacity-0 transition group-hover:opacity-100">
+							<span className="-z-10 absolute inset-0 opacity-0 transition group-hover:opacity-100">
 								<span className="absolute inset-0 bg-gradient-to-br from-white/30 via-white/10 to-transparent" />
 							</span>
 						</Button>
@@ -183,15 +184,15 @@ const PersonaCTA: FC<PersonaCTAProps> = ({
 							)}
 						>
 							{secondaryCopy.badge ? (
-								<span className="inline-flex items-center justify-center rounded-full bg-primary/15 px-3 py-[4px] text-[10px] font-semibold uppercase tracking-[0.25em] text-primary shadow-[0_4px_12px_rgba(31,141,255,0.3)]">
+								<span className="inline-flex items-center justify-center rounded-full bg-primary/15 px-3 py-[4px] font-semibold text-[10px] text-primary uppercase tracking-[0.25em] shadow-[0_4px_12px_rgba(31,141,255,0.3)]">
 									{secondaryCopy.badge}
 								</span>
 							) : null}
-							<span className="text-base font-semibold md:text-lg text-primary/90">
+							<span className="font-semibold text-base text-primary/90 md:text-lg">
 								{secondaryCopy.label}
 							</span>
 							{secondaryCopy.description ? (
-								<span className="text-sm text-primary/75 text-pretty">
+								<span className="text-pretty text-primary/75 text-sm">
 									{secondaryCopy.description}
 								</span>
 							) : null}
@@ -215,7 +216,7 @@ const PersonaCTA: FC<PersonaCTAProps> = ({
 						animate={{ opacity: 1, y: 0 }}
 						exit={{ opacity: 0, y: -4 }}
 						transition={{ duration: 0.2 }}
-						className="max-w-xl text-balance text-center text-sm text-muted-foreground"
+						className="max-w-xl text-balance text-center text-muted-foreground text-sm"
 					>
 						{microcopyContent}
 					</motion.p>

@@ -15,6 +15,19 @@ When the environment variable `NEXT_PUBLIC_MUSIC_WIDGET_DEBUG` was enabled, the 
 
 These changes make the close button reliable in all modes while preserving the optional debug conveniences.
 
+## 2025-11-11 Layout Regression Follow-up
+
+Symptoms:
+- Focus tab rail stretched to full widget width, pushing minimize/maximize controls out of frame.
+- Voice mode content could not scroll, hiding the lower action cards.
+
+Fixes:
+- Converted the tab rail to an inline-flex strip with horizontal scroll and explicit `align-self: center` so it hugs the pills.
+- Introduced a shared `.deal-scale-focus-scroll` container that gives both music and voice modes responsive vertical overflow handling.
+- Kept the voice agent list inside its existing `deal-scale-focus-voice-body` so status chips remain pinned while the roster scrolls.
+
+Next time confirm widgets in `/test-external/focus-widget` after CSS edits; the debug helpers won’t mask layout regressions anymore.
+
 
 
 

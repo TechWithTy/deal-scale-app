@@ -38,6 +38,8 @@ export default function SidebarClient({ user }: { user: UserProfile | null }) {
 	const subs: SubscriptionShape | undefined =
 		(sessionUser?.subscription as SubscriptionShape | undefined) ??
 		(user?.subscription as SubscriptionShape | undefined);
+	const demoLogo = sessionUser?.demoConfig?.companyLogo;
+	const demoCompanyName = sessionUser?.demoConfig?.companyName;
 
 	// Build CRUD flags from the session store user permissions (array of strings like "leads:read")
 	const ENTITIES = [
@@ -128,28 +130,45 @@ export default function SidebarClient({ user }: { user: UserProfile | null }) {
 							)}
 							aria-label="Toggle sidebar"
 						>
-							<Image
-								src="/logo/Deal Scale Black_Text.png"
-								alt="Deal Scale"
-								width={240}
-								height={48}
-								priority
-								className={cn(
-									"mr-2 block object-contain dark:hidden",
-									isSidebarMinimized ? "h-auto w-20" : "h-auto w-48",
-								)}
-							/>
-							<Image
-								src="/logo/Deal Scale White_Text.png"
-								alt="Deal Scale"
-								width={240}
-								height={48}
-								priority
-								className={cn(
-									"mr-2 hidden object-contain dark:block",
-									isSidebarMinimized ? "h-auto w-20" : "h-auto w-48",
-								)}
-							/>
+							{demoLogo ? (
+								<Image
+									data-testid="sidebar-logo"
+									src={demoLogo}
+									alt={`${demoCompanyName ?? "Demo"} logo`}
+									width={240}
+									height={48}
+									unoptimized
+									className={cn(
+										"mr-2 block object-contain",
+										isSidebarMinimized ? "h-auto w-20" : "h-auto w-48",
+									)}
+								/>
+							) : (
+								<>
+									<Image
+										src="/logo/Deal Scale Black_Text.png"
+										alt="Deal Scale"
+										width={240}
+										height={48}
+										priority
+										className={cn(
+											"mr-2 block object-contain dark:hidden",
+											isSidebarMinimized ? "h-auto w-20" : "h-auto w-48",
+										)}
+									/>
+									<Image
+										src="/logo/Deal Scale White_Text.png"
+										alt="Deal Scale"
+										width={240}
+										height={48}
+										priority
+										className={cn(
+											"mr-2 hidden object-contain dark:block",
+											isSidebarMinimized ? "h-auto w-20" : "h-auto w-48",
+										)}
+									/>
+								</>
+							)}
 						</button>
 					</div>
 					<div className="space-y-4 overflow-visible py-4">

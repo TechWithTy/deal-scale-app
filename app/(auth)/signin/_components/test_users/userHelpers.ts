@@ -7,6 +7,13 @@ import {
 	isPlatformAdminRole,
 	isPlatformSupportRole,
 } from "@/lib/admin/roles";
+import {
+	deriveQuickStartDefaults,
+	mergeQuotaOverrides,
+	normalizeTesterFlags,
+	normalizeTier,
+	resolveDemoLogoUrl,
+} from "@/lib/demo/normalizeDemoPayload";
 import type {
 	PermissionMatrix,
 	UserRole,
@@ -139,15 +146,55 @@ export const ROLE_SELECT_OPTIONS: RoleSelectOption[] = TEST_USER_ROLE_ORDER.map(
 
 export const handleLogin = async (user: EditableUser) => {
 	try {
-		// Check if this is a custom user (starts with "custom-")
 		const isCustomUser = user.id.startsWith("custom-");
+		const testerFlags = normalizeTesterFlags({
+			isBetaTester: user.isBetaTester,
+			isPilotTester: user.isPilotTester,
+		});
+		const quickStartDefaults = deriveQuickStartDefaults({
+			demoConfig: user.demoConfig,
+			fallback: user.quickStartDefaults,
+		});
+		const normalizedTier = normalizeTier({ tier: user.tier });
+		const normalizedQuotas = mergeQuotaOverrides({
+			base: user.quotas,
+			overrides: {
+				aiAllotted: user.aiCredits.allotted,
+				aiUsed: user.aiCredits.used,
+				leadsAllotted: user.leadsCredits.allotted,
+				leadsUsed: user.leadsCredits.used,
+				skipAllotted: user.skipTracesCredits.allotted,
+				skipUsed: user.skipTracesCredits.used,
+			},
+		});
+		const normalizedSubscription = {
+			...user.subscription,
+			aiCredits: normalizedQuotas.ai,
+			leads: normalizedQuotas.leads,
+			skipTraces: normalizedQuotas.skipTraces,
+		};
+		const normalizedDemoConfig = user.demoConfig
+			? {
+					...user.demoConfig,
+					companyLogo: resolveDemoLogoUrl({ demoConfig: user.demoConfig }),
+				}
+			: undefined;
+		const payload = {
+			...user,
+			tier: normalizedTier,
+			isBetaTester: testerFlags.isBetaTester,
+			isPilotTester: testerFlags.isPilotTester,
+			demoConfig: normalizedDemoConfig,
+			quickStartDefaults: quickStartDefaults ?? undefined,
+			quotas: normalizedQuotas,
+			subscription: normalizedSubscription,
+		};
 
 		await signIn("credentials", {
 			email: user.email,
 			password: user.password,
-			// propagate current UI selections into credentials for authorize()
 			role: user.role,
-			tier: user.tier,
+			tier: normalizedTier,
 			permissions: JSON.stringify(user.permissions),
 			aiAllotted: String(user.aiCredits.allotted),
 			aiUsed: String(user.aiCredits.used),
@@ -155,11 +202,13 @@ export const handleLogin = async (user: EditableUser) => {
 			leadsUsed: String(user.leadsCredits.used),
 			skipAllotted: String(user.skipTracesCredits.allotted),
 			skipUsed: String(user.skipTracesCredits.used),
-			isBetaTester: String(Boolean(user.isBetaTester)),
-			isPilotTester: String(Boolean(user.isPilotTester)),
-			// Pass custom user data if applicable
+			isBetaTester: String(testerFlags.isBetaTester),
+			isPilotTester: String(testerFlags.isPilotTester),
+			quickStartDefaults: quickStartDefaults
+				? JSON.stringify(quickStartDefaults)
+				: undefined,
 			isCustomUser: String(isCustomUser),
-			customUserData: isCustomUser ? JSON.stringify(user) : undefined,
+			customUserData: JSON.stringify(payload),
 			callbackUrl: "/dashboard",
 			redirect: true,
 		});
@@ -193,6 +242,18 @@ export const initializeEditableUsers = (testUsers: TestUser[]) =>
 					)
 				: permissions.matrix;
 
+		const quickStartDefaults = deriveQuickStartDefaults({
+			demoConfig: u.demoConfig
+				? {
+						...u.demoConfig,
+						social: u.demoConfig.social
+							? { ...u.demoConfig.social }
+							: undefined,
+					}
+				: undefined,
+			fallback: u.quickStartDefaults,
+		});
+
 		return {
 			...u,
 			isBetaTester: Boolean(u.isBetaTester),
@@ -215,5 +276,6 @@ export const initializeEditableUsers = (testUsers: TestUser[]) =>
 					: { allotted: 50, used: 10, resetInDays: 30 }),
 			permissionList,
 			permissions: permissionMatrix,
+			quickStartDefaults: quickStartDefaults ?? undefined,
 		};
 	});
