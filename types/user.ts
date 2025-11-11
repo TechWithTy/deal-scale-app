@@ -43,6 +43,14 @@ export type ClientType = "investor" | "wholesaler" | "agent" | "loan_officer";
  * Demo configuration for realistic client simulations.
  * Allows customizing the user experience to match potential client branding.
  */
+export type DemoCRMProvider =
+	| "gohighlevel"
+	| "salesforce"
+	| "hubspot"
+	| "close"
+	| "zoho"
+	| "other";
+
 export interface DemoConfig {
 	/** Client company name for branding */
 	companyName?: string;
@@ -83,6 +91,8 @@ export interface DemoConfig {
 	brandColorSecondary?: string;
 	/** Accent brand color (hex) */
 	brandColorAccent?: string;
+	/** CRM provider used by the client */
+	crmProvider?: DemoCRMProvider;
 	/** Additional notes about the demo client */
 	notes?: string;
 }
