@@ -1,6 +1,8 @@
 import type { ComponentType, ReactNode } from "react";
 
 export type CalculatorCategory =
+	| "Acquisition"
+	| "Analysis"
 	| "Financing"
 	| "Investment Strategy"
 	| "Operations";
