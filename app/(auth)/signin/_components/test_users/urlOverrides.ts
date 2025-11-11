@@ -11,7 +11,12 @@ import {
 	mergeQuotaOverrides,
 	normalizeTesterFlags,
 } from "@/lib/demo/normalizeDemoPayload";
-import type { DemoCRMProvider, DemoConfig, UserRole } from "@/types/user";
+import type {
+	DemoCRMProvider,
+	DemoConfig,
+	DemoROIProfileConfig,
+	UserRole,
+} from "@/types/user";
 import type { QuickStartDefaults } from "@/types/userProfile";
 import { getPermissionsForRole, type EditableUser } from "./userHelpers";
 
@@ -94,6 +99,12 @@ const hasRelevantParams = (params: URLSearchParams): boolean => {
 		"zip",
 		"zipCode",
 		"notes",
+		"roiDealsPerMonth",
+		"roiAvgDealValue",
+		"roiMonths",
+		"roiProfitMargin",
+		"roiMonthlyOverhead",
+		"roiHoursPerDeal",
 		"aiAllotted",
 		"aiUsed",
 		"leadsAllotted",
@@ -267,6 +278,26 @@ const mergeConfigPayload = (
 			};
 			continue;
 		}
+		if (key === "roiProfile" && typeof value === "object") {
+			const roiPayload = value as Record<string, unknown>;
+			const roiProfile: DemoROIProfileConfig = {
+				...(demoConfig.roiProfile ?? {}),
+			};
+			for (const [roiKey, roiValue] of Object.entries(roiPayload)) {
+				if (roiValue === undefined || roiValue === null) continue;
+				const numeric =
+					typeof roiValue === "number"
+						? roiValue
+						: Number.parseFloat(String(roiValue));
+				if (Number.isFinite(numeric)) {
+					roiProfile[roiKey as keyof DemoROIProfileConfig] = numeric;
+				}
+			}
+			if (Object.keys(roiProfile).length > 0) {
+				demoConfig.roiProfile = roiProfile;
+			}
+			continue;
+		}
 		if (key in demoConfig || key in (demoConfig as DemoConfig)) {
 			(demoConfig as Record<string, unknown>)[key] = value;
 		}
@@ -402,6 +433,49 @@ export const parseDemoLinkOverrides = (
 	const crmProvider = resolveCrmProvider(crmProviderParam);
 	if (crmProvider) {
 		demoConfig.crmProvider = crmProvider;
+	}
+
+	const roiDealsPerMonth = coerceNumber(params.get("roiDealsPerMonth"));
+	const roiAvgDealValue = coerceNumber(params.get("roiAvgDealValue"));
+	const roiMonths = coerceNumber(params.get("roiMonths"));
+	const roiProfitMargin = coerceNumber(params.get("roiProfitMargin"));
+	const roiMonthlyOverhead = coerceNumber(params.get("roiMonthlyOverhead"));
+	const roiHoursPerDeal = coerceNumber(params.get("roiHoursPerDeal"));
+
+	if (
+		roiDealsPerMonth !== undefined ||
+		roiAvgDealValue !== undefined ||
+		roiMonths !== undefined ||
+		roiProfitMargin !== undefined ||
+		roiMonthlyOverhead !== undefined ||
+		roiHoursPerDeal !== undefined
+	) {
+		const roiProfile: DemoROIProfileConfig = {
+			...(demoConfig.roiProfile ?? {}),
+		};
+
+		if (roiDealsPerMonth !== undefined) {
+			roiProfile.dealsPerMonth = roiDealsPerMonth;
+		}
+		if (roiAvgDealValue !== undefined) {
+			roiProfile.avgDealValue = roiAvgDealValue;
+		}
+		if (roiMonths !== undefined) {
+			roiProfile.months = roiMonths;
+		}
+		if (roiProfitMargin !== undefined) {
+			roiProfile.profitMarginPercent = roiProfitMargin;
+		}
+		if (roiMonthlyOverhead !== undefined) {
+			roiProfile.monthlyOverhead = roiMonthlyOverhead;
+		}
+		if (roiHoursPerDeal !== undefined) {
+			roiProfile.hoursPerDeal = roiHoursPerDeal;
+		}
+
+		if (Object.keys(roiProfile).length > 0) {
+			demoConfig.roiProfile = roiProfile;
+		}
 	}
 
 	const phone =
@@ -561,6 +635,12 @@ export const applyDemoLinkOverrides = (
 			nextDemoConfig.social = {
 				...(user.demoConfig?.social ?? {}),
 				...overrides.demoConfig.social,
+			};
+		}
+		if (overrides.demoConfig.roiProfile) {
+			nextDemoConfig.roiProfile = {
+				...(user.demoConfig?.roiProfile ?? {}),
+				...overrides.demoConfig.roiProfile,
 			};
 		}
 		user.demoConfig = nextDemoConfig;

@@ -48,6 +48,21 @@ Selecting a goal automatically aligns persona, demo config goal text, and QuickS
 | `address` / `city` / `state` / `zip` / `zipCode` | Address fields. |
 | `notes` | Free-form notes (displayed in Demo Configuration). |
 
+### ROI Calculator Overrides
+
+Use these optional numeric fields to prefill the QuickStart ROI calculator’s profile inputs. All values accept plain numbers; currency symbols and commas are stripped automatically.
+
+| Parameter | Description |
+|-----------|-------------|
+| `roiDealsPerMonth` | Deals closed per month. |
+| `roiAvgDealValue` | Average revenue per deal (USD). |
+| `roiMonths` | Duration in months for the ROI projection. |
+| `roiProfitMargin` | Profit margin percentage. |
+| `roiMonthlyOverhead` | Monthly overhead cost (USD). |
+| `roiHoursPerDeal` | Hours spent per deal (used to estimate time savings). |
+
+Leaving any of these blank falls back to persona/goal presets.
+
 ## Social Media
 
 Supported keys: `facebook`, `instagram`, `linkedin`, `twitter`/`x`, `youtube`, `tiktok`. Each value should be a URL.
@@ -95,7 +110,7 @@ config=%7B%22brandColor%22%3A%22%2300B4D8%22%2C%22social%22%3A%7B%22linkedin%22%
 ## Full Example
 
 ```
-http://localhost:3000/signin?demoUser=admin@example.com&name=Demo%20Sales%20User&email=demo@dealscale.example.com&password=demo123&role=admin&tier=Enterprise&beta=true&pilot=true&persona=agent&goal=agent-sphere&clientType=agent&company=Deal%20Scale%20Demo&logo=https%3A%2F%2Fvia.placeholder.com%2F200x60%2F3b82f6%2Fffffff%3Ftext%3DDEALSCALE&website=https%3A%2F%2Fdealscale.example.com&industry=Real%20Estate%20Technology&crmProvider=gohighlevel&phone=%28555%29%20988-7654&contactEmail=contact%40dealscale.example.com&address=789%20Demo%20Street&city=San%20Francisco&state=CA&zip=94105&notes=Full%20feature%20demo%20for%20sales%20presentation&facebook=https%3A%2F%2Ffacebook.com%2Fdealscale&instagram=https%3A%2F%2Finstagram.com%2Fdealscale&linkedin=https%3A%2F%2Flinkedin.com%2Fcompany%2Fdealscale&twitter=https%3A%2F%2Ftwitter.com%2Fdealscale&youtube=https%3A%2F%2Fyoutube.com%2F%40dealscale&tiktok=https%3A%2F%2Ftiktok.com%2F%40dealscale&aiAllotted=1500&aiUsed=200&leadsAllotted=800&leadsUsed=150&skipAllotted=300&skipUsed=45&autoLogin=1
+http://localhost:3000/signin?demoUser=admin@example.com&name=Demo%20Sales%20User&email=demo@dealscale.example.com&password=demo123&role=admin&tier=Enterprise&beta=true&pilot=true&persona=agent&goal=agent-sphere&clientType=agent&company=Deal%20Scale%20Demo&logo=https%3A%2F%2Fvia.placeholder.com%2F200x60%2F3b82f6%2Fffffff%3Ftext%3DDEALSCALE&website=https%3A%2F%2Fdealscale.example.com&industry=Real%20Estate%20Technology&crmProvider=gohighlevel&roiDealsPerMonth=12&roiAvgDealValue=75000&roiMonths=12&roiProfitMargin=28&roiMonthlyOverhead=4000&roiHoursPerDeal=18&phone=%28555%29%20988-7654&contactEmail=contact%40dealscale.example.com&address=789%20Demo%20Street&city=San%20Francisco&state=CA&zip=94105&notes=Full%20feature%20demo%20for%20sales%20presentation&facebook=https%3A%2F%2Ffacebook.com%2Fdealscale&instagram=https%3A%2F%2Finstagram.com%2Fdealscale&linkedin=https%3A%2F%2Flinkedin.com%2Fcompany%2Fdealscale&twitter=https%3A%2F%2Ftwitter.com%2Fdealscale&youtube=https%3A%2F%2Fyoutube.com%2F%40dealscale&tiktok=https%3A%2F%2Ftiktok.com%2F%40dealscale&aiAllotted=1500&aiUsed=200&leadsAllotted=800&leadsUsed=150&skipAllotted=300&skipUsed=45&autoLogin=1
 ```
 
 Opening this link:

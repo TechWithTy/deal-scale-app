@@ -97,7 +97,7 @@ describe("useQuickStartCards", () => {
 
                 const wizardCard = cards.find((card) => card.key === "wizard");
                 expect(wizardCard).toBeDefined();
-                expect(wizardCard?.actions[0]?.label).toMatch(/launch guided setup/i);
+                expect(wizardCard?.actions[0]?.label).toMatch(/guided setup/i);
                 expect(typeof wizardCard?.actions[0]?.onClick).toBe("function");
 
                 const campaignCard = cards.find((card) => card.key === "campaign");

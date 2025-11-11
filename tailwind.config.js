@@ -54,7 +54,13 @@ module.exports = {
     			card: {
     				DEFAULT: 'hsl(var(--card))',
     				foreground: 'hsl(var(--card-foreground))'
-    			}
+    			},
+    			'brand-primary': 'var(--brand-primary, #3b82f6)',
+    			'brand-accent': 'var(--brand-accent, #60a5fa)',
+    			'brand-secondary': 'var(--brand-secondary, #1e40af)'
+    		},
+    		backgroundImage: {
+    			'brand-gradient': 'linear-gradient(to right, var(--brand-primary, #3b82f6), var(--brand-accent, #60a5fa), #6366f1)',
     		},
     		borderRadius: {
     			lg: 'var(--radius)',

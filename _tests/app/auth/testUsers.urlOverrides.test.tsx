@@ -102,5 +102,32 @@ describe("demo link overrides", () => {
 		const applied = applyDemoLinkOverrides(seed!, overrides!);
 		expect(applied.demoConfig?.crmProvider).toBe("hubspot");
 	});
+
+	it("parses ROI overrides from URL params", () => {
+		const params = new URLSearchParams(
+			"demoUser=admin@example.com&roiDealsPerMonth=12&roiAvgDealValue=75000&roiMonths=6&roiProfitMargin=30&roiMonthlyOverhead=4000&roiHoursPerDeal=20",
+		);
+		const overrides = parseDemoLinkOverrides(params);
+		expect(overrides?.demoConfig?.roiProfile).toEqual({
+			dealsPerMonth: 12,
+			avgDealValue: 75000,
+			months: 6,
+			profitMarginPercent: 30,
+			monthlyOverhead: 4000,
+			hoursPerDeal: 20,
+		});
+
+		const editableUsers = createEditableUsers();
+		const seed = selectSeedUser(editableUsers, overrides!);
+		const applied = applyDemoLinkOverrides(seed!, overrides!);
+		expect(applied.demoConfig?.roiProfile).toEqual({
+			dealsPerMonth: 12,
+			avgDealValue: 75000,
+			months: 6,
+			profitMarginPercent: 30,
+			monthlyOverhead: 4000,
+			hoursPerDeal: 20,
+		});
+	});
 });
 

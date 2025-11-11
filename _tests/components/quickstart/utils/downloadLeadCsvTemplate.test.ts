@@ -30,7 +30,7 @@ describe("downloadLeadCsvTemplate", () => {
                 expect(sampleRow).toBe(expectedRow);
         });
 
-        it("creates and clicks a temporary anchor with a persona-aware filename", () => {
+        it("creates and clicks a temporary anchor with a persona-aware filename", async () => {
                 const blobUrl = "blob:mock";
                 const click = vi.fn();
                 const anchor = {
@@ -47,6 +47,12 @@ describe("downloadLeadCsvTemplate", () => {
                 URL.createObjectURL = createObjectURLMock;
                 URL.revokeObjectURL = revokeObjectURLMock;
 
+                const fetchMock = vi
+                        .spyOn(globalThis, "fetch")
+                        .mockResolvedValue({
+                                ok: true,
+                                text: () => Promise.resolve("col1,col2\nvalue1,value2\n"),
+                        } as unknown as Response);
                 const createElementSpy = vi
                         .spyOn(document, "createElement")
                         .mockReturnValue(anchor);
@@ -57,7 +63,10 @@ describe("downloadLeadCsvTemplate", () => {
                         .spyOn(document.body, "removeChild")
                         .mockImplementation(() => anchor);
 
-                downloadLeadCsvTemplate({ personaId: "investor", goalId: "investor-pipeline" });
+                await downloadLeadCsvTemplate({
+                        personaId: "investor",
+                        goalId: "investor-pipeline",
+                });
 
                 expect(createElementSpy).toHaveBeenCalledWith("a");
                 expect(appendChildSpy).toHaveBeenCalledWith(anchor);
@@ -66,5 +75,6 @@ describe("downloadLeadCsvTemplate", () => {
                 expect(anchor.download).toMatch(/seller-pipeline/);
                 expect(revokeObjectURLMock).toHaveBeenCalledWith(blobUrl);
                 expect(removeChildSpy).toHaveBeenCalledWith(anchor);
+                expect(fetchMock).toHaveBeenCalledWith("/example_data/ExampleCsv.csv");
         });
 });

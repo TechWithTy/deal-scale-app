@@ -105,6 +105,9 @@ const buildProfileFromSession = (
 					}) ?? base.companyInfo.assets.logo,
 			},
 		};
+		if (demo.roiProfile) {
+			base.roiProfileOverrides = { ...demo.roiProfile };
+		}
 	}
 
 	const [givenName = base.firstName, familyName = base.lastName] =

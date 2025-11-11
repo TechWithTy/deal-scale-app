@@ -51,6 +51,15 @@ export type DemoCRMProvider =
 	| "zoho"
 	| "other";
 
+export interface DemoROIProfileConfig {
+	dealsPerMonth?: number;
+	avgDealValue?: number;
+	months?: number;
+	profitMarginPercent?: number;
+	monthlyOverhead?: number;
+	hoursPerDeal?: number;
+}
+
 export interface DemoConfig {
 	/** Client company name for branding */
 	companyName?: string;
@@ -93,6 +102,8 @@ export interface DemoConfig {
 	brandColorAccent?: string;
 	/** CRM provider used by the client */
 	crmProvider?: DemoCRMProvider;
+	/** ROI calculator overrides used to prefill quickstart ROI inputs */
+	roiProfile?: DemoROIProfileConfig;
 	/** Additional notes about the demo client */
 	notes?: string;
 }
