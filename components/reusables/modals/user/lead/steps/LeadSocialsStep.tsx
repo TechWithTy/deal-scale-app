@@ -53,7 +53,7 @@ const LeadSocialsStep: FC<LeadSocialsStepProps> = ({
 			<div>
 				<label
 					htmlFor="socialSummary"
-					className="mb-1 block text-sm font-medium"
+					className="mb-1 block font-medium text-sm"
 				>
 					Social Summary
 				</label>

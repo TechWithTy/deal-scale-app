@@ -1,16 +1,16 @@
 "use client";
 
 import FeatureGuard from "@/components/access/FeatureGuard";
-import { Bot, Sparkles } from "lucide-react";
-import { useSessionStore } from "@/lib/stores/user/useSessionStore";
-import { AgentOverviewCards } from "./ai-agents/AgentOverviewCards";
-import { VoiceAgentPerformance } from "./ai-agents/VoiceAgentPerformance";
-import { ScriptMessagingPerformance } from "./ai-agents/ScriptMessagingPerformance";
-import { EnrichmentIntelligence } from "./ai-agents/EnrichmentIntelligence";
-import { AutomationWorkflows } from "./ai-agents/AutomationWorkflows";
-import { ProInsightsSection } from "./ai-agents/ProInsightsSection";
-import { mockAIAgentsData } from "@/constants/_faker/analytics/ai-agents";
 import { Card, CardContent } from "@/components/ui/card";
+import { mockAIAgentsData } from "@/constants/_faker/analytics/ai-agents";
+import { useSessionStore } from "@/lib/stores/user/useSessionStore";
+import { Bot, Sparkles } from "lucide-react";
+import { AgentOverviewCards } from "./ai-agents/AgentOverviewCards";
+import { AutomationWorkflows } from "./ai-agents/AutomationWorkflows";
+import { EnrichmentIntelligence } from "./ai-agents/EnrichmentIntelligence";
+import { ProInsightsSection } from "./ai-agents/ProInsightsSection";
+import { ScriptMessagingPerformance } from "./ai-agents/ScriptMessagingPerformance";
+import { VoiceAgentPerformance } from "./ai-agents/VoiceAgentPerformance";
 
 export function AIAgentsTab() {
 	const sessionUser = useSessionStore((state) => state.user);
@@ -53,14 +53,14 @@ export function AIAgentsTab() {
 				<ProInsightsSection insights={agentData.pro} isLocked={!hasProAccess} />
 
 				{/* Weekly AI Report Summary */}
-				<Card className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/30 dark:to-purple-950/30 border-blue-200 dark:border-blue-800">
+				<Card className="border-blue-200 bg-gradient-to-r from-blue-50 to-purple-50 dark:border-blue-800 dark:from-blue-950/30 dark:to-purple-950/30">
 					<CardContent className="pt-6">
 						<div className="flex items-start gap-4">
 							<div className="rounded-full bg-primary p-3">
 								<Bot className="h-6 w-6 text-primary-foreground" />
 							</div>
 							<div className="flex-1">
-								<p className="font-bold text-lg mb-2">
+								<p className="mb-2 font-bold text-lg">
 									🧠 Your AI Team This Week
 								</p>
 								<ul className="space-y-1 text-sm">
@@ -91,7 +91,7 @@ export function AIAgentsTab() {
 								<div className="mt-3">
 									<a
 										href="#"
-										className="text-sm font-medium text-primary hover:underline"
+										className="font-medium text-primary text-sm hover:underline"
 									>
 										See full report ▸
 									</a>
@@ -102,12 +102,12 @@ export function AIAgentsTab() {
 				</Card>
 
 				{/* AI Insights Footer */}
-				<div className="rounded-lg bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 p-4">
+				<div className="rounded-lg border border-primary/20 bg-gradient-to-r from-primary/10 to-primary/5 p-4">
 					<div className="flex items-start gap-3">
-						<Sparkles className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+						<Sparkles className="mt-0.5 h-5 w-5 flex-shrink-0 text-primary" />
 						<div className="space-y-2">
 							<p className="font-medium">Key AI Agent Insights:</p>
-							<ul className="space-y-1 text-sm text-muted-foreground">
+							<ul className="space-y-1 text-muted-foreground text-sm">
 								<li>
 									• Your call agent handles 65% more calls than manual
 									operations

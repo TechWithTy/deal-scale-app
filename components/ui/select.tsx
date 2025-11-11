@@ -1,13 +1,13 @@
 "use client";
 
-import * as React from "react";
 import {
-	CaretSortIcon,
-	CheckIcon,
-	CaretUpIcon,
 	CaretDownIcon,
+	CaretSortIcon,
+	CaretUpIcon,
+	CheckIcon,
 } from "@radix-ui/react-icons";
 import * as SelectPrimitive from "@radix-ui/react-select";
+import * as React from "react";
 
 import { cn } from "@/lib/_utils";
 
@@ -24,14 +24,14 @@ const SelectTrigger = React.forwardRef<
 	<SelectPrimitive.Trigger
 		ref={ref}
 		className={cn(
-			"flex h-9 w-full items-center justify-between rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50",
+			"flex h-9 w-full items-center justify-between gap-2 rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50",
 			className,
 		)}
 		{...props}
 	>
-		{children}
+		<span className="flex-1 truncate text-left">{children}</span>
 		<SelectPrimitive.Icon asChild>
-			<CaretSortIcon className="h-4 w-4 opacity-50" />
+			<CaretSortIcon className="h-4 w-4 shrink-0 opacity-50" />
 		</SelectPrimitive.Icon>
 	</SelectPrimitive.Trigger>
 ));
@@ -74,7 +74,7 @@ const SelectContent = React.forwardRef<
 				</SelectPrimitive.ScrollUpButton>
 				<SelectPrimitive.Viewport
 					className={cn(
-						"max-h-[60vh] overflow-y-auto overscroll-contain touch-pan-y p-1 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-300 dark:[&::-webkit-scrollbar-thumb]:bg-slate-500 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-gray-100 dark:[&::-webkit-scrollbar-track]:bg-slate-700 [&::-webkit-scrollbar]:w-2",
+						"max-h-[60vh] touch-pan-y overflow-y-auto overscroll-contain p-1 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-300 dark:[&::-webkit-scrollbar-thumb]:bg-slate-500 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-gray-100 dark:[&::-webkit-scrollbar-track]:bg-slate-700 [&::-webkit-scrollbar]:w-2",
 						className,
 					)}
 				>

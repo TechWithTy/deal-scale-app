@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo } from "react";
 import { ClipboardList } from "lucide-react";
+import { useMemo } from "react";
 import { shallow } from "zustand/shallow";
 
 import {
@@ -66,7 +66,7 @@ const CampaignIdentityForm = () => {
 			</CardHeader>
 			<CardContent className="grid gap-4 md:grid-cols-2">
 				<div className="space-y-2">
-					<Label htmlFor="campaign-name" className="text-sm font-medium">
+					<Label htmlFor="campaign-name" className="font-medium text-sm">
 						Campaign name
 					</Label>
 					<Input
@@ -77,7 +77,7 @@ const CampaignIdentityForm = () => {
 					/>
 				</div>
 				<div className="space-y-2">
-					<Label className="text-sm font-medium">Primary channel</Label>
+					<Label className="font-medium text-sm">Primary channel</Label>
 					<Select
 						value={primaryChannel ?? undefined}
 						onValueChange={(value) =>

@@ -17,11 +17,11 @@ interface LastSaleProps {
 export const LastSaleTable: React.FC<LastSaleProps> = ({ sale }) => {
 	return (
 		<div className="mx-auto w-full max-w-[800px]">
-			<h3 className="mb-4 text-center text-lg font-semibold text-foreground">
+			<h3 className="mb-4 text-center font-semibold text-foreground text-lg">
 				Last Sale
 			</h3>
 
-			<div className="mb-4 grid grid-cols-1 gap-y-4 border-b border-border bg-card p-4 sm:grid-cols-2 sm:gap-y-2">
+			<div className="mb-4 grid grid-cols-1 gap-y-4 border-border border-b bg-card p-4 sm:grid-cols-2 sm:gap-y-2">
 				<div>
 					<span className="font-semibold text-muted-foreground">
 						Date of Sale
@@ -89,11 +89,11 @@ export const CurrentMortgageTable: React.FC<CurrentMortgageProps> = ({
 }) => {
 	return (
 		<div className="mx-auto w-full max-w-[800px]">
-			<h3 className="mb-4 text-center text-lg font-semibold text-foreground">
+			<h3 className="mb-4 text-center font-semibold text-foreground text-lg">
 				Current Mortgage
 			</h3>
 
-			<div className="mb-4 grid grid-cols-1 gap-y-4 border-b border-border bg-card p-4 sm:grid-cols-2 sm:gap-y-2">
+			<div className="mb-4 grid grid-cols-1 gap-y-4 border-border border-b bg-card p-4 sm:grid-cols-2 sm:gap-y-2">
 				<div>
 					<span className="font-semibold text-muted-foreground">
 						Loan Position

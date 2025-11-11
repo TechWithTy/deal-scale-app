@@ -7,8 +7,8 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-import { Workflow, CheckCircle, AlertCircle } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
+import { AlertCircle, CheckCircle, Workflow } from "lucide-react";
 import type { AutomationWorkflowMetrics } from "../../types/ai-agents";
 
 interface AutomationWorkflowsProps {
@@ -38,20 +38,20 @@ export function AutomationWorkflows({ metrics }: AutomationWorkflowsProps) {
 				<div className="space-y-4">
 					<div className="grid grid-cols-2 gap-4">
 						<div>
-							<p className="text-sm text-muted-foreground mb-1">
+							<p className="mb-1 text-muted-foreground text-sm">
 								Workflows Run
 							</p>
-							<p className="text-2xl font-bold">{metrics.workflows}</p>
-							<p className="text-xs text-muted-foreground">This month</p>
+							<p className="font-bold text-2xl">{metrics.workflows}</p>
+							<p className="text-muted-foreground text-xs">This month</p>
 						</div>
 						<div>
-							<p className="text-sm text-muted-foreground mb-1">
+							<p className="mb-1 text-muted-foreground text-sm">
 								Completion Rate
 							</p>
-							<p className="text-2xl font-bold text-green-600 dark:text-green-500">
+							<p className="font-bold text-2xl text-green-600 dark:text-green-500">
 								{metrics.completion}%
 							</p>
-							<p className="text-xs text-muted-foreground">Fully automated</p>
+							<p className="text-muted-foreground text-xs">Fully automated</p>
 						</div>
 					</div>
 
@@ -59,7 +59,7 @@ export function AutomationWorkflows({ metrics }: AutomationWorkflowsProps) {
 						<div className="flex items-center justify-between rounded-lg border p-3">
 							<div className="flex items-center gap-2">
 								<CheckCircle className="h-4 w-4 text-green-600" />
-								<span className="text-sm text-muted-foreground">
+								<span className="text-muted-foreground text-sm">
 									Error Recovery Rate
 								</span>
 							</div>
@@ -69,7 +69,7 @@ export function AutomationWorkflows({ metrics }: AutomationWorkflowsProps) {
 						<div className="flex items-center justify-between rounded-lg border p-3">
 							<div className="flex items-center gap-2">
 								<AlertCircle className="h-4 w-4 text-orange-600" />
-								<span className="text-sm text-muted-foreground">
+								<span className="text-muted-foreground text-sm">
 									Manual Overrides
 								</span>
 							</div>
@@ -78,14 +78,14 @@ export function AutomationWorkflows({ metrics }: AutomationWorkflowsProps) {
 					</div>
 
 					<div className="rounded-lg bg-muted p-4">
-						<div className="flex justify-between items-center mb-2">
-							<span className="text-sm font-medium">Automation Depth</span>
+						<div className="mb-2 flex items-center justify-between">
+							<span className="font-medium text-sm">Automation Depth</span>
 							<span className="font-bold text-lg text-primary">
 								{metrics.depth}%
 							</span>
 						</div>
-						<Progress value={metrics.depth} className="h-3 mb-2" />
-						<p className="text-xs text-muted-foreground">
+						<Progress value={metrics.depth} className="mb-2 h-3" />
+						<p className="text-muted-foreground text-xs">
 							Freedom Score:{" "}
 							<span className="font-medium text-foreground">
 								{automationScore}
@@ -93,7 +93,7 @@ export function AutomationWorkflows({ metrics }: AutomationWorkflowsProps) {
 						</p>
 					</div>
 
-					<div className="rounded-lg bg-primary/10 p-3 text-xs text-muted-foreground">
+					<div className="rounded-lg bg-primary/10 p-3 text-muted-foreground text-xs">
 						<p>
 							<strong>💡 Tip:</strong> {metrics.depth}% of your work is
 							AI-driven. The higher the automation depth, the higher your

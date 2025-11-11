@@ -1,5 +1,4 @@
 "use client";
-import React, { useCallback, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { DrawerFlow } from "external/drawer-flow";
 import type {
@@ -8,6 +7,7 @@ import type {
 	LoadMoreArgs,
 	LoadMoreResult,
 } from "external/drawer-flow";
+import React, { useCallback, useMemo, useState } from "react";
 
 // Simple in-memory cache scoped to this page for demo/testing
 const demoCache = {
@@ -68,7 +68,7 @@ function createInMemoryListService(totalCount = 240): ListService {
 			const cached = demoCache.pages.get(key);
 			if (cached) return cached;
 
-			const start = cursor ? parseInt(cursor, 10) : 0;
+			const start = cursor ? Number.parseInt(cursor, 10) : 0;
 			const next = Math.min(start + pageSize, totalCount);
 			const items = makeDemoItems(start, next - start);
 			const hasMore = next < totalCount;
@@ -92,7 +92,7 @@ export default function DrawerTestPage() {
 	>(async (args) => listService.loadMore(args), [listService]);
 
 	return (
-		<div className="p-8 space-y-4">
+		<div className="space-y-4 p-8">
 			<h1 className="font-semibold text-2xl">Drawer Flow Test</h1>
 			<p className="text-muted-foreground">
 				This page mounts the external drawer-flow package with an in-memory

@@ -15,6 +15,8 @@ export const lookalikeConfigSchema = z.object({
 
 	// Sales targeting (all optional)
 	buyerPersona: z.array(z.string()).optional(),
+	targetInterests: z.string().optional(),
+	targetIndustry: z.string().optional(),
 	motivationLevel: z.array(z.string()).optional(),
 	purchaseTimeline: z.string().optional(),
 	investmentExperience: z.string().optional(),
@@ -24,6 +26,13 @@ export const lookalikeConfigSchema = z.object({
 	creditScoreMax: z.number().optional(),
 	cashBuyerOnly: z.boolean().optional(),
 	portfolioSize: z.string().optional(),
+
+	// Sales AI Scores
+	minCreditScore: z.number().min(300).max(850).optional(),
+	minResponseRate: z.number().min(0).max(100).optional(),
+	minPurchaseIntent: z.number().min(0).max(100).optional(),
+	excludeLowEngagement: z.boolean().optional(),
+	skipColdLeads: z.boolean().optional(),
 
 	// Property filters
 	propertyTypes: z.array(z.string()).optional(),
@@ -44,6 +53,16 @@ export const lookalikeConfigSchema = z.object({
 	equityPosition: z.array(z.string()).optional(),
 	distressedSignals: z.array(z.string()).optional(),
 
+	// Property AI Scores
+	maxFloodScore: z.number().min(0).max(100).optional(),
+	maxCrimeScore: z.number().min(0).max(100).optional(),
+	minAirQuality: z.number().min(0).max(100).optional(),
+	minConditionScore: z.number().min(0).max(100).optional(),
+	minSchoolRating: z.number().min(1).max(10).optional(),
+	requireRecentPhotos: z.boolean().optional(),
+	skipRecentlySold: z.boolean().optional(),
+	skipListedProperties: z.boolean().optional(),
+
 	// Geographic filters
 	states: z.array(z.string()).optional(),
 	counties: z.array(z.string()).optional(),
@@ -54,6 +73,16 @@ export const lookalikeConfigSchema = z.object({
 	msaAreas: z.array(z.string()).optional(),
 	excludeStates: z.array(z.string()).optional(),
 	excludeCities: z.string().optional(),
+
+	// Geographic AI Scores
+	minWalkScore: z.number().min(0).max(100).optional(),
+	minTransitScore: z.number().min(0).max(100).optional(),
+	minBikeScore: z.number().min(0).max(100).optional(),
+	minAppreciation: z.number().min(0).max(50).optional(),
+	minPopGrowth: z.number().min(-10).max(20).optional(),
+	requireUrbanProximity: z.boolean().optional(),
+	skipOverlappingAreas: z.boolean().optional(),
+	consolidateByMarket: z.boolean().optional(),
 
 	// General options
 	excludeListIds: z.array(z.string()).optional(),
@@ -67,6 +96,50 @@ export const lookalikeConfigSchema = z.object({
 	intentLevels: z.array(z.string()).optional(),
 	corporateOwnership: z.string().optional(),
 	absenteeOwner: z.string().optional(),
+	lotSizeMin: z.number().optional(),
+	lotSizeMax: z.number().optional(),
+
+	// Efficiency & Deduplication options
+	skipDuplicates: z.boolean().optional().default(true),
+	skipAlreadyTraced: z.boolean().optional().default(true),
+	skipExistingCampaigns: z.boolean().optional().default(true),
+	skipDncList: z.boolean().optional().default(true),
+	skipPreviouslyContacted: z.boolean().optional().default(false),
+
+	// Social Profile Enrichment
+	socialEnrichment: z.boolean().optional().default(true),
+	includeFacebook: z.boolean().optional().default(true),
+	includeLinkedIn: z.boolean().optional().default(true),
+	includeInstagram: z.boolean().optional().default(true),
+	includeFriendsData: z.boolean().optional().default(true),
+	includeInterests: z.boolean().optional().default(true),
+	includeEmployment: z.boolean().optional().default(true),
+	includeUsername: z.boolean().optional().default(true),
+	includeSocialDossier: z.boolean().optional().default(false),
+
+	// Social Efficiency
+	skipNoEmail: z.boolean().optional(),
+	skipAlreadyEnriched: z.boolean().optional(),
+	skipInactiveProfiles: z.boolean().optional(),
+	skipPrivateProfiles: z.boolean().optional(),
+
+	// Social Advanced Scores
+	minInfluenceScore: z.number().min(0).max(100).optional(),
+	minConnections: z.number().min(0).max(10000).optional(),
+	minProfileCompleteness: z.number().min(0).max(100).optional(),
+	minEngagementRate: z.number().min(0).max(100).optional(),
+	minAccountAge: z.number().min(0).max(120).optional(),
+	requireVerified: z.boolean().optional(),
+
+	// Compliance Advanced Scores
+	minPhoneValidity: z.number().min(0).max(100).optional(),
+	minEmailDeliverability: z.number().min(0).max(100).optional(),
+	minAddressValidity: z.number().min(0).max(100).optional(),
+	maxDataAge: z.number().min(0).max(365).optional(),
+	requireNcoaVerified: z.boolean().optional(),
+	excludeLandlines: z.boolean().optional(),
+	requireMultipleContacts: z.boolean().optional(),
+	skipInvalidData: z.boolean().optional(),
 });
 
 /** Inferred TypeScript type from the Zod schema */
@@ -165,3 +238,20 @@ export const BUYER_PERSONAS = [
 
 /** Lead motivation levels */
 export const MOTIVATION_LEVELS = ["hot", "warm", "cold"];
+
+/** Ownership duration options */
+export const OWNERSHIP_DURATIONS = [
+	{ value: "<1year", label: "Less than 1 year" },
+	{ value: "1-3years", label: "1-3 years" },
+	{ value: "3-5years", label: "3-5 years" },
+	{ value: "5-10years", label: "5-10 years" },
+	{ value: "10+years", label: "10+ years" },
+];
+
+/** Equity position options */
+export const EQUITY_POSITIONS = [
+	{ value: "<20%", label: "Less than 20%" },
+	{ value: "20-50%", label: "20-50%" },
+	{ value: "50-80%", label: "50-80%" },
+	{ value: "80%+", label: "80%+" },
+];

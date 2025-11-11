@@ -32,10 +32,10 @@ const TaxInformationComponent: React.FC<TaxInformationProps> = ({
 
 	return (
 		<div className="rounded-lg bg-card p-6 text-card-foreground shadow-md">
-			<h2 className="mb-4 text-xl font-bold text-foreground">
+			<h2 className="mb-4 font-bold text-foreground text-xl">
 				Tax Information
 			</h2>
-			<p className="mb-6 text-sm text-muted-foreground">
+			<p className="mb-6 text-muted-foreground text-sm">
 				Most recent taxes for this property.
 			</p>
 			<div className="grid grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-4">

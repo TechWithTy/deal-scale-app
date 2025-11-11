@@ -51,7 +51,7 @@ export const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
 	);
 
 	return (
-		<div className="space-y-2">
+		<div className="space-y-2 md:space-y-3 lg:grid lg:grid-cols-2 lg:gap-4 lg:space-y-0">
 			<AnimatePresence mode="popLayout">
 				{shown.map((player, index) => (
 					<motion.div
@@ -65,6 +65,7 @@ export const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
 							delay: index * rowDelayMultiplier, // Stagger effect
 							ease: "easeOut",
 						}}
+						className={player.rank === 1 ? "lg:col-span-2" : ""}
 					>
 						<RankRow
 							player={player}

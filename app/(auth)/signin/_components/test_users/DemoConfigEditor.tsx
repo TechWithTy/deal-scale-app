@@ -1,10 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
 import {
 	Select,
 	SelectContent,
@@ -12,8 +10,10 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { ChevronDown, ChevronUp, Building2 } from "lucide-react";
-import type { DemoConfig, ClientType } from "@/types/user";
+import { Textarea } from "@/components/ui/textarea";
+import type { ClientType, DemoConfig } from "@/types/user";
+import { Building2, ChevronDown, ChevronUp } from "lucide-react";
+import { useState } from "react";
 
 interface DemoConfigEditorProps {
 	demoConfig?: DemoConfig;
@@ -92,7 +92,7 @@ export function DemoConfigEditor({
 						<div className="space-y-1">
 							<Label
 								htmlFor={`company-name-${userId}`}
-								className="text-xs text-muted-foreground"
+								className="text-muted-foreground text-xs"
 							>
 								Company Name
 							</Label>
@@ -109,7 +109,7 @@ export function DemoConfigEditor({
 						<div className="space-y-1">
 							<Label
 								htmlFor={`industry-${userId}`}
-								className="text-xs text-muted-foreground"
+								className="text-muted-foreground text-xs"
 							>
 								Industry
 							</Label>
@@ -128,7 +128,7 @@ export function DemoConfigEditor({
 						<div className="space-y-1">
 							<Label
 								htmlFor={`client-type-${userId}`}
-								className="text-xs text-muted-foreground"
+								className="text-muted-foreground text-xs"
 							>
 								Client Type
 							</Label>
@@ -156,7 +156,7 @@ export function DemoConfigEditor({
 						<div className="space-y-1">
 							<Label
 								htmlFor={`goal-${userId}`}
-								className="text-xs text-muted-foreground"
+								className="text-muted-foreground text-xs"
 							>
 								Primary Goal
 							</Label>
@@ -174,7 +174,7 @@ export function DemoConfigEditor({
 					<div className="space-y-1">
 						<Label
 							htmlFor={`email-${userId}`}
-							className="text-xs text-muted-foreground"
+							className="text-muted-foreground text-xs"
 						>
 							Email
 						</Label>
@@ -191,7 +191,7 @@ export function DemoConfigEditor({
 					<div className="space-y-1">
 						<Label
 							htmlFor={`logo-${userId}`}
-							className="text-xs text-muted-foreground"
+							className="text-muted-foreground text-xs"
 						>
 							Company Logo URL
 						</Label>
@@ -208,7 +208,7 @@ export function DemoConfigEditor({
 						<div className="space-y-1">
 							<Label
 								htmlFor={`website-${userId}`}
-								className="text-xs text-muted-foreground"
+								className="text-muted-foreground text-xs"
 							>
 								Website
 							</Label>
@@ -223,7 +223,7 @@ export function DemoConfigEditor({
 						<div className="space-y-1">
 							<Label
 								htmlFor={`phone-${userId}`}
-								className="text-xs text-muted-foreground"
+								className="text-muted-foreground text-xs"
 							>
 								Phone
 							</Label>
@@ -243,7 +243,7 @@ export function DemoConfigEditor({
 					<div className="space-y-1">
 						<Label
 							htmlFor={`address-${userId}`}
-							className="text-xs text-muted-foreground"
+							className="text-muted-foreground text-xs"
 						>
 							Address
 						</Label>
@@ -260,7 +260,7 @@ export function DemoConfigEditor({
 						<div className="space-y-1">
 							<Label
 								htmlFor={`city-${userId}`}
-								className="text-xs text-muted-foreground"
+								className="text-muted-foreground text-xs"
 							>
 								City
 							</Label>
@@ -275,7 +275,7 @@ export function DemoConfigEditor({
 						<div className="space-y-1">
 							<Label
 								htmlFor={`state-${userId}`}
-								className="text-xs text-muted-foreground"
+								className="text-muted-foreground text-xs"
 							>
 								State
 							</Label>
@@ -290,7 +290,7 @@ export function DemoConfigEditor({
 						<div className="space-y-1">
 							<Label
 								htmlFor={`zip-${userId}`}
-								className="text-xs text-muted-foreground"
+								className="text-muted-foreground text-xs"
 							>
 								ZIP
 							</Label>
@@ -306,7 +306,7 @@ export function DemoConfigEditor({
 
 					{/* Social Media */}
 					<div className="space-y-2">
-						<Label className="text-xs text-muted-foreground">
+						<Label className="text-muted-foreground text-xs">
 							Social Media Links
 						</Label>
 						<div className="grid gap-2">
@@ -353,7 +353,7 @@ export function DemoConfigEditor({
 
 					{/* Brand Colors */}
 					<div className="space-y-2">
-						<Label className="text-xs text-muted-foreground">
+						<Label className="text-muted-foreground text-xs">
 							Brand Colors
 						</Label>
 						<div className="grid gap-2">
@@ -418,7 +418,7 @@ export function DemoConfigEditor({
 					<div className="space-y-1">
 						<Label
 							htmlFor={`notes-${userId}`}
-							className="text-xs text-muted-foreground"
+							className="text-muted-foreground text-xs"
 						>
 							Notes
 						</Label>

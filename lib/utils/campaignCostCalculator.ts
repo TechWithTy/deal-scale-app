@@ -1,11 +1,11 @@
 // Import pricing configurations
-import { callCosts, type CallPricingPlan } from "../pricing/call_costs";
-import { smsCosts, type SmsPricingPlan } from "../pricing/sms_costs";
-import { socialCosts, type SocialPricingPlan } from "../pricing/social_costs";
+import { type CallPricingPlan, callCosts } from "../pricing/call_costs";
 import {
-	directMailCosts,
 	type DirectMailPricingPlan,
+	directMailCosts,
 } from "../pricing/directmail_costs";
+import { type SmsPricingPlan, smsCosts } from "../pricing/sms_costs";
+import { type SocialPricingPlan, socialCosts } from "../pricing/social_costs";
 
 interface CampaignSettings {
 	primaryChannel: string | null;
@@ -94,7 +94,7 @@ export function calculateCampaignCost(
 
 	// Exclude weekends if not included
 	if (!includeWeekends && startDate && endDate) {
-		let currentDate = new Date(startDate);
+		const currentDate = new Date(startDate);
 		let weekendDays = 0;
 
 		while (currentDate <= endDate) {

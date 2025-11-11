@@ -25,40 +25,40 @@ const LinkedPropertiesComponent: React.FC<LinkedPropertiesProps> = ({
 	linkedProperties,
 }) => {
 	return (
-		<div className="rounded-lg bg-card p-6 shadow-md text-card-foreground">
+		<div className="rounded-lg bg-card p-6 text-card-foreground shadow-md">
 			{/* Header Boxes */}
 			<div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-4">
 				<div className="rounded-lg border border-border p-4 text-center">
-					<h3 className="text-sm font-semibold text-muted-foreground">
+					<h3 className="font-semibold text-muted-foreground text-sm">
 						Total Properties Owned
 					</h3>
-					<p className="text-lg text-foreground">{totalProperties || "-"}</p>
+					<p className="text-foreground text-lg">{totalProperties || "-"}</p>
 				</div>
 				<div className="rounded-lg border border-border p-4 text-center">
-					<h3 className="text-sm font-semibold text-muted-foreground">
+					<h3 className="font-semibold text-muted-foreground text-sm">
 						Total Open Loan Amount
 					</h3>
-					<p className="text-lg text-foreground">
+					<p className="text-foreground text-lg">
 						{totalOpenLoanAmount !== null
 							? `$${totalOpenLoanAmount.toLocaleString()}`
 							: "-"}
 					</p>
 				</div>
 				<div className="rounded-lg border border-border p-4 text-center">
-					<h3 className="text-sm font-semibold text-muted-foreground">
+					<h3 className="font-semibold text-muted-foreground text-sm">
 						Total Estimated Value
 					</h3>
-					<p className="text-lg text-foreground">
+					<p className="text-foreground text-lg">
 						{totalEstimatedValue !== null
 							? `$${totalEstimatedValue.toLocaleString()}`
 							: "-"}
 					</p>
 				</div>
 				<div className="rounded-lg border border-border p-4 text-center">
-					<h3 className="text-sm font-semibold text-muted-foreground">
+					<h3 className="font-semibold text-muted-foreground text-sm">
 						Portfolio Equity
 					</h3>
-					<p className="text-lg text-foreground">
+					<p className="text-foreground text-lg">
 						{totalEquity !== null ? `$${totalEquity.toLocaleString()}` : "-"}
 					</p>
 				</div>
@@ -66,7 +66,7 @@ const LinkedPropertiesComponent: React.FC<LinkedPropertiesProps> = ({
 
 			{/* Linked Properties Section */}
 			<div>
-				<h3 className="mb-4 text-lg font-semibold text-foreground">
+				<h3 className="mb-4 font-semibold text-foreground text-lg">
 					Linked Properties
 				</h3>
 				{linkedProperties.length > 0 ? (
@@ -76,7 +76,7 @@ const LinkedPropertiesComponent: React.FC<LinkedPropertiesProps> = ({
 								key={property.id}
 								className="rounded-lg border border-border p-4"
 							>
-								<h4 className="text-md font-semibold text-foreground">
+								<h4 className="font-semibold text-foreground text-md">
 									{property.address}
 								</h4>
 								<p className="text-muted-foreground">
@@ -121,8 +121,8 @@ const LinkedPropertiesComponent: React.FC<LinkedPropertiesProps> = ({
 								/>
 							</svg>
 						</div>
-						<p className="text-sm text-muted-foreground">No results found</p>
-						<p className="text-xs text-muted-foreground">
+						<p className="text-muted-foreground text-sm">No results found</p>
+						<p className="text-muted-foreground text-xs">
 							We couldn’t find any results that match your search or filtering
 							criteria.
 						</p>

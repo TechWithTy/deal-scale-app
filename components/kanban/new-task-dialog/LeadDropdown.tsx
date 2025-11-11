@@ -41,7 +41,7 @@ export function LeadDropdown({
 							: "Select Lead"}
 					</Button>
 				</DropdownMenuTrigger>
-				<DropdownMenuContent className="max-h-60 overflow-y-auto w-64">
+				<DropdownMenuContent className="max-h-60 w-64 overflow-y-auto">
 					{mockGeneratedLeads.map((lead) => (
 						<DropdownMenuItem
 							key={lead.id}

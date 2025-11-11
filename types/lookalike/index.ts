@@ -1,5 +1,10 @@
 // Look-Alike Audience Type Definitions
 
+import type {
+	QuickStartGoalId,
+	QuickStartPersonaId,
+} from "@/lib/config/quickstart/wizardFlows";
+
 export type AdPlatform = "meta" | "google" | "linkedin";
 
 export type BuyerPersona =
@@ -56,6 +61,10 @@ export interface LookalikeConfig {
 	seedListName: string;
 	seedLeadCount: number;
 
+	// User Context (from profile)
+	userPersona?: QuickStartPersonaId;
+	userGoal?: QuickStartGoalId;
+
 	// Similarity settings
 	similarityThreshold: number; // 60-95%
 	targetSize?: number;
@@ -111,6 +120,24 @@ export interface LookalikeConfig {
 		intentLevels?: IntentLevel[];
 		corporateOwnership?: CorporateOwnershipFilter;
 		absenteeOwner?: AbsenteeOwnerFilter;
+
+		// Efficiency & Deduplication
+		skipDuplicates?: boolean;
+		skipAlreadyTraced?: boolean;
+		skipExistingCampaigns?: boolean;
+		skipDncList?: boolean;
+		skipPreviouslyContacted?: boolean;
+
+		// Social Profile Enrichment
+		socialEnrichment?: boolean;
+		includeFacebook?: boolean;
+		includeLinkedIn?: boolean;
+		includeInstagram?: boolean;
+		includeFriendsData?: boolean;
+		includeInterests?: boolean;
+		includeEmployment?: boolean;
+		includeUsername?: boolean;
+		includeSocialDossier?: boolean;
 	};
 }
 

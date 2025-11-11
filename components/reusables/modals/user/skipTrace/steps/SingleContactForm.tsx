@@ -27,7 +27,7 @@ const SingleContactForm: React.FC<SingleContactFormProps> = ({
 			<div>
 				<label
 					htmlFor="name"
-					className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+					className="block font-medium text-gray-700 text-sm dark:text-gray-300"
 				>
 					Full Name
 				</label>
@@ -43,7 +43,7 @@ const SingleContactForm: React.FC<SingleContactFormProps> = ({
 			<div>
 				<label
 					htmlFor="address"
-					className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+					className="block font-medium text-gray-700 text-sm dark:text-gray-300"
 				>
 					Mailing Address
 				</label>

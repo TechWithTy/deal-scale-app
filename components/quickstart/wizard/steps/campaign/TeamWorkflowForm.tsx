@@ -89,7 +89,7 @@ const TeamWorkflowForm = () => {
 			</CardHeader>
 			<CardContent className="grid gap-4 md:grid-cols-2">
 				<div className="space-y-2">
-					<Label className="text-sm font-medium">Assigned agent</Label>
+					<Label className="font-medium text-sm">Assigned agent</Label>
 					<Select
 						value={selectedAgentId ?? undefined}
 						onValueChange={(value) => setSelectedAgentId(value)}
@@ -107,7 +107,7 @@ const TeamWorkflowForm = () => {
 					</Select>
 				</div>
 				<div className="space-y-2">
-					<Label className="text-sm font-medium">Workflow automation</Label>
+					<Label className="font-medium text-sm">Workflow automation</Label>
 					<Select
 						value={selectedWorkflowId ?? undefined}
 						onValueChange={(value) => setSelectedWorkflowId(value)}
@@ -125,7 +125,7 @@ const TeamWorkflowForm = () => {
 					</Select>
 				</div>
 				<div className="space-y-2">
-					<Label className="text-sm font-medium">Sales script</Label>
+					<Label className="font-medium text-sm">Sales script</Label>
 					<Select
 						value={selectedSalesScriptId ?? undefined}
 						onValueChange={(value) => setSelectedSalesScriptId(value)}
@@ -143,7 +143,7 @@ const TeamWorkflowForm = () => {
 					</Select>
 				</div>
 				<div className="space-y-2">
-					<Label htmlFor="campaign-area" className="text-sm font-medium">
+					<Label htmlFor="campaign-area" className="font-medium text-sm">
 						Coverage notes
 					</Label>
 					<Textarea

@@ -1,17 +1,21 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import {
-	useCampaignCreationStore,
 	type CampaignCreationState,
+	useCampaignCreationStore,
 } from "@/lib/stores/campaignCreation";
 import { useCampaignStore } from "@/lib/stores/campaigns";
+import { useLeadListStore } from "@/lib/stores/leadList";
 import {
 	calculateCampaignCost,
 	getEstimatedCredits,
 } from "@/lib/utils/campaignCostCalculator";
+import type { CallCampaign } from "@/types/_dashboard/campaign";
+import type { EmailCampaign } from "@/types/goHighLevel/email";
 import { zodResolver } from "@hookform/resolvers/zod";
+import type { DirectMailCampaign } from "external/shadcn-table/src/examples/DirectMail/utils/mock";
+import { useRouter } from "next/navigation";
 import React, {
 	useCallback,
 	useEffect,
@@ -21,7 +25,9 @@ import React, {
 	type FC,
 } from "react";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import type { z } from "zod";
+import { shallow } from "zustand/shallow";
 import ChannelCustomizationStep, {
 	TransferConditionalSchema,
 	type FormSchema,
@@ -31,18 +37,19 @@ import { TimingPreferencesStep } from "../../../../../external/shadcn-table/src/
 import CampaignSettingsDebug from "./CampaignSettingsDebug";
 import { EvaluationReportModal } from "./EvaluationReportModal";
 import FinalizeCampaignStep from "./steps/FinalizeCampaignStep";
-import { shallow } from "zustand/shallow";
-import type { CallCampaign } from "@/types/_dashboard/campaign";
-import type { EmailCampaign } from "@/types/goHighLevel/email";
-import type { DirectMailCampaign } from "external/shadcn-table/src/examples/DirectMail/utils/mock";
-import { useLeadListStore } from "@/lib/stores/leadList";
-import { toast } from "sonner";
 interface CampaignModalMainProps {
 	isOpen: boolean;
 	onOpenChange: (open: boolean) => void;
 	initialLeadListId?: string;
 	initialLeadListName?: string;
 	initialLeadCount?: number;
+	// Transfer agent settings (for call campaigns)
+	initialTransferEnabled?: boolean;
+	initialTransferAgentId?: string;
+	initialTransferAgentName?: string;
+	initialTransferType?: "inbound_call" | "outbound_call" | "warm_transfer";
+	initialTransferGuidelines?: string;
+	initialTransferPrompt?: string;
 	initialStep?: number;
 	defaultChannel?: "call" | "text" | "social" | "directmail";
 	onCampaignLaunched?: (payload: {
@@ -133,20 +140,37 @@ const CampaignModalMain: FC<CampaignModalMainProps> = ({
 	initialLeadListId,
 	initialLeadListName,
 	initialLeadCount = 0,
+	initialTransferEnabled,
+	initialTransferAgentId,
+	initialTransferAgentName,
+	initialTransferType,
+	initialTransferGuidelines,
+	initialTransferPrompt,
 	initialStep = 0,
 	defaultChannel,
 	onCampaignLaunched,
 	initialCampaignData,
 	isVariantMode = false,
 }) => {
-	console.log("🔧 CAMPAIGN MODAL DEBUG - Component rendering", {
-		isOpen,
-		initialStep,
-		defaultChannel,
-		hasOnCampaignLaunched: !!onCampaignLaunched,
-		isVariantMode,
-		hasInitialCampaignData: !!initialCampaignData,
-	});
+	console.log(
+		"%c🔧 CAMPAIGN MODAL RECEIVED PROPS:",
+		"background: #FF9800; color: white; font-size: 16px; padding: 5px;",
+		{
+			isOpen,
+			initialStep,
+			defaultChannel,
+			initialLeadListId,
+			initialLeadListName,
+			initialLeadCount,
+			initialTransferEnabled,
+			initialTransferAgentId,
+			initialTransferAgentName,
+			initialTransferType,
+			hasOnCampaignLaunched: !!onCampaignLaunched,
+			isVariantMode,
+			hasInitialCampaignData: !!initialCampaignData,
+		},
+	);
 
 	const registerLaunchedCampaign = useCampaignStore(
 		(state) => state.registerLaunchedCampaign,
@@ -173,6 +197,7 @@ const CampaignModalMain: FC<CampaignModalMainProps> = ({
 		setPrimaryChannel,
 		campaignName,
 		setCampaignName,
+		campaignGoal,
 		abTestingEnabled,
 		setAbTestingEnabled,
 		minDailyAttempts,
@@ -202,6 +227,7 @@ const CampaignModalMain: FC<CampaignModalMainProps> = ({
 			setPrimaryChannel: state.setPrimaryChannel,
 			campaignName: state.campaignName,
 			setCampaignName: state.setCampaignName,
+			campaignGoal: state.campaignGoal,
 			abTestingEnabled: state.abTestingEnabled,
 			setAbTestingEnabled: state.setAbTestingEnabled,
 			minDailyAttempts: state.minDailyAttempts,
@@ -646,6 +672,10 @@ const CampaignModalMain: FC<CampaignModalMainProps> = ({
 
 	useEffect(() => {
 		if (!isOpen) {
+			console.log(
+				"%c🔒 MODAL CLOSED - Resetting initialization flag",
+				"background: #f44336; color: white; font-size: 14px; padding: 5px;",
+			);
 			hasInitializedRef.current = false;
 			// Form reset is handled in separate effect with deferred execution
 			previousIsOpenRef.current = isOpen;
@@ -655,36 +685,167 @@ const CampaignModalMain: FC<CampaignModalMainProps> = ({
 		previousIsOpenRef.current = isOpen;
 
 		const runInitialization = () => {
+			console.log(
+				"%c🚀 RUNNING MODAL INITIALIZATION",
+				"background: #9C27B0; color: white; font-size: 14px; padding: 5px;",
+			);
+			console.log("[Modal Init] Props:", {
+				defaultChannel,
+				initialLeadListId,
+				initialLeadListName,
+				initialLeadCount,
+				initialStep,
+			});
+
 			if (defaultChannel) {
 				setPrimaryChannel(
 					defaultChannel === "directmail" ? "email" : defaultChannel,
 				);
+				console.log("[Modal Init] ✅ Set primary channel:", defaultChannel);
 			}
+
 			if (initialLeadListId) {
+				console.log("[Modal Init] 🎯 Setting lead list:", {
+					id: initialLeadListId,
+					name: initialLeadListName,
+					count: initialLeadCount,
+				});
+
 				setAreaMode("leadList");
+				console.log("[Modal Init] ✅ Set area mode to leadList");
+
 				setSelectedLeadListId(initialLeadListId);
+				console.log(
+					"[Modal Init] ✅ Set selectedLeadListId to:",
+					initialLeadListId,
+				);
+
 				customizationForm.setValue("areaMode", "leadList");
+				console.log("[Modal Init] ✅ Set form areaMode to leadList");
+
 				customizationForm.setValue("selectedLeadListId", initialLeadListId);
+				console.log(
+					"[Modal Init] ✅ Set form selectedLeadListId to:",
+					initialLeadListId,
+				);
+
 				if (abTestingEnabled && !selectedLeadListAId) {
 					setSelectedLeadListAId(initialLeadListId);
+					console.log(
+						"[Modal Init] ✅ Set selectedLeadListAId to:",
+						initialLeadListId,
+					);
 				}
+			} else {
+				console.warn("[Modal Init] ⚠️  No initialLeadListId provided");
 			}
+
 			if (
 				typeof initialLeadCount === "number" &&
 				!Number.isNaN(initialLeadCount)
 			) {
 				setLeadCount(initialLeadCount);
+				console.log("[Modal Init] ✅ Set lead count to:", initialLeadCount);
 			}
+
 			if (initialLeadListName) {
 				setCampaignName(`${initialLeadListName} Campaign`);
+				console.log(
+					"[Modal Init] ✅ Set campaign name to:",
+					`${initialLeadListName} Campaign`,
+				);
 			}
+
+			// Set transfer agent settings if provided
+			if (initialTransferEnabled) {
+				console.log("[Modal Init] 🔄 Setting transfer agent:", {
+					enabled: initialTransferEnabled,
+					agentId: initialTransferAgentId,
+					agentName: initialTransferAgentName,
+					type: initialTransferType,
+				});
+
+				customizationForm.setValue("transferEnabled", initialTransferEnabled);
+				console.log(
+					"[Modal Init] ✅ Set form transferEnabled to:",
+					initialTransferEnabled,
+				);
+
+				if (initialTransferAgentId) {
+					customizationForm.setValue("transferAgentId", initialTransferAgentId);
+					console.log(
+						"[Modal Init] ✅ Set form transferAgentId to:",
+						initialTransferAgentId,
+					);
+				}
+
+				if (initialTransferType) {
+					customizationForm.setValue("transferType", initialTransferType);
+					console.log(
+						"[Modal Init] ✅ Set form transferType to:",
+						initialTransferType,
+					);
+				}
+
+				if (initialTransferGuidelines) {
+					customizationForm.setValue(
+						"transferGuidelines",
+						initialTransferGuidelines,
+					);
+					console.log("[Modal Init] ✅ Set form transferGuidelines");
+				}
+
+				if (initialTransferPrompt) {
+					customizationForm.setValue("transferPrompt", initialTransferPrompt);
+					console.log("[Modal Init] ✅ Set form transferPrompt");
+				}
+			} else {
+				console.log("[Modal Init] ℹ️  No transfer settings provided");
+			}
+
 			setStep(initialStep);
+			console.log("[Modal Init] ✅ Set step to:", initialStep);
+			console.log(
+				"%c✅ INITIALIZATION COMPLETE",
+				"background: #4CAF50; color: white; font-size: 14px; padding: 5px;",
+			);
+
+			// Verify state after initialization
+			setTimeout(() => {
+				const currentFormValues = customizationForm.getValues();
+				console.log(
+					"%c🔍 POST-INIT VERIFICATION",
+					"background: #673AB7; color: white; font-size: 14px; padding: 5px;",
+				);
+				console.log("[Post-Init] Store state:", {
+					areaMode,
+					selectedLeadListId,
+					selectedLeadListAId,
+					leadCount,
+					campaignName,
+				});
+				console.log("[Post-Init] Form values:", {
+					areaMode: currentFormValues.areaMode,
+					selectedLeadListId: currentFormValues.selectedLeadListId,
+					transferEnabled: currentFormValues.transferEnabled,
+					transferAgentId: currentFormValues.transferAgentId,
+					transferType: currentFormValues.transferType,
+				});
+			}, 100);
 		};
 
 		if (!hasInitializedRef.current) {
+			console.log(
+				"%c📌 FIRST TIME INITIALIZATION",
+				"background: #2196F3; color: white; font-size: 14px; padding: 5px;",
+			);
 			hasInitializedRef.current = true;
 			runInitialization();
 			return;
+		} else {
+			console.log(
+				"[Modal Init] ⏭️  Already initialized (hasInitializedRef = true), checking for updates...",
+			);
 		}
 
 		// Handle updated initial lead list while staying on channel selection
@@ -693,6 +854,17 @@ const CampaignModalMain: FC<CampaignModalMainProps> = ({
 			initialLeadListId &&
 			initialLeadListId !== selectedLeadListId
 		) {
+			console.log(
+				"%c🔄 UPDATING LEAD LIST (step 0, different ID)",
+				"background: #FF9800; color: white; font-size: 14px; padding: 5px;",
+			);
+			console.log(
+				"[Modal Update] Changing from",
+				selectedLeadListId,
+				"to",
+				initialLeadListId,
+			);
+
 			setAreaMode("leadList");
 			setSelectedLeadListId(initialLeadListId);
 			customizationForm.setValue("areaMode", "leadList");
@@ -700,6 +872,17 @@ const CampaignModalMain: FC<CampaignModalMainProps> = ({
 			if (abTestingEnabled && !selectedLeadListAId) {
 				setSelectedLeadListAId(initialLeadListId);
 			}
+			console.log("[Modal Update] ✅ Lead list updated");
+		} else {
+			console.log("[Modal Init] No update needed:", {
+				step,
+				initialLeadListId,
+				selectedLeadListId,
+				willUpdate:
+					step === 0 &&
+					initialLeadListId &&
+					initialLeadListId !== selectedLeadListId,
+			});
 		}
 	}, [
 		isOpen,
@@ -744,7 +927,7 @@ const CampaignModalMain: FC<CampaignModalMainProps> = ({
 		}, 0);
 	}, [onOpenChange]);
 
-	const nextStep = async () => {
+	const nextStep = useCallback(async () => {
 		if (step === 1) {
 			const isValid = await customizationForm.trigger();
 			if (!isValid) return;
@@ -757,9 +940,15 @@ const CampaignModalMain: FC<CampaignModalMainProps> = ({
 			}
 		}
 		setStep((s) => s + 1);
-	};
+	}, [
+		step,
+		customizationForm,
+		areaMode,
+		abTestingEnabled,
+		isLeadListSelectionValid,
+	]);
 
-	const prevStep = () => setStep((s) => Math.max(0, s - 1));
+	const prevStep = useCallback(() => setStep((s) => Math.max(0, s - 1)), []);
 
 	const launchCampaign = useCallback(() => {
 		if (launchGuardRef.current) {
@@ -1031,124 +1220,140 @@ const CampaignModalMain: FC<CampaignModalMainProps> = ({
 		registerLaunchedCampaign,
 	]);
 
-	const handleCreateAbTest = (label?: string) => {
-		// Create A/B test variant: mock-launch current setup, then duplicate settings and restart flow
-		console.log("Creating A/B test variant:", label);
-		setAbTestingEnabled(true);
+	const handleCreateAbTest = useCallback(
+		(label?: string) => {
+			// Create A/B test variant: mock-launch current setup, then duplicate settings and restart flow
+			console.log("Creating A/B test variant:", label);
+			setAbTestingEnabled(true);
 
-		// 1) Mock-launch the current campaign so Variant A is recorded
-		try {
-			const nowIso = new Date().toISOString();
-			const mockId = `mock_${Date.now()}`;
-			const normalizedName = campaignName || "Untitled Campaign";
-			const registrationChannel =
-				primaryChannel === "call" ||
-				primaryChannel === "text" ||
-				primaryChannel === "social"
-					? (primaryChannel as "call" | "text" | "social")
-					: primaryChannel === "directmail"
-						? ("direct" as const)
-						: ("email" as const);
+			// 1) Mock-launch the current campaign so Variant A is recorded
+			try {
+				const nowIso = new Date().toISOString();
+				const mockId = `mock_${Date.now()}`;
+				const normalizedName = campaignName || "Untitled Campaign";
+				const registrationChannel =
+					primaryChannel === "call" ||
+					primaryChannel === "text" ||
+					primaryChannel === "social"
+						? (primaryChannel as "call" | "text" | "social")
+						: primaryChannel === "directmail"
+							? ("direct" as const)
+							: ("email" as const);
 
-			switch (registrationChannel) {
-				case "call":
-				case "text":
-				case "social": {
-					const mockCallCampaign: CallCampaign = {
-						id: mockId,
-						name: normalizedName,
-						goal: campaignGoal || undefined,
-						status: "queued",
-						startDate: nowIso,
-						callInformation: [],
-						callerNumber: "",
-						receiverNumber: "",
-						duration: 0,
-						callType: "outbound",
-						calls: 0,
-						inQueue: 0,
-						leads: 0,
-						voicemail: 0,
-						hungUp: 0,
-						dead: 0,
-						wrongNumber: 0,
-						inactiveNumbers: 0,
-						dnc: 0,
-						endedReason: [],
-					};
-					registerLaunchedCampaign({
-						channel: registrationChannel,
-						campaign: mockCallCampaign,
-					});
-					break;
+				switch (registrationChannel) {
+					case "call":
+					case "text":
+					case "social": {
+						const mockCallCampaign: CallCampaign = {
+							id: mockId,
+							name: normalizedName,
+							goal: undefined,
+							status: "queued",
+							startDate: nowIso,
+							callInformation: [],
+							callerNumber: "",
+							receiverNumber: "",
+							duration: 0,
+							callType: "outbound",
+							calls: 0,
+							inQueue: 0,
+							leads: 0,
+							voicemail: 0,
+							hungUp: 0,
+							dead: 0,
+							wrongNumber: 0,
+							inactiveNumbers: 0,
+							dnc: 0,
+							endedReason: [],
+						};
+						registerLaunchedCampaign({
+							channel: registrationChannel,
+							campaign: mockCallCampaign,
+						});
+						break;
+					}
+					case "email": {
+						const mockEmailCampaign: EmailCampaign = {
+							id: mockId,
+							name: normalizedName,
+							goal: undefined,
+							status: "queued",
+							startDate: nowIso,
+							emails: [],
+							senderEmail: "",
+							recipientCount: 0,
+							sentCount: 0,
+							deliveredCount: 0,
+							openedCount: 0,
+							bouncedCount: 0,
+							failedCount: 0,
+						};
+						registerLaunchedCampaign({
+							channel: "email",
+							campaign: mockEmailCampaign,
+						});
+						break;
+					}
+					case "direct": {
+						const directCampaign: DirectMailCampaign = {
+							id: mockId,
+							name: normalizedName,
+							status: "queued",
+							startDate: nowIso,
+							template: { id: `tmpl_${mockId}`, name: normalizedName },
+							mailType: "letter",
+							mailSize: "8.5x11",
+							addressVerified: false,
+							expectedDeliveryAt: new Date(
+								Date.now() + 7 * 24 * 60 * 60 * 1000,
+							).toISOString(),
+							lastEventAt: nowIso,
+							deliveredCount: 0,
+							returnedCount: 0,
+							failedCount: 0,
+							cost: 0,
+							leadsDetails: [],
+							lob: null,
+						};
+						registerLaunchedCampaign({
+							channel: "direct",
+							campaign: directCampaign,
+						});
+						break;
+					}
 				}
-				case "email": {
-					const mockEmailCampaign: EmailCampaign = {
-						id: mockId,
-						name: normalizedName,
-						goal: campaignGoal || undefined,
-						status: "queued",
-						startDate: nowIso,
-						emails: [],
-						senderEmail: "",
-						recipientCount: 0,
-						sentCount: 0,
-						deliveredCount: 0,
-						openedCount: 0,
-						bouncedCount: 0,
-						failedCount: 0,
-					};
-					registerLaunchedCampaign({
-						channel: "email",
-						campaign: mockEmailCampaign,
-					});
-					break;
-				}
-				case "direct": {
-					const directCampaign: DirectMailCampaign = {
-						id: mockId,
-						name: normalizedName,
-						status: "queued",
-						startDate: nowIso,
-						template: { id: `tmpl_${mockId}`, name: normalizedName },
-						mailType: "letter",
-						mailSize: "8.5x11",
-						addressVerified: false,
-						expectedDeliveryAt: new Date(
-							Date.now() + 7 * 24 * 60 * 60 * 1000,
-						).toISOString(),
-						lastEventAt: nowIso,
-						deliveredCount: 0,
-						returnedCount: 0,
-						failedCount: 0,
-						cost: 0,
-						leadsDetails: [],
-						lob: null,
-					};
-					registerLaunchedCampaign({
-						channel: "direct",
-						campaign: directCampaign,
-					});
-					break;
-				}
+			} catch {}
+
+			// 2) Prepare variant B name and restart flow
+			const variantLabel = (label || "Variant B").trim();
+			if (campaignName) {
+				// Remove any existing variant suffix to avoid duplications
+				const base = campaignName.replace(/\s*\(Variant[^)]*\)$/i, "").trim();
+				setCampaignName(`${base} (${variantLabel})`);
 			}
-		} catch {}
-
-		// 2) Prepare variant B name and restart flow
-		const variantLabel = (label || "Variant B").trim();
-		if (campaignName) {
-			// Remove any existing variant suffix to avoid duplications
-			const base = campaignName.replace(/\s*\(Variant[^)]*\)$/i, "").trim();
-			setCampaignName(`${base} (${variantLabel})`);
-		}
-		// If user had a single lead list selected, seed Variant A with it
-		if (areaMode === "leadList" && selectedLeadListId && !selectedLeadListAId) {
-			setSelectedLeadListAId(selectedLeadListId);
-			setSelectedLeadListId("");
-		}
-		// Reset to step 0 to start new campaign creation flow with same settings
-		setStep(0);
-	};
+			// If user had a single lead list selected, seed Variant A with it
+			if (
+				areaMode === "leadList" &&
+				selectedLeadListId &&
+				!selectedLeadListAId
+			) {
+				setSelectedLeadListAId(selectedLeadListId);
+				setSelectedLeadListId("");
+			}
+			// Reset to step 0 to start new campaign creation flow with same settings
+			setStep(0);
+		},
+		[
+			campaignName,
+			primaryChannel,
+			registerLaunchedCampaign,
+			setAbTestingEnabled,
+			areaMode,
+			selectedLeadListId,
+			setSelectedLeadListAId,
+			setSelectedLeadListId,
+		],
+	);
 
 	const handleEvaluate = useCallback(
 		async (criteria: {

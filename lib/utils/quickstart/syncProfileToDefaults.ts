@@ -5,8 +5,8 @@
  * the QuickStart wizard automatically knows their persona preference.
  */
 
-import { useEffect } from "react";
 import { useUserProfileStore } from "@/lib/stores/user/userProfile";
+import { useEffect } from "react";
 import { createQuickStartDefaults } from "./setPersonaDefaults";
 
 /**

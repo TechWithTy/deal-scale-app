@@ -38,3 +38,24 @@ next-env.d.ts
 /node_modules
 # Also ignore nested node_modules anywhere in the repo
 **/node_modules/
+
+# Logs
+logs
+*.log
+dev-debug.log
+# Dependency directories
+node_modules/
+# Environment variables
+# Editor directories and files
+.idea
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+# OS specific
+
+# Task files
+# tasks.json
+# tasks/ 

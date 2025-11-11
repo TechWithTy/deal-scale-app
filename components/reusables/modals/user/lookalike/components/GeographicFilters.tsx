@@ -6,12 +6,14 @@
 
 "use client";
 
-import { UseFormReturn } from "react-hook-form";
 import { AccordionContent } from "@/components/ui/accordion";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import { US_STATES, type FormValues } from "../types";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import type { UseFormReturn } from "react-hook-form";
+import { type FormValues, US_STATES } from "../types";
+import { GeographicAdvanced } from "./advanced/GeographicAdvanced";
+import { GeographicEfficiency } from "./advanced/GeographicEfficiency";
 
 interface GeographicFiltersProps {
 	form: UseFormReturn<FormValues>;
@@ -26,7 +28,7 @@ export function GeographicFilters({ form }: GeographicFiltersProps) {
 		<AccordionContent className="space-y-4 pt-4">
 			<div>
 				<Label>Include States (select multiple)</Label>
-				<div className="grid grid-cols-5 gap-2 mt-2 max-h-[200px] overflow-y-auto border rounded p-2">
+				<div className="mt-2 grid max-h-[200px] grid-cols-3 gap-2 overflow-y-auto rounded border p-2 sm:grid-cols-4 md:grid-cols-5">
 					{US_STATES.map((state) => (
 						<label key={state} className="flex items-center gap-2">
 							<Checkbox
@@ -47,7 +49,7 @@ export function GeographicFilters({ form }: GeographicFiltersProps) {
 				</div>
 			</div>
 
-			<div className="grid grid-cols-2 gap-4">
+			<div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
 				<div>
 					<Label htmlFor="cities">Cities (comma-separated)</Label>
 					<Input
@@ -67,7 +69,7 @@ export function GeographicFilters({ form }: GeographicFiltersProps) {
 				</div>
 			</div>
 
-			<div className="grid grid-cols-2 gap-4">
+			<div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
 				<div>
 					<Label htmlFor="radiusAddress">Radius Search Address</Label>
 					<Input
@@ -96,6 +98,10 @@ export function GeographicFilters({ form }: GeographicFiltersProps) {
 					placeholder="Los Angeles, New York"
 				/>
 			</div>
+
+			{/* Geographic-Specific Nested Options */}
+			<GeographicEfficiency form={form} />
+			<GeographicAdvanced form={form} />
 		</AccordionContent>
 	);
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import { MainEmployeeForm } from "@/components/forms/steppers/employee-form/MainEmployeeForm";
 import {
 	Dialog,
 	DialogContent,
@@ -7,7 +8,6 @@ import {
 	DialogTitle,
 } from "@/components/ui/dialog";
 import type { TeamMember } from "@/types/userProfile";
-import { MainEmployeeForm } from "@/components/forms/steppers/employee-form/MainEmployeeForm";
 import type { TeamMemberUpdatePasswordFormValues } from "@/types/zod/userSetup/team-member-form-schema";
 
 function toFormValues(

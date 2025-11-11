@@ -1,5 +1,5 @@
 import type React from "react";
-import { useRef, useEffect } from "react";
+import { useEffect, useRef } from "react";
 import Teleprompter, {
 	type TeleprompterProps,
 	type TeleprompterHandle,
@@ -48,7 +48,7 @@ const TeleprompterFullScreen: React.FC<TeleprompterFullScreenProps> = ({
 				<button
 					onClick={onClose}
 					type="button"
-					className="absolute right-4 top-4 z-10 rounded-full bg-muted p-2 hover:bg-muted/80"
+					className="absolute top-4 right-4 z-10 rounded-full bg-muted p-2 hover:bg-muted/80"
 					aria-label="Close Full Screen Teleprompter"
 				>
 					<span className="text-xl">×</span>

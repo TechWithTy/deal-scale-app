@@ -1,11 +1,11 @@
 import type { ScoreCard } from "external/ai-summary-expandable/components";
+import type { LeadSummaryMetrics, SummaryPayload } from "./types";
 import {
 	clampScore,
 	formatCurrency,
 	formatNumber,
 	formatPercent,
 } from "./utils";
-import type { LeadSummaryMetrics, SummaryPayload } from "./types";
 
 const wholesalerTier = (score: number) =>
 	score >= 70 ? "High" : score >= 50 ? "Medium" : "Low";

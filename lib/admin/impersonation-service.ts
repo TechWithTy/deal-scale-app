@@ -1,15 +1,15 @@
-import { z } from "zod";
-import { getUserById, users } from "@/lib/mock-db";
 import {
 	identitySchema,
 	impersonationResponseSchema,
 	sessionUserSchema,
 } from "@/lib/impersonation/session-schemas";
+import { getUserById, users } from "@/lib/mock-db";
 import type {
 	ImpersonationSessionPayload,
 	ImpersonationSessionUserSnapshot,
 } from "@/types/impersonation";
 import type { User, UserRole } from "@/types/user";
+import { z } from "zod";
 
 const START_SCHEMA = z.object({
 	userId: z.string().min(1, "Target user id is required"),

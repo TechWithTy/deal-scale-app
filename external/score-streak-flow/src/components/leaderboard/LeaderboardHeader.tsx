@@ -1,5 +1,4 @@
 import { motion } from "framer-motion";
-import { ThemeToggle } from "@root/components/ui/theme-toggle";
 import { Badge } from "@root/components/ui/badge";
 import { Wifi, WifiOff, RefreshCw } from "lucide-react";
 import { Button } from "@root/components/ui/button";
@@ -32,23 +31,17 @@ export const LeaderboardHeader = ({
 			}}
 			className="space-y-4 text-center"
 		>
-			<div className="flex items-start justify-between">
-				<div className="flex-1" />
-				<div className="text-center">
-					<h1 className="bg-gradient-primary bg-clip-text font-bold text-4xl text-transparent md:text-6xl">
-						Live Leaderboard
-					</h1>
-					<p className="mt-2 text-lg text-muted-foreground">
-						Real-time competitive rankings with AI predictions
-					</p>
-				</div>
-				<div className="flex flex-1 justify-end">
-					<ThemeToggle />
-				</div>
+			<div className="text-center">
+				<h1 className="bg-gradient-primary bg-clip-text font-bold text-2xl text-transparent sm:text-3xl md:text-4xl lg:text-6xl">
+					Live Leaderboard
+				</h1>
+				<p className="mt-2 text-sm text-muted-foreground sm:text-base md:text-lg">
+					Real-time competitive rankings with AI predictions
+				</p>
 			</div>
 
 			{/* Connection Status */}
-			<div className="flex items-center justify-center gap-4">
+			<div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3 md:gap-4">
 				<Badge
 					variant={isConnected ? "default" : "destructive"}
 					className="flex items-center gap-2"
@@ -69,7 +62,7 @@ export const LeaderboardHeader = ({
 
 				<span
 					suppressHydrationWarning
-					className="text-muted-foreground text-sm"
+					className="text-muted-foreground text-xs sm:text-sm"
 				>
 					Last updated: {formatTime(lastUpdated)}
 				</span>

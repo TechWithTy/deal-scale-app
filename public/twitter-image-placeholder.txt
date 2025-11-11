@@ -1,0 +1,17 @@
+TODO: Replace with actual Twitter card image
+
+Specifications for twitter-image.jpg:
+- Dimensions: 1200 x 675 pixels (16:9 ratio)
+- Format: JPG or PNG
+- File size: < 5MB (but aim for < 1MB)
+- Content: Deal Scale branding optimized for Twitter
+- Text: Clear, readable value proposition
+- Include: Logo, professional design
+
+Twitter card validator:
+- Test at: https://cards-dev.twitter.com/validator
+
+Once created, save as /public/twitter-image.jpg
+
+
+

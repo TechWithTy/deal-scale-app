@@ -1,13 +1,18 @@
-import React, { useEffect, useMemo, useState, type FC } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import {
 	Dialog,
 	DialogContent,
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
+import {
+	FormControl,
+	FormField,
+	FormItem,
+	FormLabel,
+	FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 import {
 	Popover,
 	PopoverContent,
@@ -20,30 +25,25 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { Plus, Sparkles, Trash2 } from "lucide-react";
-import {
-	FormControl,
-	FormField,
-	FormItem,
-	FormLabel,
-	FormMessage,
-} from "@/components/ui/form";
-import { InfoCircledIcon } from "@radix-ui/react-icons";
+import { Textarea } from "@/components/ui/textarea";
 import {
 	Tooltip,
 	TooltipContent,
 	TooltipProvider,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { FormProvider, useForm, type UseFormReturn } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import AllRecipientDropdown from "@/external/ai-avatar-dropdown/AllRecipientDropdown";
 import { useCampaignCreationStore } from "@/lib/stores/campaignCreation";
 import {
-	finalizeCampaignSchema,
 	type FinalizeCampaignForm,
+	finalizeCampaignSchema,
 } from "@/types/zod/campaign-finalize-schema";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { InfoCircledIcon } from "@radix-ui/react-icons";
+import { Plus, Sparkles, Trash2 } from "lucide-react";
+import React, { useEffect, useMemo, useState, type FC } from "react";
+import { FormProvider, type UseFormReturn, useForm } from "react-hook-form";
 import { toast } from "sonner";
-import AllRecipientDropdown from "@/external/ai-avatar-dropdown/AllRecipientDropdown";
 
 interface FinalizeCampaignStepProps {
 	estimatedCredits: number;
@@ -431,6 +431,14 @@ const FinalizeCampaignStep: FC<FinalizeCampaignStepProps> = ({
 							: "Configure your campaign settings to see cost estimate."}
 					</p>
 
+					<Button
+						type="submit"
+						className="w-full"
+						disabled={!form.formState.isValid}
+					>
+						Launch Campaign
+					</Button>
+
 					{blockingIssues.length > 0 && (
 						<div
 							aria-live="polite"
@@ -447,13 +455,65 @@ const FinalizeCampaignStep: FC<FinalizeCampaignStepProps> = ({
 						</div>
 					)}
 
-					<Button
-						type="submit"
-						className="w-full"
-						disabled={!form.formState.isValid}
-					>
-						Launch Campaign
-					</Button>
+					{/* Test Campaign Info Note */}
+					<div className="rounded-lg border border-blue-500/30 bg-blue-500/5 p-3">
+						<div className="flex items-start gap-2">
+							<div className="mt-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-blue-500/20">
+								<svg
+									className="h-3 w-3 text-blue-600 dark:text-blue-400"
+									fill="none"
+									viewBox="0 0 24 24"
+									stroke="currentColor"
+								>
+									<path
+										strokeLinecap="round"
+										strokeLinejoin="round"
+										strokeWidth={2}
+										d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+									/>
+								</svg>
+							</div>
+							<div className="flex-1">
+								<p className="font-medium text-blue-600 text-sm dark:text-blue-400">
+									Test Campaign Info
+								</p>
+								<p className="mt-1 text-muted-foreground text-xs">
+									Tests cost 50% of normal credits and route to your primary
+									number. Transfer-enabled calls go to the configured agent.
+								</p>
+							</div>
+						</div>
+					</div>
+
+					{/* Auto-save Template Note */}
+					<div className="rounded-lg border border-primary/30 bg-primary/5 p-3">
+						<div className="flex items-start gap-2">
+							<div className="mt-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-primary/20">
+								<svg
+									className="h-3 w-3 text-primary"
+									fill="none"
+									viewBox="0 0 24 24"
+									stroke="currentColor"
+								>
+									<path
+										strokeLinecap="round"
+										strokeLinejoin="round"
+										strokeWidth={2}
+										d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+									/>
+								</svg>
+							</div>
+							<div className="flex-1">
+								<p className="font-medium text-primary text-sm">
+									Auto-Saved as Template
+								</p>
+								<p className="mt-1 text-muted-foreground text-xs">
+									This campaign will be automatically saved as a reusable
+									template for future use
+								</p>
+							</div>
+						</div>
+					</div>
 
 					{/* Test and Evaluate controls */}
 					<div className="space-y-2">
@@ -828,11 +888,6 @@ const FinalizeCampaignStep: FC<FinalizeCampaignStepProps> = ({
 								</DialogContent>
 							</Dialog>
 						</div>
-						<p className="px-1 text-muted-foreground text-xs">
-							Tests cost 50% of normal credits and are automatically routed to
-							your primary number. If transfer is enabled, test calls will
-							transfer to the configured agent.
-						</p>
 					</div>
 
 					{onCreateAbTest && (

@@ -1,4 +1,5 @@
 "use client";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 /**
  * UsageMain: Optimized Usage Modal with enhanced UI/UX
  * Displays subscription details, usage metrics, and upgrade options
@@ -6,7 +7,6 @@
 import type React from "react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import PricingComparisonCard from "./PricingComparisonCard";
 import UsageCloseButton from "./UsageCloseButton";
 import UsageModalActions from "./UsageModalActions";
@@ -35,7 +35,7 @@ const UsageModalMain: React.FC = () => {
 		return (
 			<div className="flex min-h-[400px] items-center justify-center">
 				<div className="text-center">
-					<p className="text-gray-900 text-lg font-semibold dark:text-white">
+					<p className="font-semibold text-gray-900 text-lg dark:text-white">
 						Error loading data
 					</p>
 					<p className="mt-2 text-gray-600 text-sm dark:text-gray-400">

@@ -7,6 +7,11 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
+import {
+	Collapsible,
+	CollapsibleContent,
+	CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -17,16 +22,11 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-	Collapsible,
-	CollapsibleContent,
-	CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import { useState } from "react";
-import { Calculator, TrendingUp, User, ChevronDown, Info } from "lucide-react";
 import { cn } from "@/lib/_utils";
-import type { SubscriptionPlan, ROIMetrics } from "../types/analytics";
 import { useSessionStore } from "@/lib/stores/user/useSessionStore";
+import { Calculator, ChevronDown, Info, TrendingUp, User } from "lucide-react";
+import { useState } from "react";
+import type { ROIMetrics, SubscriptionPlan } from "../types/analytics";
 
 // Profit margin multiplier: 120% profit = 2.2x markup
 const PROFIT_MARGIN_MULTIPLIER = 2.2;
@@ -412,7 +412,7 @@ export function ROICalculator() {
 							<div className="space-y-4">
 								<div className="rounded-lg bg-muted p-3 text-sm">
 									<p className="font-medium">Your Profile:</p>
-									<p className="text-muted-foreground mt-1">
+									<p className="mt-1 text-muted-foreground">
 										Persona:{" "}
 										<span className="font-medium text-foreground capitalize">
 											{sessionUser?.quickStartDefaults?.personaId || "Not set"}
@@ -439,19 +439,19 @@ export function ROICalculator() {
 								<div className="space-y-2">
 									<div className="space-y-2">
 										<div className="flex items-center justify-between gap-2">
-											<Label className="text-sm font-medium">
+											<Label className="font-medium text-sm">
 												Quick Benchmarks (Team Size):
 											</Label>
 											<div className="rounded-md bg-primary/10 px-2 py-1">
-												<span className="text-xs font-medium text-primary">
+												<span className="font-medium text-primary text-xs">
 													{sessionUser?.tier || "Basic"} Tier
 												</span>
 											</div>
 										</div>
 										{selectedBenchmark && (
 											<div className="flex items-center gap-2">
-												<span className="text-xs font-medium text-primary bg-primary/20 px-2 py-1 rounded capitalize inline-flex items-center gap-1">
-													<span className="h-2 w-2 rounded-full bg-primary animate-pulse" />
+												<span className="inline-flex items-center gap-1 rounded bg-primary/20 px-2 py-1 font-medium text-primary text-xs capitalize">
+													<span className="h-2 w-2 animate-pulse rounded-full bg-primary" />
 													{selectedBenchmark === "enterprise"
 														? "Enterprise"
 														: selectedBenchmark}{" "}
@@ -472,7 +472,7 @@ export function ROICalculator() {
 											)}
 										>
 											<p className="font-semibold text-sm">Small Team</p>
-											<p className="text-xs text-muted-foreground mt-1">
+											<p className="mt-1 text-muted-foreground text-xs">
 												3-4 deals/mo
 											</p>
 										</button>
@@ -487,7 +487,7 @@ export function ROICalculator() {
 											)}
 										>
 											<p className="font-semibold text-sm">Medium Team</p>
-											<p className="text-xs text-muted-foreground mt-1">
+											<p className="mt-1 text-muted-foreground text-xs">
 												5-8 deals/mo
 											</p>
 										</button>
@@ -502,7 +502,7 @@ export function ROICalculator() {
 											)}
 										>
 											<p className="font-semibold text-sm">Enterprise</p>
-											<p className="text-xs text-muted-foreground mt-1">
+											<p className="mt-1 text-muted-foreground text-xs">
 												10-15 deals/mo
 											</p>
 										</button>
@@ -510,21 +510,21 @@ export function ROICalculator() {
 
 									{/* Benchmark Details Collapsible */}
 									<Collapsible>
-										<CollapsibleTrigger className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors w-full justify-center py-2">
+										<CollapsibleTrigger className="flex w-full items-center justify-center gap-2 py-2 text-muted-foreground text-xs transition-colors hover:text-foreground">
 											<Info className="h-3 w-3" />
 											View benchmark details & tier pricing
 											<ChevronDown className="h-3 w-3" />
 										</CollapsibleTrigger>
 										<CollapsibleContent className="mt-2">
-											<div className="rounded-lg border bg-muted/50 p-3 text-xs space-y-3">
+											<div className="space-y-3 rounded-lg border bg-muted/50 p-3 text-xs">
 												{/* Tier Pricing Info */}
-												<div className="rounded-md bg-primary/10 p-2 mb-2">
-													<p className="font-semibold text-primary mb-1">
+												<div className="mb-2 rounded-md bg-primary/10 p-2">
+													<p className="mb-1 font-semibold text-primary">
 														Your Tier: {sessionUser?.tier || "Basic"}
 													</p>
 													<div className="space-y-2">
 														<div>
-															<p className="text-xs font-semibold text-primary uppercase">
+															<p className="font-semibold text-primary text-xs uppercase">
 																Communication
 															</p>
 															<div className="grid grid-cols-2 gap-x-4 gap-y-1 text-muted-foreground text-xs">
@@ -559,7 +559,7 @@ export function ROICalculator() {
 															</div>
 														</div>
 														<div>
-															<p className="text-xs font-semibold text-primary uppercase">
+															<p className="font-semibold text-primary text-xs uppercase">
 																Data Enrichment
 															</p>
 															<div className="grid grid-cols-2 gap-x-4 gap-y-1 text-muted-foreground text-xs">
@@ -614,7 +614,7 @@ export function ROICalculator() {
 
 												{/* Benchmark Details */}
 												<div>
-													<p className="font-semibold text-foreground mb-1">
+													<p className="mb-1 font-semibold text-foreground">
 														Small Team (3-4 deals/mo)
 													</p>
 													<div className="grid grid-cols-2 gap-x-4 gap-y-1 text-muted-foreground">
@@ -626,7 +626,7 @@ export function ROICalculator() {
 													</div>
 												</div>
 												<div>
-													<p className="font-semibold text-foreground mb-1">
+													<p className="mb-1 font-semibold text-foreground">
 														Medium Team (5-8 deals/mo)
 													</p>
 													<div className="grid grid-cols-2 gap-x-4 gap-y-1 text-muted-foreground">
@@ -638,7 +638,7 @@ export function ROICalculator() {
 													</div>
 												</div>
 												<div>
-													<p className="font-semibold text-foreground mb-1">
+													<p className="mb-1 font-semibold text-foreground">
 														Enterprise (10-15 deals/mo)
 													</p>
 													<div className="grid grid-cols-2 gap-x-4 gap-y-1 text-muted-foreground">
@@ -668,7 +668,7 @@ export function ROICalculator() {
 											setSelectedBenchmark(null); // Clear benchmark when manually editing
 										}}
 									/>
-									<p className="text-xs text-muted-foreground">
+									<p className="text-muted-foreground text-xs">
 										Based on your{" "}
 										{sessionUser?.quickStartDefaults?.personaId || "profile"}
 									</p>
@@ -775,14 +775,14 @@ export function ROICalculator() {
 											setMonthlyOverhead(handleNumericInput(e.target.value))
 										}
 									/>
-									<p className="text-xs text-muted-foreground">
+									<p className="text-muted-foreground text-xs">
 										Office, staff, utilities, etc.
 									</p>
 								</div>
 
 								<div className="rounded-lg border p-3 text-sm">
 									<p className="font-medium">Projected Activity:</p>
-									<p className="text-muted-foreground mt-1">
+									<p className="mt-1 text-muted-foreground">
 										Total Deals:{" "}
 										<span className="font-medium text-foreground">
 											{(
@@ -816,7 +816,7 @@ export function ROICalculator() {
 											})}
 											h
 										</span>
-										<span className="text-xs ml-1">(70% automation)</span>
+										<span className="ml-1 text-xs">(70% automation)</span>
 									</p>
 								</div>
 							</div>
@@ -824,7 +824,7 @@ export function ROICalculator() {
 							{/* Results Section */}
 							<div className="space-y-4">
 								{/* ROI Highlight Card */}
-								<div className="rounded-lg border-2 border-green-500/40 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 p-5">
+								<div className="rounded-lg border-2 border-green-500/40 bg-gradient-to-br from-green-50 to-emerald-50 p-5 dark:from-green-950/30 dark:to-emerald-950/30">
 									<div className="flex items-center justify-between">
 										<div className="flex items-center gap-3">
 											<TrendingUp
@@ -835,7 +835,7 @@ export function ROICalculator() {
 														: "text-red-600 dark:text-red-500",
 												)}
 											/>
-											<span className="font-semibold text-lg text-green-700 dark:text-green-400">
+											<span className="font-semibold text-green-700 text-lg dark:text-green-400">
 												ROI
 											</span>
 										</div>
@@ -857,12 +857,12 @@ export function ROICalculator() {
 								</div>
 
 								{/* Financial Summary */}
-								<div className="rounded-lg bg-muted p-4 space-y-2">
-									<div className="flex items-center justify-between mb-2 pb-2 border-b border-border">
-										<span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+								<div className="space-y-2 rounded-lg bg-muted p-4">
+									<div className="mb-2 flex items-center justify-between border-border border-b pb-2">
+										<span className="font-semibold text-muted-foreground text-xs uppercase tracking-wide">
 											Financial Breakdown
 										</span>
-										<span className="text-xs font-medium text-primary bg-primary/10 px-2 py-0.5 rounded">
+										<span className="rounded bg-primary/10 px-2 py-0.5 font-medium text-primary text-xs">
 											{sessionUser?.tier || "Basic"} Tier
 										</span>
 									</div>
@@ -887,7 +887,7 @@ export function ROICalculator() {
 										</span>
 									</div>
 									<Collapsible>
-										<CollapsibleTrigger className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors py-1">
+										<CollapsibleTrigger className="flex items-center gap-1 py-1 text-muted-foreground text-xs transition-colors hover:text-foreground">
 											<ChevronDown className="h-3 w-3" />
 											View cost breakdown
 										</CollapsibleTrigger>
@@ -909,7 +909,7 @@ export function ROICalculator() {
 													</span>
 												</div>
 												<div className="flex items-center justify-between text-xs">
-													<span className="text-muted-foreground text-[11px] italic">
+													<span className="text-[11px] text-muted-foreground italic">
 														• Includes{" "}
 														{(
 															planCosts[
@@ -925,7 +925,7 @@ export function ROICalculator() {
 													</span>
 												</div>
 											</div>
-											<div className="flex items-center justify-between text-xs pl-4">
+											<div className="flex items-center justify-between pl-4 text-xs">
 												<span className="text-muted-foreground">
 													Campaign Overages:
 												</span>
@@ -943,7 +943,7 @@ export function ROICalculator() {
 													).toLocaleString()}
 												</span>
 											</div>
-											<div className="flex items-center justify-between text-xs pl-4">
+											<div className="flex items-center justify-between pl-4 text-xs">
 												<span className="text-muted-foreground">Overhead:</span>
 												<span className="font-medium">
 													$
@@ -955,7 +955,7 @@ export function ROICalculator() {
 											</div>
 										</CollapsibleContent>
 									</Collapsible>
-									<div className="h-px bg-border my-2" />
+									<div className="my-2 h-px bg-border" />
 									<div className="flex items-center justify-between">
 										<span className="font-medium">Net Profit</span>
 										<span
@@ -973,11 +973,11 @@ export function ROICalculator() {
 
 								{/* Highlighted Metrics - Profit & Time Saved */}
 								<div className="grid grid-cols-2 gap-4">
-									<div className="rounded-lg border-2 border-green-500/30 bg-green-50 dark:bg-green-950/20 p-4">
-										<p className="text-xs font-medium text-green-700 dark:text-green-400 uppercase tracking-wide">
+									<div className="rounded-lg border-2 border-green-500/30 bg-green-50 p-4 dark:bg-green-950/20">
+										<p className="font-medium text-green-700 text-xs uppercase tracking-wide dark:text-green-400">
 											💰 Profit/Deal
 										</p>
-										<p className="font-bold text-3xl text-green-600 dark:text-green-500 mt-2">
+										<p className="mt-2 font-bold text-3xl text-green-600 dark:text-green-500">
 											$
 											{(
 												profileMetrics.netProfit /
@@ -989,18 +989,18 @@ export function ROICalculator() {
 											})}
 										</p>
 									</div>
-									<div className="rounded-lg border-2 border-blue-500/30 bg-blue-50 dark:bg-blue-950/20 p-4">
-										<p className="text-xs font-medium text-blue-700 dark:text-blue-400 uppercase tracking-wide">
+									<div className="rounded-lg border-2 border-blue-500/30 bg-blue-50 p-4 dark:bg-blue-950/20">
+										<p className="font-medium text-blue-700 text-xs uppercase tracking-wide dark:text-blue-400">
 											⏱️ Time Saved
 										</p>
-										<p className="font-bold text-3xl text-blue-600 dark:text-blue-500 mt-2">
+										<p className="mt-2 font-bold text-3xl text-blue-600 dark:text-blue-500">
 											{profileMetrics.totalTimeSaved.toLocaleString("en-US", {
 												minimumFractionDigits: 0,
 												maximumFractionDigits: 0,
 											})}
 											h
 										</p>
-										<p className="text-xs text-blue-600/70 dark:text-blue-400/70 mt-1">
+										<p className="mt-1 text-blue-600/70 text-xs dark:text-blue-400/70">
 											{(profileMetrics.totalTimeSaved / 8).toLocaleString(
 												"en-US",
 												{
@@ -1016,34 +1016,34 @@ export function ROICalculator() {
 								{/* Additional Metrics */}
 								<div className="grid grid-cols-2 gap-3">
 									<div className="rounded-lg border p-3">
-										<p className="text-xs text-muted-foreground">Cost/Lead</p>
+										<p className="text-muted-foreground text-xs">Cost/Lead</p>
 										<p className="font-bold text-lg">
 											${profileMetrics.costPerLead.toFixed(2)}
 										</p>
 									</div>
 									<div className="rounded-lg border p-3">
-										<p className="text-xs text-muted-foreground">Cost/Deal</p>
+										<p className="text-muted-foreground text-xs">Cost/Deal</p>
 										<p className="font-bold text-lg">
 											${profileMetrics.costPerConversion.toFixed(2)}
 										</p>
 									</div>
 									<div className="rounded-lg border p-3">
-										<p className="text-xs text-muted-foreground">Deal Cycle</p>
+										<p className="text-muted-foreground text-xs">Deal Cycle</p>
 										<p className="font-bold text-lg">
 											{Number(avgDaysToClose) || 0}d
 										</p>
 									</div>
 									<div className="rounded-lg border p-3">
-										<p className="text-xs text-muted-foreground">
+										<p className="text-muted-foreground text-xs">
 											Time/Deal Saved
 										</p>
-										<p className="font-bold text-lg text-blue-600 dark:text-blue-500">
+										<p className="font-bold text-blue-600 text-lg dark:text-blue-500">
 											{((Number(hoursPerDealManual) || 0) * 0.7).toFixed(1)}h
 										</p>
 									</div>
 								</div>
 
-								<div className="rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 p-3 text-xs">
+								<div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs dark:border-amber-800 dark:bg-amber-950/20">
 									<span className="text-amber-600 dark:text-amber-400">
 										💡 <strong>Tip:</strong> Based on your profile, we estimate
 										nurturing campaigns with consistent follow-up touchpoints
@@ -1067,9 +1067,9 @@ export function ROICalculator() {
 						<div className="grid gap-6 md:grid-cols-2">
 							{/* Input Section */}
 							<div className="space-y-4">
-								<div className="rounded-lg bg-muted p-3 text-sm mb-4">
+								<div className="mb-4 rounded-lg bg-muted p-3 text-sm">
 									<p className="font-medium">Current Tier:</p>
-									<p className="text-muted-foreground mt-1">
+									<p className="mt-1 text-muted-foreground">
 										You are on the{" "}
 										<span className="font-medium text-foreground capitalize">
 											{sessionUser?.tier || "Basic"}
@@ -1192,23 +1192,23 @@ export function ROICalculator() {
 
 							{/* Results Section */}
 							<div className="space-y-4">
-								<div className="rounded-lg bg-muted p-4 space-y-3">
-									<div className="flex items-center justify-between mb-2 pb-2 border-b border-border">
-										<span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+								<div className="space-y-3 rounded-lg bg-muted p-4">
+									<div className="mb-2 flex items-center justify-between border-border border-b pb-2">
+										<span className="font-semibold text-muted-foreground text-xs uppercase tracking-wide">
 											Financial Summary
 										</span>
-										<span className="text-xs font-medium text-primary bg-primary/10 px-2 py-0.5 rounded capitalize">
+										<span className="rounded bg-primary/10 px-2 py-0.5 font-medium text-primary text-xs capitalize">
 											{plan} Tier
 										</span>
 									</div>
 									<div className="flex items-center justify-between">
-										<span className="text-sm font-medium">Total Revenue</span>
-										<span className="font-bold text-lg text-green-600 dark:text-green-500">
+										<span className="font-medium text-sm">Total Revenue</span>
+										<span className="font-bold text-green-600 text-lg dark:text-green-500">
 											${metrics.totalRevenue.toLocaleString()}
 										</span>
 									</div>
 									<div className="flex items-center justify-between">
-										<span className="text-sm font-medium">Total Cost</span>
+										<span className="font-medium text-sm">Total Cost</span>
 										<span className="font-bold text-lg text-red-600 dark:text-red-500">
 											${metrics.totalCost.toLocaleString()}
 										</span>
@@ -1277,7 +1277,7 @@ export function ROICalculator() {
 									</div>
 								</div>
 
-								<div className="rounded-lg bg-primary/10 p-3 text-xs text-muted-foreground">
+								<div className="rounded-lg bg-primary/10 p-3 text-muted-foreground text-xs">
 									💡 <strong>Tip:</strong> A positive ROI indicates profitable
 									campaigns. Aim for ROI above 100% for sustainable growth.
 								</div>

@@ -22,13 +22,13 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import { useUserProfileStore } from "@/lib/stores/user/userProfile";
 import { useRemainingLeads, useUserStore } from "@/lib/stores/userStore";
+import type { LeadList } from "@/types/_dashboard/leadList";
 import type { LeadTypeGlobal } from "@/types/_dashboard/leads";
 import type {
 	Property,
 	RealtorProperty,
 	RentCastProperty,
 } from "@/types/_dashboard/property";
-import type { LeadList } from "@/types/_dashboard/leadList";
 
 // * Correct Type Guards for Property union type
 const isRealtorProperty = (p: Property): p is RealtorProperty =>

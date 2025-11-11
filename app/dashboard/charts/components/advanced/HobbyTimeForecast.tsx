@@ -8,8 +8,8 @@ import {
 	CardTitle,
 } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { PartyPopper, TrendingUp, Calendar } from "lucide-react";
 import { cn } from "@/lib/_utils";
+import { Calendar, PartyPopper, TrendingUp } from "lucide-react";
 import type { HobbyTimeMetrics } from "../../types/advanced-analytics";
 
 interface HobbyTimeForecastProps {
@@ -43,32 +43,32 @@ export function HobbyTimeForecast({ data }: HobbyTimeForecastProps) {
 				{/* Main Metric */}
 				<div className="mb-6 text-center">
 					<div className="mb-2 text-6xl">{emoji}</div>
-					<p className="font-bold text-4xl text-primary mb-1">
+					<p className="mb-1 font-bold text-4xl text-primary">
 						{data.totalHoursSaved}
 					</p>
-					<p className="text-sm text-muted-foreground mb-3">
+					<p className="mb-3 text-muted-foreground text-sm">
 						hours saved this month
 					</p>
-					<p className="text-lg font-semibold capitalize">
+					<p className="font-semibold text-lg capitalize">
 						≈ {data.sessionsEnabled} {data.hobbyType} sessions
 					</p>
 				</div>
 
 				{/* Stats Grid */}
-				<div className="grid grid-cols-2 gap-4 mb-6">
+				<div className="mb-6 grid grid-cols-2 gap-4">
 					<div className="rounded-lg border p-3 text-center">
-						<Calendar className="h-4 w-4 mx-auto mb-2 text-muted-foreground" />
+						<Calendar className="mx-auto mb-2 h-4 w-4 text-muted-foreground" />
 						<p className="font-bold text-2xl text-primary">
 							{data.nextMonthForecast}h
 						</p>
-						<p className="text-xs text-muted-foreground">
+						<p className="text-muted-foreground text-xs">
 							Forecasted next month
 						</p>
 					</div>
 					<div className="rounded-lg border p-3 text-center">
 						<TrendingUp
 							className={cn(
-								"h-4 w-4 mx-auto mb-2",
+								"mx-auto mb-2 h-4 w-4",
 								isPositiveTrend
 									? "text-green-600 dark:text-green-500"
 									: "text-red-600 dark:text-red-500",
@@ -85,7 +85,7 @@ export function HobbyTimeForecast({ data }: HobbyTimeForecastProps) {
 							{isPositiveTrend ? "+" : ""}
 							{data.monthlyTrend}%
 						</p>
-						<p className="text-xs text-muted-foreground">Monthly trend</p>
+						<p className="text-muted-foreground text-xs">Monthly trend</p>
 					</div>
 				</div>
 
@@ -103,8 +103,8 @@ export function HobbyTimeForecast({ data }: HobbyTimeForecastProps) {
 				</div>
 
 				{/* Motivational Message */}
-				<div className="mt-6 rounded-lg bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 p-4">
-					<p className="font-medium text-sm mb-1">
+				<div className="mt-6 rounded-lg border border-primary/20 bg-gradient-to-r from-primary/10 to-primary/5 p-4">
+					<p className="mb-1 font-medium text-sm">
 						🎉 You're on track for{" "}
 						{Math.round(
 							data.nextMonthForecast /
@@ -112,7 +112,7 @@ export function HobbyTimeForecast({ data }: HobbyTimeForecastProps) {
 						)}{" "}
 						{data.hobbyType} sessions next month!
 					</p>
-					<p className="text-xs text-muted-foreground">
+					<p className="text-muted-foreground text-xs">
 						Your AI automations are giving you back {data.totalHoursSaved} hours
 						of freedom. Keep it up!
 					</p>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { Button } from "@/components/ui/button";
 import {
 	Dialog,
 	DialogContent,
@@ -8,14 +8,14 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import type { KanbanTask } from "@/types/_dashboard/kanban";
 import { useTaskStore } from "@/lib/stores/taskActions";
+import type { KanbanTask } from "@/types/_dashboard/kanban";
+import { useMemo, useState } from "react";
 import { AssignmentTypeDropdown } from "../new-task-dialog/AssignmentTypeDropdown";
 import { LeadDropdown } from "../new-task-dialog/LeadDropdown";
 import { LeadListDropdown } from "../new-task-dialog/LeadListDropdown";
-import { TeamMemberDropdown } from "../new-task-dialog/TeamMemberDropdown";
 import { TaskFormFields } from "../new-task-dialog/TaskFormFields";
+import { TeamMemberDropdown } from "../new-task-dialog/TeamMemberDropdown";
 
 interface EditTaskDialogProps {
 	task: KanbanTask;

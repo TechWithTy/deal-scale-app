@@ -2,8 +2,12 @@ import type { FC } from "react";
 import { useCallback, useEffect, useState } from "react";
 import { useInView } from "react-intersection-observer";
 
-import type { LeadList } from "@/constants/_faker/_api/mockLeadListApi";
-import { fetchFakeLeadLists } from "@/constants/_faker/_api/mockLeadListApi";
+import {
+	FormControl,
+	FormItem,
+	FormLabel,
+	FormMessage,
+} from "@/components/ui/form";
 import {
 	Select,
 	SelectContent,
@@ -11,12 +15,8 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import {
-	FormItem,
-	FormLabel,
-	FormControl,
-	FormMessage,
-} from "@/components/ui/form";
+import type { LeadList } from "@/constants/_faker/_api/mockLeadListApi";
+import { fetchFakeLeadLists } from "@/constants/_faker/_api/mockLeadListApi";
 import { Loader2 } from "lucide-react";
 
 interface LeadListSelectorProps {

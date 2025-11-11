@@ -1,9 +1,9 @@
-import type VoiceClone from "@/public/lottie/RecordingButton.json";
-import type { GetSubAccountPathParams } from "@/types/goHighLevel/subAccounts";
 import type {
 	QuickStartGoalId,
 	QuickStartPersonaId,
 } from "@/lib/config/quickstart/wizardFlows";
+import type VoiceClone from "@/public/lottie/RecordingButton.json";
+import type { GetSubAccountPathParams } from "@/types/goHighLevel/subAccounts";
 import type {
 	BillingHistoryItem,
 	PaymentDetails,
@@ -13,6 +13,7 @@ import type { CallCampaign, SocialMediaCampaign } from "../_dashboard/campaign";
 import type { KanbanState, TaskTracking } from "../_dashboard/kanban";
 import type { LeadList } from "../_dashboard/leadList";
 import type { LeadTypeGlobal } from "../_dashboard/leads";
+import type { VoiceResponse } from "../elevenLabs/api/voices";
 import type {
 	EmailCampaign,
 	EmailCampaignAnalytics,
@@ -21,6 +22,7 @@ import type {
 	GHLTextMessageCampaign,
 	TextMessageCampaignAnalytics,
 } from "../goHighLevel/text";
+import type { AssistantVoice } from "../vapiAi/api/assistant/create";
 import type { CallCampaignAnalytics } from "../vapiAi/api/calls/get";
 import type {
 	FacebookOAuthData,
@@ -28,9 +30,18 @@ import type {
 	LinkedInOAuthData,
 	OAuthData,
 	TwitterOAuthData,
+	GoHighLevelOAuthData,
+	LoftyCRMOAuthData,
+	N8nOAuthData,
+	DiscordOAuthData,
+	KestraOAuthData,
+	SpotifyOAuthData,
+	TwilioOAuthData,
+	AppleHealthOAuthData,
+	DaylioOAuthData,
+	MakeOAuthData,
+	HabiticaOAuthData,
 } from "./connectedAccounts";
-import type { AssistantVoice } from "../vapiAi/api/assistant/create";
-import type { VoiceResponse } from "../elevenLabs/api/voices";
 
 type HexColor = `#${string}`;
 export interface LeadPreferences {
@@ -44,11 +55,75 @@ export interface LeadPreferences {
 export interface SavedSearch {
 	id: string; // Unique identifier for the saved search
 	name: string; // Name of the saved search
+	description?: string; // Optional description
 	searchCriteria: Record<string, unknown>; // The filters/criteria applied for this saved search
 	createdAt: Date; // Date the search was saved
 	updatedAt: Date;
 	priority?: boolean;
-	lookalikeConfig?: any; // Optional lookalike audience configuration
+	isDefault?: boolean; // Is this a default/template search
+	lookalikeConfig?: import("../lookalike").LookalikeConfig; // Optional lookalike audience configuration
+	// User context (for lookalike audiences)
+	userPersona?: QuickStartPersonaId;
+	userGoal?: QuickStartGoalId;
+	// Usage tracking
+	lastUsed?: Date;
+	useCount?: number;
+	// Estimated results
+	estimatedSize?: number;
+}
+
+export interface SavedCampaignTemplate {
+	id: string; // Unique identifier for the saved campaign template
+	name: string; // Name of the campaign template
+	description?: string; // Optional description
+	campaignConfig: {
+		channels: string[]; // ['call', 'sms', 'email', 'social']
+		audience: Record<string, unknown>; // Audience configuration
+		messaging: Record<string, unknown>; // Messaging configuration
+		schedule: Record<string, unknown>; // Schedule configuration
+		budget?: number; // Campaign budget
+		aiPrompt?: string; // The original AI prompt used to generate this template
+		generatedByAI?: boolean; // True if created entirely by AI
+		aiSuggested?: boolean; // True if AI-assisted but user-configured
+	};
+	createdAt: Date; // Date the template was created
+	updatedAt: Date; // Date the template was last updated
+	priority?: boolean; // Is this a priority template
+	lastUsed?: Date; // Last time this template was used
+	useCount?: number; // Number of times this template has been used
+	// Monetization settings
+	monetization?: {
+		enabled: boolean; // Whether this template is monetized/public
+		priceMultiplier: number; // Multiplier between 1-5 for pricing
+		isPublic: boolean; // Whether template is publicly available
+		acceptedTerms: boolean; // Whether creator accepted T&C
+	};
+}
+
+export interface WorkflowPlatformConnection {
+	platform: "n8n" | "make" | "kestra";
+	connected: boolean;
+	apiKey?: string;
+	instanceUrl?: string;
+	connectedAt?: Date;
+}
+
+export interface SavedWorkflow {
+	id: string;
+	name: string;
+	description?: string;
+	platform: "n8n" | "make" | "kestra";
+	workflowConfig: unknown; // Platform-specific JSON/YAML
+	aiPrompt?: string;
+	generatedByAI?: boolean;
+	createdAt: Date;
+	updatedAt: Date;
+	monetization?: {
+		enabled: boolean;
+		priceMultiplier: number;
+		isPublic: boolean;
+		acceptedTerms: boolean;
+	};
 }
 
 export interface Integration {
@@ -178,8 +253,23 @@ export interface CompanyInfo {
 export interface AIKnowledgebase {
 	emailTemplate?: string; // Optional email field
 	salesScript?: string; // Optional sales script field
+	description?: string;
 	assignedAssistantID: string; // e.g., 'female', 'male', 'ai'
 	assignedSquadID: string; // UUID for the assigned squad
+	preferredProvider?: "openai" | "claude" | "gemini" | "dealscale";
+	approvalLevel?: "manual" | "auto" | "turbo";
+	mcpAllowList?: {
+		tools?: string[];
+		words?: string[];
+		phrases?: string[];
+		regexes?: string[];
+	};
+	mcpDenyList?: {
+		tools?: string[];
+		words?: string[];
+		phrases?: string[];
+		regexes?: string[];
+	};
 	recordings: {
 		customVoiceID: string;
 		voiceClone?: {
@@ -240,10 +330,24 @@ export interface UserProfile {
 		instagram?: InstagramOAuthData;
 		linkedIn?: LinkedInOAuthData;
 		twitter?: TwitterOAuthData;
+		goHighLevel?: GoHighLevelOAuthData;
+		loftyCRM?: LoftyCRMOAuthData;
+		n8n?: N8nOAuthData;
+		discord?: DiscordOAuthData;
+		kestra?: KestraOAuthData;
+		spotify?: SpotifyOAuthData;
+		twilio?: TwilioOAuthData;
+		appleHealth?: AppleHealthOAuthData;
+		daylio?: DaylioOAuthData;
+		make?: MakeOAuthData;
+		habitica?: HabiticaOAuthData;
 	}; // List of connected accounts
 	// New fields
 	leadPreferences: LeadPreferences; // Preferences for lead generation
 	savedSearches: SavedSearch[]; // Array of saved searches
+	savedCampaignTemplates: SavedCampaignTemplate[]; // Array of saved campaign templates
+	workflowPlatforms?: WorkflowPlatformConnection[]; // Workflow platform integrations
+	savedWorkflows: SavedWorkflow[]; // Array of saved workflows
 	notificationPreferences: NotificationPreferences; // User notification settings
 	integrations: Integration[]; // Array of connected platforms for integration
 	companyInfo: CompanyInfo;

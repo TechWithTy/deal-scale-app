@@ -1,13 +1,5 @@
 "use client";
-import type { ColumnDef, Table as TanstackTable } from "@tanstack/react-table";
-import type { ReactNode } from "react";
-import { DataTable } from "external/shadcn-table/src/components/data-table/data-table";
-import { useDataTable } from "external/shadcn-table/src/hooks/use-data-table";
-import type { TeamMember } from "@/types/userProfile";
-import { Button } from "@/components/ui/button";
-import { useState } from "react";
 import { AIActionsModal } from "@/components/tables/employee-tables/ai-actions-modal";
-import EmployeeRowModal from "./EmployeeRowModal";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -17,6 +9,14 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+import type { TeamMember } from "@/types/userProfile";
+import type { ColumnDef, Table as TanstackTable } from "@tanstack/react-table";
+import { DataTable } from "external/shadcn-table/src/components/data-table/data-table";
+import { useDataTable } from "external/shadcn-table/src/hooks/use-data-table";
+import type { ReactNode } from "react";
+import { useState } from "react";
+import EmployeeRowModal from "./EmployeeRowModal";
 
 interface EmployeeKanbanTableProps {
 	columns: ColumnDef<TeamMember, unknown>[];

@@ -1,11 +1,11 @@
-import React from "react";
+import type { Coordinate } from "@/types/_dashboard/maps";
 import { LoadScript } from "@react-google-maps/api";
-import { Coordinate } from "@/types/_dashboard/maps";
+import { MapWithDrawing } from "external/google-maps-two/components";
 import {
 	PlaceSearchPanel,
-	UIPanelPlace,
+	type UIPanelPlace,
 } from "external/google-maps-two/components/composit/components/PlaceSearchPanel";
-import { MapWithDrawing } from "external/google-maps-two/components";
+import React from "react";
 import { GOOGLE_LIBS } from "./helpers";
 
 type SelectPlacePayload = {

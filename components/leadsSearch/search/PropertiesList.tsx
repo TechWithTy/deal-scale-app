@@ -212,7 +212,7 @@ const PropertyListView: React.FC<PropertyListProps> = ({ properties }) => {
 									{/* Create List button */}
 									<button
 										type="button"
-										className={`rounded-md bg-accent px-6 py-2 text-base font-semibold text-accent-foreground shadow-sm transition hover:bg-accent/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent ${
+										className={`rounded-md bg-accent px-6 py-2 font-semibold text-accent-foreground text-base shadow-sm transition hover:bg-accent/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent ${
 											selectedPropertyIds.length === 0
 												? "cursor-not-allowed opacity-60"
 												: ""

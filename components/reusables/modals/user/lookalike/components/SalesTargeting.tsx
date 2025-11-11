@@ -6,11 +6,10 @@
 
 "use client";
 
-import { UseFormReturn } from "react-hook-form";
 import { AccordionContent } from "@/components/ui/accordion";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
 	Select,
 	SelectContent,
@@ -18,7 +17,10 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { BUYER_PERSONAS, MOTIVATION_LEVELS, type FormValues } from "../types";
+import type { UseFormReturn } from "react-hook-form";
+import { BUYER_PERSONAS, type FormValues, MOTIVATION_LEVELS } from "../types";
+import { SalesAdvanced } from "./advanced/SalesAdvanced";
+import { SalesEfficiency } from "./advanced/SalesEfficiency";
 
 interface SalesTargetingProps {
 	form: UseFormReturn<FormValues>;
@@ -31,35 +33,59 @@ interface SalesTargetingProps {
 export function SalesTargeting({ form }: SalesTargetingProps) {
 	return (
 		<AccordionContent className="space-y-4 pt-4">
-			<div className="grid grid-cols-2 gap-4">
+			<div className="space-y-3">
 				<div>
-					<Label>Buyer Persona</Label>
-					<div className="space-y-2 mt-2">
-						{BUYER_PERSONAS.map((persona) => (
-							<label key={persona} className="flex items-center gap-2">
-								<Checkbox
-									checked={form.watch("buyerPersona")?.includes(persona)}
-									onCheckedChange={(checked) => {
-										const current = form.watch("buyerPersona") || [];
-										form.setValue(
-											"buyerPersona",
-											checked
-												? [...current, persona]
-												: current.filter((p) => p !== persona),
-										);
-									}}
-								/>
-								<span className="text-sm capitalize">
-									{persona.replace("-", " ")}
-								</span>
-							</label>
-						))}
-					</div>
+					<Label htmlFor="buyerPersona">Buyer Personas (comma-separated)</Label>
+					<Input
+						id="buyerPersona"
+						placeholder="Investor, Wholesaler, Lender, Agent, Owner-Occupant"
+						value={(form.watch("buyerPersona") || []).join(", ")}
+						onChange={(e) => {
+							const personas = e.target.value
+								.split(",")
+								.map((p) => p.trim())
+								.filter(Boolean);
+							form.setValue("buyerPersona", personas);
+						}}
+					/>
+					<p className="mt-1 text-muted-foreground text-xs">
+						Enter target buyer types separated by commas
+					</p>
 				</div>
 
 				<div>
+					<Label htmlFor="targetInterests">
+						Target Interests (comma-separated)
+					</Label>
+					<Input
+						id="targetInterests"
+						placeholder="Real Estate Investing, Fix and Flip, Rental Properties"
+						{...form.register("targetInterests")}
+					/>
+					<p className="mt-1 text-muted-foreground text-xs">
+						Interests and topics relevant to your target audience
+					</p>
+				</div>
+
+				<div>
+					<Label htmlFor="targetIndustry">
+						Target Industries (comma-separated)
+					</Label>
+					<Input
+						id="targetIndustry"
+						placeholder="Real Estate, Finance, Construction, Property Management"
+						{...form.register("targetIndustry")}
+					/>
+					<p className="mt-1 text-muted-foreground text-xs">
+						Industries or professions to target
+					</p>
+				</div>
+			</div>
+
+			<div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
+				<div>
 					<Label>Motivation Level</Label>
-					<div className="space-y-2 mt-2">
+					<div className="mt-2 space-y-2">
 						{MOTIVATION_LEVELS.map((level) => (
 							<label key={level} className="flex items-center gap-2">
 								<Checkbox
@@ -79,9 +105,22 @@ export function SalesTargeting({ form }: SalesTargetingProps) {
 						))}
 					</div>
 				</div>
+
+				<div className="space-y-2">
+					<Label>Quick Filters</Label>
+					<label className="flex items-center gap-2">
+						<Checkbox
+							checked={form.watch("cashBuyerOnly")}
+							onCheckedChange={(checked) =>
+								form.setValue("cashBuyerOnly", Boolean(checked))
+							}
+						/>
+						<span className="text-sm">Cash Buyers Only</span>
+					</label>
+				</div>
 			</div>
 
-			<div className="grid grid-cols-2 gap-4">
+			<div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
 				<div>
 					<Label htmlFor="timeline">Purchase Timeline</Label>
 					<Select
@@ -122,10 +161,10 @@ export function SalesTargeting({ form }: SalesTargetingProps) {
 				</div>
 			</div>
 
-			<div className="grid grid-cols-2 gap-4">
+			<div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
 				<div>
 					<Label>Budget Range</Label>
-					<div className="flex gap-2 mt-1">
+					<div className="mt-1 flex gap-2">
 						<Input
 							type="number"
 							placeholder="Min"
@@ -141,7 +180,7 @@ export function SalesTargeting({ form }: SalesTargetingProps) {
 
 				<div>
 					<Label>Credit Score Range</Label>
-					<div className="flex gap-2 mt-1">
+					<div className="mt-1 flex gap-2">
 						<Input
 							type="number"
 							placeholder="Min"
@@ -156,36 +195,28 @@ export function SalesTargeting({ form }: SalesTargetingProps) {
 				</div>
 			</div>
 
-			<div className="flex items-center gap-4">
-				<label className="flex items-center gap-2">
-					<Checkbox
-						checked={form.watch("cashBuyerOnly")}
-						onCheckedChange={(checked) =>
-							form.setValue("cashBuyerOnly", Boolean(checked))
-						}
-					/>
-					<span className="text-sm">Cash Buyers Only</span>
-				</label>
-
-				<div className="flex-1">
-					<Label htmlFor="portfolio">Portfolio Size</Label>
-					<Select
-						value={form.watch("portfolioSize") || ""}
-						onValueChange={(value) => form.setValue("portfolioSize", value)}
-					>
-						<SelectTrigger id="portfolio">
-							<SelectValue placeholder="Any size" />
-						</SelectTrigger>
-						<SelectContent>
-							<SelectItem value="">Any size</SelectItem>
-							<SelectItem value="0-5">0-5 properties</SelectItem>
-							<SelectItem value="5-20">5-20 properties</SelectItem>
-							<SelectItem value="20-50">20-50 properties</SelectItem>
-							<SelectItem value="50+">50+ properties</SelectItem>
-						</SelectContent>
-					</Select>
-				</div>
+			<div>
+				<Label htmlFor="portfolio">Portfolio Size</Label>
+				<Select
+					value={form.watch("portfolioSize") || ""}
+					onValueChange={(value) => form.setValue("portfolioSize", value)}
+				>
+					<SelectTrigger id="portfolio">
+						<SelectValue placeholder="Any size" />
+					</SelectTrigger>
+					<SelectContent>
+						<SelectItem value="">Any size</SelectItem>
+						<SelectItem value="0-5">0-5 properties</SelectItem>
+						<SelectItem value="5-20">5-20 properties</SelectItem>
+						<SelectItem value="20-50">20-50 properties</SelectItem>
+						<SelectItem value="50+">50+ properties</SelectItem>
+					</SelectContent>
+				</Select>
 			</div>
+
+			{/* Sales-Specific Nested Options */}
+			<SalesEfficiency form={form} />
+			<SalesAdvanced form={form} />
 		</AccordionContent>
 	);
 }

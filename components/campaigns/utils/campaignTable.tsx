@@ -1,25 +1,25 @@
 "use client";
 
-import * as React from "react";
-import CallCampaignsDemoTable from "../../../external/shadcn-table/src/examples/call-campaigns-demo-table";
-import TextCampaignsDemoTable from "../../../external/shadcn-table/src/examples/text-campaigns-demo-table";
-import SocialCampaignsDemoTable from "../../../external/shadcn-table/src/examples/social-campaigns-demo-table";
-import DirectMailCampaignsDemoTable from "../../../external/shadcn-table/src/examples/direct-mail-campaigns-demo-table";
+import { FeatureGuard } from "@/components/access/FeatureGuard";
 import LeadMainModal from "@/components/reusables/modals/user/lead/LeadModalMain";
 import SkipTraceModalMain from "@/components/reusables/modals/user/skipTrace/SkipTraceModalMain";
-import { FeatureGuard } from "@/components/access/FeatureGuard";
 import { Button } from "@/components/ui/button";
 import {
 	Popover,
 	PopoverContent,
 	PopoverTrigger,
 } from "@/components/ui/popover";
-import CampaignModalMain from "../../../external/shadcn-table/src/examples/campaigns/modal/CampaignModalMain";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCampaignStore } from "@/lib/stores/campaigns";
-import { shallow } from "zustand/shallow";
 import type { CallCampaign } from "@/types/_dashboard/campaign";
 import type { DirectMailCampaign } from "external/shadcn-table/src/examples/DirectMail/utils/mock";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import * as React from "react";
+import { shallow } from "zustand/shallow";
+import CallCampaignsDemoTable from "../../../external/shadcn-table/src/examples/call-campaigns-demo-table";
+import CampaignModalMain from "../../../external/shadcn-table/src/examples/campaigns/modal/CampaignModalMain";
+import DirectMailCampaignsDemoTable from "../../../external/shadcn-table/src/examples/direct-mail-campaigns-demo-table";
+import SocialCampaignsDemoTable from "../../../external/shadcn-table/src/examples/social-campaigns-demo-table";
+import TextCampaignsDemoTable from "../../../external/shadcn-table/src/examples/text-campaigns-demo-table";
 
 export default function CampaignCallTablePage({
 	urlParams,
@@ -178,7 +178,7 @@ export default function CampaignCallTablePage({
 		// ! Use full width with min-w-0 to prevent forcing layout wider than sidebar
 		<div className="w-full min-w-0 p-4">
 			{/* Enhanced Tab Navigation with Feature Blocking */}
-			<div className="bg-muted flex gap-4 items-center justify-between mb-4 p-1 rounded-lg">
+			<div className="mb-4 flex items-center justify-between gap-4 rounded-lg bg-muted p-1">
 				<div className="flex items-center gap-2">
 					{tabs.map(({ key, label, featureKey }) => {
 						const isActive = tab === key;

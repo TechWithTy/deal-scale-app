@@ -1,9 +1,9 @@
+// ! SECURITY: Install DOMPurify for HTML sanitization: pnpm add dompurify
+import DOMPurify from "dompurify";
 import { marked } from "marked"; // Ensure this is the latest version that returns a Promise
 import type React from "react";
 import { useState } from "react";
 import { toast } from "sonner";
-// ! SECURITY: Install DOMPurify for HTML sanitization: pnpm add dompurify
-import DOMPurify from "dompurify";
 
 interface UploadEmailBodyProps {
 	onFileUpload: (fileContent: string) => void; // Callback to pass file content to parent
@@ -68,14 +68,14 @@ export const UploadEmailBody: React.FC<UploadEmailBodyProps> = ({
 			{/* ! Overlay when disabled */}
 			{disabled && (
 				<div className="absolute inset-0 z-20 flex cursor-not-allowed items-center justify-center rounded-lg bg-muted/80">
-					<span className="text-lg font-semibold text-muted-foreground">
+					<span className="font-semibold text-lg text-muted-foreground">
 						Coming soon
 					</span>
 				</div>
 			)}
 			<label
 				htmlFor="email-body-upload"
-				className="block text-sm font-medium text-foreground"
+				className="block font-medium text-foreground text-sm"
 			>
 				Upload Email Body Content (.md, .html)
 			</label>
@@ -86,10 +86,10 @@ export const UploadEmailBody: React.FC<UploadEmailBodyProps> = ({
 				onChange={handleFileUpload}
 				disabled={disabled}
 				aria-disabled={disabled}
-				className="mt-2 block w-full text-sm text-muted-foreground file:mr-4 file:rounded-full file:border-0 file:bg-primary file:px-4 file:py-2 file:text-sm file:font-semibold file:text-primary-foreground hover:file:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
+				className="mt-2 block w-full text-muted-foreground text-sm file:mr-4 file:rounded-full file:border-0 file:bg-primary file:px-4 file:py-2 file:font-semibold file:text-primary-foreground file:text-sm hover:file:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
 			/>
 			{fileName && (
-				<p className="mt-2 text-sm text-muted-foreground">
+				<p className="mt-2 text-muted-foreground text-sm">
 					Uploaded file: {fileName}
 				</p>
 			)}

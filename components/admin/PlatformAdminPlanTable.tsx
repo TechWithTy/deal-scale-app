@@ -1,16 +1,16 @@
 "use client";
 
-import * as React from "react";
-import type { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
-import { DataTable } from "external/shadcn-table/src/components/data-table/data-table";
-import { DataTableViewOptions } from "external/shadcn-table/src/components/data-table/data-table-view-options";
-import { DataTableColumnHeader } from "external/shadcn-table/src/components/data-table/data-table-column-header";
-import { useDataTable } from "external/shadcn-table/src/hooks/use-data-table";
 import type {
 	PlatformAdminPlan,
 	PlatformAdminPlanItem,
 } from "@/lib/admin/platformAdminPlan";
+import type { ColumnDef } from "@tanstack/react-table";
+import { DataTable } from "external/shadcn-table/src/components/data-table/data-table";
+import { DataTableColumnHeader } from "external/shadcn-table/src/components/data-table/data-table-column-header";
+import { DataTableViewOptions } from "external/shadcn-table/src/components/data-table/data-table-view-options";
+import { useDataTable } from "external/shadcn-table/src/hooks/use-data-table";
+import * as React from "react";
 
 interface PlatformAdminPlanTableProps {
 	plan: PlatformAdminPlan;
@@ -42,7 +42,7 @@ export const planColumns: ColumnDef<PlatformAdminPlanItem>[] = [
 			return (
 				<div className="space-y-2">
 					<div className="font-medium leading-snug">{item.userStory}</div>
-					<ul className="space-y-1.5 pl-4 text-muted-foreground text-xs list-disc">
+					<ul className="list-disc space-y-1.5 pl-4 text-muted-foreground text-xs">
 						{item.acceptanceCriteria.map((criterion) => (
 							<li key={criterion}>{criterion}</li>
 						))}

@@ -11,9 +11,9 @@
  */
 
 import {
-	mockPlans,
-	checkLiveApiAvailable,
 	type PlanTier,
+	checkLiveApiAvailable,
+	mockPlans,
 } from "@/lib/mock/plans";
 import { useEffect, useState } from "react";
 

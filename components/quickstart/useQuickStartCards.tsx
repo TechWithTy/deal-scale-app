@@ -4,10 +4,10 @@ import { useMemo } from "react";
 
 import type { QuickStartCardConfig } from "@/components/quickstart/types";
 import {
-	quickStartCardDescriptors,
 	type QuickStartActionDescriptor,
 	type QuickStartActionHandlerKey,
 	type QuickStartCardDescriptor,
+	quickStartCardDescriptors,
 } from "@/lib/config/quickstart";
 import type { WebhookStage } from "@/lib/stores/dashboard";
 
@@ -23,6 +23,11 @@ interface UseQuickStartCardsParams {
 	readonly createRouterPush: (path: string) => () => void;
 	readonly onStartNewSearch: () => void;
 	readonly onOpenSavedSearches: () => void;
+	readonly onAIGenerateSearch: () => void;
+	readonly onAIGenerateCampaign: () => void;
+	readonly onOpenSavedCampaignTemplates: () => void;
+	readonly onAIGenerateWorkflow: () => void;
+	readonly onOpenSavedWorkflows: () => void;
 	readonly onLaunchQuickStartFlow: () => void;
 }
 
@@ -57,6 +62,11 @@ export const useQuickStartCards = ({
 	createRouterPush,
 	onStartNewSearch,
 	onOpenSavedSearches,
+	onAIGenerateSearch,
+	onAIGenerateCampaign,
+	onOpenSavedCampaignTemplates,
+	onAIGenerateWorkflow,
+	onOpenSavedWorkflows,
 	onLaunchQuickStartFlow,
 }: UseQuickStartCardsParams) =>
 	useMemo<QuickStartCardConfig[]>(() => {
@@ -70,6 +80,11 @@ export const useQuickStartCards = ({
 			onBrowserExtension,
 			onStartNewSearch,
 			onOpenSavedSearches,
+			onAIGenerateSearch,
+			onAIGenerateCampaign,
+			onOpenSavedCampaignTemplates,
+			onAIGenerateWorkflow,
+			onOpenSavedWorkflows,
 			onLaunchQuickStartFlow,
 		};
 
@@ -120,6 +135,8 @@ export const useQuickStartCards = ({
 			featureChips: descriptor.featureChips,
 			actions: descriptor.actions.map(resolveAction),
 			wizardPreset: descriptor.wizardPreset,
+			showBorderBeam: descriptor.showBorderBeam,
+			borderBeamConfig: descriptor.borderBeamConfig,
 		}));
 	}, [
 		onImport,
@@ -133,5 +150,8 @@ export const useQuickStartCards = ({
 		createRouterPush,
 		onStartNewSearch,
 		onOpenSavedSearches,
+		onAIGenerateSearch,
+		onAIGenerateCampaign,
+		onOpenSavedCampaignTemplates,
 		onLaunchQuickStartFlow,
 	]);

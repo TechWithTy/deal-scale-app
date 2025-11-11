@@ -1,6 +1,5 @@
 "use client";
 
-import React from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,10 +13,11 @@ import {
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useModalStore } from "@/lib/stores/dashboard";
-import { useUserProfileStore } from "@/lib/stores/user/userProfile";
 import { useSessionStore } from "@/lib/stores/user/useSessionStore";
+import { useUserProfileStore } from "@/lib/stores/user/userProfile";
 import { signOut } from "next-auth/react"; // Still needed for logging out
 import { useRouter } from "next/navigation";
+import React from "react";
 import { toast } from "sonner";
 
 void React;

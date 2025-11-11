@@ -2,21 +2,21 @@
  * WebhookSecuritySection: Webhooks security settings and link to main webhooks modal
  */
 
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { useModalStore } from "@/lib/stores/dashboard";
 import {
-	Webhook,
-	Shield,
-	Key,
+	Activity,
 	ArrowRight,
 	CheckCircle2,
-	XCircle,
-	Activity,
-	Rss,
+	Key,
 	Mail,
-	PhoneCall,
 	Package,
+	PhoneCall,
+	Rss,
+	Shield,
+	Webhook,
+	XCircle,
 } from "lucide-react";
 import { toast } from "sonner";
 

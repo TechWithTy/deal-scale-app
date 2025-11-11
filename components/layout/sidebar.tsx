@@ -7,17 +7,18 @@ import { useNavbarStore } from "@/lib/stores/dashboard/navbarStore";
 import { useSessionStore } from "@/lib/stores/user/useSessionStore";
 import type { UserProfile } from "@/types/userProfile";
 
-import Link from "next/link";
+import { VerticalStickyBanner } from "@/components/ui/vertical-sticky-banner";
+import { CreditsSummary } from "external/credit-view-purchase/components/CreditsSummary";
+import { CrudToggle } from "external/crud-toggle/components/CrudToggle";
+import type { CrudFlags } from "external/crud-toggle/utils/types";
+import SidebarHelpActions from "@/components/layout/SidebarHelpActions";
 import Image from "next/image";
+import Link from "next/link";
 import React, {
 	useState,
 	type MouseEventHandler,
 	type KeyboardEvent,
 } from "react";
-import { CrudToggle } from "external/crud-toggle/components/CrudToggle";
-import { CreditsSummary } from "external/credit-view-purchase/components/CreditsSummary";
-import type { CrudFlags } from "external/crud-toggle/utils/types";
-import { VerticalStickyBanner } from "@/components/ui/vertical-sticky-banner";
 
 void React;
 
@@ -122,7 +123,7 @@ export default function SidebarClient({ user }: { user: UserProfile | null }) {
 								toggleSidebar();
 							}}
 							className={cn(
-								"inline-flex items-center cursor-pointer hover:opacity-80 transition-opacity",
+								"inline-flex cursor-pointer items-center transition-opacity hover:opacity-80",
 								isSidebarMinimized ? "w-full justify-center" : "",
 							)}
 							aria-label="Toggle sidebar"
@@ -151,7 +152,7 @@ export default function SidebarClient({ user }: { user: UserProfile | null }) {
 							/>
 						</button>
 					</div>
-					<div className="space-y-4 py-4 overflow-visible">
+					<div className="space-y-4 overflow-visible py-4">
 						{/* Quick Start Section - Prominent and Standout */}
 						<div className="px-3 py-2">
 							<Link
@@ -168,6 +169,8 @@ export default function SidebarClient({ user }: { user: UserProfile | null }) {
 										fill="none"
 										stroke="currentColor"
 										viewBox="0 0 24 24"
+										aria-hidden="true"
+										focusable="false"
 									>
 										<path
 											strokeLinecap="round"
@@ -179,14 +182,22 @@ export default function SidebarClient({ user }: { user: UserProfile | null }) {
 								</div>
 								{!isSidebarMinimized && (
 									<div className="flex flex-col">
-										<span className="text-sm font-semibold">Quick Start</span>
+										<span className="font-semibold text-sm">Quick Start</span>
 										<span className="text-xs opacity-90">Get started fast</span>
 									</div>
 								)}
 							</Link>
 						</div>
 
-						<div className="px-3 py-2 overflow-visible">
+						<div
+							className="px-3 py-2"
+							onClick={(event) => event.stopPropagation()}
+							onKeyDown={(event) => event.stopPropagation()}
+						>
+							<SidebarHelpActions isCollapsed={isSidebarMinimized} />
+						</div>
+
+						<div className="overflow-visible px-3 py-2">
 							<div className="mt-3 space-y-1 overflow-visible">
 								<DashboardNav
 									items={navItems}
@@ -308,7 +319,7 @@ export default function SidebarClient({ user }: { user: UserProfile | null }) {
 				</div>
 				{/* Vertical Sticky Banner - Attached to right side of sidebar */}
 				<div
-					className="absolute top-0 right-0 h-full pointer-events-none"
+					className="pointer-events-none absolute top-0 right-0 h-full"
 					style={{
 						transform: isSidebarMinimized
 							? "translateX(32px)"
@@ -323,7 +334,7 @@ export default function SidebarClient({ user }: { user: UserProfile | null }) {
 							link="/dashboard"
 							subtitleLink="/dashboard/updates"
 						>
-							<p className={cn("text-[10px] font-semibold leading-tight")}>
+							<p className={cn("font-semibold text-[10px] leading-tight")}>
 								New Feature Available!
 							</p>
 							<p className={cn("text-[9px] leading-tight")}>

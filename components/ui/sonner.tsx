@@ -15,16 +15,17 @@ const Toaster = ({ ...props }: ToasterProps) => {
 		() => ({
 			classNames: {
 				toast:
-					"group toast pointer-events-auto relative border border-border bg-card text-foreground shadow-lg transition-all [&>[data-content]]:text-sm [&_button]:pointer-events-auto [&_button]:cursor-pointer data-[type=success]:border-primary data-[type=success]:bg-primary data-[type=success]:text-primary-foreground data-[type=error]:border-destructive data-[type=error]:bg-destructive data-[type=error]:text-destructive-foreground data-[type=warning]:border-accent data-[type=warning]:bg-accent data-[type=warning]:text-accent-foreground data-[type=info]:border-secondary data-[type=info]:bg-secondary data-[type=info]:text-secondary-foreground",
-				title: "group-[.toast]:font-semibold group-[.toast]:text-inherit",
-				description: "group-[.toast]:text-sm group-[.toast]:text-inherit/90",
+					"group toast pointer-events-auto relative border-2 shadow-2xl backdrop-blur-sm transition-all [&>[data-content]]:text-sm [&_button]:pointer-events-auto [&_button]:cursor-pointer data-[type=success]:border-green-500 data-[type=success]:bg-green-500 data-[type=success]:text-white data-[type=error]:border-red-500 data-[type=error]:bg-red-500 data-[type=error]:text-white data-[type=warning]:border-yellow-500 data-[type=warning]:bg-yellow-500 data-[type=warning]:text-white data-[type=info]:border-blue-500 data-[type=info]:bg-blue-500 data-[type=info]:text-white",
+				title: "group-[.toast]:font-bold group-[.toast]:text-inherit text-base",
+				description:
+					"group-[.toast]:text-sm group-[.toast]:text-inherit/95 group-[.toast]:font-medium",
 				actionButton:
-					"group-[.toast]:bg-primary group-[.toast]:text-primary-foreground group-[.toast]:hover:bg-primary/90 group-[.toast]:pointer-events-auto group-[.toast]:cursor-pointer",
+					"group-[.toast]:bg-white group-[.toast]:text-gray-900 group-[.toast]:hover:bg-gray-100 group-[.toast]:pointer-events-auto group-[.toast]:cursor-pointer group-[.toast]:font-semibold",
 				cancelButton:
-					"group-[.toast]:bg-muted group-[.toast]:text-muted-foreground group-[.toast]:hover:bg-muted/80 group-[.toast]:pointer-events-auto group-[.toast]:cursor-pointer",
+					"group-[.toast]:bg-white/20 group-[.toast]:text-white group-[.toast]:hover:bg-white/30 group-[.toast]:pointer-events-auto group-[.toast]:cursor-pointer",
 				closeButton:
-					"group-[.toast]:text-inherit/70 group-[.toast]:hover:text-inherit group-[.toast]:pointer-events-auto group-[.toast]:cursor-pointer group-[.toast]:relative group-[.toast]:z-[10001] group-[.toast]:!pointer-events-auto group-[.toast]:!cursor-pointer",
-				icon: "group-[.toast]:text-inherit",
+					"group-[.toast]:text-white group-[.toast]:hover:text-white/80 group-[.toast]:pointer-events-auto group-[.toast]:cursor-pointer group-[.toast]:relative group-[.toast]:z-[10001] group-[.toast]:!pointer-events-auto group-[.toast]:!cursor-pointer group-[.toast]:bg-white/10 group-[.toast]:hover:bg-white/20 group-[.toast]:rounded-md",
+				icon: "group-[.toast]:text-white group-[.toast]:shrink-0",
 			},
 			// Ensure all toasts are dismissible, including those with infinite duration
 			dismissible: true,
@@ -36,12 +37,14 @@ const Toaster = ({ ...props }: ToasterProps) => {
 		<Sonner
 			theme={memoTheme}
 			closeButton
-			position="bottom-right"
+			position="bottom-center"
 			className={memoClassName}
 			toastOptions={memoToastOptions}
 			style={{
 				zIndex: 10000,
 			}}
+			richColors
+			expand={true}
 			{...props}
 		/>
 	);

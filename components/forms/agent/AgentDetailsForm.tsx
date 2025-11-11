@@ -1,8 +1,7 @@
 "use client";
 
 import { AgentAvatar } from "@/components/aiAgents/AgentAvatar";
-import type { UseFormReturn } from "react-hook-form";
-import type { Agent } from "./utils/schema";
+import { Button } from "@/components/ui/button";
 import {
 	FormControl,
 	FormField,
@@ -10,15 +9,7 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/ui/form";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipProvider,
-	TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { Textarea } from "@/components/ui/textarea";
 import {
 	Select,
 	SelectContent,
@@ -26,6 +17,15 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger,
+} from "@/components/ui/tooltip";
+import type { UseFormReturn } from "react-hook-form";
+import type { Agent } from "./utils/schema";
 
 interface AgentDetailsFormProps {
 	form: UseFormReturn<Agent>;

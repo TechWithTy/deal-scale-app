@@ -19,7 +19,7 @@ export function SuccessBasedCard({ tier, onSelect }: SuccessBasedCardProps) {
 			</div>
 
 			<div className="mb-6">
-				<p className="mb-4 font-semibold text-lg text-foreground">
+				<p className="mb-4 font-semibold text-foreground text-lg">
 					{tier.structure}
 				</p>
 			</div>
@@ -34,7 +34,7 @@ export function SuccessBasedCard({ tier, onSelect }: SuccessBasedCardProps) {
 							key={`${tier.id}-perk-${index}`}
 							className="flex items-start gap-2.5"
 						>
-							<span className="text-green-600 font-semibold text-lg leading-none mt-0.5">
+							<span className="mt-0.5 font-semibold text-green-600 text-lg leading-none">
 								✔
 							</span>
 							<span className="text-foreground text-sm">{perk}</span>

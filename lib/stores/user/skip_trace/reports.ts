@@ -1,7 +1,7 @@
-import { create } from "zustand";
-import { withAnalytics } from "../../_middleware/analytics";
 import type { Header } from "@/types/skip-trace";
 import type { InputField } from "@/types/skip-trace/enrichment";
+import { create } from "zustand";
+import { withAnalytics } from "../../_middleware/analytics";
 import { useSkipTraceStore } from "./skipTraceStore";
 
 interface ProgressSummary {

@@ -1,7 +1,7 @@
-import type { SavedSearch } from "@/types/userProfile";
-import type { MapFormSchemaType } from "@/types/_dashboard/maps";
-import { create } from "zustand";
 import { mockUserProfile } from "@/constants/_faker/profile/userProfile";
+import type { MapFormSchemaType } from "@/types/_dashboard/maps";
+import type { SavedSearch } from "@/types/userProfile";
+import { create } from "zustand";
 
 const initialFilters: MapFormSchemaType = {
 	location: "",

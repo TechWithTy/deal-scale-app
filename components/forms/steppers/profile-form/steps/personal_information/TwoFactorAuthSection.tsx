@@ -7,8 +7,8 @@ import {
 } from "@/components/ui/form";
 import { Switch } from "@/components/ui/switch";
 import type { ProfileFormValues } from "@/types/zod/userSetup/profile-form-schema";
-import { useFormContext } from "react-hook-form";
 import type React from "react";
+import { useFormContext } from "react-hook-form";
 
 type TwoFactorKey = keyof ProfileFormValues["twoFactorAuth"]["methods"];
 const twoFactorAuthOptions: {

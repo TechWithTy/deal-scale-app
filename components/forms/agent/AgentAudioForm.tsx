@@ -2,7 +2,6 @@
 
 import type { UseFormReturn } from "react-hook-form";
 
-import type { Agent } from "./utils/schema";
 import { Button } from "@/components/ui/button";
 import {
 	FormControl,
@@ -19,6 +18,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import type { Agent } from "./utils/schema";
 
 interface AgentAudioFormProps {
 	form: UseFormReturn<Agent>;

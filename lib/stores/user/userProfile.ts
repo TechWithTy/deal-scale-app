@@ -1,27 +1,27 @@
-import { create } from "zustand";
-import { devtools, persist, createJSONStorage } from "zustand/middleware";
 import { produce } from "immer";
 import { v4 as uuidv4 } from "uuid";
+import { create } from "zustand";
+import { createJSONStorage, devtools, persist } from "zustand/middleware";
 
-import type { UserProfile } from "@/types/userProfile";
 import type { LeadList } from "@/types/_dashboard/leadList";
 import type { LeadTypeGlobal } from "@/types/_dashboard/leads";
+import type { UserProfile } from "@/types/userProfile";
+import { useAIActionsStore } from "./ai/actions";
 // Aggregated nested domain stores (AI, campaigns, leads, skip trace, company, credits, permissions, session)
 import { useAISettingsStore } from "./ai/ai";
-import { useAIActionsStore } from "./ai/actions";
 import { useAIChatStore } from "./ai/chat";
 import { useAIReportsStore } from "./ai/reports";
 import { useAITasksStore } from "./ai/tasks";
 import { useUserCampaignsStore } from "./campaigns/campaigns";
 import { useUserCampaignReportsStore } from "./campaigns/reports";
+import { useCompanyStore } from "./company";
+import { useUserCreditsStore } from "./credits";
 import { useUserLeadsStore } from "./leads/leads";
 import { useUserLeadsReportsStore } from "./leads/reports";
 import { useSavedSearchesStore } from "./leads/savedSearches";
-import { useSkipTraceStore } from "./skip_trace/skipTraceStore";
-import { useSkipTraceReportsStore } from "./skip_trace/reports";
-import { useCompanyStore } from "./company";
-import { useUserCreditsStore } from "./credits";
 import { usePermissionsStore } from "./permissions";
+import { useSkipTraceReportsStore } from "./skip_trace/reports";
+import { useSkipTraceStore } from "./skip_trace/skipTraceStore";
 import { useSessionStore } from "./useSessionStore";
 
 interface UserProfileState {

@@ -25,20 +25,20 @@ const ForeclosuresComponent: React.FC<ForeclosuresProps> = ({
 		<div>
 			{/* Foreclosures Section */}
 			<div className="my-2 rounded-lg bg-card p-6 shadow-md">
-				<h3 className="mb-2 text-lg font-semibold text-foreground">
+				<h3 className="mb-2 font-semibold text-foreground text-lg">
 					Foreclosures
 				</h3>
-				<p className="mb-4 text-sm text-muted-foreground">
+				<p className="mb-4 text-muted-foreground text-sm">
 					Foreclosures recorded against the property.
 				</p>
-				<div className="grid grid-cols-2 gap-4 text-center text-sm font-semibold text-muted-foreground md:grid-cols-6">
+				<div className="grid grid-cols-2 gap-4 text-center font-semibold text-muted-foreground text-sm md:grid-cols-6">
 					<div>Active</div>
 					<div>Document Type</div>
 					<div>Recording Date</div>
 					<div>Original Loan Amount</div>
 					<div>Est. Bank Value</div>
 				</div>
-				<div className="mt-2 grid grid-cols-2 gap-4 text-center text-sm text-foreground md:grid-cols-6">
+				<div className="mt-2 grid grid-cols-2 gap-4 text-center text-foreground text-sm md:grid-cols-6">
 					<div>
 						{foreclosureData.active !== null
 							? foreclosureData.active
@@ -63,14 +63,14 @@ const ForeclosuresComponent: React.FC<ForeclosuresProps> = ({
 
 			{/* Liens Section */}
 			<div className="rounded-lg bg-card p-6 shadow-md">
-				<h3 className="mb-2 text-lg font-semibold text-foreground">Liens</h3>
-				<p className="mb-4 text-sm text-muted-foreground">
+				<h3 className="mb-2 font-semibold text-foreground text-lg">Liens</h3>
+				<p className="mb-4 text-muted-foreground text-sm">
 					Liens recorded against the property.
 				</p>
-				<div className="grid grid-cols-2 gap-4 text-center text-sm font-semibold text-muted-foreground md:grid-cols-6">
+				<div className="grid grid-cols-2 gap-4 text-center font-semibold text-muted-foreground text-sm md:grid-cols-6">
 					<div>Tax Lien(s)</div>
 				</div>
-				<div className="mt-2 grid grid-cols-2 gap-4 text-center text-sm text-foreground md:grid-cols-6">
+				<div className="mt-2 grid grid-cols-2 gap-4 text-center text-foreground text-sm md:grid-cols-6">
 					<div>{liensData.taxLiens || "No"}</div>
 				</div>
 			</div>

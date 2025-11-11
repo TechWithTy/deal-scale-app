@@ -1,7 +1,7 @@
 import type {
 	AdPlatform,
-	PerformanceMetrics,
 	AudiencePerformanceSummary,
+	PerformanceMetrics,
 } from "@/types/lookalike";
 
 /**

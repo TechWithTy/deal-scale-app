@@ -6,6 +6,7 @@ import { PlayerToWatchAlert } from "../ai/PlayerToWatchAlert";
 import { useLeaderboard } from "../realtime/useLeaderboard";
 import { leaderboardConfig } from "./config";
 import { Button } from "@root/components/ui/button";
+import { useGamificationStore } from "@root/lib/stores/gamification";
 import { LeaderboardHeader } from "./LeaderboardHeader";
 import { LeaderboardSettingsPanel } from "./LeaderboardSettingsPanel";
 import { TableToolbar } from "./TableToolbar";
@@ -37,6 +38,15 @@ export const LeaderboardContainer = () => {
 		pause,
 		resume,
 	} = useLeaderboard();
+	const setCurrentRank = useGamificationStore((state) => state.setCurrentRank);
+	const checkRankChange = useGamificationStore((state) => state.checkRankChange);
+	React.useEffect(() => {
+		if (typeof myRank === "number" && myRank > 0) {
+			setCurrentRank(myRank);
+			checkRankChange(myRank);
+		}
+	}, [myRank, setCurrentRank, checkRankChange]);
+
 
 	const [settings, setSettings] = useState(leaderboardConfig);
 	const [animationEnabled, setAnimationEnabled] = useState(false);
@@ -283,8 +293,8 @@ export const LeaderboardContainer = () => {
 	}, []);
 
 	return (
-		<div className="min-h-screen bg-gradient-bg p-4 md:p-6 lg:p-8">
-			<div className="mx-auto max-w-4xl space-y-6">
+		<div className="min-h-screen bg-gradient-bg p-2 sm:p-4 md:p-6 lg:p-8">
+			<div className="mx-auto max-w-4xl space-y-3 sm:space-y-4 md:space-y-6 md:max-w-3xl lg:max-w-6xl">
 				{/* Header */}
 				<LeaderboardHeader
 					animationEnabled={animationEnabled}
@@ -314,6 +324,9 @@ export const LeaderboardContainer = () => {
 				onTimePeriodChange={setTimePeriod}
 				leaderboardType={leaderboardType}
 				onLeaderboardTypeChange={setLeaderboardType}
+				currentUserRank={myRank}
+				currentUserId="current-user"
+				currentUserName="You"
 			/>
 
 			<LeaderboardSettingsPanel

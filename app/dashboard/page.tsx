@@ -1,54 +1,79 @@
 "use client";
 
-import { HelpCircle } from "lucide-react";
+import { ArrowDown, HelpCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { BackgroundBeamsWithCollision } from "@/components/ui/background-beams-with-collision";
+import { LightRays } from "@/components/ui/light-rays";
 
 import { campaignSteps } from "@/_tests/tours/campaignTour";
+import DynamicHeadline from "@/components/quickstart/DynamicHeadline";
+import QuickStartHeroVideo from "@/components/quickstart/QuickStartHeroVideo";
+import QuickStartCTA from "@/components/quickstart/QuickStartCTA";
 import QuickStartActionsGrid from "@/components/quickstart/QuickStartActionsGrid";
-import QuickStartWizard from "@/components/quickstart/wizard/QuickStartWizard";
+import QuickStartCrmSyncModal from "@/components/quickstart/QuickStartCrmSyncModal";
+import { computeSmartImportDecision } from "@/components/quickstart/utils/smartImportDecision";
+import { Pointer } from "@/components/ui/pointer";
+import { AvatarCircles } from "@/components/ui/avatar-circles";
 import QuickStartLegacyModals, {
 	type QuickStartCampaignContext,
 } from "@/components/quickstart/QuickStartLegacyModals";
 import QuickStartSupportCard from "@/components/quickstart/QuickStartSupportCard";
+import type { QuickStartWizardPreset } from "@/components/quickstart/types";
 import { useBulkCsvUpload } from "@/components/quickstart/useBulkCsvUpload";
 import { useQuickStartCardViewModel } from "@/components/quickstart/useQuickStartCardViewModel";
 import { useQuickStartSavedSearches } from "@/components/quickstart/useQuickStartSavedSearches";
-import type { QuickStartWizardPreset } from "@/components/quickstart/types";
+import QuickStartWizard from "@/components/quickstart/wizard/QuickStartWizard";
+import { CampaignSelectorModal } from "@/components/reusables/modals/user/campaign/CampaignSelectorModal";
+import { AICampaignGenerator } from "@/components/reusables/modals/user/campaign/AICampaignGenerator";
+import SavedCampaignTemplatesModal from "@/components/reusables/modals/user/campaign/SavedCampaignTemplatesModal";
+import { AIWorkflowGenerator } from "@/components/reusables/modals/user/workflow/AIWorkflowGenerator";
+import { WorkflowExportModal } from "@/components/reusables/modals/user/workflow/WorkflowExportModal";
+import SavedWorkflowsModal from "@/components/reusables/modals/user/workflow/SavedWorkflowsModal";
+import { AISavedSearchGenerator } from "@/components/reusables/modals/user/lookalike/AISavedSearchGenerator";
+import { LookalikeConfigModal } from "@/components/reusables/modals/user/lookalike/LookalikeConfigModal";
+import { LookalikeResultsModal } from "@/components/reusables/modals/user/lookalike/LookalikeResultsModal";
+import { exportToMultiplePlatforms } from "@/lib/api/lookalike/export";
+import { generateLookalikeAudience } from "@/lib/api/lookalike/generate";
 import {
+	type QuickStartTemplateId,
 	applyQuickStartTemplatePreset,
 	getQuickStartTemplate,
-	type QuickStartTemplateId,
 } from "@/lib/config/quickstart/templates";
 import { getGoalDefinition } from "@/lib/config/quickstart/wizardFlows";
-import { useQuickStartWizardStore } from "@/lib/stores/quickstartWizard";
-import { useQuickStartWizardDataStore } from "@/lib/stores/quickstartWizardData";
-import { useQuickStartWizardExperienceStore } from "@/lib/stores/quickstartWizardExperience";
 import { useCampaignCreationStore } from "@/lib/stores/campaignCreation";
 import { useModalStore } from "@/lib/stores/dashboard";
 import type { WebhookStage } from "@/lib/stores/dashboard";
-import { shallow } from "zustand/shallow";
-import { CampaignSelectorModal } from "@/components/reusables/modals/user/campaign/CampaignSelectorModal";
-import { LookalikeConfigModal } from "@/components/reusables/modals/user/lookalike/LookalikeConfigModal";
-import { LookalikeResultsModal } from "@/components/reusables/modals/user/lookalike/LookalikeResultsModal";
-import { useLookalikeStore } from "@/lib/stores/lookalike";
-import { generateLookalikeAudience } from "@/lib/api/lookalike/generate";
-import { exportToMultiplePlatforms } from "@/lib/api/lookalike/export";
 import { useLeadListStore } from "@/lib/stores/leadList";
 import { useLeadSearchStore } from "@/lib/stores/leadSearch/leadSearch";
+import { useLookalikeStore } from "@/lib/stores/lookalike";
+import { useQuickStartWizardStore } from "@/lib/stores/quickstartWizard";
+import { useQuickStartWizardDataStore } from "@/lib/stores/quickstartWizardData";
+import { useQuickStartWizardExperienceStore } from "@/lib/stores/quickstartWizardExperience";
 import type {
-	LookalikeConfig,
-	LookalikeCandidate,
 	AdPlatform,
+	LookalikeCandidate,
+	LookalikeConfig,
 } from "@/types/lookalike";
-import type { SavedSearch } from "@/types/userProfile";
+import type {
+	SavedSearch,
+	SavedCampaignTemplate,
+	SavedWorkflow,
+} from "@/types/userProfile";
+import { useSavedCampaignTemplatesStore } from "@/lib/stores/user/campaigns/savedTemplates";
+import { useSavedWorkflowsStore } from "@/lib/stores/user/workflows/savedWorkflows";
+import { useWorkflowPlatformsStore } from "@/lib/stores/user/workflows/platforms";
+import { useUserProfileStore } from "@/lib/stores/user/userProfile";
+import { mapTemplateToCampaignWizard } from "@/lib/utils/campaign/templateParser";
 import { toast } from "sonner";
+import { shallow } from "zustand/shallow";
 
 let lastAppliedTemplateIdGlobal: QuickStartTemplateId | null = null;
 
 export default function QuickStartPage() {
 	const router = useRouter();
 	const [showLeadModal, setShowLeadModal] = useState(false);
+	const [showCrmSyncModal, setShowCrmSyncModal] = useState(false);
 	const [leadModalMode, setLeadModalMode] = useState<"select" | "create">(
 		"create",
 	);
@@ -77,6 +102,16 @@ export default function QuickStartPage() {
 	const [lookalikeLeadModalMode, setLookalikeLeadModalMode] = useState<
 		"select" | "create"
 	>("select");
+	const [showAISearchGenerator, setShowAISearchGenerator] = useState(false);
+	const [showAICampaignGenerator, setShowAICampaignGenerator] = useState(false);
+	const [showSavedCampaignTemplates, setShowSavedCampaignTemplates] =
+		useState(false);
+
+	// Workflow state
+	const [showAIWorkflowGenerator, setShowAIWorkflowGenerator] = useState(false);
+	const [showWorkflowExportModal, setShowWorkflowExportModal] = useState(false);
+	const [generatedWorkflow, setGeneratedWorkflow] = useState<any>(null);
+	const [showSavedWorkflows, setShowSavedWorkflows] = useState(false);
 
 	const fileInputRef = useRef<HTMLInputElement | null>(null);
 	const lastAppliedTemplateIdRef = useRef<QuickStartTemplateId | null>(
@@ -123,6 +158,40 @@ export default function QuickStartPage() {
 	const lookalikeStore = useLookalikeStore();
 	const leadListStore = useLeadListStore();
 	const leadSearchStore = useLeadSearchStore();
+	const userProfile = useUserProfileStore((state) => state.userProfile);
+
+	const connectedCrmNames = useMemo(() => {
+		const accounts = userProfile?.connectedAccounts;
+		if (!accounts) {
+			return [] as string[];
+		}
+
+		const names: string[] = [];
+		if (accounts.goHighLevel) {
+			names.push("GoHighLevel");
+		}
+		if (accounts.loftyCRM) {
+			names.push("Lofty CRM");
+		}
+
+		return names;
+	}, [userProfile]);
+	const hasConnectedCrm = connectedCrmNames.length > 0;
+	const crmDisplayLabel = useMemo(() => {
+		if (!connectedCrmNames.length) {
+			return "your CRM";
+		}
+
+		if (connectedCrmNames.length === 1) {
+			return connectedCrmNames[0] ?? "your CRM";
+		}
+
+		const head = connectedCrmNames.slice(0, -1).join(", ");
+		const tail = connectedCrmNames[connectedCrmNames.length - 1];
+		return `${head} and ${tail}`;
+	}, [connectedCrmNames]);
+	const leadListCount = leadListStore.leadLists.length;
+	const hasLeadListsAvailable = leadListCount > 0;
 
 	const {
 		savedSearches,
@@ -195,9 +264,61 @@ export default function QuickStartPage() {
 		triggerFileInput();
 	}, [triggerFileInput]);
 
+	// Smart import handler that adapts based on user's existing data
+	const handleSmartImport = useCallback(() => {
+		const decision = computeSmartImportDecision({
+			hasConnectedCrm,
+			hasLeadLists: hasLeadListsAvailable,
+			crmDisplayLabel,
+		});
+
+		toast.info(decision.toastTitle, {
+			description: decision.toastDescription,
+		});
+
+		if (decision.type === "crm") {
+			setShowCrmSyncModal(true);
+			return;
+		}
+
+		if (decision.type === "select") {
+			handleSelectList();
+			return;
+		}
+
+		handleImportFromSource();
+	}, [
+		hasConnectedCrm,
+		hasLeadListsAvailable,
+		crmDisplayLabel,
+		setShowCrmSyncModal,
+		handleSelectList,
+		handleImportFromSource,
+	]);
+
 	const handleConfigureConnections = useCallback(() => {
 		router.push("/dashboard/integrations");
 	}, [router]);
+
+	const handleOpenWebhook = useCallback(
+		(stage: WebhookStage) => {
+			openWebhookModal(stage);
+		},
+		[openWebhookModal],
+	);
+
+	// Smart webhook/CRM handler that checks for existing integrations
+	const handleSmartWebhook = useCallback(
+		(stage: WebhookStage) => {
+			// Check if user has any integrations configured
+			// For now, always open the webhook modal for configuration
+			toast.info("Setting up integrations...", {
+				description: "Connect your CRM or automation tools",
+			});
+			handleOpenWebhook(stage);
+		},
+		[handleOpenWebhook],
+	);
 
 	const handleCampaignCreate = useCallback(() => {
 		const templateId = lastTemplateId;
@@ -224,6 +345,96 @@ export default function QuickStartPage() {
 
 		setShowCampaignModal(true);
 	}, [campaignModalContext, lastTemplateId]);
+
+	// Smart campaign handler that ensures lead list is selected
+	const handleSmartCampaign = useCallback(() => {
+		const hasLeadLists =
+			leadListStore.leadLists && leadListStore.leadLists.length > 0;
+		const campaignState = useCampaignCreationStore.getState();
+		const hasSelectedList = !!campaignState.selectedLeadListId;
+
+		console.log(
+			"[QuickStart] Smart campaign - Has lists:",
+			hasLeadLists,
+			"Has selected:",
+			hasSelectedList,
+		);
+
+		if (!hasLeadLists) {
+			// No lead lists at all - prompt to import first
+			toast.warning("Import leads first", {
+				description: "You need a lead list before creating a campaign",
+			});
+			handleSmartImport();
+			return;
+		}
+
+		if (hasLeadLists && !hasSelectedList && !campaignModalContext) {
+			// Has lists but none selected - auto-select the first one
+			const firstList = leadListStore.leadLists[0];
+			if (firstList) {
+				console.log(
+					"[QuickStart] Auto-selecting first lead list:",
+					firstList.listName,
+				);
+
+				// Set up campaign context with first list
+				const context = {
+					leadListId: firstList.id,
+					leadListName: firstList.listName,
+					leadCount: firstList.records || 0,
+				};
+
+				setCampaignModalContext(context);
+
+				// Also update campaign store
+				campaignState.setAreaMode("leadList");
+				campaignState.setSelectedLeadListId(firstList.id);
+				campaignState.setLeadCount(firstList.records || 0);
+
+				toast.success(`Using "${firstList.listName}"`, {
+					description: `${firstList.records || 0} leads selected`,
+				});
+			}
+		}
+
+		// Open campaign modal
+		handleCampaignCreate();
+	}, [
+		leadListStore.leadLists,
+		campaignModalContext,
+		handleSmartImport,
+		handleCampaignCreate,
+	]);
+
+	const handleCrmSyncCancel = useCallback(() => {
+		setShowCrmSyncModal(false);
+	}, []);
+
+	const handleCrmSyncConfirm = useCallback(() => {
+		setShowCrmSyncModal(false);
+		toast.success("CRM sync ready", {
+			description: `Select the segments to import directly from ${crmDisplayLabel}.`,
+		});
+		handleSelectList();
+	}, [crmDisplayLabel, handleSelectList]);
+
+	const handleCrmAutoSelect = useCallback(() => {
+		if (!hasLeadListsAvailable) {
+			toast.warning("No lead lists available yet", {
+				description: "Connect a CRM segment to auto-select.",
+			});
+			return;
+		}
+
+		setShowCrmSyncModal(false);
+		toast.success("AI auto select engaged", {
+			description: "We’ll prime your first CRM list for downstream flows.",
+		});
+		setTimeout(() => {
+			handleSmartCampaign();
+		}, 0);
+	}, [hasLeadListsAvailable, handleSmartCampaign]);
 
 	useEffect(() => {
 		if (!showCampaignModal || campaignModalContext) {
@@ -260,13 +471,6 @@ export default function QuickStartPage() {
 		router.push("/dashboard/campaigns/templates");
 	}, [router]);
 
-	const handleOpenWebhook = useCallback(
-		(stage: WebhookStage) => {
-			openWebhookModal(stage);
-		},
-		[openWebhookModal],
-	);
-
 	const handleBrowserExtension = useCallback(() => {
 		router.push("/dashboard/extensions");
 	}, [router]);
@@ -289,6 +493,724 @@ export default function QuickStartPage() {
 		setLookalikeLeadModalMode("select");
 		setLeadModalMode("select");
 		setShowLeadModal(true);
+	}, []);
+
+	const handleAIGenerateSearch = useCallback(() => {
+		console.log("[Lookalike] Opening AI search generator");
+		setShowAISearchGenerator(true);
+	}, []);
+
+	const handleAIGenerateCampaign = useCallback(() => {
+		console.log("[Campaign] Opening AI campaign generator");
+		setShowAICampaignGenerator(true);
+	}, []);
+
+	const handleOpenSavedCampaignTemplates = useCallback(() => {
+		console.log("[Campaign] Opening saved campaign templates");
+		setShowSavedCampaignTemplates(true);
+	}, []);
+
+	// Workflow handlers
+	const handleAIGenerateWorkflow = useCallback(() => {
+		console.log("[Workflow] Opening AI workflow generator");
+		setShowAIWorkflowGenerator(true);
+	}, []);
+
+	const handleWorkflowGenerated = useCallback((workflow: any) => {
+		console.log("[Workflow] Workflow generated:", workflow);
+		setGeneratedWorkflow(workflow);
+		setShowAIWorkflowGenerator(false);
+		setShowWorkflowExportModal(true);
+	}, []);
+
+	const handleWorkflowExported = useCallback((workflowId: string) => {
+		console.log("[Workflow] Workflow exported:", workflowId);
+		toast.success("Workflow saved successfully!");
+		setShowWorkflowExportModal(false);
+		setGeneratedWorkflow(null);
+	}, []);
+
+	const handleWorkflowRegenerate = useCallback(() => {
+		console.log("[Workflow] Regenerating workflow");
+		setShowWorkflowExportModal(false);
+		setGeneratedWorkflow(null);
+		// Reopen AI Workflow Generator to regenerate
+		setShowAIWorkflowGenerator(true);
+		toast.info("Regenerating workflow...", {
+			description: "Please update your prompt and generate again",
+		});
+	}, []);
+
+	const handleOpenSavedWorkflows = useCallback(() => {
+		console.log("[Workflow] Opening saved workflows");
+		setShowSavedWorkflows(true);
+	}, []);
+
+	const handleCampaignGenerated = useCallback(
+		(template: SavedCampaignTemplate) => {
+			console.log("\n\n");
+			console.log(
+				"%c🎯🎯🎯 CAMPAIGN GENERATION START 🎯🎯🎯",
+				"background: #4CAF50; color: white; font-size: 20px; padding: 10px;",
+			);
+			console.log("=".repeat(80));
+			console.log("[Campaign] AI campaign generated:", template);
+
+			// Map template to campaign wizard state
+			const wizardData = mapTemplateToCampaignWizard(template);
+			console.log("[Campaign] 📝 Mapped wizard data:", wizardData);
+
+			// Apply template data to campaign creation store
+			const campaignState = useCampaignCreationStore.getState();
+			console.log("[Campaign] 📦 Campaign store BEFORE reset:", {
+				selectedLeadListId: campaignState.selectedLeadListId,
+				selectedAgentId: campaignState.selectedAgentId,
+				primaryChannel: campaignState.primaryChannel,
+			});
+
+			// Reset store to clear any previous state
+			campaignState.reset();
+			console.log("[Campaign] 🔄 Store reset complete");
+
+			// Pre-fill campaign wizard with AI-generated data
+			campaignState.setCampaignName(template.name);
+			console.log("[Campaign] ✅ Campaign name set:", template.name);
+
+			// Set primary channel from template (use first channel if multiple)
+			let primaryChannel: string | null = null;
+			if (wizardData.channels?.length > 0) {
+				primaryChannel = wizardData.channels[0];
+				if (
+					primaryChannel &&
+					["call", "text", "email", "social", "directmail"].includes(
+						primaryChannel,
+					)
+				) {
+					campaignState.setPrimaryChannel(primaryChannel as any);
+					console.log("[Campaign] ✅ Primary channel set:", primaryChannel);
+				}
+			}
+
+			// Set campaign goal/description
+			if (template.description) {
+				campaignState.setCampaignGoal(template.description);
+				console.log("[Campaign] ✅ Campaign goal set");
+			}
+
+			// Set AI agent - use first available agent as suggestion
+			console.log(
+				"[Campaign] 👥 Available agents:",
+				campaignState.availableAgents?.length || 0,
+				campaignState.availableAgents?.map((a) => a.name),
+			);
+			if (campaignState.availableAgents?.length > 0) {
+				campaignState.setSelectedAgentId(campaignState.availableAgents[0].id);
+				console.log(
+					"[Campaign] ✅ Agent set:",
+					campaignState.availableAgents[0].name,
+				);
+			} else {
+				console.warn("[Campaign] ⚠️  NO AGENTS AVAILABLE");
+			}
+
+			// Set workflow - use first available workflow as suggestion
+			console.log(
+				"[Campaign] 🔄 Available workflows:",
+				campaignState.availableWorkflows?.length || 0,
+			);
+			if (campaignState.availableWorkflows?.length > 0) {
+				campaignState.setSelectedWorkflowId(
+					campaignState.availableWorkflows[0].id,
+				);
+				console.log(
+					"[Campaign] ✅ Workflow set:",
+					campaignState.availableWorkflows[0].name,
+				);
+			}
+
+			// Set sales script based on primary channel
+			console.log(
+				"[Campaign] 📜 Available sales scripts:",
+				campaignState.availableSalesScripts?.length || 0,
+			);
+			if (campaignState.availableSalesScripts?.length > 0) {
+				const channelType = wizardData.channels?.[0];
+				const matchingScript = campaignState.availableSalesScripts.find(
+					(script) => script.type === channelType,
+				);
+				if (matchingScript) {
+					campaignState.setSelectedSalesScriptId(matchingScript.id);
+					console.log(
+						"[Campaign] ✅ Sales script set (matched):",
+						matchingScript.name,
+						"for channel:",
+						channelType,
+					);
+				} else {
+					// Fallback to first script
+					campaignState.setSelectedSalesScriptId(
+						campaignState.availableSalesScripts[0].id,
+					);
+					console.log(
+						"[Campaign] ✅ Sales script set (fallback):",
+						campaignState.availableSalesScripts[0].name,
+					);
+				}
+			}
+
+			// Set channel-specific customizations
+			console.log(
+				"[Campaign] 🎛️  Setting channel-specific customizations for:",
+				primaryChannel,
+			);
+
+			// Voicemail preferences for call campaigns
+			if (primaryChannel === "call") {
+				campaignState.setDoVoicemailDrops(true);
+				campaignState.setCountVoicemailAsAnswered(false);
+				campaignState.setPreferredVoicemailMessageId("vm_professional");
+				campaignState.setPreferredVoicemailVoiceId("voice_emma");
+				console.log("[Campaign] ✅ Voicemail settings configured");
+
+				// Add transfer agent guidance to campaign goal for call campaigns
+				// NOTE: Transfer fields are FORM-specific, not store-level
+				// They must be set via form.setValue() in the modal, not here
+				console.log(
+					"[Campaign] 🔄 Checking transfer agent setup - agents available:",
+					campaignState.availableAgents?.length || 0,
+				);
+				if (campaignState.availableAgents?.length > 1) {
+					const transferAgent = campaignState.availableAgents[1];
+					console.log(
+						"[Campaign] ✅ Transfer agent identified:",
+						transferAgent.name,
+					);
+
+					// Add transfer guidance to campaign goal for user reference
+					const transferGuidance = `\n\n🔄 TRANSFER SETUP (Call Campaigns):\n• Suggested Agent: ${transferAgent.name} (${transferAgent.email})\n• Recommended Type: Inbound Call\n• Guidelines: Route qualified leads to ${transferAgent.name} for closing\n• Prompt Example: "Let me connect you with ${transferAgent.name} who can help you further"`;
+					const currentGoal =
+						campaignState.campaignGoal || template.description || "";
+					campaignState.setCampaignGoal(currentGoal + transferGuidance);
+
+					console.log(
+						"[Campaign] ℹ️  Transfer guidance added to campaign goal (user can enable manually in Channel Customization step)",
+					);
+				} else {
+					console.warn(
+						"[Campaign] ⚠️  Only 1 agent - transfer guidance skipped (needs 2+ agents)",
+					);
+				}
+			}
+
+			// Text/SMS options for text campaigns
+			if (primaryChannel === "text") {
+				campaignState.setSmsCanSendImages(true);
+				campaignState.setSmsCanSendVideos(false);
+				campaignState.setSmsCanSendLinks(true);
+				campaignState.setSmsAppendAgentName(true);
+				campaignState.setSmsMediaSource("hybrid");
+				campaignState.setTextSignature("Best regards");
+				console.log("[Campaign] ✅ SMS/Text options configured");
+			}
+
+			// Number pooling settings (recommended for all campaigns)
+			campaignState.setNumberPoolingEnabled(true);
+			campaignState.setSmartEncodingEnabled(true);
+			campaignState.setOptOutHandlingEnabled(true);
+			campaignState.setPerNumberDailyLimit(75);
+			campaignState.setNumberSelectionStrategy("round_robin");
+			console.log("[Campaign] ✅ Number pooling configured");
+
+			// Auto-select sender numbers if available
+			console.log(
+				"[Campaign] 📞 Available sender numbers:",
+				campaignState.availableSenderNumbers?.length || 0,
+			);
+			if (campaignState.availableSenderNumbers?.length > 0) {
+				// Select all available sender numbers for pooling
+				campaignState.setSelectedSenderNumbers(
+					campaignState.availableSenderNumbers,
+				);
+				console.log(
+					"[Campaign] ✅ Auto-selected ALL sender numbers:",
+					campaignState.availableSenderNumbers.length,
+				);
+			} else {
+				console.warn(
+					"[Campaign] ⚠️  NO SENDER NUMBERS - Number pooling won't work",
+				);
+			}
+
+			// Set schedule/timing if available
+			if (wizardData.schedule) {
+				if (wizardData.schedule.startDate) {
+					campaignState.setStartDate(new Date(wizardData.schedule.startDate));
+				}
+				if (wizardData.schedule.endDate) {
+					campaignState.setEndDate(new Date(wizardData.schedule.endDate));
+				}
+				if (wizardData.schedule.daysSelected) {
+					campaignState.setDaysSelected(wizardData.schedule.daysSelected);
+				}
+				// Set timing preferences
+				if (wizardData.schedule.reachBeforeBusiness !== undefined) {
+					campaignState.setReachBeforeBusiness(
+						wizardData.schedule.reachBeforeBusiness,
+					);
+				}
+				if (wizardData.schedule.reachAfterBusiness !== undefined) {
+					campaignState.setReachAfterBusiness(
+						wizardData.schedule.reachAfterBusiness,
+					);
+				}
+				if (wizardData.schedule.reachOnWeekend !== undefined) {
+					campaignState.setReachOnWeekend(wizardData.schedule.reachOnWeekend);
+				}
+			}
+
+			// Set lead list - FORCE selection using areaMode
+			campaignState.setAreaMode("leadList"); // Ensure we're in lead list mode
+			campaignState.setAbTestingEnabled(false); // Disable A/B testing by default
+
+			let selectedLeadListId = wizardData.audience?.leadListId || "";
+			let selectedLeadListName =
+				wizardData.audience?.leadListName || "AI Generated";
+			let selectedLeadCount = wizardData.audience?.leadCount || 0;
+
+			if (wizardData.audience?.leadListId) {
+				selectedLeadListId = wizardData.audience.leadListId;
+				selectedLeadListName =
+					wizardData.audience.leadListName || "Template Lead List";
+				selectedLeadCount = wizardData.audience.leadCount || 0;
+			} else {
+				// Auto-select first available lead list if template doesn't have one
+				const availableLeadLists = leadListStore.leadLists; // FIXED: Use leadLists not items
+				console.log(
+					"[Campaign] 📋 Available lead lists:",
+					availableLeadLists?.length || 0,
+				);
+				console.log(
+					"[Campaign] 📋 Lead lists in store:",
+					availableLeadLists?.map((l) => ({
+						id: l.id,
+						name: l.listName,
+						records: l.records,
+					})),
+				);
+
+				if (availableLeadLists?.length > 0) {
+					const firstList = availableLeadLists[0];
+					selectedLeadListId = firstList.id;
+					selectedLeadListName = firstList.listName; // FIXED: Use listName not name
+					selectedLeadCount = firstList.records || 0; // FIXED: Use records not totalLeads
+
+					console.log("[Campaign] ✅ Auto-selected lead list:", {
+						id: firstList.id,
+						name: firstList.listName,
+						records: firstList.records,
+					});
+				} else {
+					console.warn("[Campaign] ⚠️  NO LEAD LISTS AVAILABLE");
+					console.warn(
+						"[Campaign] 💡 Solution: Upload/import leads first before creating campaigns",
+					);
+				}
+			}
+
+			// Set both selectedLeadListId and selectedLeadListAId for compatibility
+			if (selectedLeadListId) {
+				campaignState.setSelectedLeadListId(selectedLeadListId);
+				campaignState.setSelectedLeadListAId(selectedLeadListId); // Some components read from A/B field
+				campaignState.setLeadCount(selectedLeadCount);
+
+				console.log("[Campaign] ✅ Store fields set:", {
+					selectedLeadListId: campaignState.selectedLeadListId,
+					selectedLeadListAId: campaignState.selectedLeadListAId,
+					leadCount: campaignState.leadCount,
+				});
+			} else {
+				console.warn(
+					"[Campaign] ⚠️  No lead list to set - campaign will require manual selection",
+				);
+			}
+
+			// Log the final state before opening modal
+			console.log("=".repeat(80));
+			console.log("📊 [FINAL STATE BEFORE MODAL OPEN]");
+			console.log("=".repeat(80));
+			console.log("[Campaign] Modal Context:", {
+				leadListId: selectedLeadListId,
+				leadListName: selectedLeadListName,
+				leadCount: selectedLeadCount,
+			});
+			console.log("[Campaign] Store State:", {
+				selectedLeadListId: campaignState.selectedLeadListId,
+				selectedLeadListAId: campaignState.selectedLeadListAId,
+				leadCount: campaignState.leadCount,
+				areaMode: campaignState.areaMode,
+				primaryChannel: campaignState.primaryChannel,
+				agentId: campaignState.selectedAgentId,
+				workflowId: campaignState.selectedWorkflowId,
+				scriptId: campaignState.selectedSalesScriptId,
+				voicemailDrops: campaignState.doVoicemailDrops,
+				numberPooling: campaignState.numberPoolingEnabled,
+				selectedSenderNumbers: campaignState.selectedSenderNumbers?.length || 0,
+				// Transfer settings are form-specific, not in store
+			});
+			console.log("=".repeat(80));
+
+			// Open campaign creation modal with pre-filled data
+			// Include transfer agent settings for call campaigns with 2+ agents
+			let transferSettings = {};
+			if (
+				primaryChannel === "call" &&
+				campaignState.availableAgents?.length > 1
+			) {
+				const transferAgent = campaignState.availableAgents[1];
+				transferSettings = {
+					transferEnabled: true,
+					transferAgentId: transferAgent.id,
+					transferAgentName: transferAgent.name,
+					transferType: "inbound_call" as const,
+					transferGuidelines: `Route qualified leads to ${transferAgent.name} for closing`,
+					transferPrompt: `Let me connect you with ${transferAgent.name} who can help you further`,
+				};
+				console.log(
+					"[Campaign] ✅ Transfer settings prepared:",
+					transferSettings,
+				);
+			}
+
+			const contextToSet = {
+				leadListId: selectedLeadListId,
+				leadListName: selectedLeadListName,
+				leadCount: selectedLeadCount,
+				...transferSettings,
+			};
+			console.log(
+				"%c📦 SETTING CAMPAIGN MODAL CONTEXT:",
+				"background: #2196F3; color: white; font-size: 16px; padding: 5px;",
+				contextToSet,
+			);
+			setCampaignModalContext(contextToSet);
+
+			console.log("[Campaign] 🚀 Opening campaign modal in 50ms...");
+
+			// Small delay to ensure state updates are applied
+			setTimeout(() => {
+				setShowCampaignModal(true);
+				console.log("[Campaign] ✅ Modal opened");
+			}, 50);
+
+			toast.success("Campaign Template Loaded", {
+				description: `${template.name} is ready for customization`,
+			});
+		},
+		[leadListStore],
+	);
+
+	const handleSelectCampaignTemplate = useCallback(
+		(template: SavedCampaignTemplate) => {
+			console.log("[Campaign] Template selected:", template);
+			// Similar to handleCampaignGenerated but called from saved templates modal
+			const wizardData = mapTemplateToCampaignWizard(template);
+
+			// Apply template data to campaign creation store
+			const campaignState = useCampaignCreationStore.getState();
+
+			// Reset store to clear any previous state
+			campaignState.reset();
+
+			// Pre-fill campaign wizard with template data
+			campaignState.setCampaignName(template.name);
+
+			// Set primary channel from template (use first channel if multiple)
+			const primaryChannel = wizardData.channels?.[0];
+			if (
+				typeof primaryChannel === "string" &&
+				["call", "text", "email", "social", "directmail"].includes(
+					primaryChannel,
+				)
+			) {
+				campaignState.setPrimaryChannel(primaryChannel as any);
+			}
+
+			// Set campaign goal/description
+			if (template.description) {
+				campaignState.setCampaignGoal(template.description);
+			}
+
+			// Set AI agent - use first available agent as suggestion
+			if (campaignState.availableAgents?.length > 0) {
+				campaignState.setSelectedAgentId(campaignState.availableAgents[0].id);
+			}
+
+			// Set workflow - use first available workflow as suggestion
+			if (campaignState.availableWorkflows?.length > 0) {
+				campaignState.setSelectedWorkflowId(
+					campaignState.availableWorkflows[0].id,
+				);
+			}
+
+			// Set sales script based on primary channel
+			if (campaignState.availableSalesScripts?.length > 0) {
+				const channelType = wizardData.channels?.[0];
+				const matchingScript = campaignState.availableSalesScripts.find(
+					(script) => script.type === channelType,
+				);
+				if (matchingScript) {
+					campaignState.setSelectedSalesScriptId(matchingScript.id);
+				} else {
+					// Fallback to first script
+					campaignState.setSelectedSalesScriptId(
+						campaignState.availableSalesScripts[0].id,
+					);
+				}
+			}
+
+			// Set channel-specific customizations
+			// primaryChannel already declared above, reuse it
+
+			// Voicemail preferences for call campaigns
+			if (primaryChannel === "call") {
+				campaignState.setDoVoicemailDrops(true);
+				campaignState.setCountVoicemailAsAnswered(false);
+				campaignState.setPreferredVoicemailMessageId("vm_professional");
+				campaignState.setPreferredVoicemailVoiceId("voice_emma");
+
+				// Add transfer agent guidance to campaign goal for call campaigns
+				// NOTE: Transfer fields are FORM-specific, not store-level
+				// They must be set via form.setValue() in the modal, not here
+				console.log(
+					"[Campaign] 🔄 Checking transfer agent setup - agents available:",
+					campaignState.availableAgents?.length || 0,
+				);
+				if (campaignState.availableAgents?.length > 1) {
+					const transferAgent = campaignState.availableAgents[1];
+					console.log(
+						"[Campaign] ✅ Transfer agent identified:",
+						transferAgent.name,
+					);
+
+					// Add transfer guidance to campaign goal for user reference
+					const transferGuidance = `\n\n🔄 TRANSFER SETUP (Call Campaigns):\n• Suggested Agent: ${transferAgent.name} (${transferAgent.email})\n• Recommended Type: Inbound Call\n• Guidelines: Route qualified leads to ${transferAgent.name} for closing\n• Prompt Example: "Let me connect you with ${transferAgent.name} who can help you further"`;
+					const currentGoal =
+						campaignState.campaignGoal || template.description || "";
+					campaignState.setCampaignGoal(currentGoal + transferGuidance);
+
+					console.log(
+						"[Campaign] ℹ️  Transfer guidance added to campaign goal (user can enable manually in Channel Customization step)",
+					);
+				} else {
+					console.warn(
+						"[Campaign] ⚠️  Only 1 agent - transfer guidance skipped (needs 2+ agents)",
+					);
+				}
+			}
+
+			// Text/SMS options for text campaigns
+			if (primaryChannel === "text") {
+				campaignState.setSmsCanSendImages(true);
+				campaignState.setSmsCanSendVideos(false);
+				campaignState.setSmsCanSendLinks(true);
+				campaignState.setSmsAppendAgentName(true);
+				campaignState.setSmsMediaSource("hybrid");
+				campaignState.setTextSignature("Best regards");
+				console.log("[Campaign] ✅ SMS/Text options configured");
+			}
+
+			// Number pooling settings (recommended for all campaigns)
+			campaignState.setNumberPoolingEnabled(true);
+			campaignState.setSmartEncodingEnabled(true);
+			campaignState.setOptOutHandlingEnabled(true);
+			campaignState.setPerNumberDailyLimit(75);
+			campaignState.setNumberSelectionStrategy("round_robin");
+			console.log("[Campaign] ✅ Number pooling configured");
+
+			// Auto-select sender numbers if available
+			console.log(
+				"[Campaign] 📞 Available sender numbers:",
+				campaignState.availableSenderNumbers?.length || 0,
+			);
+			if (campaignState.availableSenderNumbers?.length > 0) {
+				// Select all available sender numbers for pooling
+				campaignState.setSelectedSenderNumbers(
+					campaignState.availableSenderNumbers,
+				);
+				console.log(
+					"[Campaign] ✅ Auto-selected ALL sender numbers:",
+					campaignState.availableSenderNumbers.length,
+				);
+			} else {
+				console.warn(
+					"[Campaign] ⚠️  NO SENDER NUMBERS - Number pooling won't work",
+				);
+			}
+
+			// Set schedule/timing if available
+			if (wizardData.schedule) {
+				if (wizardData.schedule.startDate) {
+					campaignState.setStartDate(new Date(wizardData.schedule.startDate));
+				}
+				if (wizardData.schedule.endDate) {
+					campaignState.setEndDate(new Date(wizardData.schedule.endDate));
+				}
+				if (wizardData.schedule.daysSelected) {
+					campaignState.setDaysSelected(wizardData.schedule.daysSelected);
+				}
+				// Set timing preferences
+				if (wizardData.schedule.reachBeforeBusiness !== undefined) {
+					campaignState.setReachBeforeBusiness(
+						wizardData.schedule.reachBeforeBusiness,
+					);
+				}
+				if (wizardData.schedule.reachAfterBusiness !== undefined) {
+					campaignState.setReachAfterBusiness(
+						wizardData.schedule.reachAfterBusiness,
+					);
+				}
+				if (wizardData.schedule.reachOnWeekend !== undefined) {
+					campaignState.setReachOnWeekend(wizardData.schedule.reachOnWeekend);
+				}
+			}
+
+			// Set lead list - FORCE selection using areaMode
+			campaignState.setAreaMode("leadList"); // Ensure we're in lead list mode
+			campaignState.setAbTestingEnabled(false); // Disable A/B testing by default
+
+			let selectedLeadListId = wizardData.audience?.leadListId || "";
+			let selectedLeadListName =
+				wizardData.audience?.leadListName || template.name;
+			let selectedLeadCount = wizardData.audience?.leadCount || 0;
+
+			if (wizardData.audience?.leadListId) {
+				selectedLeadListId = wizardData.audience.leadListId;
+				selectedLeadListName =
+					wizardData.audience.leadListName || "Template Lead List";
+				selectedLeadCount = wizardData.audience.leadCount || 0;
+			} else {
+				// Auto-select first available lead list if template doesn't have one
+				const availableLeadLists = leadListStore.leadLists; // FIXED: Use leadLists not items
+				console.log(
+					"[Campaign] 📋 Available lead lists:",
+					availableLeadLists?.length || 0,
+				);
+				console.log(
+					"[Campaign] 📋 Lead lists in store:",
+					availableLeadLists?.map((l) => ({
+						id: l.id,
+						name: l.listName,
+						records: l.records,
+					})),
+				);
+
+				if (availableLeadLists?.length > 0) {
+					const firstList = availableLeadLists[0];
+					selectedLeadListId = firstList.id;
+					selectedLeadListName = firstList.listName; // FIXED: Use listName not name
+					selectedLeadCount = firstList.records || 0; // FIXED: Use records not totalLeads
+
+					console.log("[Campaign] ✅ Auto-selected lead list:", {
+						id: firstList.id,
+						name: firstList.listName,
+						records: firstList.records,
+					});
+				} else {
+					console.warn("[Campaign] ⚠️  NO LEAD LISTS AVAILABLE");
+					console.warn(
+						"[Campaign] 💡 Solution: Upload/import leads first before creating campaigns",
+					);
+				}
+			}
+
+			// Set both selectedLeadListId and selectedLeadListAId for compatibility
+			if (selectedLeadListId) {
+				campaignState.setSelectedLeadListId(selectedLeadListId);
+				campaignState.setSelectedLeadListAId(selectedLeadListId); // Some components read from A/B field
+				campaignState.setLeadCount(selectedLeadCount);
+
+				console.log("[Campaign] ✅ Store fields set:", {
+					selectedLeadListId: campaignState.selectedLeadListId,
+					selectedLeadListAId: campaignState.selectedLeadListAId,
+					leadCount: campaignState.leadCount,
+				});
+			} else {
+				console.warn(
+					"[Campaign] ⚠️  No lead list to set - campaign will require manual selection",
+				);
+			}
+
+			// Log the final state before opening modal
+			console.log("[Campaign] Final state before modal:", {
+				selectedLeadListId,
+				selectedLeadListName,
+				selectedLeadCount,
+				storeLeadListId: campaignState.selectedLeadListId,
+				storeLeadListAId: campaignState.selectedLeadListAId,
+				storeLeadCount: campaignState.leadCount,
+				primaryChannel: campaignState.primaryChannel,
+				agentId: campaignState.selectedAgentId,
+				workflowId: campaignState.selectedWorkflowId,
+				scriptId: campaignState.selectedSalesScriptId,
+			});
+
+			// Include transfer agent settings for call campaigns with 2+ agents
+			let transferSettings = {};
+			// Use primaryChannel already declared above
+			if (
+				primaryChannel === "call" &&
+				campaignState.availableAgents?.length > 1
+			) {
+				const transferAgent = campaignState.availableAgents[1];
+				transferSettings = {
+					transferEnabled: true,
+					transferAgentId: transferAgent.id,
+					transferAgentName: transferAgent.name,
+					transferType: "inbound_call" as const,
+					transferGuidelines: `Route qualified leads to ${transferAgent.name} for closing`,
+					transferPrompt: `Let me connect you with ${transferAgent.name} who can help you further`,
+				};
+				console.log(
+					"[Campaign] ✅ Transfer settings prepared:",
+					transferSettings,
+				);
+			}
+
+			setCampaignModalContext({
+				leadListId: selectedLeadListId,
+				leadListName: selectedLeadListName,
+				leadCount: selectedLeadCount,
+				...transferSettings,
+			});
+
+			// Close templates modal and open campaign modal
+			setShowSavedCampaignTemplates(false);
+			setTimeout(() => {
+				setShowCampaignModal(true);
+			}, 150);
+
+			toast.success("Template Loaded", {
+				description: `Using ${template.name}`,
+			});
+		},
+		[leadListStore],
+	);
+
+	const handleAISearchGenerated = useCallback((search: SavedSearch) => {
+		console.log("[Lookalike] AI search generated:", search);
+		// Load the AI-generated search
+		if (search.lookalikeConfig) {
+			const config = search.lookalikeConfig;
+			const seedLeadCount = config.seedLeadCount || 100;
+
+			setSeedLeadListData({
+				listId: config.seedListId || `seed_${Date.now()}`,
+				listName: config.seedListName || "AI Generated",
+				leadCount: seedLeadCount,
+			});
+
+			setShowLookalikeConfigModal(true);
+		}
 	}, []);
 
 	const handleSeedListSelected = useCallback(
@@ -335,12 +1257,14 @@ export default function QuickStartPage() {
 					config.seedLeadCount || seedLeadListData?.leadCount || 100,
 			};
 
-			// Create saved search object
+			// Create saved search object with user persona and goal
 			const savedSearch: SavedSearch = {
 				id: `lookalike_config_${Date.now()}`,
 				name: configName,
 				searchCriteria: {} as any, // Empty for lookalike
 				lookalikeConfig: completeConfig,
+				userPersona: config.userPersona,
+				userGoal: config.userGoal,
 				createdAt: new Date(),
 				updatedAt: new Date(),
 				priority: false,
@@ -709,7 +1633,7 @@ export default function QuickStartPage() {
 		updateLastTemplateId,
 	]);
 
-	const quickStartCards = useQuickStartCardViewModel({
+	const quickstartCards = useQuickStartCardViewModel({
 		bulkCsvFile,
 		bulkCsvHeaders,
 		onImport: handleImportFromSource,
@@ -723,6 +1647,11 @@ export default function QuickStartPage() {
 		createRouterPush,
 		onStartNewSearch: handleStartNewSearch,
 		onOpenSavedSearches: handleOpenSavedSearches,
+		onAIGenerateSearch: handleAIGenerateSearch,
+		onAIGenerateCampaign: handleAIGenerateCampaign,
+		onOpenSavedCampaignTemplates: handleOpenSavedCampaignTemplates,
+		onAIGenerateWorkflow: handleAIGenerateWorkflow,
+		onOpenSavedWorkflows: handleOpenSavedWorkflows,
 		onLaunchWizard: handleWizardLaunch,
 		onLaunchQuickStartFlow: handleLaunchQuickStartFlow,
 	});
@@ -735,143 +1664,359 @@ export default function QuickStartPage() {
 		}, 0);
 	}, [openWebhookModal]);
 
+	const scrollToQuickStartActions = useCallback(() => {
+		if (typeof window === "undefined") {
+			return;
+		}
+		const target = document.getElementById("quickstart-actions");
+		if (target) {
+			target.scrollIntoView({ behavior: "smooth", block: "start" });
+		}
+	}, []);
+
 	return (
-		<div className="container mx-auto px-4 py-8">
-			<div className="relative mb-8 text-center">
-				<h1 className="mb-2 font-bold text-3xl text-foreground">Quick Start</h1>
-				<p className="text-lg text-muted-foreground">
-					Get up and running in minutes. Choose how you'd like to begin.
-				</p>
-				<button
-					onClick={() => {
-						if (typeof window !== "undefined") {
-							window.dispatchEvent(new Event("dealScale:helpFab:show"));
+		<div className="relative min-h-screen overflow-hidden">
+			{/* Base layer: Light rays */}
+			<LightRays className="absolute inset-0 z-0" />
+
+			{/* Middle layer: Collision beams with content */}
+			<BackgroundBeamsWithCollision
+				className="relative z-0 flex min-h-screen w-full justify-center pb-16"
+				data-testid="quickstart-background"
+			>
+				{/* Content layer */}
+				<div className="container relative z-10 mx-auto px-4 py-8">
+					<div className="relative mb-8">
+						<div className="mb-6 flex justify-center">
+							<div className="relative inline-flex items-center">
+								<button
+									type="button"
+									onClick={scrollToQuickStartActions}
+									className="group inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-4 py-2 font-semibold text-primary text-xs uppercase tracking-[0.35em] transition hover:bg-primary/15"
+								>
+									<ArrowDown className="h-3.5 w-3.5 transition group-hover:translate-y-0.5" />
+									Next
+								</button>
+								<Pointer
+									className="text-primary"
+									initial={{ opacity: 0, scale: 0 }}
+									animate={{ opacity: 0.9, scale: 1 }}
+									exit={{ opacity: 0, scale: 0 }}
+									transition={{ type: "spring", stiffness: 150, damping: 18 }}
+								/>
+							</div>
+						</div>
+						<button
+							onClick={() => {
+								if (typeof window !== "undefined") {
+									window.dispatchEvent(new Event("dealScale:helpFab:show"));
+								}
+							}}
+							className="absolute top-0 right-0 flex h-10 w-10 items-center justify-center rounded-full border border-transparent text-muted-foreground transition hover:bg-muted"
+							type="button"
+							aria-label="Open Quick Start help"
+						>
+							<HelpCircle className="h-5 w-5" />
+						</button>
+
+						<DynamicHeadline />
+						<QuickStartCTA
+							className="mt-6"
+							displayMode="both"
+							orientation="horizontal"
+						/>
+						<QuickStartHeroVideo className="mt-10" />
+					</div>
+
+					<div className="mt-12" id="quickstart-actions">
+						<QuickStartActionsGrid
+							cards={quickstartCards}
+							onLaunchGoalFlow={handleLaunchQuickStartFlow}
+							onImport={handleSmartImport}
+							onCampaignCreate={handleSmartCampaign}
+							onOpenWebhookModal={handleSmartWebhook}
+							onStartNewSearch={handleStartNewSearch}
+							onBrowserExtension={handleBrowserExtension}
+							createRouterPush={createRouterPush}
+						/>
+					</div>
+					<QuickStartWizard />
+
+					<input
+						ref={fileInputRef}
+						type="file"
+						accept=".csv,text/csv"
+						onChange={handleCsvUpload}
+						className="hidden"
+					/>
+
+					<QuickStartCrmSyncModal
+						isOpen={showCrmSyncModal}
+						connectedCrmNames={connectedCrmNames}
+						onCancel={handleCrmSyncCancel}
+						onConfirm={handleCrmSyncConfirm}
+						onAutoSelect={handleCrmAutoSelect}
+						isAutoSelectDisabled={!hasLeadListsAvailable}
+					/>
+
+					<QuickStartLegacyModals
+						showLeadModal={showLeadModal}
+						leadModalMode={
+							lookalikeLeadModalMode === "select" ? "select" : leadModalMode
 						}
-					}}
-					className="absolute top-0 right-0 flex h-10 w-10 items-center justify-center rounded-full border border-transparent text-muted-foreground transition hover:bg-muted"
-					type="button"
-				>
-					<HelpCircle className="h-5 w-5" />
-				</button>
-			</div>
+						onCloseLeadModal={handleCloseLeadModal}
+						onLaunchCampaign={
+							lookalikeLeadModalMode === "select"
+								? handleSeedListSelected
+								: handleLaunchCampaign
+						}
+						showBulkSuiteModal={showBulkSuiteModal}
+						onCloseBulkSuite={handleCloseBulkModal}
+						bulkCsvFile={bulkCsvFile}
+						bulkCsvHeaders={bulkCsvHeaders}
+						onSuiteLaunchComplete={(payload) => {
+							const result = handleSuiteLaunchComplete(payload);
+							handleCloseBulkModal();
+							return result;
+						}}
+						showCampaignModal={showCampaignModal}
+						onCampaignModalToggle={handleCampaignModalToggle}
+						campaignModalContext={campaignModalContext}
+						variantCampaignData={variantCampaignData}
+						isVariantMode={isVariantMode}
+						savedSearchModalOpen={savedSearchModalOpen}
+						onCloseSavedSearches={handleCloseSavedSearches}
+						savedSearches={savedSearches}
+						onDeleteSavedSearch={deleteSavedSearch}
+						onSelectSavedSearch={handleSelectSavedSearch}
+						onSetSearchPriority={setSearchPriority}
+						showWalkthrough={showWalkthrough}
+						onCloseWalkthrough={() => setShowWalkthrough(false)}
+						isTourOpen={isTourOpen}
+						onStartTour={handleStartTour}
+						onCloseTour={handleCloseTour}
+						campaignSteps={campaignSteps}
+						defaultChannel={(() => {
+							if (!lastTemplateId) return undefined;
+							const t = getQuickStartTemplate(lastTemplateId);
+							if (!t) return undefined;
+							return t.primaryChannel === "call" || t.primaryChannel === "text"
+								? t.primaryChannel
+								: undefined;
+						})()}
+						onCampaignLaunched={() => handlePostLaunch()}
+					/>
 
-			<QuickStartActionsGrid cards={quickStartCards} />
-			<QuickStartWizard />
+					<CampaignSelectorModal
+						isOpen={showCampaignSelectorModal}
+						onOpenChange={setShowCampaignSelectorModal}
+						onSelect={handleCampaignSelected}
+					/>
 
-			<input
-				ref={fileInputRef}
-				type="file"
-				accept=".csv,text/csv"
-				onChange={handleCsvUpload}
-				className="hidden"
-			/>
-
-			<QuickStartLegacyModals
-				showLeadModal={showLeadModal}
-				leadModalMode={
-					lookalikeLeadModalMode === "select" ? "select" : leadModalMode
-				}
-				onCloseLeadModal={handleCloseLeadModal}
-				onLaunchCampaign={
-					lookalikeLeadModalMode === "select"
-						? handleSeedListSelected
-						: handleLaunchCampaign
-				}
-				showBulkSuiteModal={showBulkSuiteModal}
-				onCloseBulkSuite={handleCloseBulkModal}
-				bulkCsvFile={bulkCsvFile}
-				bulkCsvHeaders={bulkCsvHeaders}
-				onSuiteLaunchComplete={(payload) => {
-					const result = handleSuiteLaunchComplete(payload);
-					handleCloseBulkModal();
-					return result;
-				}}
-				showCampaignModal={showCampaignModal}
-				onCampaignModalToggle={handleCampaignModalToggle}
-				campaignModalContext={campaignModalContext}
-				variantCampaignData={variantCampaignData}
-				isVariantMode={isVariantMode}
-				savedSearchModalOpen={savedSearchModalOpen}
-				onCloseSavedSearches={handleCloseSavedSearches}
-				savedSearches={savedSearches}
-				onDeleteSavedSearch={deleteSavedSearch}
-				onSelectSavedSearch={handleSelectSavedSearch}
-				onSetSearchPriority={setSearchPriority}
-				showWalkthrough={showWalkthrough}
-				onCloseWalkthrough={() => setShowWalkthrough(false)}
-				isTourOpen={isTourOpen}
-				onStartTour={handleStartTour}
-				onCloseTour={handleCloseTour}
-				campaignSteps={campaignSteps}
-				defaultChannel={(() => {
-					if (!lastTemplateId) return undefined;
-					const t = getQuickStartTemplate(lastTemplateId);
-					if (!t) return undefined;
-					return t.primaryChannel === "call" || t.primaryChannel === "text"
-						? t.primaryChannel
-						: undefined;
-				})()}
-				onCampaignLaunched={() => handlePostLaunch()}
-			/>
-
-			<CampaignSelectorModal
-				isOpen={showCampaignSelectorModal}
-				onOpenChange={setShowCampaignSelectorModal}
-				onSelect={handleCampaignSelected}
-			/>
-
-			<LookalikeConfigModal
-				isOpen={showLookalikeConfigModal}
-				onOpenChange={(open) => {
-					console.log(
-						"[Dashboard] Config modal onOpenChange:",
-						open,
-						"seedLeadListData:",
-						seedLeadListData,
-					);
-					setShowLookalikeConfigModal(open);
-					// Reset seed data when closing
-					if (!open) {
-						setSeedLeadListData(null);
-					}
-				}}
-				seedListId={seedLeadListData?.listId || ""}
-				seedListName={seedLeadListData?.listName || "Seed List"}
-				seedLeadCount={seedLeadListData?.leadCount || 0}
-				onGenerate={handleGenerateLookalike}
-				onSaveConfig={handleSaveLookalikeConfig}
-			/>
-
-			<LookalikeResultsModal
-				isOpen={showLookalikeResultsModal}
-				onOpenChange={(open) => {
-					setShowLookalikeResultsModal(open);
-					// Don't clear candidates while modal is open or closing
-					if (!open) {
-						// Only clear after a delay to allow animations
-						setTimeout(() => {
-							if (!showLookalikeResultsModal) {
-								lookalikeStore.currentCandidates = [];
+					<LookalikeConfigModal
+						isOpen={showLookalikeConfigModal}
+						onOpenChange={(open) => {
+							console.log(
+								"[Dashboard] Config modal onOpenChange:",
+								open,
+								"seedLeadListData:",
+								seedLeadListData,
+							);
+							setShowLookalikeConfigModal(open);
+							// Reset seed data when closing
+							if (!open) {
 								setSeedLeadListData(null);
 							}
-						}, 300);
-					}
-				}}
-				candidates={lookalikeStore.currentCandidates}
-				seedListName={seedLeadListData?.listName || ""}
-				onSaveAsList={handleSaveLookalikeAsList}
-				onExport={handleExportLookalike}
-				existingLookalikeVersions={
-					// Count existing lookalike versions for this seed list
-					leadListStore.leadLists.filter((list) =>
-						list.listName.startsWith(
-							`Lookalike - ${seedLeadListData?.listName}`,
-						),
-					).length
-				}
-			/>
+						}}
+						seedListId={seedLeadListData?.listId || ""}
+						seedListName={seedLeadListData?.listName || "Seed List"}
+						seedLeadCount={seedLeadListData?.leadCount || 0}
+						userPersona={
+							useQuickStartWizardDataStore.getState().personaId ?? undefined
+						}
+						userGoal={
+							useQuickStartWizardDataStore.getState().goalId ?? undefined
+						}
+						onGenerate={handleGenerateLookalike}
+						onSaveConfig={handleSaveLookalikeConfig}
+					/>
 
-			<QuickStartSupportCard />
+					<LookalikeResultsModal
+						isOpen={showLookalikeResultsModal}
+						onOpenChange={(open) => {
+							setShowLookalikeResultsModal(open);
+							// Don't clear candidates while modal is open or closing
+							if (!open) {
+								// Only clear after a delay to allow animations
+								setTimeout(() => {
+									if (!showLookalikeResultsModal) {
+										lookalikeStore.currentCandidates = [];
+										setSeedLeadListData(null);
+									}
+								}, 300);
+							}
+						}}
+						candidates={lookalikeStore.currentCandidates}
+						seedListName={seedLeadListData?.listName || ""}
+						onSaveAsList={handleSaveLookalikeAsList}
+						onExport={handleExportLookalike}
+						existingLookalikeVersions={
+							// Count existing lookalike versions for this seed list
+							leadListStore.leadLists.filter((list) =>
+								list.listName.startsWith(
+									`Lookalike - ${seedLeadListData?.listName}`,
+								),
+							).length
+						}
+					/>
+
+					<AISavedSearchGenerator
+						isOpen={showAISearchGenerator}
+						onOpenChange={setShowAISearchGenerator}
+						onSearchGenerated={handleAISearchGenerated}
+						availableSeedLists={leadListStore.leadLists.map((list) => ({
+							id: list.id,
+							name: list.listName,
+							leadCount: list.records,
+						}))}
+					/>
+
+					<AICampaignGenerator
+						isOpen={showAICampaignGenerator}
+						onOpenChange={(open) => setShowAICampaignGenerator(open)}
+						onCampaignGenerated={handleCampaignGenerated}
+					/>
+
+					<SavedCampaignTemplatesModal
+						open={showSavedCampaignTemplates}
+						onClose={() => setShowSavedCampaignTemplates(false)}
+						templates={useSavedCampaignTemplatesStore.getState().list()}
+						onDelete={(id) => {
+							useSavedCampaignTemplatesStore.getState().deleteTemplate(id);
+							toast.success("Template Deleted");
+						}}
+						onSelect={handleSelectCampaignTemplate}
+						onSetPriority={(id) => {
+							const templates = useSavedCampaignTemplatesStore
+								.getState()
+								.list();
+							const template = templates.find((t) => t.id === id);
+							if (template) {
+								useSavedCampaignTemplatesStore.getState().updateTemplate(id, {
+									priority: !template.priority,
+								});
+								toast.success(
+									template.priority
+										? "Removed from favorites"
+										: "Added to favorites",
+								);
+							}
+						}}
+						onToggleMonetization={(id) => {
+							const templates = useSavedCampaignTemplatesStore
+								.getState()
+								.list();
+							const template = templates.find((t) => t.id === id);
+							if (template?.monetization) {
+								const newMonetization = {
+									...template.monetization,
+									enabled: !template.monetization.enabled,
+									isPublic: !template.monetization.enabled,
+								};
+								useSavedCampaignTemplatesStore.getState().updateTemplate(id, {
+									monetization: newMonetization,
+								});
+								toast.success(
+									newMonetization.enabled
+										? "Template is now public in marketplace"
+										: "Template removed from marketplace",
+									{
+										description: newMonetization.enabled
+											? `Earning ${template.monetization.priceMultiplier}x per use`
+											: "Template is now private",
+									},
+								);
+							}
+						}}
+					/>
+
+					{/* Workflow Modals */}
+					<AIWorkflowGenerator
+						isOpen={showAIWorkflowGenerator}
+						onClose={() => setShowAIWorkflowGenerator(false)}
+						onGenerate={async (data) => {
+							console.log("[Workflow] Generating workflow:", data);
+							// Pass the workflow data to the export modal
+							handleWorkflowGenerated(data);
+						}}
+					/>
+
+					{generatedWorkflow && (
+						<WorkflowExportModal
+							isOpen={showWorkflowExportModal}
+							onClose={() => {
+								setShowWorkflowExportModal(false);
+								setGeneratedWorkflow(null);
+							}}
+							generatedWorkflow={generatedWorkflow}
+							onExported={handleWorkflowExported}
+							onRegenerate={handleWorkflowRegenerate}
+						/>
+					)}
+
+					<SavedWorkflowsModal
+						open={showSavedWorkflows}
+						onClose={() => setShowSavedWorkflows(false)}
+						workflows={useSavedWorkflowsStore.getState().list()}
+						onDelete={(id) => {
+							useSavedWorkflowsStore.getState().deleteWorkflow(id);
+							toast.success("Workflow Deleted");
+						}}
+						onSelect={(workflow) => {
+							console.log("[Workflow] Selected workflow:", workflow);
+							toast.info("Workflow Selected", {
+								description: `Using ${workflow.name} workflow`,
+							});
+							setShowSavedWorkflows(false);
+						}}
+						onSetPriority={(id) => {
+							console.log("[Workflow] Toggle priority for:", id);
+							toast.success("Priority toggled");
+						}}
+						onToggleMonetization={(id) => {
+							const workflows = useSavedWorkflowsStore.getState().list();
+							const workflow = workflows.find((w) => w.id === id);
+							if (workflow?.monetization) {
+								useSavedWorkflowsStore.getState().toggleMonetization(id);
+								const newEnabled = !workflow.monetization.enabled;
+								toast.success(
+									newEnabled
+										? "Workflow is now public in marketplace"
+										: "Workflow removed from marketplace",
+									{
+										description: newEnabled
+											? `Earning ${workflow.monetization.priceMultiplier}x per use`
+											: "Workflow is now private",
+									},
+								);
+							}
+						}}
+						onReExport={(id, platform) => {
+							console.log(
+								"[Workflow] Re-exporting workflow:",
+								id,
+								"to",
+								platform,
+							);
+							toast.success(`Re-exporting to ${platform}`, {
+								description: "Workflow will be updated on the platform",
+							});
+						}}
+					/>
+
+					<QuickStartSupportCard />
+				</div>
+			</BackgroundBeamsWithCollision>
 		</div>
 	);
 }

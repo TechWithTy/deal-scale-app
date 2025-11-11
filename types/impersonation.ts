@@ -1,10 +1,10 @@
+import type { SubscriptionTier } from "@/constants/subscription/tiers";
 import type {
 	PermissionMatrix,
 	User,
 	UserQuotas,
 	UserRole,
 } from "@/types/user";
-import type { SubscriptionTier } from "@/constants/subscription/tiers";
 
 export interface ImpersonationIdentity {
 	id: string;

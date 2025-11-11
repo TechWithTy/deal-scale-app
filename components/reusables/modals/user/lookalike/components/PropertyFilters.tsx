@@ -6,17 +6,28 @@
 
 "use client";
 
-import { UseFormReturn } from "react-hook-form";
 import { AccordionContent } from "@/components/ui/accordion";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
-	PROPERTY_TYPES,
-	PROPERTY_STATUSES,
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
+import type { UseFormReturn } from "react-hook-form";
+import {
 	DISTRESSED_SIGNALS,
+	EQUITY_POSITIONS,
 	type FormValues,
+	OWNERSHIP_DURATIONS,
+	PROPERTY_STATUSES,
+	PROPERTY_TYPES,
 } from "../types";
+import { PropertyAdvanced } from "./advanced/PropertyAdvanced";
+import { PropertyEfficiency } from "./advanced/PropertyEfficiency";
 
 interface PropertyFiltersProps {
 	form: UseFormReturn<FormValues>;
@@ -28,10 +39,10 @@ interface PropertyFiltersProps {
  */
 export function PropertyFilters({ form }: PropertyFiltersProps) {
 	return (
-		<AccordionContent className="space-y-4 pt-4">
+		<div className="space-y-4">
 			<div>
 				<Label>Property Type</Label>
-				<div className="grid grid-cols-3 gap-2 mt-2">
+				<div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">
 					{PROPERTY_TYPES.map((type) => (
 						<label key={type.value} className="flex items-center gap-2">
 							<Checkbox
@@ -54,7 +65,7 @@ export function PropertyFilters({ form }: PropertyFiltersProps) {
 
 			<div>
 				<Label>Property Status</Label>
-				<div className="grid grid-cols-3 gap-2 mt-2">
+				<div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">
 					{PROPERTY_STATUSES.map((status) => (
 						<label key={status.value} className="flex items-center gap-2">
 							<Checkbox
@@ -75,10 +86,10 @@ export function PropertyFilters({ form }: PropertyFiltersProps) {
 				</div>
 			</div>
 
-			<div className="grid grid-cols-2 gap-4">
+			<div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
 				<div>
 					<Label>Price Range</Label>
-					<div className="flex gap-2 mt-1">
+					<div className="mt-1 flex gap-2">
 						<Input
 							type="number"
 							placeholder="Min $"
@@ -94,7 +105,7 @@ export function PropertyFilters({ form }: PropertyFiltersProps) {
 
 				<div>
 					<Label>Bedrooms</Label>
-					<div className="flex gap-2 mt-1">
+					<div className="mt-1 flex gap-2">
 						<Input
 							type="number"
 							placeholder="Min"
@@ -107,12 +118,28 @@ export function PropertyFilters({ form }: PropertyFiltersProps) {
 						/>
 					</div>
 				</div>
+
+				<div>
+					<Label>Bathrooms</Label>
+					<div className="mt-1 flex gap-2">
+						<Input
+							type="number"
+							placeholder="Min"
+							{...form.register("bathroomsMin", { valueAsNumber: true })}
+						/>
+						<Input
+							type="number"
+							placeholder="Max"
+							{...form.register("bathroomsMax", { valueAsNumber: true })}
+						/>
+					</div>
+				</div>
 			</div>
 
-			<div className="grid grid-cols-2 gap-4">
+			<div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
 				<div>
 					<Label>Square Footage</Label>
-					<div className="flex gap-2 mt-1">
+					<div className="mt-1 flex gap-2">
 						<Input
 							type="number"
 							placeholder="Min sqft"
@@ -128,7 +155,7 @@ export function PropertyFilters({ form }: PropertyFiltersProps) {
 
 				<div>
 					<Label>Year Built</Label>
-					<div className="flex gap-2 mt-1">
+					<div className="mt-1 flex gap-2">
 						<Input
 							type="number"
 							placeholder="Min year"
@@ -143,9 +170,59 @@ export function PropertyFilters({ form }: PropertyFiltersProps) {
 				</div>
 			</div>
 
+			<div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
+				<div>
+					<Label>Ownership Duration</Label>
+					<div className="mt-2 space-y-2">
+						{OWNERSHIP_DURATIONS.map((duration) => (
+							<label key={duration.value} className="flex items-center gap-2">
+								<Checkbox
+									checked={form
+										.watch("ownershipDuration")
+										?.includes(duration.value)}
+									onCheckedChange={(checked) => {
+										const current = form.watch("ownershipDuration") || [];
+										form.setValue(
+											"ownershipDuration",
+											checked
+												? [...current, duration.value]
+												: current.filter((d) => d !== duration.value),
+										);
+									}}
+								/>
+								<span className="text-sm">{duration.label}</span>
+							</label>
+						))}
+					</div>
+				</div>
+
+				<div>
+					<Label>Equity Position</Label>
+					<div className="mt-2 space-y-2">
+						{EQUITY_POSITIONS.map((equity) => (
+							<label key={equity.value} className="flex items-center gap-2">
+								<Checkbox
+									checked={form.watch("equityPosition")?.includes(equity.value)}
+									onCheckedChange={(checked) => {
+										const current = form.watch("equityPosition") || [];
+										form.setValue(
+											"equityPosition",
+											checked
+												? [...current, equity.value]
+												: current.filter((e) => e !== equity.value),
+										);
+									}}
+								/>
+								<span className="text-sm">{equity.label}</span>
+							</label>
+						))}
+					</div>
+				</div>
+			</div>
+
 			<div>
 				<Label>Distressed Signals</Label>
-				<div className="grid grid-cols-2 gap-2 mt-2">
+				<div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
 					{DISTRESSED_SIGNALS.map((signal) => (
 						<label key={signal.value} className="flex items-center gap-2">
 							<Checkbox
@@ -167,6 +244,49 @@ export function PropertyFilters({ form }: PropertyFiltersProps) {
 					))}
 				</div>
 			</div>
-		</AccordionContent>
+
+			{/* Ownership Filters */}
+			<div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
+				<div>
+					<Label htmlFor="corporate">Corporate Ownership</Label>
+					<Select
+						value={form.watch("corporateOwnership") || "all"}
+						onValueChange={(value) =>
+							form.setValue("corporateOwnership", value)
+						}
+					>
+						<SelectTrigger id="corporate" className="mt-1.5">
+							<SelectValue />
+						</SelectTrigger>
+						<SelectContent>
+							<SelectItem value="all">No preference</SelectItem>
+							<SelectItem value="only">Only corporate</SelectItem>
+							<SelectItem value="exclude">Exclude corporate</SelectItem>
+						</SelectContent>
+					</Select>
+				</div>
+
+				<div>
+					<Label htmlFor="absentee">Absentee Owner</Label>
+					<Select
+						value={form.watch("absenteeOwner") || "all"}
+						onValueChange={(value) => form.setValue("absenteeOwner", value)}
+					>
+						<SelectTrigger id="absentee" className="mt-1.5">
+							<SelectValue />
+						</SelectTrigger>
+						<SelectContent>
+							<SelectItem value="all">No preference</SelectItem>
+							<SelectItem value="only">Only absentee</SelectItem>
+							<SelectItem value="exclude">Exclude absentee</SelectItem>
+						</SelectContent>
+					</Select>
+				</div>
+			</div>
+
+			{/* Property-Specific Nested Options */}
+			<PropertyEfficiency form={form} />
+			<PropertyAdvanced form={form} />
+		</div>
 	);
 }

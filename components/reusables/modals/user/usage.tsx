@@ -4,18 +4,18 @@
  * Integrates with modal store and provides enhanced UI/UX
  */
 
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { UserProfileSubscription } from "@/constants/_faker/profile/userSubscription";
 import { useModalStore } from "@/lib/stores/dashboard";
+import { X } from "lucide-react";
+import { useSession } from "next-auth/react";
 import type React from "react";
 import { useMemo, useState } from "react";
-import { useSession } from "next-auth/react";
 import { toast } from "sonner";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import PricingComparisonCard from "./usage/PricingComparisonCard";
 import UsageModalActions from "./usage/UsageModalActions";
 import UsageProgressBar from "./usage/UsageProgressBar";
 import UsageSummary from "./usage/UsageSummarySidebar";
-import { X } from "lucide-react";
 
 export interface UsageData {
 	subscription: UserProfileSubscription;

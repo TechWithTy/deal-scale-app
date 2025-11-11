@@ -1,10 +1,10 @@
 "use client";
 
-import { CircleDashed } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useModalStore } from "@/lib/stores/dashboard";
 import { useGamificationStore } from "@/lib/stores/gamification";
 import { useSessionStore } from "@/lib/stores/user/useSessionStore";
+import { CircleDashed } from "lucide-react";
 import { useEffect, useState } from "react";
 
 export default function WheelSpinnerDropdown() {
@@ -46,7 +46,7 @@ export default function WheelSpinnerDropdown() {
 		>
 			<CircleDashed className="h-[1.1rem] w-[1.1rem]" />
 			{isAvailable ? (
-				<span className="absolute -right-0.5 -top-0.5 inline-flex h-2.5 w-2.5 animate-pulse rounded-full bg-amber-400" />
+				<span className="-right-0.5 -top-0.5 absolute inline-flex h-2.5 w-2.5 animate-pulse rounded-full bg-amber-400" />
 			) : null}
 		</Button>
 	);

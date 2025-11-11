@@ -1,9 +1,9 @@
 "use client";
 
+import { LEAD_LISTS_MOCK } from "@/constants/dashboard/leadLists.mock";
+import Papa, { type ParseResult } from "papaparse";
 import type React from "react";
 import { useState } from "react";
-import Papa, { type ParseResult } from "papaparse";
-import { LEAD_LISTS_MOCK } from "@/constants/dashboard/leadLists.mock";
 
 interface CsvRow {
 	[key: string]: string;

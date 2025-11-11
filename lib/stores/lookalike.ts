@@ -1,11 +1,11 @@
-import { create } from "zustand";
 import type {
+	AudiencePerformanceSummary,
+	ExportJob,
 	LookalikeAudience,
 	LookalikeCandidate,
 	LookalikeConfig,
-	ExportJob,
-	AudiencePerformanceSummary,
 } from "@/types/lookalike";
+import { create } from "zustand";
 
 interface LookalikeState {
 	// Audiences

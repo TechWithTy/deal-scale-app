@@ -1,6 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
 	Dialog,
 	DialogContent,
@@ -8,11 +10,8 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Badge } from "@/components/ui/badge";
 import {
 	Table,
 	TableBody,
@@ -21,24 +20,25 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
+import { useModalStore } from "@/lib/stores/dashboard";
+import type { AdPlatform, LookalikeCandidate } from "@/types/lookalike";
 import {
-	Save,
 	Download,
-	Loader2,
-	TrendingUp,
-	Facebook,
-	Linkedin,
-	FileText,
-	Webhook,
-	Link as LinkIcon,
 	ExternalLink,
+	Facebook,
+	FileText,
+	Link as LinkIcon,
+	Linkedin,
+	Loader2,
+	Save,
+	TrendingUp,
+	Webhook,
 	Zap,
 } from "lucide-react";
-import type { LookalikeCandidate, AdPlatform } from "@/types/lookalike";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { exportWithMetadata } from "./utils/exportToCsv";
-import { useModalStore } from "@/lib/stores/dashboard";
-import { useRouter } from "next/navigation";
 
 interface LookalikeResultsModalProps {
 	isOpen: boolean;
@@ -308,27 +308,29 @@ export function LookalikeResultsModal({
 
 	return (
 		<Dialog open={isOpen} onOpenChange={onOpenChange}>
-			<DialogContent className="max-w-6xl max-h-[90vh] overflow-hidden flex flex-col">
-				<DialogHeader>
-					<DialogTitle>Look-Alike Audience Results</DialogTitle>
-					<DialogDescription>
+			<DialogContent className="mx-4 flex h-[95vh] max-w-6xl flex-col overflow-hidden p-3 sm:mx-auto sm:p-6">
+				<DialogHeader className="shrink-0">
+					<DialogTitle className="text-lg sm:text-xl">
+						Look-Alike Audience Results
+					</DialogTitle>
+					<DialogDescription className="text-xs sm:text-sm">
 						Found {candidatesArray.length} similar leads based on {seedListName}
 						. Select leads to save or export to ad platforms.
 					</DialogDescription>
 				</DialogHeader>
 
-				<div className="flex-1 overflow-hidden flex flex-col gap-4">
+				<div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto overflow-x-hidden sm:gap-4">
 					{/* Selection Summary */}
-					<div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
-						<div className="flex items-center gap-4">
+					<div className="flex shrink-0 flex-col items-start justify-between gap-3 rounded-lg bg-muted/50 p-3 sm:flex-row sm:items-center sm:p-4">
+						<div className="flex items-center gap-3 sm:gap-4">
 							<Checkbox checked={allSelected} onCheckedChange={toggleAll} />
-							<span className="text-sm font-medium">
+							<span className="font-medium text-xs sm:text-sm">
 								{selectedIds.size} of {candidatesArray.length} selected
 							</span>
 						</div>
 
 						<div className="flex items-center gap-2">
-							<Badge variant="secondary">
+							<Badge variant="secondary" className="text-xs">
 								Avg Score:{" "}
 								{candidatesArray.length > 0
 									? (
@@ -344,14 +346,14 @@ export function LookalikeResultsModal({
 					</div>
 
 					{/* Candidates Table */}
-					<div className="flex-1 overflow-auto border rounded-lg">
+					<div className="max-h-[500px] min-h-[300px] flex-1 overflow-auto rounded-lg border sm:min-h-[400px]">
 						{candidatesArray.length === 0 ? (
 							<div className="flex flex-col items-center justify-center py-12 text-center">
-								<TrendingUp className="h-12 w-12 text-muted-foreground mb-4" />
-								<h3 className="font-semibold text-lg mb-2">
+								<TrendingUp className="mb-4 h-12 w-12 text-muted-foreground" />
+								<h3 className="mb-2 font-semibold text-lg">
 									No Candidates Generated
 								</h3>
-								<p className="text-muted-foreground text-sm max-w-md">
+								<p className="max-w-md text-muted-foreground text-sm">
 									No leads matched your filter criteria. Try adjusting your
 									similarity threshold or removing some filters to get more
 									results.
@@ -359,15 +361,23 @@ export function LookalikeResultsModal({
 							</div>
 						) : (
 							<Table>
-								<TableHeader className="sticky top-0 bg-background">
+								<TableHeader className="sticky top-0 z-10 bg-background">
 									<TableRow>
-										<TableHead className="w-12"></TableHead>
-										<TableHead>Score</TableHead>
-										<TableHead>Name</TableHead>
-										<TableHead>Property</TableHead>
-										<TableHead>Location</TableHead>
-										<TableHead>Value</TableHead>
-										<TableHead>Contact</TableHead>
+										<TableHead className="w-8 text-xs sm:w-12"></TableHead>
+										<TableHead className="text-xs sm:text-sm">Score</TableHead>
+										<TableHead className="text-xs sm:text-sm">Name</TableHead>
+										<TableHead className="hidden text-xs sm:table-cell sm:text-sm">
+											Property
+										</TableHead>
+										<TableHead className="text-xs sm:text-sm">
+											Location
+										</TableHead>
+										<TableHead className="hidden text-xs sm:text-sm md:table-cell">
+											Value
+										</TableHead>
+										<TableHead className="hidden text-xs sm:text-sm md:table-cell">
+											Contact
+										</TableHead>
 									</TableRow>
 								</TableHeader>
 								<TableBody>
@@ -378,52 +388,61 @@ export function LookalikeResultsModal({
 												selectedIds.has(candidate.id) ? "bg-accent/50" : ""
 											}
 										>
-											<TableCell>
+											<TableCell className="py-2 sm:py-3">
 												<Checkbox
 													checked={selectedIds.has(candidate.id)}
 													onCheckedChange={() => toggleCandidate(candidate.id)}
 												/>
 											</TableCell>
-											<TableCell>
-												<Badge variant="outline" className="font-mono">
+											<TableCell className="py-2 sm:py-3">
+												<Badge
+													variant="outline"
+													className="whitespace-nowrap font-mono text-xs"
+												>
 													{candidate.similarityScore}%
 												</Badge>
 											</TableCell>
-											<TableCell className="font-medium">
-												{candidate.firstName} {candidate.lastName}
+											<TableCell className="py-2 font-medium sm:py-3">
+												<div className="max-w-[120px] truncate text-xs sm:max-w-none sm:text-sm">
+													{candidate.firstName} {candidate.lastName}
+												</div>
 											</TableCell>
-											<TableCell>
-												<div className="text-sm">
-													<div className="capitalize">
+											<TableCell className="hidden py-2 sm:table-cell sm:py-3">
+												<div className="text-xs sm:text-sm">
+													<div className="max-w-[150px] truncate capitalize">
 														{candidate.propertyType.replace("-", " ")}
 													</div>
-													<div className="text-muted-foreground text-xs">
+													<div className="max-w-[150px] truncate text-muted-foreground text-xs">
 														{candidate.address}
 													</div>
 												</div>
 											</TableCell>
-											<TableCell>
-												<div className="text-sm">
-													{candidate.city}, {candidate.state}
-												</div>
-												<div className="text-muted-foreground text-xs">
-													{candidate.zipCode}
+											<TableCell className="py-2 sm:py-3">
+												<div className="text-xs sm:text-sm">
+													<div className="max-w-[100px] truncate sm:max-w-none">
+														{candidate.city}, {candidate.state}
+													</div>
+													<div className="text-muted-foreground text-xs">
+														{candidate.zipCode}
+													</div>
 												</div>
 											</TableCell>
-											<TableCell>
+											<TableCell className="hidden whitespace-nowrap py-2 text-xs sm:py-3 sm:text-sm md:table-cell">
 												{candidate.estimatedValue
 													? `$${candidate.estimatedValue.toLocaleString()}`
 													: "—"}
 											</TableCell>
-											<TableCell>
+											<TableCell className="hidden py-2 sm:py-3 md:table-cell">
 												<div className="text-xs">
 													{candidate.phoneNumber && (
-														<div>
+														<div className="max-w-[120px] truncate">
 															📞 {candidate.phoneNumber.slice(0, 12)}...
 														</div>
 													)}
 													{candidate.email && (
-														<div>📧 {candidate.email.slice(0, 15)}...</div>
+														<div className="max-w-[120px] truncate">
+															📧 {candidate.email.slice(0, 15)}...
+														</div>
 													)}
 													{!candidate.phoneNumber && !candidate.email && (
 														<span className="text-muted-foreground">—</span>
@@ -438,30 +457,32 @@ export function LookalikeResultsModal({
 					</div>
 
 					{/* Save & Export Section */}
-					<div className="space-y-4 rounded-lg border bg-card p-4">
-						<div className="grid grid-cols-2 gap-4">
+					<div className="shrink-0 space-y-3 rounded-lg border bg-card p-3 sm:space-y-4 sm:p-4">
+						<div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-2">
 							{/* Save as List */}
 							<div className="space-y-3">
 								<Label
 									htmlFor="listName"
-									className="flex items-center justify-between"
+									className="flex items-center justify-between text-xs sm:text-sm"
 								>
 									<span>Save as Lead List</span>
-									<span className="text-xs font-normal text-muted-foreground">
+									<span className="font-normal text-muted-foreground text-xs">
 										Version: {existingLookalikeVersions + 1}
 									</span>
 								</Label>
-								<div className="flex gap-2">
+								<div className="flex flex-col gap-2 sm:flex-row">
 									<Input
 										id="listName"
 										value={listName}
 										onChange={(e) => setListName(e.target.value)}
 										placeholder="Lookalike - {List Name} - v0.01"
+										className="min-w-0 text-xs sm:text-sm"
 									/>
 									<Button
 										onClick={handleSave}
 										disabled={isSaving || selectedIds.size === 0}
-										className="whitespace-nowrap"
+										className="shrink-0"
+										size="default"
 									>
 										{isSaving ? (
 											<Loader2 className="h-4 w-4 animate-spin" />
@@ -475,25 +496,27 @@ export function LookalikeResultsModal({
 								</div>
 
 								{/* CRM & Webhook Sync Options */}
-								<div className="space-y-2 rounded border bg-muted/30 p-3">
-									<p className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+								<div className="space-y-2 rounded border bg-muted/30 p-2 sm:p-3">
+									<p className="flex items-center gap-2 font-medium text-muted-foreground text-xs">
 										<Zap className="h-3 w-3" />
 										Sync to Your Systems
 									</p>
 
 									<div className="flex flex-col gap-2">
 										{/* CRM Connections */}
-										<div className="flex flex-wrap gap-2">
+										<div className="flex flex-wrap gap-1.5 sm:gap-2">
 											<Button
 												variant="outline"
 												size="sm"
 												onClick={() => handleConnectCRM("gohighlevel")}
 												disabled={selectedIds.size === 0}
-												className="h-8 text-xs"
+												className="h-7 px-2 text-[10px] sm:h-8 sm:px-3 sm:text-xs"
 											>
-												<LinkIcon className="mr-1.5 h-3 w-3" />
-												GoHighLevel
-												<ExternalLink className="ml-1.5 h-3 w-3 opacity-50" />
+												<LinkIcon className="mr-1 h-3 w-3 sm:mr-1.5" />
+												<span className="max-w-[80px] truncate sm:max-w-none">
+													GoHighLevel
+												</span>
+												<ExternalLink className="ml-1 h-3 w-3 opacity-50 sm:ml-1.5" />
 											</Button>
 
 											<Button
@@ -501,11 +524,11 @@ export function LookalikeResultsModal({
 												size="sm"
 												onClick={() => handleConnectCRM("lofty")}
 												disabled={selectedIds.size === 0}
-												className="h-8 text-xs"
+												className="h-7 px-2 text-[10px] sm:h-8 sm:px-3 sm:text-xs"
 											>
-												<LinkIcon className="mr-1.5 h-3 w-3" />
-												Lofty
-												<ExternalLink className="ml-1.5 h-3 w-3 opacity-50" />
+												<LinkIcon className="mr-1 h-3 w-3 sm:mr-1.5" />
+												<span className="truncate">Lofty</span>
+												<ExternalLink className="ml-1 h-3 w-3 opacity-50 sm:ml-1.5" />
 											</Button>
 
 											<Button
@@ -513,11 +536,11 @@ export function LookalikeResultsModal({
 												size="sm"
 												onClick={() => handleConnectCRM("salesforce")}
 												disabled={selectedIds.size === 0}
-												className="h-8 text-xs"
+												className="h-7 px-2 text-[10px] sm:h-8 sm:px-3 sm:text-xs"
 											>
-												<LinkIcon className="mr-1.5 h-3 w-3" />
-												Salesforce
-												<ExternalLink className="ml-1.5 h-3 w-3 opacity-50" />
+												<LinkIcon className="mr-1 h-3 w-3 sm:mr-1.5" />
+												<span className="truncate">Salesforce</span>
+												<ExternalLink className="ml-1 h-3 w-3 opacity-50 sm:ml-1.5" />
 											</Button>
 
 											<Button
@@ -525,11 +548,11 @@ export function LookalikeResultsModal({
 												size="sm"
 												onClick={() => handleConnectCRM("zoho")}
 												disabled={selectedIds.size === 0}
-												className="h-8 text-xs"
+												className="h-7 px-2 text-[10px] sm:h-8 sm:px-3 sm:text-xs"
 											>
-												<LinkIcon className="mr-1.5 h-3 w-3" />
-												Zoho
-												<ExternalLink className="ml-1.5 h-3 w-3 opacity-50" />
+												<LinkIcon className="mr-1 h-3 w-3 sm:mr-1.5" />
+												<span className="truncate">Zoho</span>
+												<ExternalLink className="ml-1 h-3 w-3 opacity-50 sm:ml-1.5" />
 											</Button>
 										</div>
 
@@ -539,17 +562,19 @@ export function LookalikeResultsModal({
 											size="sm"
 											onClick={handleSetupWebhook}
 											disabled={selectedIds.size === 0}
-											className="h-8 justify-start text-xs"
+											className="h-7 justify-start text-[10px] sm:h-8 sm:text-xs"
 										>
-											<Webhook className="mr-1.5 h-3 w-3" />
-											Setup Webhook Integration
-											<span className="ml-auto text-xs text-muted-foreground">
+											<Webhook className="mr-1 h-3 w-3 shrink-0 sm:mr-1.5" />
+											<span className="truncate">
+												Setup Webhook Integration
+											</span>
+											<span className="ml-auto hidden text-[10px] text-muted-foreground sm:inline">
 												Custom sync
 											</span>
 										</Button>
 									</div>
 
-									<p className="text-xs text-muted-foreground">
+									<p className="text-[10px] text-muted-foreground leading-tight sm:text-xs">
 										Connect your CRM or setup webhooks to automatically sync
 										leads
 									</p>
@@ -558,68 +583,74 @@ export function LookalikeResultsModal({
 
 							{/* Export Options */}
 							<div className="space-y-2">
-								<Label>Export Options</Label>
+								<Label className="text-xs sm:text-sm">Export Options</Label>
 								<div className="flex flex-col gap-3">
 									{/* Ad Platforms */}
 									<div>
-										<p className="mb-2 text-xs text-muted-foreground">
+										<p className="mb-2 text-muted-foreground text-xs">
 											Ad Platforms
 										</p>
-										<div className="flex gap-2">
-											<label className="flex items-center gap-2 rounded border px-3 py-2 cursor-pointer hover:bg-accent">
+										<div className="flex flex-wrap gap-2">
+											<label className="flex shrink-0 cursor-pointer items-center gap-1.5 rounded border px-2 py-1.5 hover:bg-accent sm:gap-2 sm:px-3 sm:py-2">
 												<Checkbox
 													checked={exportPlatforms.has("meta")}
 													onCheckedChange={() => togglePlatform("meta")}
 												/>
-												<Facebook className="h-4 w-4 text-blue-600" />
-												<span className="text-sm">Meta</span>
+												<Facebook className="h-3 w-3 shrink-0 text-blue-600 sm:h-4 sm:w-4" />
+												<span className="whitespace-nowrap text-xs sm:text-sm">
+													Meta
+												</span>
 											</label>
 
-											<label className="flex items-center gap-2 rounded border px-3 py-2 cursor-pointer hover:bg-accent">
+											<label className="flex shrink-0 cursor-pointer items-center gap-1.5 rounded border px-2 py-1.5 hover:bg-accent sm:gap-2 sm:px-3 sm:py-2">
 												<Checkbox
 													checked={exportPlatforms.has("google")}
 													onCheckedChange={() => togglePlatform("google")}
 												/>
-												<span className="font-bold text-red-600 text-sm">
+												<span className="shrink-0 font-bold text-red-600 text-xs sm:text-sm">
 													G
 												</span>
-												<span className="text-sm">Google</span>
+												<span className="whitespace-nowrap text-xs sm:text-sm">
+													Google
+												</span>
 											</label>
 
-											<label className="flex items-center gap-2 rounded border px-3 py-2 cursor-pointer hover:bg-accent">
+											<label className="flex shrink-0 cursor-pointer items-center gap-1.5 rounded border px-2 py-1.5 hover:bg-accent sm:gap-2 sm:px-3 sm:py-2">
 												<Checkbox
 													checked={exportPlatforms.has("linkedin")}
 													onCheckedChange={() => togglePlatform("linkedin")}
 												/>
-												<Linkedin className="h-4 w-4 text-blue-700" />
-												<span className="text-sm">LinkedIn</span>
+												<Linkedin className="h-3 w-3 shrink-0 text-blue-700 sm:h-4 sm:w-4" />
+												<span className="whitespace-nowrap text-xs sm:text-sm">
+													LinkedIn
+												</span>
 											</label>
 										</div>
 									</div>
 
 									{/* CSV Export */}
 									<div className="space-y-2">
-										<p className="text-xs text-muted-foreground">File Export</p>
-										<label className="flex items-center gap-2 rounded border bg-muted/30 px-3 py-2 cursor-pointer hover:bg-accent">
+										<p className="text-muted-foreground text-xs">File Export</p>
+										<label className="flex cursor-pointer items-center gap-1.5 rounded border bg-muted/30 px-2 py-1.5 hover:bg-accent sm:gap-2 sm:px-3 sm:py-2">
 											<Checkbox
 												checked={exportToCsv}
 												onCheckedChange={(checked) =>
 													setExportToCsv(Boolean(checked))
 												}
 											/>
-											<FileText className="h-4 w-4 text-green-600" />
-											<span className="text-sm">Export to CSV</span>
+											<FileText className="h-3 w-3 shrink-0 text-green-600 sm:h-4 sm:w-4" />
+											<span className="text-xs sm:text-sm">Export to CSV</span>
 										</label>
 
 										{exportToCsv && (
-											<label className="ml-6 flex items-center gap-2 text-sm">
+											<label className="ml-4 flex items-center gap-2 text-sm sm:ml-6">
 												<Checkbox
 													checked={includeEnrichedData}
 													onCheckedChange={(checked) =>
 														setIncludeEnrichedData(Boolean(checked))
 													}
 												/>
-												<span className="text-xs text-muted-foreground">
+												<span className="text-[10px] text-muted-foreground leading-tight sm:text-xs">
 													Include enriched data (property value, equity, contact
 													info)
 												</span>
@@ -635,17 +666,20 @@ export function LookalikeResultsModal({
 											(exportPlatforms.size === 0 && !exportToCsv)
 										}
 										className="w-full"
+										size="default"
 									>
 										{isExporting ? (
 											<>
 												<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-												Exporting...
+												<span className="truncate">Exporting...</span>
 											</>
 										) : (
 											<>
-												<Download className="mr-2 h-4 w-4" />
-												Export {selectedIds.size} lead
-												{selectedIds.size !== 1 ? "s" : ""}
+												<Download className="mr-2 h-4 w-4 shrink-0" />
+												<span className="truncate">
+													Export {selectedIds.size} lead
+													{selectedIds.size !== 1 ? "s" : ""}
+												</span>
 											</>
 										)}
 									</Button>

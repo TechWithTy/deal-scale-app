@@ -1,16 +1,23 @@
 import type { FC } from "react";
 
 import WalkThroughModal from "@/components/leadsSearch/search/WalkthroughModal";
+import SavedSearchModal from "@/components/reusables/modals/SavedSearchModal";
 import CampaignModalMain from "@/components/reusables/modals/user/campaign/CampaignModalMain";
 import LeadBulkSuiteModal from "@/components/reusables/modals/user/lead/LeadBulkSuiteModal";
 import LeadModalMain from "@/components/reusables/modals/user/lead/LeadModalMain";
-import SavedSearchModal from "@/components/reusables/modals/SavedSearchModal";
 import type { SavedSearch } from "@/types/userProfile";
 
 export interface QuickStartCampaignContext {
 	readonly leadListId: string;
 	readonly leadListName: string;
 	readonly leadCount: number;
+	// Transfer agent settings (for call campaigns)
+	readonly transferEnabled?: boolean;
+	readonly transferAgentId?: string;
+	readonly transferAgentName?: string;
+	readonly transferType?: "inbound_call" | "outbound_call" | "warm_transfer";
+	readonly transferGuidelines?: string;
+	readonly transferPrompt?: string;
 }
 
 interface QuickStartLegacyModalsProps {
@@ -101,6 +108,12 @@ const QuickStartLegacyModals: FC<QuickStartLegacyModalsProps> = ({
 			initialLeadListId={campaignModalContext?.leadListId}
 			initialLeadListName={campaignModalContext?.leadListName}
 			initialLeadCount={campaignModalContext?.leadCount ?? 0}
+			initialTransferEnabled={campaignModalContext?.transferEnabled}
+			initialTransferAgentId={campaignModalContext?.transferAgentId}
+			initialTransferAgentName={campaignModalContext?.transferAgentName}
+			initialTransferType={campaignModalContext?.transferType}
+			initialTransferGuidelines={campaignModalContext?.transferGuidelines}
+			initialTransferPrompt={campaignModalContext?.transferPrompt}
 			initialStep={0}
 			initialCampaignData={variantCampaignData}
 			isVariantMode={isVariantMode}

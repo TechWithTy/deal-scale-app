@@ -1,10 +1,13 @@
 "use client";
 
+import { useQuickStartUrlParams } from "@/hooks/useQuickStartUrlParams";
+import { useSession } from "next-auth/react";
 import { useEffect, useMemo, useRef } from "react";
 import { shallow } from "zustand/shallow";
-import { useSession } from "next-auth/react";
-import { useQuickStartUrlParams } from "@/hooks/useQuickStartUrlParams";
 
+import GoalStep from "@/components/quickstart/wizard/steps/GoalStep";
+import PersonaStep from "@/components/quickstart/wizard/steps/PersonaStep";
+import SummaryStep from "@/components/quickstart/wizard/steps/SummaryStep";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -13,28 +16,25 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
-import PersonaStep from "@/components/quickstart/wizard/steps/PersonaStep";
-import GoalStep from "@/components/quickstart/wizard/steps/GoalStep";
-import SummaryStep from "@/components/quickstart/wizard/steps/SummaryStep";
 import { quickStartCardDescriptors } from "@/lib/config/quickstart";
 import {
 	applyQuickStartTemplatePreset,
 	getQuickStartTemplate,
 } from "@/lib/config/quickstart/templates";
 import {
+	type QuickStartGoalId,
+	type QuickStartPersonaId,
 	getGoalDefinition,
 	getGoalsForPersona,
 	quickStartPersonas,
-	type QuickStartGoalId,
-	type QuickStartPersonaId,
 } from "@/lib/config/quickstart/wizardFlows";
+import { useCampaignCreationStore } from "@/lib/stores/campaignCreation";
 import {
 	QUICK_START_DEFAULT_STEP,
 	type QuickStartWizardStep,
 	useQuickStartWizardStore,
 } from "@/lib/stores/quickstartWizard";
 import { useQuickStartWizardDataStore } from "@/lib/stores/quickstartWizardData";
-import { useCampaignCreationStore } from "@/lib/stores/campaignCreation";
 
 const STEP_ORDER: readonly QuickStartWizardStep[] = [
 	"persona",
@@ -300,7 +300,7 @@ const QuickStartWizard = () => {
 				className="w-full max-w-5xl space-y-6"
 			>
 				<DialogHeader className="gap-4 sm:flex-row sm:items-start sm:justify-between sm:space-y-0">
-					<div className="text-left space-y-1">
+					<div className="space-y-1 text-left">
 						<DialogTitle className="text-2xl">QuickStart Wizard</DialogTitle>
 						<DialogDescription>
 							{template
@@ -314,11 +314,11 @@ const QuickStartWizard = () => {
 				</DialogHeader>
 				<div className="space-y-6">
 					<div className="flex items-center justify-between">
-						<span className="font-medium text-sm uppercase tracking-wide text-muted-foreground">
+						<span className="font-medium text-muted-foreground text-sm uppercase tracking-wide">
 							{progressLabel ?? "QuickStart"}
 						</span>
 						{personaId ? (
-							<span className="rounded-full bg-primary/10 px-3 py-1 text-primary text-xs font-medium">
+							<span className="rounded-full bg-primary/10 px-3 py-1 font-medium text-primary text-xs">
 								Persona:{" "}
 								{personaOptions.find((persona) => persona.id === personaId)
 									?.title ?? ""}

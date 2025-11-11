@@ -1,16 +1,16 @@
 "use client";
 
+import type { AdminUser } from "@/components/tables/super-users/types";
+import { Button } from "@/components/ui/button";
 import {
 	Dialog,
 	DialogContent,
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
-import type { AdminUser } from "@/components/tables/super-users/types";
 
 interface ResetPasswordModalProps {
 	open: boolean;
@@ -64,7 +64,7 @@ export default function ResetPasswordModal({
 						<div className="font-medium text-green-600">
 							Password reset email sent successfully!
 						</div>
-						<div className="mt-2 text-sm text-muted-foreground">
+						<div className="mt-2 text-muted-foreground text-sm">
 							An email with instructions to reset the password has been sent to{" "}
 							{user?.email}.
 						</div>

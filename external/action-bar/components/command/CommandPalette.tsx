@@ -6,7 +6,14 @@ import {
 	ChevronRight,
 	X,
 } from "lucide-react";
-import { type FC, useEffect, useMemo, useState } from "react";
+import {
+	type FC,
+	type ReactNode,
+	useCallback,
+	useEffect,
+	useMemo,
+	useState,
+} from "react";
 import { Button } from "../../../shadcn-table/src/components/ui/button";
 import {
 	Command,
@@ -23,6 +30,9 @@ import { extractYouTubeId } from "../../utils/media";
 import CommandInputTray from "./CommandInputTray";
 import PreviewPopover from "./PreviewPopover";
 import { useCommandPalette } from "../providers/CommandPaletteProvider";
+
+const DEFAULT_VISIBLE_PER_GROUP = 6;
+const DEFAULT_VISIBLE_CHILDREN = 12;
 
 export type CommandPaletteProps = {
 	isOpen: boolean;
@@ -51,6 +61,10 @@ const CommandPalette: FC<CommandPaletteProps> = ({
 	const [aiItems, setAiItems] = useState<CommandItem[]>([]);
 	const [hoveredId, setHoveredId] = useState<string | null>(null);
 	const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+	const [visibleCounts, setVisibleCounts] = useState<Record<string, number>>({});
+	const [childVisibleCounts, setChildVisibleCounts] = useState<
+		Record<string, number>
+	>({});
 
 	useEffect(() => {
 		if (isOpen) {
@@ -58,14 +72,22 @@ const CommandPalette: FC<CommandPaletteProps> = ({
 		}
 	}, [isOpen, initialQuery]);
 
+	const trimmedQuery = q.trim();
+
 	useEffect(() => {
-		if (!q || q.trim().length < 2) {
+		if (!trimmedQuery) {
+			setVisibleCounts({});
+		}
+	}, [trimmedQuery]);
+
+	useEffect(() => {
+		if (!trimmedQuery || trimmedQuery.length < 2) {
 			setAiItems([]);
 			return;
 		}
 		const id = window.setTimeout(async () => {
 			const suggestions = await fetchAISuggestions(
-				q.trim(),
+				trimmedQuery,
 				pathname,
 				aiSuggestEndpoint,
 			);
@@ -73,7 +95,7 @@ const CommandPalette: FC<CommandPaletteProps> = ({
 			setAiItems(aiToCommandItems(suggestions, run));
 		}, 220);
 		return () => window.clearTimeout(id);
-	}, [q, pathname, aiSuggestEndpoint, navigate]);
+	}, [trimmedQuery, pathname, aiSuggestEndpoint, navigate]);
 
 	useEffect(() => {
 		if (variant !== "floating" || !isOpen) return;
@@ -96,7 +118,27 @@ const CommandPalette: FC<CommandPaletteProps> = ({
 		return acc;
 	}, {});
 
+	const toggleExpand = useCallback(
+		(id: string, childCount = 0) => {
+			setExpanded((prev) => ({ ...prev, [id]: !prev[id] }));
+			setVisibleCounts((prev) => ({ ...prev, [id]: Number.MAX_SAFE_INTEGER }));
+			if (childCount > 0) {
+				setChildVisibleCounts((prev) => ({
+					...prev,
+					[id]: trimmedQuery.length
+						? childCount
+						: Math.min(childCount, DEFAULT_VISIBLE_CHILDREN),
+				}));
+			}
+		},
+		[trimmedQuery.length],
+	);
+
 	function handleSelect(cmd: CommandItem, source: "list" | "popover" = "list") {
+		if (cmd.children && cmd.children.length) {
+			toggleExpand(cmd.id, cmd.children.length);
+			return;
+		}
 		const preview = cmd.preview;
 		const media =
 			preview?.type === "youtube"
@@ -125,11 +167,90 @@ const CommandPalette: FC<CommandPaletteProps> = ({
 		onOpenChange(false);
 	}
 
-	function toggleExpand(id: string) {
-		setExpanded((prev) => ({ ...prev, [id]: !prev[id] }));
-	}
-
 	const groupKeys = Object.keys(groups);
+
+	const renderCommandNode = useCallback(
+		(cmd: CommandItem, depth = 0): ReactNode => {
+			const hasChildren = Array.isArray(cmd.children) && cmd.children.length > 0;
+			const paddingLeft = depth > 0 ? depth * 16 : undefined;
+			if (!hasChildren) {
+				return (
+					<div key={cmd.id} style={{ paddingLeft }}>
+						<PreviewPopover
+							cmd={cmd}
+							hoveredId={hoveredId}
+							setHoveredId={setHoveredId}
+							onSelectCommand={(selected, source) =>
+								handleSelect(selected, source)
+							}
+							CommandItemUI={CommandItemUI as unknown as any}
+						/>
+					</div>
+				);
+			}
+			const isOpen = !!expanded[cmd.id];
+			const limit = trimmedQuery.length
+				? cmd.children!.length
+				: childVisibleCounts[cmd.id] ?? DEFAULT_VISIBLE_CHILDREN;
+			const childrenToRender = cmd.children!.slice(0, limit);
+			const remaining = cmd.children!.length - childrenToRender.length;
+			return (
+				<div key={cmd.id} style={{ paddingLeft }}>
+					<CommandItemUI
+						value={[cmd.label, ...(cmd.keywords ?? [])].join(" ")}
+						onSelect={() => toggleExpand(cmd.id, cmd.children!.length)}
+						className="flex cursor-pointer items-center justify-between"
+					>
+						<div className="flex items-center gap-2">
+							{cmd.icon ? <span className="shrink-0">{cmd.icon}</span> : null}
+							<span>{cmd.label}</span>
+						</div>
+						<span className="text-muted-foreground">
+							{isOpen ? (
+								<ChevronDown className="h-4 w-4" />
+							) : (
+								<ChevronRight className="h-4 w-4" />
+							)}
+						</span>
+					</CommandItemUI>
+					{isOpen ? (
+						<>
+							{childrenToRender.map((child) =>
+								renderCommandNode(child, depth + 1),
+							)}
+							{!trimmedQuery.length && remaining > 0 ? (
+								<button
+									className="ml-6 w-full cursor-pointer px-2 py-1 text-left text-xs font-medium uppercase text-primary"
+									type="button"
+									onClick={() =>
+										setChildVisibleCounts((prev) => ({
+											...prev,
+											[cmd.id]: Math.min(
+												cmd.children!.length,
+												(childrenToRender.length ?? 0) +
+													DEFAULT_VISIBLE_CHILDREN,
+											),
+										}))
+									}
+								>
+									Show {remaining} more
+								</button>
+							) : null}
+						</>
+					) : null}
+				</div>
+			);
+		},
+		[
+			hoveredId,
+			expanded,
+			trimmedQuery.length,
+			handleSelect,
+			toggleExpand,
+			childVisibleCounts,
+			setChildVisibleCounts,
+		],
+	);
 
 	const content = (
 		<>
@@ -145,70 +266,37 @@ const CommandPalette: FC<CommandPaletteProps> = ({
 						No results yet. Try searching for a player, action, or type “rank”.
 					</div>
 				</CommandEmpty>
-				{groupKeys.map((g, gi) => (
-					<div key={g}>
-						<CommandGroup heading={g}>
-							{groups[g].map((cmd) => {
-								const hasChildren =
-									Array.isArray(cmd.children) && cmd.children.length > 0;
-								if (!hasChildren) {
-									return (
-										<PreviewPopover
-											key={cmd.id}
-											cmd={cmd}
-											hoveredId={hoveredId}
-											setHoveredId={setHoveredId}
-											onSelectCommand={(selected, source) =>
-												handleSelect(selected, source)
-											}
-											CommandItemUI={CommandItemUI as unknown as any}
-										/>
-									);
-								}
+				{groupKeys.map((g, gi) => {
+					const groupItems = groups[g];
+					const showAll = trimmedQuery.length > 0;
+					const limit = showAll
+						? groupItems.length
+						: visibleCounts[g] ?? DEFAULT_VISIBLE_PER_GROUP;
+					const visibleItems = groupItems.slice(0, limit);
+					const remaining = groupItems.length - visibleItems.length;
 
-								const isOpen = !!expanded[cmd.id];
-								return (
-									<div key={cmd.id}>
-										<CommandItemUI
-											onSelect={() => toggleExpand(cmd.id)}
-											className="flex items-center justify-between"
-										>
-											<div className="flex items-center gap-2">
-												{cmd.icon ? (
-													<span className="shrink-0">{cmd.icon}</span>
-												) : null}
-												<span>{cmd.label}</span>
-											</div>
-											<span className="text-muted-foreground">
-												{isOpen ? (
-													<ChevronDown className="h-4 w-4" />
-												) : (
-													<ChevronRight className="h-4 w-4" />
-												)}
-											</span>
-										</CommandItemUI>
-										{isOpen
-											? cmd.children!.map((child) => (
-													<div key={child.id} className="pl-6">
-														<PreviewPopover
-															cmd={child}
-															hoveredId={hoveredId}
-															setHoveredId={setHoveredId}
-															onSelectCommand={(selected, source) =>
-																handleSelect(selected, source)
-															}
-															CommandItemUI={CommandItemUI as unknown as any}
-														/>
-													</div>
-												))
-											: null}
-									</div>
-								);
-							})}
-						</CommandGroup>
-						{gi < groupKeys.length - 1 ? <CommandSeparator /> : null}
-					</div>
-				))}
+					return (
+						<div key={g}>
+							<CommandGroup heading={g}>
+								{visibleItems.map((cmd) => renderCommandNode(cmd))}
+								{!showAll && remaining > 0 ? (
+									<CommandItemUI
+										onSelect={() =>
+											setVisibleCounts((prev) => ({
+												...prev,
+												[g]: groupItems.length,
+											}))
+										}
+										className="flex cursor-pointer items-center justify-center text-xs font-medium uppercase text-primary"
+									>
+										Show {remaining} more
+									</CommandItemUI>
+								) : null}
+							</CommandGroup>
+							{gi < groupKeys.length - 1 ? <CommandSeparator /> : null}
+						</div>
+					);
+				})}
 			</CommandList>
 		</>
 	);
@@ -268,7 +356,7 @@ const CommandPalette: FC<CommandPaletteProps> = ({
 	}
 
 	return (
-		<CommandDialog open={isOpen} onOpenChange={onOpenChange}>
+		<CommandDialog open={isOpen} onOpenChange={onOpenChange} label="Command Palette">
 			{content}
 		</CommandDialog>
 	);

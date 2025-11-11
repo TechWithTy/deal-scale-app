@@ -1,7 +1,5 @@
 "use client";
 
-import type { FC } from "react";
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -21,6 +19,8 @@ import {
 } from "@/components/ui/select";
 import type { ContactField, ContactFieldType } from "@/types/contact";
 import { X } from "lucide-react";
+import type { FC } from "react";
+import { useState } from "react";
 
 interface AddContactInfoModalProps {
 	isOpen: boolean;

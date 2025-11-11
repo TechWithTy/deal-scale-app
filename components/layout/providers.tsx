@@ -1,7 +1,12 @@
 "use client";
 import PostHogProviderBridge from "@/components/analytics/PostHogProviderBridge";
-import dynamic from "next/dynamic";
+import GlobalLoadProgress from "@/components/layout/GlobalLoadProgress";
+import { PushManager } from "@/components/pwa/PushManager";
+import { InstallPrompt } from "@/components/pwa/InstallPrompt";
+import { UpdatePrompt } from "@/components/pwa/UpdatePrompt";
+import { QueryProvider } from "@/lib/providers/QueryProvider";
 import { SessionProvider, type SessionProviderProps } from "next-auth/react";
+import dynamic from "next/dynamic";
 import Script from "next/script";
 import React, { type ReactNode } from "react";
 import ThemeProvider from "./ThemeToggle/theme-provider";
@@ -18,24 +23,29 @@ export default function Providers({
 		ssr: false,
 	});
 	return (
-		<>
-			<ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-				<SessionProvider session={session}>
-					<PostHogProviderBridge>{children}</PostHogProviderBridge>
-				</SessionProvider>
-				{/* Global toast container */}
-				<ClientToaster />
-				{/* Microsoft Clarity (gated by env) */}
-				{enableClarity && CLARITY_ID ? (
-					<Script id="ms-clarity" strategy="lazyOnload">{`
-                                  (function(c,l,a,r,i,t,y){
-                                    c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
-                                    t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
-			            y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
-			          })(window, document, "clarity", "script", "${CLARITY_ID}");
+		<ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+			<SessionProvider session={session}>
+				<QueryProvider>
+					<GlobalLoadProgress />
+					<PushManager>
+						<PostHogProviderBridge>{children}</PostHogProviderBridge>
+						<InstallPrompt />
+						<UpdatePrompt />
+					</PushManager>
+				</QueryProvider>
+			</SessionProvider>
+			{/* Global toast container */}
+			<ClientToaster />
+			{/* Microsoft Clarity (gated by env) */}
+			{enableClarity && CLARITY_ID ? (
+				<Script id="ms-clarity" strategy="lazyOnload">{`
+				          (function(c,l,a,r,i,t,y){
+				            c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+				            t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+				            y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+				          })(window, document, "clarity", "script", "${CLARITY_ID}");
 			        `}</Script>
-				) : null}
-			</ThemeProvider>
-		</>
+			) : null}
+		</ThemeProvider>
 	);
 }

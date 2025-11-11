@@ -2,8 +2,8 @@ import { MockUserProfile } from "@/constants/_faker/profile/userProfile";
 import type { LeadList } from "@/types/_dashboard/leadList";
 import { toast } from "sonner";
 import { create } from "zustand";
-import { withAnalytics } from "./_middleware/analytics";
 import { exportLeadListsToZip } from "../_utils/files/loopDownload/leadExports";
+import { withAnalytics } from "./_middleware/analytics";
 // Define the state and actions for managing lead lists
 interface LeadListState {
 	leadLists: LeadList[]; // Holds the lead list data

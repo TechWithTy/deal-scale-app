@@ -124,7 +124,7 @@ export function DashboardNav({
 									) : null}
 									{/* Badge indicator */}
 									{item.badge && !isMinimized && (
-										<span className="ml-auto mr-2 rounded-full bg-primary px-2 py-0.5 text-[10px] font-semibold text-primary-foreground">
+										<span className="mr-2 ml-auto rounded-full bg-primary px-2 py-0.5 font-semibold text-[10px] text-primary-foreground">
 											{item.badge}
 										</span>
 									)}
@@ -145,7 +145,7 @@ export function DashboardNav({
 														if (setOpen) setOpen(false);
 													}}
 													className={cn(
-														"absolute -translate-y-1/2 top-1/2 h-2.5 w-2.5 rounded-full bg-red-500 ring-2 ring-background transition-transform hover:scale-125 cursor-pointer",
+														"-translate-y-1/2 absolute top-1/2 h-2.5 w-2.5 cursor-pointer rounded-full bg-red-500 ring-2 ring-background transition-transform hover:scale-125",
 														isMinimized ? "right-0" : "right-2",
 													)}
 													aria-label="Items on sale"
@@ -174,7 +174,7 @@ export function DashboardNav({
 									) : null}
 									{/* Badge indicator */}
 									{item.badge && !isMinimized && (
-										<span className="ml-auto mr-2 rounded-full bg-primary px-2 py-0.5 text-[10px] font-semibold text-primary-foreground">
+										<span className="mr-2 ml-auto rounded-full bg-primary px-2 py-0.5 font-semibold text-[10px] text-primary-foreground">
 											{item.badge}
 										</span>
 									)}
@@ -195,7 +195,7 @@ export function DashboardNav({
 														if (setOpen) setOpen(false);
 													}}
 													className={cn(
-														"absolute -translate-y-1/2 top-1/2 h-2.5 w-2.5 rounded-full bg-red-500 ring-2 ring-background transition-transform hover:scale-125 cursor-pointer",
+														"-translate-y-1/2 absolute top-1/2 h-2.5 w-2.5 cursor-pointer rounded-full bg-red-500 ring-2 ring-background transition-transform hover:scale-125",
 														isMinimized ? "right-0" : "right-2",
 													)}
 													aria-label="Items on sale"

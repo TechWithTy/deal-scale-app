@@ -1,13 +1,13 @@
-import { createWithEqualityFn } from "zustand/traditional";
 import { useSession } from "next-auth/react";
+import { createWithEqualityFn } from "zustand/traditional";
 
 import type { QuickStartWizardPreset } from "@/components/quickstart/types";
 import { captureQuickStartEvent } from "@/lib/analytics/quickstart";
 import {
-	getGoalDefinition,
-	getGoalsForPersona,
 	type QuickStartGoalId,
 	type QuickStartPersonaId,
+	getGoalDefinition,
+	getGoalsForPersona,
 } from "@/lib/config/quickstart/wizardFlows";
 import { useUserProfileStore } from "@/lib/stores/user/userProfile";
 import type { QuickStartDefaults } from "@/types/userProfile";

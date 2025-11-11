@@ -224,10 +224,10 @@ const CampaignHeader: React.FC = () => {
 		<div className="p-4">
 			<div className="mb-6 flex flex-col items-center gap-4 text-center sm:flex-row sm:items-start sm:justify-between sm:text-left">
 				<div className="flex-1 space-y-2">
-					<h1 className="text-3xl font-bold tracking-tight text-foreground">
+					<h1 className="font-bold text-3xl text-foreground tracking-tight">
 						Campaigns
 					</h1>
-					<p className="text-sm leading-relaxed text-muted-foreground">
+					<p className="text-muted-foreground text-sm leading-relaxed">
 						Create, manage, and analyze multi-channel campaigns. View
 						performance metrics, segment audiences, and download leads.
 					</p>
@@ -249,7 +249,7 @@ const CampaignHeader: React.FC = () => {
 			{/* Credits Remaining */}
 			<div className="mb-4 text-center sm:text-left">
 				<div className="inline-flex items-center gap-2 rounded-lg border bg-muted/50 px-4 py-2">
-					<span className="text-sm text-muted-foreground">
+					<span className="text-muted-foreground text-sm">
 						Credits Remaining:
 					</span>
 					<span className="font-semibold text-foreground text-lg">

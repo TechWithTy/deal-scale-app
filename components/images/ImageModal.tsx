@@ -1,6 +1,7 @@
-import { useEffect } from "react";
-import { X } from "lucide-react";
 import { Lens } from "@/components/magicui/lens";
+import { X } from "lucide-react";
+import Image from "next/image";
+import { useEffect } from "react";
 
 interface ImageModalProps {
 	isOpen: boolean;
@@ -58,13 +59,18 @@ export function ImageModal({
 					isStatic={false}
 					ariaLabel="Zoom in on image"
 				>
-					<img
+					<Image
 						src={imageUrl}
 						alt={alt}
+						width={1200}
+						height={800}
 						className="max-h-[90vh] max-w-[90vw] cursor-zoom-out object-contain"
 						style={{
 							borderRadius: "0.5rem",
 						}}
+						loading="eager"
+						priority
+						sizes="90vw"
 					/>
 				</Lens>
 				<button
@@ -73,7 +79,7 @@ export function ImageModal({
 						e.stopPropagation();
 						onClose();
 					}}
-					className="absolute -right-4 -top-4 z-[100] rounded-full bg-card p-2 text-card-foreground shadow-lg transition-colors hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring"
+					className="-right-4 -top-4 absolute z-[100] rounded-full bg-card p-2 text-card-foreground shadow-lg transition-colors hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring"
 					aria-label="Close image modal"
 				>
 					<X className="h-5 w-5" />

@@ -3,8 +3,8 @@
  * Displays all available prizes with their icons and win probabilities
  */
 
-import type { Prize } from "@/external/wheel-spinner/types";
 import { Card } from "@/components/ui/card";
+import type { Prize } from "@/external/wheel-spinner/types";
 
 interface PrizeLegendProps {
 	prizes: Prize[];

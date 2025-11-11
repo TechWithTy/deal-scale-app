@@ -3,12 +3,12 @@ import type { ProfileFormValues } from "@/types/zod/userSetup/profile-form-schem
 import type React from "react";
 import { useEffect } from "react";
 import { useFormContext } from "react-hook-form";
+import { v4 as uuidv4 } from "uuid";
 import type { InitialBaseSetupData } from "../../../utils/const/getBasetProfile";
 import { BaseSetupAssets } from "./BaseSetupAssets";
 import { BaseSetupFields } from "./BaseSetupFields";
 import { PlatformSettingsFields } from "./PlatformSettingsFields";
 import { ProfileTypeSelector } from "./ProfileTypeSelector";
-import { v4 as uuidv4 } from "uuid";
 
 export interface BaseSetupMainProps {
 	loading: boolean;

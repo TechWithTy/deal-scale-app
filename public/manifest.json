@@ -1,0 +1,56 @@
+{
+  "name": "Deal Scale Dashboard",
+  "short_name": "Deal Scale",
+  "description": "AI-powered real estate lead generation and CRM platform",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ea580c",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "/logo/Deal_Scale_Logo.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/logo/Deal_Scale_Logo.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["business", "productivity", "real estate"],
+  "shortcuts": [
+    {
+      "name": "Dashboard",
+      "short_name": "Dashboard",
+      "description": "Go to main dashboard",
+      "url": "/dashboard",
+      "icons": [{ "src": "/logo/Deal_Scale_Logo.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Campaigns",
+      "short_name": "Campaigns",
+      "description": "View marketing campaigns",
+      "url": "/dashboard/campaigns",
+      "icons": [{ "src": "/logo/Deal_Scale_Logo.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Leads",
+      "short_name": "Leads",
+      "description": "Manage your leads",
+      "url": "/dashboard/lead",
+      "icons": [{ "src": "/logo/Deal_Scale_Logo.png", "sizes": "192x192" }]
+    }
+  ]
+}
+
+
+

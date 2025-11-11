@@ -1,4 +1,5 @@
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { defaultCols } from "@/constants/_faker/kanban"; // * Import default columns
 import type { KanbanColumn, KanbanTask } from "@/types/_dashboard/kanban";
 import { useDndContext } from "@dnd-kit/core";
 import { SortableContext, useSortable } from "@dnd-kit/sortable";
@@ -9,7 +10,6 @@ import { useMemo } from "react";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader } from "../ui/card";
 import { ColumnActions } from "./column-action";
-import { defaultCols } from "@/constants/_faker/kanban"; // * Import default columns
 import { TaskCard } from "./task-card";
 
 export type ColumnType = "Column";

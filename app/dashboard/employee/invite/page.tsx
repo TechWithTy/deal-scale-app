@@ -1,8 +1,8 @@
 "use client";
 
+import { Breadcrumbs } from "@/components/breadcrumbs";
 import { MainEmployeeForm } from "@/components/forms/steppers/employee-form/MainEmployeeForm";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Breadcrumbs } from "@/components/breadcrumbs";
 import React from "react";
 
 const breadcrumbItems = [

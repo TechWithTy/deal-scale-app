@@ -64,7 +64,7 @@ const UsageProgressBar: React.FC<UsageProgressBarProps> = ({
 				<div className="relative h-40 w-40">
 					<svg
 						aria-hidden="true"
-						className="h-full w-full -rotate-90 transform"
+						className="-rotate-90 h-full w-full transform"
 						viewBox="0 0 36 36"
 					>
 						{/* Background circle */}

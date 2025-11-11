@@ -4,12 +4,12 @@
  * Adds intent signal data and scores to existing lead objects for testing and development.
  */
 
-import type { LeadTypeGlobal } from "@/types/_dashboard/leads";
 import {
-	generateMockIntentSignals,
 	generateIntentSignalProfile,
+	generateMockIntentSignals,
 } from "@/constants/_faker/intentSignals";
 import { calculateIntentScore } from "@/lib/scoring/intentScoring";
+import type { LeadTypeGlobal } from "@/types/_dashboard/leads";
 
 /**
  * Enrich a single lead with intent signals and calculated score

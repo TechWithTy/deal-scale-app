@@ -1,19 +1,19 @@
 "use client";
 
+import type {
+	AdminUser,
+	AdminUserRole,
+} from "@/components/tables/super-users/types";
+import { Button } from "@/components/ui/button";
 import {
 	Dialog,
 	DialogContent,
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useState, useEffect } from "react";
-import type {
-	AdminUser,
-	AdminUserRole,
-} from "@/components/tables/super-users/types";
+import { useEffect, useState } from "react";
 
 interface EditProfileModalProps {
 	open: boolean;

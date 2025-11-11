@@ -1,5 +1,6 @@
 "use client";
 
+import { Badge } from "@/components/ui/badge";
 import {
 	Card,
 	CardContent,
@@ -7,21 +8,20 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import {
-	TrendingUp,
-	TrendingDown,
-	Facebook,
-	Linkedin,
-	DollarSign,
-	MousePointerClick,
-	Users,
-	Target,
-} from "lucide-react";
 import type {
 	AudiencePerformanceSummary,
 	PerformanceMetrics,
 } from "@/types/lookalike";
+import {
+	DollarSign,
+	Facebook,
+	Linkedin,
+	MousePointerClick,
+	Target,
+	TrendingDown,
+	TrendingUp,
+	Users,
+} from "lucide-react";
 
 interface PerformanceTrackerProps {
 	performance: AudiencePerformanceSummary | null;
@@ -58,8 +58,8 @@ export function PerformanceTracker({
 					<CardDescription>No performance data available yet</CardDescription>
 				</CardHeader>
 				<CardContent>
-					<div className="text-center py-8 text-muted-foreground text-sm">
-						<Target className="h-12 w-12 mx-auto mb-3 opacity-50" />
+					<div className="py-8 text-center text-muted-foreground text-sm">
+						<Target className="mx-auto mb-3 h-12 w-12 opacity-50" />
 						<p>
 							Performance data will appear here once your audience is active on
 							ad platforms.
@@ -153,7 +153,7 @@ export function PerformanceTracker({
 							return (
 								<div
 									key={platformMetrics.platform}
-									className="flex items-center justify-between p-3 border rounded-lg hover:bg-accent/50 transition-colors"
+									className="flex items-center justify-between rounded-lg border p-3 transition-colors hover:bg-accent/50"
 								>
 									<div className="flex items-center gap-3">
 										{typeof Icon === "function" ? (

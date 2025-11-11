@@ -1,7 +1,7 @@
+import type { GetEmailByIdResponse } from "@/types/goHighLevel/email";
 // email.ts: Export email campaign data to Excel
 import ExcelJS from "exceljs";
 import { saveWorkbookAsExcel, setWorksheetColumnsAndResize } from "./excel";
-import type { GetEmailByIdResponse } from "@/types/goHighLevel/email";
 
 /**
  * Exports email campaign data to Excel.

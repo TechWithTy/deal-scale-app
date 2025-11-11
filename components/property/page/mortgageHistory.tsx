@@ -20,14 +20,14 @@ export const MortgageHistoryTable: React.FC<MortgageHistoryProps> = ({
 }) => {
 	return (
 		<div className="w-full">
-			<h3 className="mb-4 text-center text-lg font-semibold text-foreground">
+			<h3 className="mb-4 text-center font-semibold text-foreground text-lg">
 				Mortgage History
 			</h3>
 			<div className="mx-auto max-w-[800px]">
 				{mortgages.map((mortgage) => (
 					<div
 						key={mortgage.document_number}
-						className="mb-4 grid grid-cols-1 gap-y-4 border-b border-border bg-card p-4 sm:grid-cols-2 sm:gap-y-2"
+						className="mb-4 grid grid-cols-1 gap-y-4 border-border border-b bg-card p-4 sm:grid-cols-2 sm:gap-y-2"
 					>
 						<div>
 							<span className="font-semibold text-muted-foreground">
@@ -115,14 +115,14 @@ interface SaleHistoryProps {
 export const SaleHistoryTable: React.FC<SaleHistoryProps> = ({ sales }) => {
 	return (
 		<div className="mt-6 w-full">
-			<h3 className="mb-4 text-center text-lg font-semibold text-foreground">
+			<h3 className="mb-4 text-center font-semibold text-foreground text-lg">
 				Sale History
 			</h3>
 			<div className="mx-auto max-w-[800px]">
 				{sales.map((sale) => (
 					<div
 						key={sale.seller_names + sale.buyer_names + sale.date_of_sale}
-						className="mb-4 grid grid-cols-1 gap-y-4 border-b border-border bg-card p-4 sm:grid-cols-2 sm:gap-y-2"
+						className="mb-4 grid grid-cols-1 gap-y-4 border-border border-b bg-card p-4 sm:grid-cols-2 sm:gap-y-2"
 					>
 						<div>
 							<span className="font-semibold text-muted-foreground">

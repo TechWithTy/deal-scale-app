@@ -73,7 +73,7 @@ export function DataTable<TData, TValue>({
 										{header.isPlaceholder ? null : (
 											<button
 												type="button"
-												className="flex items-center gap-1 select-none"
+												className="flex select-none items-center gap-1"
 												onClick={header.column.getToggleSortingHandler()}
 												disabled={!header.column.getCanSort()}
 												aria-label={
@@ -89,7 +89,7 @@ export function DataTable<TData, TValue>({
 													header.getContext(),
 												)}
 												{header.column.getCanSort() ? (
-													<span className="text-xs text-muted-foreground">
+													<span className="text-muted-foreground text-xs">
 														{header.column.getIsSorted() === "asc"
 															? "▲"
 															: header.column.getIsSorted() === "desc"

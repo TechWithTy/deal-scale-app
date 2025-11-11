@@ -4,6 +4,10 @@
  * @module lookalike/utils
  */
 
+import type {
+	QuickStartGoalId,
+	QuickStartPersonaId,
+} from "@/lib/config/quickstart/wizardFlows";
 import type { LookalikeConfig } from "@/types/lookalike";
 import type { FormValues } from "../types";
 
@@ -16,15 +20,21 @@ export function buildLookalikeConfig(
 	seedListId: string,
 	seedListName: string,
 	seedLeadCount: number,
+	userPersona?: QuickStartPersonaId,
+	userGoal?: QuickStartGoalId,
 ): LookalikeConfig {
 	return {
 		seedListId,
 		seedListName,
 		seedLeadCount,
+		userPersona,
+		userGoal,
 		similarityThreshold: values.similarityThreshold,
 		targetSize: values.targetSize,
 		salesTargeting: {
 			buyerPersona: values.buyerPersona as any,
+			targetInterests: values.targetInterests,
+			targetIndustry: values.targetIndustry,
 			motivationLevel: values.motivationLevel as any,
 			purchaseTimeline: values.purchaseTimeline as any,
 			investmentExperience: values.investmentExperience as any,
@@ -38,6 +48,12 @@ export function buildLookalikeConfig(
 			},
 			cashBuyerOnly: values.cashBuyerOnly,
 			portfolioSize: values.portfolioSize as any,
+			// Sales AI Scores
+			minCreditScore: values.minCreditScore,
+			minResponseRate: values.minResponseRate,
+			minPurchaseIntent: values.minPurchaseIntent,
+			excludeLowEngagement: values.excludeLowEngagement,
+			skipColdLeads: values.skipColdLeads,
 		},
 		propertyFilters: {
 			propertyTypes: values.propertyTypes as any,
@@ -69,6 +85,15 @@ export function buildLookalikeConfig(
 			ownershipDuration: values.ownershipDuration as any,
 			equityPosition: values.equityPosition as any,
 			distressedSignals: values.distressedSignals as any,
+			// Property AI Scores
+			maxFloodScore: values.maxFloodScore,
+			maxCrimeScore: values.maxCrimeScore,
+			minAirQuality: values.minAirQuality,
+			minConditionScore: values.minConditionScore,
+			minSchoolRating: values.minSchoolRating,
+			requireRecentPhotos: values.requireRecentPhotos,
+			skipRecentlySold: values.skipRecentlySold,
+			skipListedProperties: values.skipListedProperties,
 		},
 		geoFilters: {
 			states: values.states,
@@ -93,6 +118,15 @@ export function buildLookalikeConfig(
 					.map((c) => c.trim())
 					.filter(Boolean),
 			},
+			// Geographic AI Scores
+			minWalkScore: values.minWalkScore,
+			minTransitScore: values.minTransitScore,
+			minBikeScore: values.minBikeScore,
+			minAppreciation: values.minAppreciation,
+			minPopGrowth: values.minPopGrowth,
+			requireUrbanProximity: values.requireUrbanProximity,
+			skipOverlappingAreas: values.skipOverlappingAreas,
+			consolidateByMarket: values.consolidateByMarket,
 		},
 		generalOptions: {
 			excludeListIds: values.excludeListIds,
@@ -106,6 +140,48 @@ export function buildLookalikeConfig(
 			intentLevels: values.intentLevels as any,
 			corporateOwnership: values.corporateOwnership as any,
 			absenteeOwner: values.absenteeOwner as any,
+
+			// Efficiency & Deduplication
+			skipDuplicates: values.skipDuplicates ?? true,
+			skipAlreadyTraced: values.skipAlreadyTraced ?? true,
+			skipExistingCampaigns: values.skipExistingCampaigns ?? true,
+			skipDncList: values.skipDncList ?? true,
+			skipPreviouslyContacted: values.skipPreviouslyContacted ?? false,
+			skipInvalidData: values.skipInvalidData,
+
+			// Social Profile Enrichment
+			socialEnrichment: values.socialEnrichment ?? true,
+			includeFacebook: values.includeFacebook ?? true,
+			includeLinkedIn: values.includeLinkedIn ?? true,
+			includeInstagram: values.includeInstagram ?? true,
+			includeFriendsData: values.includeFriendsData ?? true,
+			includeInterests: values.includeInterests ?? true,
+			includeEmployment: values.includeEmployment ?? true,
+			includeUsername: values.includeUsername ?? true,
+			includeSocialDossier: values.includeSocialDossier ?? false,
+
+			// Social Efficiency
+			skipNoEmail: values.skipNoEmail,
+			skipAlreadyEnriched: values.skipAlreadyEnriched,
+			skipInactiveProfiles: values.skipInactiveProfiles,
+			skipPrivateProfiles: values.skipPrivateProfiles,
+
+			// Social AI Scores
+			minInfluenceScore: values.minInfluenceScore,
+			minConnections: values.minConnections,
+			minProfileCompleteness: values.minProfileCompleteness,
+			minEngagementRate: values.minEngagementRate,
+			minAccountAge: values.minAccountAge,
+			requireVerified: values.requireVerified,
+
+			// Compliance Advanced Scores
+			minPhoneValidity: values.minPhoneValidity,
+			minEmailDeliverability: values.minEmailDeliverability,
+			minAddressValidity: values.minAddressValidity,
+			maxDataAge: values.maxDataAge,
+			requireNcoaVerified: values.requireNcoaVerified,
+			excludeLandlines: values.excludeLandlines,
+			requireMultipleContacts: values.requireMultipleContacts,
 		},
 	};
 }

@@ -1,10 +1,9 @@
 "use client";
 
 import { campaignSteps } from "@/_tests/tours/campaignTour";
+import { SaveToListModal } from "@/components/property/modals/SaveToListModal";
 import ActivitySidebar from "@/components/reusables/sidebars/activity";
-import WalkThroughModal from "../../leadsSearch/search/WalkthroughModal";
 import { Button } from "@/components/ui/button";
-import { useUserProfileStore } from "@/lib/stores/user/userProfile";
 import { Calendar } from "@/components/ui/calendar";
 import {
 	DropdownMenu,
@@ -18,12 +17,14 @@ import {
 	PopoverTrigger,
 } from "@/components/ui/popover";
 import { mockGeneratedLeads } from "@/constants/data";
+import { usePropertyMarketView } from "@/lib/stores/property/marketView";
+import { useUserProfileStore } from "@/lib/stores/user/userProfile";
+import { computeOnMarket } from "@/lib/utils/rentcastListing";
 import type { Property } from "@/types/_dashboard/property";
 import {
 	isRealtorProperty,
 	isRentCastProperty,
 } from "@/types/_dashboard/property";
-import { computeOnMarket } from "@/lib/utils/rentcastListing";
 import {
 	CalendarIcon,
 	ChevronDownIcon,
@@ -32,9 +33,8 @@ import {
 	InfoIcon,
 } from "lucide-react";
 import { Bookmark, BookmarkCheck } from "lucide-react";
-import { SaveToListModal } from "@/components/property/modals/SaveToListModal";
-import { useState, useEffect } from "react";
-import { usePropertyMarketView } from "@/lib/stores/property/marketView";
+import { useEffect, useState } from "react";
+import WalkThroughModal from "../../leadsSearch/search/WalkthroughModal";
 
 interface PropertyHeaderProps {
 	property: Property;

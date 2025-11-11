@@ -1,11 +1,13 @@
-import React from "react";
+import React, { useState } from "react";
 
 import {
-	useCampaignCreationStore,
 	type CampaignCreationState,
+	useCampaignCreationStore,
 } from "@/lib/stores/campaignCreation";
 import { formatCurrency } from "@/lib/utils/campaignCostCalculator";
 import type { z } from "zod";
+import { Copy, Check } from "lucide-react";
+import { toast } from "sonner";
 
 interface CampaignCostResult {
 	CampaignName: string;
@@ -97,12 +99,155 @@ export default function CampaignSettingsDebug({
 			.trim();
 	};
 
+	const [copied, setCopied] = useState(false);
+
+	// Generate the full debug text for copying
+	const generateDebugText = () => {
+		const lines = [
+			"===== CAMPAIGN SETTINGS DEBUG LOG =====",
+			"",
+			"CHANNEL SELECTION:",
+			`Primary Channel: ${formatValue(store.primaryChannel)}`,
+			`Campaign Name: ${formatValue(store.campaignName)}`,
+			`Selected Agent: ${formatValue(store.selectedAgentId)}`,
+			"",
+			"AREA & LEAD LIST:",
+			`Area Mode: ${formatValue(store.areaMode)}`,
+			`Lead List ID: ${formatValue(store.selectedLeadListId)}`,
+			`Lead List A ID: ${formatValue(store.selectedLeadListAId)}`,
+			`Lead List B ID: ${formatValue(store.selectedLeadListBId)}`,
+			`A/B Testing: ${formatValue(store.abTestingEnabled)}`,
+			`Lead Count: ${formatValue(store.leadCount)}`,
+			"",
+			"CAMPAIGN AREA:",
+			`Include Weekends: ${formatValue(store.includeWeekends)}`,
+			"",
+			"CHANNEL CUSTOMIZATION:",
+			`Phone Number: ${formatValue(formData?.primaryPhoneNumber)}`,
+			`Area Mode (Form): ${formatValue(formData?.areaMode)}`,
+			`Zip Code: ${formatValue(formData?.zipCode)}`,
+			`Selected Lead List (Form): ${formatValue(formData?.selectedLeadListId)}`,
+			`Social Platform: ${formatValue(formData?.socialMedia)}`,
+			`Direct Mail Type: ${formatValue(formData?.directMailType)}`,
+			`Templates: ${formatValue(store.selectedDirectMailTemplates?.length || 0)} selected (requires at least 1)`,
+			`Transfer Enabled: ${formatValue(store.transferEnabled)}`,
+			`Transfer Type: ${formatValue(store.transferType)}`,
+			`Transfer Agent ID: ${formatValue(store.transferAgentId)}`,
+			`Transfer Guidelines: ${formatValue(store.transferGuidelines)}`,
+			`Transfer Prompt: ${formatValue(store.transferPrompt)}`,
+			`Number Pooling: ${formatValue(store.numberPoolingEnabled)}`,
+			`Messaging Service SID: ${formatValue(store.messagingServiceSID)}`,
+			`Sender Numbers CSV: ${formatValue(store.senderNumbersCSV)}`,
+			`Smart Encoding: ${formatValue(store.smartEncodingEnabled)}`,
+			`Opt-out Handling: ${formatValue(store.optOutHandlingEnabled)}`,
+			`Daily Limit: ${formatValue(store.perNumberDailyLimit)}`,
+			`TCPA Source Link: ${formatValue(store.tcpaSourceLink)}`,
+			`Skip Name: ${formatValue(store.skipName)}`,
+			`Address Verified: ${formatValue(store.addressVerified)}`,
+			`Phone Verified: ${formatValue(store.phoneVerified)}`,
+			`Email Address: ${formatValue(store.emailAddress)}`,
+			`Email Verified: ${formatValue(store.emailVerified)}`,
+			`Possible Phones: ${formatValue(store.possiblePhones)}`,
+			`Possible Emails: ${formatValue(store.possibleEmails)}`,
+			`Possible Handles: ${formatValue(store.possibleHandles)}`,
+			"",
+			"TEXT MESSAGING:",
+			`Text Signature: ${formatValue(store.textSignature)}`,
+			`Media Source: ${formatValue(store.smsMediaSource)}`,
+			`Can Send Images: ${formatValue(store.smsCanSendImages)}`,
+			`Can Send Videos: ${formatValue(store.smsCanSendVideos)}`,
+			`Can Send Links: ${formatValue(store.smsCanSendLinks)}`,
+			"",
+			"TIMING PREFERENCES:",
+			`Days Selected: ${formatValue(store.daysSelected?.length || 0)}`,
+			`Start Date: ${formatValue(store.scheduleStartDate)}`,
+			`End Date: ${formatValue(store.scheduleEndDate)}`,
+			`Reach Before Business: ${formatValue(store.reachBeforeBusiness)}`,
+			`Reach After Business: ${formatValue(store.reachAfterBusiness)}`,
+			`Reach on Weekend: ${formatValue(store.reachOnWeekend)}`,
+			`Reach on Holidays: ${formatValue(store.reachOnHolidays)}`,
+			`Min Daily Attempts: ${formatValue(store.minDailyAttempts)}`,
+			`Max Daily Attempts: ${formatValue(store.maxDailyAttempts)}`,
+			`Count Voicemail as Answered: ${formatValue(store.countVoicemailAsAnswered)}`,
+			`TCPA Not Opted In: ${formatValue(store.tcpaNotOptedIn)}`,
+			`Do Voicemail Drops: ${formatValue(store.doVoicemailDrops)}`,
+			`Voice (overrides agent): ${formatValue(store.preferredVoicemailVoiceId)}`,
+			`Preferred Voicemail Message: ${formatValue(store.preferredVoicemailMessageId)}`,
+			`Get Timezone from Lead: ${formatValue(store.getTimezoneFromLead)}`,
+			"",
+			"NUMBER POOLING:",
+			`Number Pooling Enabled: ${formatValue(store.numberPoolingEnabled)}`,
+			`Messaging Service SID: ${formatValue(store.messagingServiceSID)}`,
+			`Sender Pool Numbers: ${formatValue(store.selectedSenderNumbers?.length || 0)} selected`,
+			`Number Selection Strategy: ${formatValue(store.numberSelectionStrategy)}`,
+			`Smart Encoding: ${formatValue(store.smartEncodingEnabled)}`,
+			`Opt-out Handling: ${formatValue(store.optOutHandlingEnabled)}`,
+			`Per Number Daily Limit: ${formatValue(store.perNumberDailyLimit)}`,
+			"",
+			"AVAILABLE AGENTS:",
+			`Available Agents: ${formatValue(store.availableAgents?.length || 0)} agents`,
+			"",
+		];
+
+		if (campaignCost) {
+			lines.push("CAMPAIGN COST BREAKDOWN:");
+			lines.push(`Campaign: ${campaignCost.CampaignName || "N/A"}`);
+			lines.push(`Channel: ${campaignCost.Channel || "N/A"}`);
+			lines.push(`Lead Count: ${campaignCost.LeadsTargeted || 0}`);
+			lines.push(`Total Days: ${campaignCost.TotalDays || 0}`);
+			lines.push(`Total Attempts: ${campaignCost.TotalAttempts || 0}`);
+			lines.push(`Plan: ${campaignCost.Plan || "N/A"}`);
+			lines.push(`Margin: ${campaignCost.Margin || 0}%`);
+			lines.push(`Total Cost: ${formatCurrency(campaignCost.TotalCost || 0)}`);
+			lines.push(`Billable Credits: ${campaignCost.TotalBillableCredits || 0}`);
+			lines.push(`Available Agents: ${campaignCost.AgentsAvailable || 0}`);
+		}
+
+		lines.push("");
+		lines.push("===== END DEBUG LOG =====");
+
+		return lines.join("\n");
+	};
+
+	const handleCopy = async () => {
+		try {
+			const debugText = generateDebugText();
+			await navigator.clipboard.writeText(debugText);
+			setCopied(true);
+			toast.success("Debug log copied to clipboard");
+			setTimeout(() => setCopied(false), 2000);
+		} catch (err) {
+			toast.error("Failed to copy debug log");
+			console.error("Copy failed:", err);
+		}
+	};
+
 	return (
 		<div className="mt-8 rounded-lg bg-muted/30 p-4 text-xs">
-			<div className="mb-3 font-semibold text-muted-foreground">
-				🔍 Campaign Settings Debug Log
+			<div className="mb-3 flex items-center justify-between">
+				<div className="font-semibold text-muted-foreground">
+					🔍 Campaign Settings Debug Log
+				</div>
+				<button
+					type="button"
+					onClick={handleCopy}
+					className="flex items-center gap-1.5 rounded-md bg-primary/10 px-2 py-1 text-primary transition-colors hover:bg-primary/20"
+					title="Copy debug log to clipboard"
+				>
+					{copied ? (
+						<>
+							<Check className="h-3.5 w-3.5" />
+							<span>Copied!</span>
+						</>
+					) : (
+						<>
+							<Copy className="h-3.5 w-3.5" />
+							<span>Copy</span>
+						</>
+					)}
+				</button>
 			</div>
-			<div className="space-y-2 max-h-48 overflow-y-auto">
+			<div className="max-h-48 space-y-2 overflow-y-auto">
 				{/* Channel Selection */}
 				<div className="font-medium text-primary">Channel Selection:</div>
 				<div className="ml-2 space-y-1">

@@ -16,6 +16,11 @@ export type QuickStartActionHandlerKey =
 	| "onBrowserExtension"
 	| "onStartNewSearch"
 	| "onOpenSavedSearches"
+	| "onAIGenerateSearch"
+	| "onAIGenerateCampaign"
+	| "onOpenSavedCampaignTemplates"
+	| "onAIGenerateWorkflow"
+	| "onOpenSavedWorkflows"
 	| "onLaunchQuickStartFlow";
 
 export type QuickStartActionDescriptor =
@@ -63,4 +68,12 @@ export interface QuickStartCardDescriptor {
 	readonly featureChips?: QuickStartCardChipConfig[];
 	readonly actions: QuickStartActionDescriptor[];
 	readonly wizardPreset?: QuickStartWizardPreset;
+	readonly showBorderBeam?: boolean;
+	readonly borderBeamConfig?: {
+		size?: number;
+		duration?: number;
+		delay?: number;
+		colorFrom?: string;
+		colorTo?: string;
+	};
 }

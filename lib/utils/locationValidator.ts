@@ -1,4 +1,4 @@
-import { State, City } from "country-state-city";
+import { City, State } from "country-state-city";
 
 const usStates = State.getStatesOfCountry("US");
 

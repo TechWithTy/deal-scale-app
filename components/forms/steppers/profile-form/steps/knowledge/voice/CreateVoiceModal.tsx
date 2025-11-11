@@ -1,5 +1,9 @@
 import type React from "react";
 import { useState } from "react";
+import {
+	type VoiceCreationPreferences,
+	VoicePreferencesForm,
+} from "./VoicePreferencesForm";
 
 interface CreateVoiceModalProps {
 	open: boolean;
@@ -7,6 +11,8 @@ interface CreateVoiceModalProps {
 	minLength?: number;
 	maxLength?: number;
 	onSave: (audioBlob: Blob) => Promise<void>;
+	preferences: VoiceCreationPreferences;
+	onPreferencesChange: (prefs: VoiceCreationPreferences) => void;
 }
 
 /**
@@ -20,12 +26,13 @@ const CreateVoiceModal: React.FC<CreateVoiceModalProps> = ({
 	minLength = 20,
 	maxLength = 200,
 	onSave,
+	preferences,
+	onPreferencesChange,
 }) => {
 	const [prompt, setPrompt] = useState("");
 	const [error, setError] = useState("");
 
-	const handleSubmit = (e: React.FormEvent) => {
-		e.preventDefault();
+	const handleSubmit = () => {
 		if (prompt.length < minLength) {
 			setError(`Prompt must be at least ${minLength} characters.`);
 			return;
@@ -42,7 +49,15 @@ const CreateVoiceModal: React.FC<CreateVoiceModalProps> = ({
 	if (!open) return null;
 
 	return (
-		<div className="fixed inset-0 z-40 flex items-center justify-center bg-background/80 backdrop-blur-sm">
+		<div
+			className="fixed inset-0 z-40 flex items-center justify-center bg-background/80 backdrop-blur-sm"
+			onClick={(event) => {
+				if (event.target === event.currentTarget) onClose();
+			}}
+			onKeyDown={(event) => {
+				if (event.key === "Escape") onClose();
+			}}
+		>
 			<div className="relative w-full max-w-md rounded-lg bg-card p-6 shadow-xl">
 				<button
 					type="button"
@@ -52,7 +67,9 @@ const CreateVoiceModal: React.FC<CreateVoiceModalProps> = ({
 				>
 					×
 				</button>
-				<h2 className="mb-2 font-bold text-lg">Create a New Voice Prompt</h2>
+				<h2 id="create-voice-title" className="mb-2 font-bold text-lg">
+					Create a New Voice Prompt
+				</h2>
 				<div className="mb-4 text-muted-foreground text-sm">
 					<strong>Guidelines for best results:</strong>
 					<ul className="mt-2 list-disc pl-5">
@@ -71,9 +88,9 @@ const CreateVoiceModal: React.FC<CreateVoiceModalProps> = ({
 						</li>
 					</ul>
 				</div>
-				<form onSubmit={handleSubmit}>
+				<div className="space-y-4" aria-labelledby="create-voice-title">
 					<textarea
-						className="mt-1 w-full rounded border border-input bg-transparent px-3 py-2 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+						className="w-full rounded border border-input bg-transparent px-3 py-2 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 						rows={4}
 						value={prompt}
 						onChange={(e) => setPrompt(e.target.value)}
@@ -83,10 +100,13 @@ const CreateVoiceModal: React.FC<CreateVoiceModalProps> = ({
 						required
 						aria-label="Voice prompt"
 					/>
-					{error && (
-						<div className="mt-2 text-destructive text-sm">{error}</div>
-					)}
-					<div className="mt-4 flex justify-end">
+					{error && <div className="text-destructive text-sm">{error}</div>}
+					<VoicePreferencesForm
+						preferences={preferences}
+						onChange={onPreferencesChange}
+						showUsageSelector
+					/>
+					<div className="flex justify-end">
 						<button
 							type="button"
 							className="mr-2 rounded bg-muted px-4 py-2 text-muted-foreground hover:bg-muted/80"
@@ -95,14 +115,15 @@ const CreateVoiceModal: React.FC<CreateVoiceModalProps> = ({
 							Cancel
 						</button>
 						<button
-							type="submit"
+							type="button"
 							className="rounded bg-primary px-4 py-2 font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
 							disabled={prompt.length < minLength || prompt.length > maxLength}
+							onClick={handleSubmit}
 						>
 							Create Voice
 						</button>
 					</div>
-				</form>
+				</div>
 			</div>
 		</div>
 	);

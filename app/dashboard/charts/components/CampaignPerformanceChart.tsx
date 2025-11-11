@@ -7,6 +7,9 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
+import { ChartContainer, ChartTooltipContent } from "@/components/ui/chart";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useState } from "react";
 import {
 	Bar,
 	BarChart,
@@ -16,10 +19,7 @@ import {
 	XAxis,
 	YAxis,
 } from "recharts";
-import { ChartContainer, ChartTooltipContent } from "@/components/ui/chart";
 import type { CampaignPerformance } from "../types/analytics";
-import { useState } from "react";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface CampaignPerformanceChartProps {
 	data: CampaignPerformance[];

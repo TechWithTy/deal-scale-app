@@ -1,7 +1,7 @@
-import { create } from "zustand";
 import { produce } from "immer";
-import { useUserProfileStore } from "./userProfile";
+import { create } from "zustand";
 import { withAnalytics } from "../_middleware/analytics";
+import { useUserProfileStore } from "./userProfile";
 
 type CreditKey = "aiCredits" | "leads" | "skipTraces";
 type Kind = "ai" | "leads" | "skipTraces";

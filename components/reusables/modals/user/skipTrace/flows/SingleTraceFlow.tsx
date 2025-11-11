@@ -1,16 +1,16 @@
 "use client";
 
-import type { InputField } from "@/types/skip-trace/enrichment";
-import { useUserProfileStore } from "@/lib/stores/user/userProfile";
-import { useSkipTraceStore } from "@/lib/stores/user/skip_trace/skipTraceStore";
-import type React from "react";
-import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { LEAD_LISTS_MOCK } from "@/constants/dashboard/leadLists.mock";
+import { useSkipTraceStore } from "@/lib/stores/user/skip_trace/skipTraceStore";
+import { useUserProfileStore } from "@/lib/stores/user/userProfile";
+import type { InputField } from "@/types/skip-trace/enrichment";
+import type React from "react";
+import { useEffect, useMemo, useState } from "react";
 import { EnrichmentStep } from "../steps/EnrichmentStep";
 import ReviewAndSubmitStep from "../steps/ReviewAndSubmitStep";
-import { LEAD_LISTS_MOCK } from "@/constants/dashboard/leadLists.mock";
 
 interface ListItem {
 	id?: string;

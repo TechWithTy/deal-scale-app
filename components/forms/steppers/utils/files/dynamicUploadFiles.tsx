@@ -57,7 +57,7 @@ export const DynamicFileUpload: React.FC<DynamicFileUploadProps> = ({
 		<div className="mx-auto mt-4 max-w-3xl overflow-auto rounded-lg border border-border bg-card p-4 text-card-foreground shadow-lg">
 			<label
 				htmlFor="dynamic-file-upload"
-				className="block text-sm font-medium text-foreground"
+				className="block font-medium text-foreground text-sm"
 			>
 				Upload Files ({minFiles} to {maxFiles} allowed,{" "}
 				{allowedFileTypes.join(", ")})
@@ -68,10 +68,10 @@ export const DynamicFileUpload: React.FC<DynamicFileUploadProps> = ({
 				accept={allowedFileTypes.map((type) => `.${type}`).join(",")}
 				multiple
 				onChange={handleFileUpload}
-				className="mt-2 block w-full text-sm text-muted-foreground file:mr-4 file:rounded-full file:border-0 file:bg-primary file:px-4 file:py-2 file:text-sm file:font-semibold file:text-primary-foreground hover:file:bg-primary/90"
+				className="mt-2 block w-full text-muted-foreground text-sm file:mr-4 file:rounded-full file:border-0 file:bg-primary file:px-4 file:py-2 file:font-semibold file:text-primary-foreground file:text-sm hover:file:bg-primary/90"
 			/>
 			{files.length > 0 && (
-				<p className="mt-2 text-sm text-muted-foreground">
+				<p className="mt-2 text-muted-foreground text-sm">
 					Uploaded files: {files.map((file) => file.name).join(", ")}
 				</p>
 			)}

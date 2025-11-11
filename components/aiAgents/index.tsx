@@ -1,15 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import type { Agent } from "@/components/forms/agent/utils/schema";
+import { AgentForm } from "@/components/forms/agent/AgentForm";
 import {
-	fetchAgents,
 	createAgent,
+	fetchAgents,
 	updateAgent,
 } from "@/components/forms/agent/utils/api";
-import { AgentList } from "./AgentList";
-import { AgentForm } from "@/components/forms/agent/AgentForm";
+import type { Agent } from "@/components/forms/agent/utils/schema";
 import { Button } from "@/components/ui/button";
+import { useEffect, useState } from "react";
+import { AgentList } from "./AgentList";
 
 // * The main component for managing AI agents.
 // ? It orchestrates the state and logic for CRUD operations.

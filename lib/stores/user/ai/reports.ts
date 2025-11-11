@@ -1,15 +1,15 @@
-import { create } from "zustand";
 import { MockUserProfile } from "@/constants/_faker/profile/userProfile";
-import type { UserProfile } from "@/types/userProfile";
-import type { CampaignAnalytics } from "@/types/userProfile";
 import type { CampaignBase, TransferType } from "@/types/_dashboard/campaign";
 import { campaignStatusesGB } from "@/types/_dashboard/campaign";
-import type { EmailCampaignAnalytics } from "@/types/goHighLevel/email";
-import type { TextMessageCampaignAnalytics } from "@/types/goHighLevel/text";
-import type { CallCampaignAnalytics } from "@/types/vapiAi/api/calls/get";
-import type { CallStatus, EndedReason } from "@/types/vapiAi/api/calls/_enums";
 import type { SocialMediaCampaign } from "@/types/_dashboard/campaign";
 import type { KanbanState } from "@/types/_dashboard/kanban";
+import type { EmailCampaignAnalytics } from "@/types/goHighLevel/email";
+import type { TextMessageCampaignAnalytics } from "@/types/goHighLevel/text";
+import type { UserProfile } from "@/types/userProfile";
+import type { CampaignAnalytics } from "@/types/userProfile";
+import type { CallStatus, EndedReason } from "@/types/vapiAi/api/calls/_enums";
+import type { CallCampaignAnalytics } from "@/types/vapiAi/api/calls/get";
+import { create } from "zustand";
 
 // Type guards for analytics variants
 function isEmail(a: CampaignAnalytics): a is EmailCampaignAnalytics {

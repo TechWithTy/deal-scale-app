@@ -1,12 +1,12 @@
 "use client";
 
+import { MainEmployeeForm } from "@/components/forms/steppers/employee-form/MainEmployeeForm";
 import {
 	Dialog,
 	DialogContent,
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
-import { MainEmployeeForm } from "@/components/forms/steppers/employee-form/MainEmployeeForm";
 import type { TeamMemberFormValues } from "@/types/zod/userSetup/team-member-form-schema";
 
 export interface InviteEmployeeModalProps {

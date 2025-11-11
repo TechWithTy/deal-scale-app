@@ -2,8 +2,8 @@
 // ! Heading and help modal trigger for the leads search UI
 import { HelpCircle } from "lucide-react";
 
-import type { FC } from "react";
 import { mockUserProfile } from "@/constants/_faker/profile/userProfile";
+import type { FC } from "react";
 
 // ! Add this prop to the interface if not present
 interface LeadSearchHeaderProps {

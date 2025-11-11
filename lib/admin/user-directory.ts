@@ -1,5 +1,5 @@
-import { getUserById, users } from "@/lib/mock-db";
 import type { AdminUser } from "@/components/tables/super-users/types";
+import { getUserById, users } from "@/lib/mock-db";
 import type { User } from "@/types/user";
 
 export interface AdminActivityEvent {

@@ -5,7 +5,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { FormItem, FormLabel, FormControl, FormMessage } from "./form";
+import { FormControl, FormItem, FormLabel, FormMessage } from "./form";
 
 interface UpdatedDropdownProps {
 	label: string;

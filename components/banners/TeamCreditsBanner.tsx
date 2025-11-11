@@ -1,16 +1,16 @@
 "use client";
 
-import { useMemo } from "react";
-import { Info, Users } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
 import {
 	Tooltip,
 	TooltipContent,
 	TooltipProvider,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
 import { useUserStore } from "@/lib/stores/userStore";
+import { Info, Users } from "lucide-react";
+import { useMemo } from "react";
 
 interface CreditBucket {
 	allotted: number;
@@ -62,7 +62,7 @@ export default function TeamCreditsBanner() {
 				</div>
 			</div>
 
-			<div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+			<div className="mt-2 flex flex-wrap items-center gap-2 text-muted-foreground text-xs">
 				<Badge variant="outline">Team Management</Badge>
 				<Badge variant="outline">Sprint 11</Badge>
 				<Badge variant="outline">Medium</Badge>

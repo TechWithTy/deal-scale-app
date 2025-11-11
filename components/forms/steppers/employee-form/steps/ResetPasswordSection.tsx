@@ -1,9 +1,9 @@
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "@/components/ui/use-toast";
-import { MailIcon, CheckCircle2 } from "lucide-react";
+import { CheckCircle2, MailIcon } from "lucide-react";
+import { useState } from "react";
 
 interface ResetPasswordSectionProps {
 	userId: string;

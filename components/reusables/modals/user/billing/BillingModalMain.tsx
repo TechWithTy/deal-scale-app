@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { Modal } from "@/components/ui/modal";
 import type {
 	BillingHistoryItem,
 	PaymentDetails,
@@ -9,7 +10,6 @@ import type { UserProfileSubscription } from "@/constants/_faker/profile/userSub
 import { downloadBillingHistoryAsXlsx } from "@/lib/_utils/files/billingHistory";
 import { useModalStore } from "@/lib/stores/dashboard";
 import { useState } from "react";
-import { Modal } from "@/components/ui/modal";
 // ! Switched to Zustand for modal visibility control
 import BillingHistoryStep from "./steps/BillingHistoryStep";
 import ManageSubscriptionModal from "./steps/ManageSubscriptionModal";

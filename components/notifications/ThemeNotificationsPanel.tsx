@@ -389,6 +389,58 @@ export default function ThemeNotificationsPanel({
 							>
 								Approval demo
 							</DropdownMenuItem>
+							<DropdownMenuItem
+								onClick={() => {
+									const dueDate = new Date();
+									dueDate.setDate(dueDate.getDate() + 30);
+									const dueDateStr = dueDate.toLocaleDateString("en-US", {
+										month: "short",
+										day: "numeric",
+										year: "numeric",
+									});
+
+									addUnsafe({
+										title: "Credit Offer from Top Leader",
+										description: (
+											<div className="space-y-1.5">
+												<div className="break-words text-sm leading-relaxed">
+													100 AI credits • 5% monthly • Net 30
+												</div>
+												<div className="text-muted-foreground text-xs">
+													Due: {dueDateStr}
+												</div>
+												<a
+													href="https://dealscale.io/credit-terms"
+													target="_blank"
+													rel="noopener noreferrer"
+													className="inline-flex items-center text-primary text-xs hover:underline"
+													onClick={(e) => e.stopPropagation()}
+												>
+													View terms & conditions →
+												</a>
+											</div>
+										) as any,
+										icon: "💳",
+										colorHsl: "280 70% 50%",
+										action: {
+											approveLabel: "Accept Offer",
+											denyLabel: "Decline",
+											onApprove: () => {
+												console.log("Credit offer accepted");
+												addUnsafe({
+													title: "Credit offer accepted!",
+													description: "100 AI credits added to your account",
+													icon: "✅",
+													colorHsl: "142 76% 36%",
+												});
+											},
+											onDeny: () => console.log("Credit offer declined"),
+										},
+									});
+								}}
+							>
+								Credit offer demo
+							</DropdownMenuItem>
 							<DropdownMenuLabel className="mt-2">Form Demos</DropdownMenuLabel>
 							<DropdownMenuItem
 								onClick={() => {
@@ -803,7 +855,7 @@ export default function ThemeNotificationsPanel({
 												{n.title}
 											</div>
 											{n.description ? (
-												<div className="mt-0.5 text-muted-foreground text-xs leading-relaxed">
+												<div className="mt-0.5 break-words text-muted-foreground text-xs leading-relaxed">
 													{n.description}
 												</div>
 											) : null}
