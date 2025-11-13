@@ -76,9 +76,9 @@ export const BackgroundBeamsWithCollision = ({
 		if (floorRef.current) {
 			rects.push(floorRef.current.getBoundingClientRect());
 		}
-		colliderTargetsRef.current.forEach((node) => {
+		for (const node of colliderTargetsRef.current) {
 			rects.push(node.getBoundingClientRect());
-		});
+		}
 		return rects;
 	}, []);
 
@@ -146,10 +146,14 @@ export const BackgroundBeamsWithCollision = ({
 			onMouseLeave={handleMouseLeave}
 			{...rest}
 		>
+			{/* Base layers: grid background + soft beams */}
+			<GridBackground />
+			<SoftBeams />
+
 			{/* Beams layer */}
 			{beams.map((beam) => (
 				<CollisionMechanism
-					key={beam.initialX + "beam-idx"}
+					key={`${beam.initialX}-beam-idx`}
 					beamOptions={beam}
 					getCollisionRects={getCollisionRects}
 					parentRef={parentRef}
@@ -327,6 +331,38 @@ const CollisionMechanism = React.forwardRef<
 );
 
 CollisionMechanism.displayName = "CollisionMechanism";
+
+const GridBackground = () => (
+	<div className="pointer-events-none absolute inset-0 -z-20">
+		<div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(67,56,202,0.3),_transparent_45%)]" />
+		<div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom,_rgba(59,130,246,0.28),_transparent_55%)]" />
+		<div className="absolute inset-0 opacity-[0.12]">
+			<div className="absolute inset-0 bg-[linear-gradient(to_right,_rgba(255,255,255,0.35)_1px,_transparent_1px)] bg-[length:40px_100%]" />
+			<div className="absolute inset-0 bg-[linear-gradient(to_bottom,_rgba(255,255,255,0.25)_1px,_transparent_1px)] bg-[length:100%_40px]" />
+		</div>
+	</div>
+);
+
+const SoftBeams = () => (
+	<div className="pointer-events-none absolute inset-0 -z-10">
+		<div className="absolute inset-0 blur-[120px] opacity-40">
+			<div className="absolute -left-10 top-0 h-[40%] w-[35%] rounded-full bg-primary/30" />
+			<div className="absolute bottom-10 right-0 h-[38%] w-[32%] rounded-full bg-sky-400/25" />
+		</div>
+		<div className="absolute inset-0 opacity-20">
+			<motion.div
+				animate={{ opacity: [0.2, 0.5, 0.2] }}
+				transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
+				className="absolute inset-x-0 top-[-10%] h-[45%] bg-gradient-to-b from-primary/25 via-primary/10 to-transparent blur-3xl"
+			/>
+			<motion.div
+				animate={{ opacity: [0.1, 0.35, 0.1] }}
+				transition={{ duration: 16, repeat: Infinity, ease: "easeInOut" }}
+				className="absolute inset-y-0 right-[-15%] w-[30%] bg-gradient-to-l from-sky-400/25 via-sky-300/10 to-transparent blur-[110px]"
+			/>
+		</div>
+	</div>
+);
 
 const Explosion = ({ ...props }: React.HTMLProps<HTMLDivElement>) => {
 	const spans = Array.from({ length: 20 }, (_, index) => ({

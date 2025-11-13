@@ -100,6 +100,33 @@
             "status": "done",
             "dependencies": [],
             "parentTaskId": 1
+          },
+          {
+            "id": 11,
+            "title": "Enhance SEO for external tools pages",
+            "description": "Add structured metadata, JSON-LD, and ensure sitemap coverage.",
+            "details": "",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 1
+          },
+          {
+            "id": 12,
+            "title": "Update sitemap metadata for external tools",
+            "description": "Adjust sitemap generation for new pages, ensure metadata consistency.",
+            "details": "",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 1
+          },
+          {
+            "id": 13,
+            "title": "Add JSON-LD helpers",
+            "description": "Create shared JSON-LD utility for external tool pages.",
+            "details": "",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 1
           }
         ]
       }
