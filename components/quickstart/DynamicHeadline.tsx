@@ -338,7 +338,11 @@ const DynamicHeadline = ({ personaId }: DynamicHeadlineProps) => {
 	const fearCopy = fears[fearIndex] ?? copy.values.fear;
 	const hopeCopy = hopes[hopeIndex] ?? copy.values.hope;
 
-	const personaBaseline = copy.chips?.primary?.label ?? "AI Agents";
+	const personaBaseline =
+		copy.chips?.primary?.sublabel ??
+		copy.chips?.secondary?.label ??
+		copy.values.solution ??
+		"AI Agents";
 	const personaChipTitle = `${personaBaseline} persona`;
 	const primaryChipTitle = copy.chips?.primary?.label
 		? `${copy.chips.primary.label} program`

@@ -245,7 +245,9 @@ describe("CommandPaletteAppCommands", () => {
 		expect(openHelpModalMock).toHaveBeenCalled();
 
 		assist.find((cmd) => cmd.id === "assist-focus-player")?.action?.();
-		expect(openFocusWidgetMock).toHaveBeenCalled();
+		expect(openFocusWidgetMock).toHaveBeenCalledWith({
+			autoStartVoice: true,
+		});
 	});
 
 	it("mirrors all quick start goals with contextual hints", () => {

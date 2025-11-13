@@ -82,17 +82,24 @@ export function CommandPaletteProvider({
 	const onKeydown = useCallback(
 		(e: KeyboardEvent) => {
 			if (!keyboard) return;
-			const isMac = navigator.platform.toUpperCase().includes("MAC");
+			const platform =
+				typeof navigator !== "undefined" ? (navigator.platform ?? "") : "";
+			const isMac = platform.toUpperCase().includes("MAC");
 			const modPressed = isMac ? e.metaKey : e.ctrlKey;
-			const isFocusShortcut =
-				modPressed && e.shiftKey && (e.key === "d" || e.key === "D");
-			if (isFocusShortcut) {
+			const key = e.key;
+			const isPrimaryShortcut =
+				modPressed && !e.shiftKey && (key === "k" || key === "K");
+			const isBackupShortcut =
+				modPressed && e.shiftKey && (key === "d" || key === "D");
+
+			if (isPrimaryShortcut || isBackupShortcut) {
 				e.preventDefault();
 				setIsOpen((v) => !v);
 				return;
 			}
+
 			// '/' opens palette globally and does not seed '/' into the input
-			if (!modPressed && e.key === "/") {
+			if (!modPressed && key === "/") {
 				e.preventDefault();
 				setInitialQuery("");
 				setIsOpen(true);

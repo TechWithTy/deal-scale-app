@@ -307,6 +307,7 @@ Restart `pnpm dev` after updating the file. When the app reloads, the widget mou
 - Reload the page to verify local persistence of the last snapped position.
 - Resize the viewport to ensure the widget remains visible.
 - Use the Music/Voice pills to switch modes. Voice mode pauses playback and shows the voice mic pulse; tap the mic button to pause or resume the animation when recording.
+- Press `⌘+⇧+V` (`Ctrl+Shift+V` on Windows) or activate the Focus shortcut via a screen reader command to auto-open the widget in Voice mode with an active session ready for spoken input.
 
 ### 3. Toggling Off
 

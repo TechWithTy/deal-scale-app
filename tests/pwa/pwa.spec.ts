@@ -1,10 +1,13 @@
 import { renderHook, act } from "@testing-library/react";
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 import { usePushStore } from "@/lib/stores/pushStore";
+import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { useInstallPrompt } from "@/hooks/useInstallPrompt";
 import { useServiceWorkerUpdate } from "@/hooks/useServiceWorkerUpdate";
+import * as pwaUtils from "@/lib/utils/pwa";
 
 const VISIT_COUNT_KEY = "dealscale:pwa:visit-count";
+const PROBE_INTERVAL = 15_000;
 
 beforeEach(() => {
 	localStorage.clear();
@@ -64,6 +67,73 @@ describe("PWA install prompt hook", () => {
 
 		expect(mockPrompt).toHaveBeenCalledTimes(1);
 	});
+
+	it("suppresses banner when the user previously dismissed it", async () => {
+		localStorage.setItem("dealscale:pwa:install-dismissed", "true");
+		stubServiceWorkerSupport();
+		const { result } = renderHook(() => useInstallPrompt());
+
+		await act(async () => Promise.resolve());
+
+		expect(result.current.shouldShowBanner).toBe(false);
+	});
+
+	it("surfaces banner after engagement even below visit threshold", async () => {
+		localStorage.setItem(VISIT_COUNT_KEY, "0");
+		stubServiceWorkerSupport();
+		const mockPrompt = vi.fn(() => Promise.resolve());
+		const userChoice = Promise.resolve({ outcome: "dismissed", platform: "web" });
+		const event = createBeforeInstallPromptEvent({ mockPrompt, userChoice });
+
+		const { result } = renderHook(() => useInstallPrompt());
+
+		await act(async () => Promise.resolve());
+		act(() => {
+			result.current.markEngagement();
+		});
+		await act(async () => {
+			window.dispatchEvent(event);
+			await Promise.resolve();
+		});
+
+		expect(result.current.shouldShowBanner).toBe(true);
+		expect(result.current.canInstall).toBe(true);
+	});
+
+	it("shows iOS banner even when service worker install prompt is unavailable", async () => {
+		const swSupport = vi
+			.spyOn(pwaUtils, "hasServiceWorkerSupport")
+			.mockReturnValue(false);
+		const iosSpy = vi.spyOn(pwaUtils, "isIosDevice").mockReturnValue(true);
+		const standaloneSpy = vi
+			.spyOn(pwaUtils, "isStandaloneMode")
+			.mockReturnValue(false);
+
+		const { result } = renderHook(() => useInstallPrompt());
+
+		await act(async () => Promise.resolve());
+
+		expect(result.current.isIosEligible).toBe(true);
+		expect(result.current.shouldShowBanner).toBe(true);
+		expect(result.current.canInstall).toBe(false);
+
+		swSupport.mockRestore();
+		iosSpy.mockRestore();
+		standaloneSpy.mockRestore();
+	});
+
+	it("marks state installed when appinstalled event fires", async () => {
+		stubServiceWorkerSupport();
+		const { result } = renderHook(() => useInstallPrompt());
+
+		await act(async () => Promise.resolve());
+		await act(async () => {
+			window.dispatchEvent(new Event("appinstalled"));
+		});
+
+		expect(result.current.isInstalled).toBe(true);
+		expect(localStorage.getItem("dealscale:pwa:install-dismissed")).toBe("true");
+	});
 });
 
 describe("Service worker update hook", () => {
@@ -84,6 +154,137 @@ describe("Service worker update hook", () => {
 		});
 
 		expect(postMessage).toHaveBeenCalledWith({ type: "SKIP_WAITING" });
+	});
+});
+
+describe("useOnlineStatus hook", () => {
+	const originalFetch = globalThis.fetch;
+	const originalOnlineDescriptor = Object.getOwnPropertyDescriptor(
+		window.navigator,
+		"onLine",
+	);
+	type FetchMock = ReturnType<typeof vi.fn>;
+
+	beforeEach(() => {
+		vi.useFakeTimers();
+		setNavigatorOnline(true);
+		globalThis.fetch = vi
+			.fn(async (...args: Parameters<typeof fetch>) => {
+				return await originalFetch(...args);
+			}) as unknown as typeof fetch;
+	});
+
+	afterEach(() => {
+		vi.useRealTimers();
+		globalThis.fetch = originalFetch;
+		if (originalOnlineDescriptor) {
+			Object.defineProperty(window.navigator, "onLine", originalOnlineDescriptor);
+		}
+	});
+
+	it("recovers to online when navigator.onLine is false but probe succeeds", async () => {
+		setNavigatorOnline(false);
+		(globalThis.fetch as unknown as FetchMock).mockResolvedValue(
+			{ ok: true } as Response,
+		);
+
+		const { result } = renderHook(() => useOnlineStatus());
+
+		expect(result.current.isOnline).toBe(false);
+
+		await act(async () => {
+			// Allow the probe effect to start.
+			await Promise.resolve();
+		});
+
+		await act(async () => {
+			vi.runOnlyPendingTimers();
+		});
+
+		expect(result.current.isOnline).toBe(true);
+		expect(result.current.lastChangedAt).toBeTypeOf("number");
+	});
+
+	it("stays offline when probe fails", async () => {
+		setNavigatorOnline(false);
+		(globalThis.fetch as unknown as FetchMock).mockRejectedValue(
+			new Error("network error"),
+		);
+
+		const { result } = renderHook(() => useOnlineStatus());
+
+		await act(async () => {
+			await Promise.resolve();
+		});
+
+		await act(async () => {
+			vi.advanceTimersByTime(30_000);
+		});
+
+		expect(result.current.isOnline).toBe(false);
+	});
+
+	it("debounces multiple probes by avoiding duplicate fetches during the same interval", async () => {
+		setNavigatorOnline(false);
+		const mockFetch = vi.fn().mockRejectedValue(new Error("still offline"));
+		globalThis.fetch = mockFetch as unknown as typeof fetch;
+
+		renderHook(() => useOnlineStatus());
+
+		await act(async () => {
+			await Promise.resolve();
+		});
+
+		await act(async () => {
+			vi.advanceTimersByTime(PROBE_INTERVAL);
+		});
+
+		expect(mockFetch).toHaveBeenCalledTimes(2);
+	});
+
+	it("stops probing and resets once navigation online event fires", async () => {
+		setNavigatorOnline(false);
+		const mockFetch = vi.fn().mockResolvedValue({ ok: false } as Response);
+		globalThis.fetch = mockFetch as unknown as typeof fetch;
+
+		const { result } = renderHook(() => useOnlineStatus());
+
+		await act(async () => Promise.resolve());
+		await act(async () => {
+			window.dispatchEvent(new Event("online"));
+		});
+		expect(result.current.isOnline).toBe(true);
+
+		const callCountAfterOnline = mockFetch.mock.calls.length;
+		await act(async () => {
+			vi.advanceTimersByTime(60_000);
+		});
+
+		expect(mockFetch).toHaveBeenCalledTimes(callCountAfterOnline);
+	});
+
+	it("respects AbortController when component unmounts mid-probe", async () => {
+		setNavigatorOnline(false);
+		const abortableFetch = vi
+			.fn()
+			.mockImplementation(
+				(_: RequestInfo | URL, init?: RequestInit) =>
+					new Promise<Response>((resolve, reject) => {
+						init?.signal?.addEventListener("abort", () =>
+							reject(new DOMException("Aborted", "AbortError")),
+						);
+					}),
+			);
+
+		globalThis.fetch = abortableFetch as unknown as typeof fetch;
+
+		const { unmount } = renderHook(() => useOnlineStatus());
+
+		await act(async () => Promise.resolve());
+		unmount();
+
+		expect(abortableFetch).toHaveBeenCalledTimes(1);
+		expect(abortableFetch.mock.calls[0]?.[1]?.signal?.aborted).toBe(true);
 	});
 });
 
@@ -155,6 +356,13 @@ function stubLocationReload() {
 	const reload = vi.fn();
 	Object.defineProperty(window, "location", {
 		value: { ...original, reload },
+		configurable: true,
+	});
+}
+
+function setNavigatorOnline(value: boolean) {
+	Object.defineProperty(window.navigator, "onLine", {
+		value,
 		configurable: true,
 	});
 }

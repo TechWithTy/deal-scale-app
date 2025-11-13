@@ -1710,6 +1710,39 @@ export default function QuickStartPage() {
 		}
 	}, []);
 
+	const scrollToHeroVideoAndPlay = useCallback(() => {
+		if (typeof window === "undefined") {
+			return;
+		}
+
+		const heroVideo = document.getElementById("quickstart-hero-video");
+		if (!heroVideo) {
+			return;
+		}
+
+		heroVideo.scrollIntoView({ behavior: "smooth", block: "center" });
+
+		window.setTimeout(() => {
+			const playButton = heroVideo.querySelector<HTMLButtonElement>(
+				"[data-hero-video-play]",
+			);
+
+			if (!playButton) {
+				return;
+			}
+
+			if (typeof playButton.focus === "function") {
+				try {
+					playButton.focus({ preventScroll: true });
+				} catch {
+					playButton.focus();
+				}
+			}
+
+			playButton.click();
+		}, 400);
+	}, []);
+
 	const openQuickStartHelp = useCallback(() => {
 		showHelpIcon();
 		openHelpModal();
@@ -1742,7 +1775,7 @@ export default function QuickStartPage() {
 							displayMode="both"
 							orientation="horizontal"
 							onPrimaryClick={scrollToQuickStartActions}
-							onSecondaryClick={openQuickStartHelp}
+							onSecondaryClick={scrollToHeroVideoAndPlay}
 						/>
 						<QuickStartHeroVideo className="mt-10" />
 					</div>

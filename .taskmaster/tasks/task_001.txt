@@ -1,0 +1,91 @@
+# Task ID: 1
+# Title: Optimize plan for embeddable live charts
+# Status: done
+# Dependencies: None
+# Priority: high
+# Description: Outline approach for advanced charts embeddable via script with live updates using existing API polling.
+# Details:
+
+
+# Test Strategy:
+
+
+# Subtasks:
+## 1. Audit existing chart implementation [done]
+### Dependencies: None
+### Description: Review components/charts/*, lib/charts, and related types to inventory reusable chart primitives and identify embeddability gaps.
+### Details:
+
+
+## 2. Document embed contract [done]
+### Dependencies: None
+### Description: Draft _docs/features/charts/embed-contract.md specifying script API, config schema, authentication, theming options, and polling cadence.
+### Details:
+
+
+## 3. Author embed loader tests [done]
+### Dependencies: None
+### Description: Create tests/external/embed-chart.spec.tsx covering configuration bootstrapping, polling interval dispatch, and reactive chart updates using mocked fetch responses.
+### Details:
+
+
+## 4. Add mock live data API route [done]
+### Dependencies: None
+### Description: Implement app/api/charts/live/[chartId]/route.ts returning deterministic metrics with ETag headers and validation using shared API utilities.
+### Details:
+
+
+## 5. Build polling hook [done]
+### Dependencies: None
+### Description: Add lib/hooks/useLiveChartData.ts providing configurable polling with zod-validated responses, SWR-style caching, and cleanup logic.
+### Details:
+
+
+## 6. Create embeddable frame components [done]
+### Dependencies: None
+### Description: Implement components/external/embed-chart-frame.tsx and embed-chart.tsx composing loader states, theming, and chart primitives while staying under 250 lines each.
+### Details:
+
+
+## 7. Expose public embed bootstrap [done]
+### Dependencies: None
+### Description: Create external/embed/index.ts exporting mountDealScaleChart, wiring dynamic import of components and ensuring compatibility with Next standalone bundling.
+### Details:
+
+
+## 8. Isolate embed styling [done]
+### Dependencies: None
+### Description: Add public/embed/deal-scale-charts.css with scoped variables and document how host sites override colors without global leakage.
+### Details:
+
+
+## 9. Write operational guide [done]
+### Dependencies: None
+### Description: Document integration, polling limits, and QA flow in _docs/features/charts/embed-live-updates.md referencing mock endpoints and configuration schema.
+### Details:
+
+
+## 10. Capture QA checklist [done]
+### Dependencies: None
+### Description: Add follow-up checklist (cross-origin embed, theme overrides, throttle behavior, websocket enhancement backlog) to docs or task comments for future tracking.
+### Details:
+
+
+## 11. Enhance SEO for external tools pages [pending]
+### Dependencies: None
+### Description: Add structured metadata, JSON-LD, and ensure sitemap coverage.
+### Details:
+
+
+## 12. Update sitemap metadata for external tools [pending]
+### Dependencies: None
+### Description: Adjust sitemap generation for new pages, ensure metadata consistency.
+### Details:
+
+
+## 13. Add JSON-LD helpers [pending]
+### Dependencies: None
+### Description: Create shared JSON-LD utility for external tool pages.
+### Details:
+
+

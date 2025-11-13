@@ -90,6 +90,7 @@ export function HeroVideoDialog({
 				type="button"
 				aria-label="Play video"
 				className="group relative cursor-pointer border-0 bg-transparent p-0"
+				data-hero-video-play="true"
 				onClick={() => setIsOpen(true)}
 			>
 				<img
