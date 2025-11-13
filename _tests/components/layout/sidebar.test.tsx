@@ -34,6 +34,18 @@ vi.mock("@/components/dashboard-nav", () => ({
         ),
 }));
 
+vi.mock("@/components/layout/SidebarHelpActions", () => ({
+        __esModule: true,
+        default: () => <div data-testid="sidebar-help-actions" />,
+}));
+
+vi.mock("@/components/ui/vertical-sticky-banner", () => ({
+        __esModule: true,
+        VerticalStickyBanner: ({ children }: { children: ReactNode }) => (
+                <div data-testid="sidebar-sticky-banner">{children}</div>
+        ),
+}));
+
 let Sidebar: typeof import("@/components/layout/sidebar").default;
 
 beforeAll(async () => {
@@ -84,4 +96,64 @@ describe("Sidebar", () => {
                         "admin.user@example.com",
                 );
         });
+
+		it("uses the demo company logo when provided in the session", () => {
+			const companyLogo = "https://example.com/brand.svg";
+			act(() => {
+				useSessionStore.getState().setFromSession({
+					user: {
+						id: "demo-user",
+						email: "demo@example.com",
+						role: "member",
+						permissions: [],
+						permissionMatrix: {},
+						subscription: {
+							aiCredits: { allotted: 0, used: 0 },
+							leads: { allotted: 0, used: 0 },
+							skipTraces: { allotted: 0, used: 0 },
+						},
+						demoConfig: {
+							companyName: "Demo Co",
+							companyLogo,
+						},
+					},
+				} as any);
+			});
+
+			render(<Sidebar user={null} />);
+
+			const logos = screen.getAllByTestId(
+				"sidebar-logo",
+			) as HTMLImageElement[];
+			expect(logos[0]?.getAttribute("src")).toBe(companyLogo);
+		});
+		it("renders tier and tester badges when session data includes flags", () => {
+			act(() => {
+				useSessionStore.getState().setFromSession({
+					user: {
+						id: "feature-user",
+						email: "feature@example.com",
+						role: "admin",
+						tier: "Starter",
+						isBetaTester: true,
+						isPilotTester: true,
+						isFreeTier: true,
+						permissions: [],
+						subscription: {
+							aiCredits: { allotted: 50, used: 5 },
+							leads: { allotted: 20, used: 2 },
+							skipTraces: { allotted: 10, used: 1 },
+						},
+					},
+				} as any);
+			});
+
+			render(<Sidebar user={null} />);
+
+			const badgeGroup = screen.getAllByTestId("sidebar-status-badges")[0];
+			expect(badgeGroup.textContent).toMatch(/Starter Tier/i);
+			expect(badgeGroup.textContent).toMatch(/Beta Tester/i);
+			expect(badgeGroup.textContent).toMatch(/Pilot Tester/i);
+			expect(badgeGroup.textContent).toMatch(/Free Tier/i);
+		});
 });

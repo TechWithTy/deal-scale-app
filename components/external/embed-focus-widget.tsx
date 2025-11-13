@@ -30,6 +30,13 @@ export function EmbedFocusWidget({ config, onError }: EmbedFocusWidgetProps) {
 		setVoiceStatus("loading");
 		setVoiceError(null);
 		try {
+			if (process.env.NODE_ENV !== "production") {
+				// eslint-disable-next-line no-console
+				console.info(
+					"[FocusWidget] loading voice agents from",
+					config.voiceWebhook,
+				);
+			}
 			const response = await fetch(config.voiceWebhook, {
 				headers: {
 					Accept: "application/json",
@@ -50,6 +57,10 @@ export function EmbedFocusWidget({ config, onError }: EmbedFocusWidgetProps) {
 					: [],
 			);
 			setVoiceStatus("success");
+			if (process.env.NODE_ENV !== "production") {
+				// eslint-disable-next-line no-console
+				console.info("[FocusWidget] loaded voice agents", payload);
+			}
 		} catch (error) {
 			const resolved =
 				error instanceof Error
@@ -57,6 +68,10 @@ export function EmbedFocusWidget({ config, onError }: EmbedFocusWidgetProps) {
 					: new Error("Failed to load voice agents");
 			setVoiceStatus("error");
 			setVoiceError(resolved.message);
+			if (process.env.NODE_ENV !== "production") {
+				// eslint-disable-next-line no-console
+				console.error("[FocusWidget] voice agent load error", resolved);
+			}
 			onError?.(resolved);
 		}
 	}, [
@@ -140,30 +155,32 @@ export function EmbedFocusWidget({ config, onError }: EmbedFocusWidgetProps) {
 						</button>
 					</nav>
 					<div className="deal-scale-focus-content">
-						{mode === "music" ? (
-							<iframe
-								key={playlistSrc}
-								title="Focus playlist"
-								src={playlistSrc}
-								loading="lazy"
-								allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-							/>
-						) : (
-							<VoicePanel
-								screenState={screenState}
-								cameraState={cameraState}
-								voiceStatus={voiceStatus}
-								voiceAgents={voiceAgents}
-								voiceError={voiceError}
-								onScreenShare={() => void requestScreenShare()}
-								onCameraShare={() => void requestCameraShare()}
-								onRetryAgents={() => {
-									void loadVoiceAgents();
-								}}
-								showClose={showClose}
-								onClose={() => setIsOpen(false)}
-							/>
-						)}
+						<div className="deal-scale-focus-scroll">
+							{mode === "music" ? (
+								<iframe
+									key={playlistSrc}
+									title="Focus playlist"
+									src={playlistSrc}
+									loading="lazy"
+									allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+								/>
+							) : (
+								<VoicePanel
+									screenState={screenState}
+									cameraState={cameraState}
+									voiceStatus={voiceStatus}
+									voiceAgents={voiceAgents}
+									voiceError={voiceError}
+									onScreenShare={() => void requestScreenShare()}
+									onCameraShare={() => void requestCameraShare()}
+									onRetryAgents={() => {
+										void loadVoiceAgents();
+									}}
+									showClose={showClose}
+									onClose={() => setIsOpen(false)}
+								/>
+							)}
+						</div>
 					</div>
 					{mode === "music" && showClose ? (
 						<button

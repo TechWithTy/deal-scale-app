@@ -43,6 +43,23 @@ export type ClientType = "investor" | "wholesaler" | "agent" | "loan_officer";
  * Demo configuration for realistic client simulations.
  * Allows customizing the user experience to match potential client branding.
  */
+export type DemoCRMProvider =
+	| "gohighlevel"
+	| "salesforce"
+	| "hubspot"
+	| "close"
+	| "zoho"
+	| "other";
+
+export interface DemoROIProfileConfig {
+	dealsPerMonth?: number;
+	avgDealValue?: number;
+	months?: number;
+	profitMarginPercent?: number;
+	monthlyOverhead?: number;
+	hoursPerDeal?: number;
+}
+
 export interface DemoConfig {
 	/** Client company name for branding */
 	companyName?: string;
@@ -83,6 +100,10 @@ export interface DemoConfig {
 	brandColorSecondary?: string;
 	/** Accent brand color (hex) */
 	brandColorAccent?: string;
+	/** CRM provider used by the client */
+	crmProvider?: DemoCRMProvider;
+	/** ROI calculator overrides used to prefill quickstart ROI inputs */
+	roiProfile?: DemoROIProfileConfig;
 	/** Additional notes about the demo client */
 	notes?: string;
 }
@@ -96,10 +117,12 @@ export interface User {
 	tier: UserTier;
 	isBetaTester?: boolean;
 	isPilotTester?: boolean;
+	isFreeTier?: boolean;
 	permissions: PermissionMatrix;
 	permissionList: string[]; // Derived list (e.g., ["leads:read"]) for legacy checks
 	quotas: UserQuotas;
 	subscription: {
+		name?: string;
 		aiCredits: { allotted: number; used: number; resetInDays: number };
 		leads: { allotted: number; used: number; resetInDays: number };
 		skipTraces: { allotted: number; used: number; resetInDays: number };
@@ -108,7 +131,7 @@ export interface User {
 	demoConfig?: DemoConfig;
 	/** QuickStart wizard preferences - automatically pre-selects persona/goal */
 	quickStartDefaults?: {
-		personaId?: "investor" | "wholesaler" | "lender" | "agent";
+		personaId?: "investor" | "wholesaler" | "loan_officer" | "agent";
 		goalId?: string;
 	};
 }

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import authConfig from "@/auth.config";
+import { users as seedUsers } from "@/lib/mock-db";
 
 function createRequest(pathname: string) {
         return {
@@ -28,4 +29,73 @@ describe("auth config authorized callback", () => {
                 expect(result).toBeInstanceOf(Response);
                 expect((result as Response).headers.get("location")).toBe("https://example.com/dashboard");
         });
+});
+
+describe("auth config credentials authorize", () => {
+const credentialsProvider = authConfig.providers?.find(
+	(provider) => typeof (provider as any).options?.authorize === "function",
+) as {
+	options: {
+		authorize: (credentials: Record<string, unknown>) => Promise<any>;
+	};
+};
+
+	it("merges custom payload overrides before issuing the session user", async () => {
+		const starter = seedUsers[1];
+		const customPayload = {
+			...starter,
+			tier: "Starter" as const,
+			quickStartDefaults: {
+				personaId: "wholesaler" as const,
+				goalId: "wholesaler-acquisitions" as const,
+			},
+			demoConfig: {
+				...starter.demoConfig,
+				companyLogo: "https://example.com/brand.svg",
+			},
+			quotas: {
+				ai: { allotted: 300, used: 150, resetInDays: 7 },
+				leads: { allotted: 120, used: 40, resetInDays: 30 },
+				skipTraces: { allotted: 40, used: 10, resetInDays: 30 },
+			},
+			subscription: {
+				...starter.subscription,
+				aiCredits: { allotted: 300, used: 150, resetInDays: 7 },
+				leads: { allotted: 120, used: 40, resetInDays: 30 },
+				skipTraces: { allotted: 40, used: 10, resetInDays: 30 },
+			},
+			isBetaTester: true,
+			isPilotTester: false,
+			isFreeTier: true,
+		};
+
+		const result = await credentialsProvider.options.authorize({
+			email: starter.email,
+			password: starter.password,
+			role: starter.role,
+			tier: "Starter",
+			permissions: JSON.stringify(starter.permissions),
+			aiAllotted: "300",
+			aiUsed: "150",
+			leadsAllotted: "120",
+			leadsUsed: "40",
+			skipAllotted: "40",
+			skipUsed: "10",
+			isBetaTester: "true",
+			isPilotTester: "false",
+			isFreeTier: "true",
+			customUserData: JSON.stringify(customPayload),
+			isCustomUser: "false",
+		} as any);
+
+		expect(result).toBeTruthy();
+		expect(result.tier).toBe("Starter");
+		expect(result.quickStartDefaults).toEqual({
+			personaId: "wholesaler",
+		goalId: "wholesaler-dispositions",
+		});
+		expect(result.demoConfig?.companyLogo).toBe("https://example.com/brand.svg");
+	expect(result.quotas.ai).toEqual({ allotted: 300, used: 150, resetInDays: 30 });
+		expect(result.isFreeTier).toBe(true);
+	});
 });

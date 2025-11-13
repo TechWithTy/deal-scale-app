@@ -279,7 +279,9 @@ function extractPersonasFromDescription(description: string): string[] {
 
 	if (lower.includes("investor")) personas.push("investor");
 	if (lower.includes("wholesale")) personas.push("wholesaler");
-	if (lower.includes("lender")) personas.push("lender");
+	if (lower.includes("lender") || lower.includes("loan officer")) {
+		personas.push("loan_officer");
+	}
 	if (lower.includes("agent") || lower.includes("realtor"))
 		personas.push("agent");
 	if (lower.includes("owner") || lower.includes("occupant"))

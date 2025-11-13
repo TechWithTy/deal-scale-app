@@ -12,7 +12,11 @@ import {
 import { ExpirationPlugin } from "workbox-expiration";
 import { CacheableResponsePlugin } from "workbox-cacheable-response";
 
-const { runtimeCaching, offlineFallback, queueNames } = require("./sw-config.js");
+const {
+	runtimeCaching,
+	offlineFallback,
+	queueNames,
+} = require("./sw-config.js");
 
 setCacheNameDetails({
 	prefix: "deal-scale",
@@ -40,9 +44,7 @@ self.addEventListener("activate", (event) => {
 	}
 });
 
-const defaultPlugins = [
-	new CacheableResponsePlugin({ statuses: [0, 200] }),
-];
+const defaultPlugins = [new CacheableResponsePlugin({ statuses: [0, 200] })];
 
 function createStrategy(entry) {
 	const { handler, options = {} } = entry;
@@ -72,13 +74,18 @@ function createStrategy(entry) {
 		default:
 			return new StaleWhileRevalidate(strategyOptions);
 	}
-}
+} // <-- Close function from above
 
-runtimeCaching.forEach((entry) => {
-	const strategy = createStrategy(entry);
-	const method = entry.method || "GET";
-	registerRoute(entry.urlPattern, strategy, method);
-});
+// Check if runtimeCaching is defined and is an array before calling forEach
+if (Array.isArray(runtimeCaching)) {
+	for (const entry of runtimeCaching) {
+		const strategy = createStrategy(entry);
+		const method = entry.method || "GET";
+		registerRoute(entry.urlPattern, strategy, method);
+	}
+} else {
+	console.warn("runtimeCaching is not defined or not an array.");
+}
 
 const campaignSyncPlugin = new BackgroundSyncPlugin(queueNames.campaigns, {
 	maxRetentionTime: 24 * 60, // minutes
@@ -190,4 +197,3 @@ self.addEventListener("notificationclick", (event) => {
 		event.waitUntil(focusOrOpenClient(targetUrl));
 	}
 });
-

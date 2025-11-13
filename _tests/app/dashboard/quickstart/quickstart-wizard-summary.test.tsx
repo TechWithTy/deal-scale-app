@@ -27,7 +27,7 @@ describe("QuickStart wizard summary previews", () => {
 
 		act(() => {
 			useQuickStartWizardStore.getState().open({
-				personaId: "lender",
+				personaId: "loan_officer",
 				goalId: "lender-fund-fast",
 				templateId: "automation-routing",
 			});

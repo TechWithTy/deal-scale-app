@@ -10,7 +10,7 @@ export type AdPlatform = "meta" | "google" | "linkedin";
 export type BuyerPersona =
 	| "investor"
 	| "wholesaler"
-	| "lender"
+	| "loan_officer"
 	| "agent"
 	| "owner-occupant";
 export type MotivationLevel = "hot" | "warm" | "cold";

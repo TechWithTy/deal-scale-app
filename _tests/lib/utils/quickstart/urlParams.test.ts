@@ -14,7 +14,7 @@ describe("validatePersonaIdParam", () => {
 		expect(validatePersonaIdParam("investor")).toBe("investor");
 		expect(validatePersonaIdParam("wholesaler")).toBe("wholesaler");
 		expect(validatePersonaIdParam("agent")).toBe("agent");
-		expect(validatePersonaIdParam("lender")).toBe("lender");
+		expect(validatePersonaIdParam("loan_officer")).toBe("loan_officer");
 	});
 
 	it("should handle case-insensitive input", () => {

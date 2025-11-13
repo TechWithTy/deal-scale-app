@@ -6,6 +6,7 @@ import {
 	Check,
 	ChevronLeft,
 	ChevronRight,
+	Calculator,
 	CircuitBoardIcon,
 	Command,
 	CreditCard,
@@ -84,6 +85,7 @@ export const Icons = {
 	chart: BarChart3,
 	users: Users,
 	separator: Minus,
+	calculator: Calculator,
 	gitHub: ({ ...props }: LucideProps) => (
 		<svg
 			aria-hidden="true"

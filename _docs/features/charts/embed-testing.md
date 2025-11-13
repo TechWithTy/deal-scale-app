@@ -42,3 +42,5 @@ pnpm vitest --watch --run tests/external/embed-chart.spec.tsx
 - Introduce Playwright smoke to load the mock API route (`/api/charts/live/:chartId`) and verify the embedded script inside a real browser frame.
 
 
+
+

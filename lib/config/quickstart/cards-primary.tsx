@@ -204,7 +204,7 @@ export const primaryQuickStartCards: readonly QuickStartCardDescriptor[] = [
 			}),
 		],
 		wizardPreset: {
-			personaId: "lender",
+			personaId: "loan_officer",
 			goalId: "lender-fund-fast",
 			templateId: "automation-routing",
 		},

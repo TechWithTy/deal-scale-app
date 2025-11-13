@@ -28,8 +28,7 @@ const PageContainer = dynamic(
 	() => import("@/components/layout/page-container"),
 	{ ssr: false },
 );
-import AmortizationCalculator from "@/components/property/page/calculations/amortizationCalculator";
-import WholesaleCalculator from "@/components/property/page/calculations/wholesale";
+import { getCalculatorComponent } from "external/calculators";
 import ForeclosuresComponent from "@/components/property/page/forclusureLiens";
 import LandLocationInformationComponent from "@/components/property/page/landLocationInformation";
 import {
@@ -82,6 +81,9 @@ const MLSDetailsClient = dynamic(
 	() => import("@/components/property/page/MLSDetailsClient"),
 	{ ssr: false },
 );
+
+const WholesaleCalculatorCard = getCalculatorComponent("wholesale");
+const AmortizationCalculatorCard = getCalculatorComponent("amortization");
 
 // Async function to fetch property data
 async function fetchProperty(id: string): Promise<Property | null> {
@@ -337,8 +339,8 @@ export default async function PropertyPage({
 				<>
 					<PropertyOverviewCard property={property} />
 					<ContactCard property={property} />
-					<WholesaleCalculator />
-					<AmortizationCalculator />
+					{WholesaleCalculatorCard ? <WholesaleCalculatorCard /> : null}
+					{AmortizationCalculatorCard ? <AmortizationCalculatorCard /> : null}
 				</>
 			),
 		},

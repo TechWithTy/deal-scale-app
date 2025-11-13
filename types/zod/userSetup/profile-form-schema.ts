@@ -111,7 +111,7 @@ export const profileSchema = z.object({
 		.url({ message: "Please enter a valid website URL." })
 		.max(200, { message: "Website URL cannot exceed 200 characters." })
 		.optional(),
-	profileType: z.enum(["investor", "wholesaler", "lender", "agent"], {
+	profileType: z.enum(["investor", "wholesaler", "loan_officer", "agent"], {
 		errorMap: () => ({ message: "Please select a profile type." }),
 	}),
 	profileGoal: z.string().min(1, { message: "Please select a primary goal." }),

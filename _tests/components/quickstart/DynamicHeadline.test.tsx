@@ -1,21 +1,13 @@
-import React, { act } from "react";
-import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import React from "react";
+import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import DynamicHeadline from "@/components/quickstart/DynamicHeadline";
+import { getQuickStartHeadlineCopy } from "@/lib/config/quickstart/headlines";
 import { useQuickStartWizardDataStore } from "@/lib/stores/quickstartWizardData";
 
 vi.mock("@/components/ui/globe", () => ({
-  Globe: () => <div data-testid="globe-mock" />,
-}));
-
-const layoutCalls: Array<{ text: string; words: string[]; duration?: number }> = [];
-
-vi.mock("@/src/components/ui/layout-text-flip", () => ({
-  LayoutTextFlip: (props: { text: string; words: string[]; duration?: number }) => {
-    layoutCalls.push(props);
-    return <div data-testid="layout-text-flip-mock">{props.text}</div>;
-  },
+	Globe: () => <div data-testid="globe-mock" />,
 }));
 
 describe("DynamicHeadline", () => {
@@ -26,46 +18,48 @@ describe("DynamicHeadline", () => {
 			goalId: null,
 		});
 		vi.useRealTimers();
-		layoutCalls.length = 0;
 	});
 
 	it("renders the default segmented copy when no persona is selected", () => {
 		render(<DynamicHeadline />);
 
-		expect(screen.getByText("AI Seller Qualification")).toBeTruthy();
-		const chips = screen.getAllByText("Dealmakers");
-		expect(chips.length).toBeGreaterThan(0);
+		expect(screen.getAllByText("AI QuickStart").length).toBeGreaterThan(0);
+		expect(screen.getAllByText("Revenue Teams").length).toBeGreaterThan(0);
 
 		expect(screen.getByTestId("quickstart-problem").textContent).toBe(
-			"juggling tools",
+			"wasting hours setting up campaigns",
 		);
 		expect(screen.getByTestId("quickstart-solution").textContent).toBe(
-			"automating your pipeline",
+			"launching AI QuickStarts that sync your CRM",
 		);
 		expect(screen.getByTestId("quickstart-fear").textContent).toBe(
-			"your competitors steal your next deal",
+			"competitors follow up faster",
+		);
+		expect(screen.getByTestId("quickstart-hope").textContent).toBe(
+			"waking up to appointments already queued for you",
 		);
 		expect(
 			screen.getByTestId("quickstart-headline-subtitle").textContent,
 		).toBe(
-			"Join 200+ dealmakers already automating. Launch your first AI campaign with DealScale Quick Start in under 5 minutes.",
+			"Join 200+ teams launching DealScale QuickStart each month. Kick off automation-ready onboarding with zero guesswork in under 5 minutes.",
 		);
 		expect(screen.getByTestId("quickstart-headline-title").textContent).toBe(
-			"Stop juggling tools, start automating your pipeline - before your competitors steal your next deal.",
+			"Stop wasting hours setting up campaigns, start launching AI QuickStarts that sync your CRM - before competitors follow up faster. Imagine waking up to appointments already queued for you.",
 		);
 	});
 
-	it("passes highlight words to the animated headline", () => {
+	it("registers interval rotations when multiple variants exist", () => {
+		vi.useFakeTimers();
+		const setIntervalSpy = vi.spyOn(globalThis, "setInterval");
+
 		render(<DynamicHeadline />);
 
-		const latestCall = layoutCalls.at(-1);
-		expect(latestCall).toBeDefined();
-		expect(latestCall?.words).toEqual([
-			"Start automating your pipeline",
-			"Start closing more deals",
-			"Start syncing every CRM automatically",
-		]);
-		expect(latestCall?.duration).toBe(3200);
+		expect(setIntervalSpy).toHaveBeenCalledWith(expect.any(Function), 5200);
+		expect(setIntervalSpy).toHaveBeenCalledWith(expect.any(Function), 6800);
+		expect(setIntervalSpy).toHaveBeenCalledWith(expect.any(Function), 6000);
+		expect(setIntervalSpy).toHaveBeenCalledWith(expect.any(Function), 6400);
+
+		setIntervalSpy.mockRestore();
 	});
 
 	it("switches to agent persona copy when store persona changes", () => {
@@ -77,16 +71,19 @@ describe("DynamicHeadline", () => {
 		render(<DynamicHeadline />);
 
 		expect(screen.getByTestId("quickstart-problem").textContent).toBe(
-			"wasting hours on follow-ups",
+			"setting up real estate campaigns from scratch every time",
 		);
 		expect(screen.getByTestId("quickstart-solution").textContent).toBe(
-			"closing more deals",
+			"a QuickStart that imports leads and syncs with your CRM in minutes",
 		);
 		expect(screen.getByTestId("quickstart-fear").textContent).toBe(
-			"your pipeline goes cold",
+			"you keep guessing instead of working your best opportunities",
+		);
+		expect(screen.getByTestId("quickstart-hope").textContent).toBe(
+			"your AI pipeline runs while you focus on clients",
 		);
 		expect(screen.getByTestId("quickstart-headline-title").textContent).toBe(
-			"Stop wasting hours on follow-ups, start closing more deals - before your pipeline goes cold.",
+			"Stop setting up real estate campaigns from scratch every time, start a QuickStart that imports leads and syncs with your CRM in minutes - before you keep guessing instead of working your best opportunities. Imagine your AI pipeline runs while you focus on clients.",
 		);
 	});
 });

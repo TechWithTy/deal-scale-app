@@ -13,7 +13,7 @@ import {
 } from "@external/dynamic-hero";
 
 const BASE_TITLE_TEMPLATE =
-	"Stop {{problem}}, start {{solution}} - before {{fear}}.";
+	"Stop {{problem}}, start {{solution}} - before {{fear}}. Imagine {{hope}}.";
 const BASE_SUBTITLE_TEMPLATE =
 	"{{socialProof}} {{benefit}} in under {{time}} minutes.";
 const DEFAULT_THUMBNAIL_SRC = "/images/quickstart/video-preview.svg";
@@ -32,6 +32,7 @@ const headlineRotationsSchema = z.object({
 	problems: z.array(z.string()).optional(),
 	solutions: z.array(z.string()).optional(),
 	fears: z.array(z.string()).optional(),
+	hopes: z.array(z.string()).optional(),
 });
 
 const headlineChipSchema = heroChipSchema;
@@ -62,70 +63,89 @@ export type QuickStartHeadlineCta = z.infer<typeof headlineCtaSchema>;
 
 type QuickStartHeadlineKey = QuickStartPersonaId | "default";
 
+const DEMO_SUPADEMO_SRC =
+	"https://app.supademo.com/embed/JZP1_tcJNyZaQHtc8ZL9p?embed_v=2&panel=false&autoplay=1&loop=1";
+const DEMO_POSTER_WEBP = "/demos/svgs/JZP1_tcJNyZaQHtc8ZL9p.webp";
+
 const PERSONA_VIDEO_LIBRARY: Record<QuickStartHeadlineKey, HeroVideoConfig> = {
 	default: {
-		src: "https://www.youtube.com/embed/qh3NGpYRG3I?rel=0&controls=1&modestbranding=1&feature=quickstart-overview",
-		poster: DEFAULT_THUMBNAIL_SRC,
-		provider: "youtube",
+		src: DEMO_SUPADEMO_SRC,
+		poster: DEMO_POSTER_WEBP,
+		thumbnailVideo: "/demos/gifs/SVGv2r.mp4",
+		posterAlt: "Watch DealScale QuickStart automate onboarding",
+		provider: "supademo",
 	},
 	agent: {
-		src: "https://www.youtube.com/embed/qh3NGpYRG3I?rel=0&controls=1&modestbranding=1&feature=agent-followup",
-		poster: DEFAULT_THUMBNAIL_SRC,
-		provider: "youtube",
+		src: DEMO_SUPADEMO_SRC,
+		poster: DEMO_POSTER_WEBP,
+		thumbnailVideo: "/demos/gifs/SVGv2r.mp4",
+		posterAlt: "Agent QuickStart guided workflow preview",
+		provider: "supademo",
 	},
 	investor: {
-		src: "https://www.youtube.com/embed/qh3NGpYRG3I?rel=0&controls=1&modestbranding=1&feature=investor-pipeline",
-		poster: DEFAULT_THUMBNAIL_SRC,
-		provider: "youtube",
+		src: DEMO_SUPADEMO_SRC,
+		poster: DEMO_POSTER_WEBP,
+		thumbnailVideo: "/demos/gifs/SVGv2r.mp4",
+		posterAlt: "Investor QuickStart guided workflow preview",
+		provider: "supademo",
 	},
 	wholesaler: {
-		src: "https://www.youtube.com/embed/qh3NGpYRG3I?rel=0&controls=1&modestbranding=1&feature=wholesaler-dispo",
-		poster: DEFAULT_THUMBNAIL_SRC,
-		provider: "youtube",
+		src: DEMO_SUPADEMO_SRC,
+		poster: DEMO_POSTER_WEBP,
+		thumbnailVideo: "/demos/gifs/SVGv2r.mp4",
+		posterAlt: "Wholesaler QuickStart guided workflow preview",
+		provider: "supademo",
 	},
-	lender: {
-		src: "https://www.youtube.com/embed/qh3NGpYRG3I?rel=0&controls=1&modestbranding=1&feature=lender-approvals",
-		poster: DEFAULT_THUMBNAIL_SRC,
-		provider: "youtube",
+	loan_officer: {
+		src: DEMO_SUPADEMO_SRC,
+		poster: DEMO_POSTER_WEBP,
+		thumbnailVideo: "/demos/gifs/SVGv2r.mp4",
+		posterAlt: "Loan officer QuickStart borrower automation demo",
+		provider: "supademo",
 	},
 };
 
 const RAW_COPY: Record<QuickStartHeadlineKey, QuickStartHeadlineCopy> = {
 	default: {
 		values: {
-			problem: "juggling tools",
-			solution: "automating your pipeline",
-			fear: "your competitors steal your next deal",
-			socialProof: "Join 200+ dealmakers already automating.",
-			benefit: "Launch your first AI campaign with DealScale Quick Start",
+			problem: "wasting hours setting up campaigns",
+			solution: "launching AI QuickStarts that sync your CRM",
+			fear: "competitors follow up faster",
+			socialProof: "Join 200+ teams launching DealScale QuickStart each month.",
+			benefit: "Kick off automation-ready onboarding with zero guesswork",
 			time: "5",
-			hope: "Give your team back the focus to work the right deals.",
+			hope: "waking up to appointments already queued for you",
 		},
 		primaryChip: {
-			label: "AI Seller Qualification",
-			sublabel: "Lead qualification & appointment setting",
+			label: "AI QuickStart",
+			sublabel: "Guided onboarding flows",
 			variant: "secondary",
 		},
 		secondaryChip: {
-			label: "Dealmakers",
-			sublabel: "Agents, investors & wholesalers",
+			label: "Revenue Teams",
+			sublabel: "Agents, investors, lenders",
 			variant: "outline",
 		},
 		rotations: {
 			problems: [
-				"juggling tools",
-				"wasting hours on follow-ups",
-				"losing track of warm leads",
+				"wasting hours setting up campaigns",
+				"rebuilding playbooks for every new persona",
+				"juggling CRMs, dialers, and spreadsheets",
 			],
 			solutions: [
-				"automating your pipeline",
-				"closing more deals",
-				"syncing every CRM automatically",
+				"launching AI QuickStarts that sync your CRM",
+				"importing leads and going live in minutes",
+				"running nurture that scores seller leads automatically",
 			],
 			fears: [
-				"your competitors steal your next deal",
-				"your pipeline goes cold",
-				"you fall behind teams scaling with AI",
+				"competitors follow up faster",
+				"AI tools gather dust on the shelf",
+				"hot leads slip to teams with cleaner systems",
+			],
+			hopes: [
+				"waking up to appointments already queued for you",
+				"seeing new pipeline activity every morning",
+				"finally trusting automation to work the right leads",
 			],
 		},
 		video: PERSONA_VIDEO_LIBRARY.default,
@@ -135,161 +155,190 @@ const RAW_COPY: Record<QuickStartHeadlineKey, QuickStartHeadlineCopy> = {
 	},
 	agent: {
 		values: {
-			problem: "wasting hours on follow-ups",
-			solution: "closing more deals",
-			fear: "your pipeline goes cold",
-			socialProof: "Join 200+ top agents scaling with AI follow-ups.",
-			benefit: "Automate your outreach",
-			time: "3",
-			hope: "Show up in every inbox before your competition does.",
+			problem: "setting up real estate campaigns from scratch every time",
+			solution:
+				"a QuickStart that imports leads and syncs with your CRM in minutes",
+			fear: "you keep guessing instead of working your best opportunities",
+			socialProof:
+				"Top agents across 200+ markets rely on DealScale QuickStart.",
+			benefit: "Deploy AI seller scoring and follow-up that books listings",
+			time: "4",
+			hope: "your AI pipeline runs while you focus on clients",
 		},
 		primaryChip: {
-			label: "AI Follow-Up Engine",
-			sublabel: "Tasks, scripts, automations",
+			label: "Agent QuickStart",
+			sublabel: "Listing appointment engine",
 			variant: "secondary",
 		},
 		secondaryChip: {
-			label: "Agents & Teams",
-			sublabel: "ISAs + team leaders",
+			label: "Seller Leads",
+			sublabel: "CRM synced outreach",
 			variant: "outline",
 		},
 		rotations: {
 			problems: [
-				"wasting hours on follow-ups",
-				"losing touch with your sphere",
-				"copy-pasting scripts late at night",
+				"setting up real estate campaigns from scratch every time",
+				"not knowing which seller leads to call first",
+				"wasting hours trying to connect dialers, CRMs, and spreadsheets",
 			],
 			solutions: [
-				"closing more deals",
-				"running AI follow-ups that never sleep",
-				"staying top-of-mind automatically",
+				"a QuickStart that imports leads and syncs with your CRM in minutes",
+				"AI real estate lead scoring that surfaces your hottest seller leads",
+				"prebuilt AI follow-up campaigns tailored for listing appointments",
 			],
 			fears: [
-				"your pipeline goes cold",
-				"competitors snag your listings",
-				"clients forget why they loved you",
+				"you keep guessing instead of working your best opportunities",
+				"your AI tools never get fully set up and just sit on the shelf",
+				"competitors with cleaner systems follow up faster than you do",
+			],
+			hopes: [
+				"your AI pipeline runs while you focus on clients",
+				"every morning you see new appointments ready to confirm",
+				"your outreach finally feels automatic and consistent",
 			],
 		},
 		video: PERSONA_VIDEO_LIBRARY.agent,
 	},
 	investor: {
 		values: {
-			problem: "missing motivated sellers",
-			solution: "automating deal flow",
-			fear: "another profit slips away",
-			socialProof: "Trusted by investors keeping their pipeline full.",
-			benefit: "Turn missed calls into closed deals",
+			problem: "spending hours organizing seller lists before outreach",
+			solution:
+				"a QuickStart workflow that turns raw lists into an organized AI deal pipeline",
+			fear: "you miss off-market deals because setup takes too long",
+			socialProof:
+				"Investors automate acquisitions with DealScale QuickStart in every major market.",
+			benefit: "Stand up an AI deal pipeline that flags high intent sellers",
 			time: "5",
-			hope: "Keep capital deployed with alerts that surface the right asset.",
+			hope: "you discover new deals while sleeping",
 		},
 		primaryChip: {
-			label: "Pipeline Automation",
-			sublabel: "Deal flow orchestration",
+			label: "Investor QuickStart",
+			sublabel: "AI deal pipeline",
 			variant: "secondary",
 		},
 		secondaryChip: {
-			label: "Investors",
-			sublabel: "Acquisition pros",
+			label: "Deal Flow",
+			sublabel: "Acquisitions automation",
 			variant: "outline",
 		},
 		rotations: {
 			problems: [
-				"missing motivated sellers",
-				"juggling spreadsheets of hot leads",
-				"waiting on manual updates",
+				"spending hours organizing seller lists before outreach",
+				"not having a clear real estate deal pipeline across markets and lists",
+				"manually deciding which motivated sellers to call or text first",
 			],
 			solutions: [
-				"automating deal flow",
-				"tracking every opportunity in one place",
-				"syncing your investment pipeline automatically",
+				"a QuickStart workflow that turns raw lists into an organized AI deal pipeline",
+				"AI lead intelligence that flags high-intent sellers automatically",
+				"an AI call and SMS sequence that runs your acquisitions outreach for you",
 			],
 			fears: [
-				"another profit slips away",
-				"dealmakers swoop in first",
-				"you miss the next breakout opportunity",
+				"you miss off-market deals because setup takes too long",
+				"your acquisitions system never scales past your own effort",
+				"you leave profit on the table each month from unworked leads",
+			],
+			hopes: [
+				"you discover new deals while sleeping",
+				"your acquisitions engine runs itself across multiple markets",
+				"you finally focus on negotiations, not admin",
 			],
 		},
 		video: PERSONA_VIDEO_LIBRARY.investor,
 	},
 	wholesaler: {
 		values: {
-			problem: "juggling spreadsheets and CRM chaos",
-			solution: "centralizing every lead",
-			fear: "your pipeline goes cold overnight",
-			socialProof: "Stay ahead of fast-moving buyers and sellers.",
-			benefit: "Coordinate dispositions with AI follow-ups",
+			problem:
+				"spending nights organizing skip traced lists instead of closing deals",
+			solution:
+				"a QuickStart that imports skip traced lists and launches AI calls instantly",
+			fear: "your new lists go stale before you can work them",
+			socialProof:
+				"Wholesalers across 40+ metros run dispositions on DealScale automation.",
+			benefit: "Launch AI seller and buyer follow-up without manual effort",
 			time: "4",
-			hope: "Keep your buyers hot without adding another coordinator.",
+			hope: "you lock up new deals daily while AI handles follow-up",
 		},
 		primaryChip: {
-			label: "Acquisition AI",
-			sublabel: "Source & dispo faster",
+			label: "Wholesaler QuickStart",
+			sublabel: "Acquisitions autopilot",
 			variant: "secondary",
 		},
 		secondaryChip: {
-			label: "Wholesalers",
-			sublabel: "High-volume teams",
+			label: "Skip Trace Ready",
+			sublabel: "Seller + buyer outreach",
 			variant: "outline",
 		},
 		rotations: {
 			problems: [
-				"juggling spreadsheets and CRM chaos",
-				"babysitting every buyer manually",
-				"losing track of who bid last",
+				"spending nights organizing skip traced lists instead of closing deals",
+				"not having a repeatable system to launch seller outreach quickly",
+				"losing momentum every time you buy a new list",
 			],
 			solutions: [
-				"centralizing every lead",
-				"automating dispositions on autopilot",
-				"keeping buyers and sellers in sync",
+				"a QuickStart that imports skip traced lists and launches AI calls instantly",
+				"prebuilt AI wholesaling campaigns tuned for motivated sellers",
+				"automatic follow-up that keeps you in front of sellers until they are ready",
 			],
 			fears: [
-				"your pipeline goes cold overnight",
-				"your best buyers forget your deals",
-				"competitors lock up inventory first",
+				"your new lists go stale before you can work them",
+				"you stay stuck in one-person hustle mode instead of building a system",
+				"other wholesalers with better automation lock up your best deals",
+			],
+			hopes: [
+				"you lock up new deals daily while AI handles follow-up",
+				"your CRM updates itself as sellers respond",
+				"you scale from hustler to business owner effortlessly",
 			],
 		},
 		video: PERSONA_VIDEO_LIBRARY.wholesaler,
 	},
-	lender: {
+	loan_officer: {
 		values: {
-			problem: "letting qualified borrowers wait",
-			solution: "automating approvals",
-			fear: "your capital sits idle",
-			socialProof: "Private lenders trust DealScale to keep capital deployed.",
-			benefit: "Route borrowers to the right team",
+			problem: "spending hours calling borrowers who never respond",
+			solution:
+				"a QuickStart that connects your mortgage CRM and automates borrower outreach",
+			fear: "borrowers lose interest before you can reach them",
+			socialProof:
+				"Loan officers keep pipelines warm with DealScale borrower automation.",
+			benefit: "Sync CRM, launch AI nurture, and stay first to close",
 			time: "6",
-			hope: "Keep every borrower warm while the paperwork catches up.",
+			hope: "borrowers stay engaged from pre-approval to close",
 		},
 		subtitleTemplate:
-			"{{socialProof}} {{benefit}} in under {{time}} minutes so deals stay funded.",
+			"{{socialProof}} {{benefit}} in under {{time}} minutes so every borrower stays on track.",
 		primaryChip: {
-			label: "Borrower Automation",
-			sublabel: "Route & approve faster",
+			label: "Borrower QuickStart",
+			sublabel: "Mortgage automation layer",
 			variant: "secondary",
 		},
 		secondaryChip: {
-			label: "Private Lenders",
-			sublabel: "Capital deployment",
+			label: "Loan Officers",
+			sublabel: "Pipeline automation",
 			variant: "outline",
 		},
 		rotations: {
 			problems: [
-				"letting qualified borrowers wait",
-				"drowning in manual intake forms",
-				"chasing docs instead of funding loans",
+				"spending hours calling borrowers who never respond",
+				"forgetting to follow up with warm pre-approved clients",
+				"manually tracking loan application updates across multiple systems",
 			],
 			solutions: [
-				"automating approvals",
-				"routing borrowers instantly",
-				"keeping capital deployed",
+				"a QuickStart that connects your mortgage CRM and automates borrower outreach",
+				"AI-powered call and text sequences that nurture applicants automatically",
+				"real-time borrower engagement dashboards that update themselves",
 			],
 			fears: [
-				"your capital sits idle",
-				"competitors fund the deal first",
-				"borrowers look elsewhere for speed",
+				"borrowers lose interest before you can reach them",
+				"competitors close faster and capture your pipeline",
+				"you lose repeat business because follow-ups fall through",
+			],
+			hopes: [
+				"borrowers stay engaged from pre-approval to close",
+				"AI keeps your pipeline full while you focus on relationships",
+				"you hit new closing records without longer hours",
 			],
 		},
-		video: PERSONA_VIDEO_LIBRARY.lender,
+		video: PERSONA_VIDEO_LIBRARY.loan_officer,
 	},
 };
 

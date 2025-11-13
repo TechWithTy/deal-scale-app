@@ -21,6 +21,7 @@ function toSnapshot(userId: string) {
                 subscription: user.subscription,
                 isBetaTester: user.isBetaTester,
                 isPilotTester: user.isPilotTester,
+		isFreeTier: user.isFreeTier,
         };
 }
 

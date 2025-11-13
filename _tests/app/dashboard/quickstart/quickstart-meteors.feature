@@ -16,3 +16,5 @@ Feature: Quick Start meteor highlights
     Then at least one non-guided card has a different meteor configuration seed
 
 
+
+

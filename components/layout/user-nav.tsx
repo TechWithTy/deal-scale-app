@@ -74,6 +74,7 @@ export function UserNav() {
 	const avatarSeed =
 		sessionUser?.name ?? sessionUser?.email ?? userProfile?.firstName ?? "User";
 	const avatarUrl =
+		sessionUser?.demoConfig?.companyLogo ||
 		userProfile?.companyInfo?.companyLogo ||
 		sessionUser?.image ||
 		`https://ui-avatars.com/api/?name=${encodeURIComponent(avatarSeed)}`;

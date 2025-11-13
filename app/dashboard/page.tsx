@@ -1,8 +1,8 @@
 "use client";
 
-import { ArrowDown, HelpCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { HelpCircle } from "lucide-react";
 import { BackgroundBeamsWithCollision } from "@/components/ui/background-beams-with-collision";
 import { LightRays } from "@/components/ui/light-rays";
 
@@ -13,7 +13,6 @@ import QuickStartCTA from "@/components/quickstart/QuickStartCTA";
 import QuickStartActionsGrid from "@/components/quickstart/QuickStartActionsGrid";
 import QuickStartCrmSyncModal from "@/components/quickstart/QuickStartCrmSyncModal";
 import { computeSmartImportDecision } from "@/components/quickstart/utils/smartImportDecision";
-import { Pointer } from "@/components/ui/pointer";
 import { AvatarCircles } from "@/components/ui/avatar-circles";
 import QuickStartLegacyModals, {
 	type QuickStartCampaignContext,
@@ -40,7 +39,10 @@ import {
 	applyQuickStartTemplatePreset,
 	getQuickStartTemplate,
 } from "@/lib/config/quickstart/templates";
-import { getGoalDefinition } from "@/lib/config/quickstart/wizardFlows";
+import {
+	type QuickStartGoalId,
+	getGoalDefinition,
+} from "@/lib/config/quickstart/wizardFlows";
 import { useCampaignCreationStore } from "@/lib/stores/campaignCreation";
 import { useModalStore } from "@/lib/stores/dashboard";
 import type { WebhookStage } from "@/lib/stores/dashboard";
@@ -65,8 +67,11 @@ import { useSavedWorkflowsStore } from "@/lib/stores/user/workflows/savedWorkflo
 import { useWorkflowPlatformsStore } from "@/lib/stores/user/workflows/platforms";
 import { useUserProfileStore } from "@/lib/stores/user/userProfile";
 import { mapTemplateToCampaignWizard } from "@/lib/utils/campaign/templateParser";
+import { openHelpModal, showHelpIcon } from "@/lib/ui/helpActions";
 import { toast } from "sonner";
 import { shallow } from "zustand/shallow";
+import LaunchOverlay from "@/components/quickstart/launch/LaunchOverlay";
+import { useLaunchProgressMachine } from "@/hooks/useLaunchProgressMachine";
 
 let lastAppliedTemplateIdGlobal: QuickStartTemplateId | null = null;
 
@@ -78,7 +83,6 @@ export default function QuickStartPage() {
 		"create",
 	);
 	const [showWalkthrough, setShowWalkthrough] = useState(false);
-	const [showHelpModal, setShowHelpModal] = useState(false);
 	const [showBulkSuiteModal, setShowBulkSuiteModal] = useState(false);
 	const [showCampaignModal, setShowCampaignModal] = useState(false);
 	const [campaignModalContext, setCampaignModalContext] =
@@ -1585,52 +1589,84 @@ export default function QuickStartPage() {
 		[router],
 	);
 
+	const {
+		status: launchStatus,
+		open: isLaunchOverlayOpen,
+		start: startLaunchProgress,
+		reset: resetLaunchProgress,
+		setOpen: setLaunchOverlayOpen,
+	} = useLaunchProgressMachine({
+		onError: (error) => {
+			console.error("[QuickStartPage] Workspace launch failed", error);
+			toast.error("We couldn't launch your AI workspace. Please try again.");
+		},
+	});
+
+	const performLaunchQuickStartFlow = useCallback(
+		async (goalId: QuickStartGoalId) => {
+			const goalDefinition = getGoalDefinition(goalId);
+			if (!goalDefinition || goalDefinition.flow.length === 0) {
+				throw new Error("QuickStart goal is missing a launch flow definition.");
+			}
+
+			if (goalDefinition.templateId) {
+				const campaignState = useCampaignCreationStore.getState();
+				campaignState.reset();
+				applyQuickStartTemplatePreset(goalDefinition.templateId, campaignState);
+				updateLastTemplateId(goalDefinition.templateId);
+			}
+
+			const [firstStep] = goalDefinition.flow;
+			const launchers: Record<string, () => void> = {
+				import: handleImportFromSource,
+				campaign: handleCampaignCreate,
+				webhooks: () => handleOpenWebhook("incoming"),
+				"market-deals": handleStartPropertySearch,
+				extension: handleBrowserExtension,
+			};
+
+			const launch = launchers[firstStep.cardId];
+			if (!launch) {
+				throw new Error(
+					`Missing quickstart launcher implementation for "${firstStep.cardId}".`,
+				);
+			}
+
+			launch();
+		},
+		[
+			handleImportFromSource,
+			handleCampaignCreate,
+			handleOpenWebhook,
+			handleStartPropertySearch,
+			handleBrowserExtension,
+			updateLastTemplateId,
+		],
+	);
+
 	const handleLaunchQuickStartFlow = useCallback(() => {
 		const { goalId } = useQuickStartWizardDataStore.getState();
 		if (!goalId) {
+			toast.error("Select a QuickStart goal to launch your workspace.");
 			return;
 		}
 
-		const goalDefinition = getGoalDefinition(goalId);
-		if (!goalDefinition || goalDefinition.flow.length === 0) {
-			return;
-		}
-
-		if (goalDefinition.templateId) {
-			const campaignState = useCampaignCreationStore.getState();
-			campaignState.reset();
-			applyQuickStartTemplatePreset(goalDefinition.templateId, campaignState);
-			updateLastTemplateId(goalDefinition.templateId);
-		}
-
-		const [firstStep] = goalDefinition.flow;
-		const launchers: Record<string, () => void> = {
-			import: handleImportFromSource,
-			campaign: handleCampaignCreate,
-			webhooks: () => handleOpenWebhook("incoming"),
-			"market-deals": handleStartPropertySearch,
-			extension: handleBrowserExtension,
-		};
-
-		const launch = launchers[firstStep.cardId];
-
-		if (launch) {
-			launch();
-			return;
-		}
-
-		if (process.env.NODE_ENV !== "production") {
-			console.warn(
-				`[QuickStartPage] Missing launcher for QuickStart flow card "${firstStep.cardId}".`,
-			);
-		}
+		startLaunchProgress(() => performLaunchQuickStartFlow(goalId)).then(
+			(success) => {
+				if (!success) {
+					return;
+				}
+				window.setTimeout(() => {
+					setLaunchOverlayOpen(false);
+					resetLaunchProgress();
+				}, 800);
+			},
+		);
 	}, [
-		handleImportFromSource,
-		handleCampaignCreate,
-		handleOpenWebhook,
-		handleStartPropertySearch,
-		handleBrowserExtension,
-		updateLastTemplateId,
+		performLaunchQuickStartFlow,
+		resetLaunchProgress,
+		setLaunchOverlayOpen,
+		startLaunchProgress,
 	]);
 
 	const quickstartCards = useQuickStartCardViewModel({
@@ -1674,6 +1710,11 @@ export default function QuickStartPage() {
 		}
 	}, []);
 
+	const openQuickStartHelp = useCallback(() => {
+		showHelpIcon();
+		openHelpModal();
+	}, []);
+
 	return (
 		<div className="relative min-h-screen overflow-hidden">
 			{/* Base layer: Light rays */}
@@ -1687,43 +1728,21 @@ export default function QuickStartPage() {
 				{/* Content layer */}
 				<div className="container relative z-10 mx-auto px-4 py-8">
 					<div className="relative mb-8">
-						<div className="mb-6 flex justify-center">
-							<div className="relative inline-flex items-center">
-								<button
-									type="button"
-									onClick={scrollToQuickStartActions}
-									className="group inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-4 py-2 font-semibold text-primary text-xs uppercase tracking-[0.35em] transition hover:bg-primary/15"
-								>
-									<ArrowDown className="h-3.5 w-3.5 transition group-hover:translate-y-0.5" />
-									Next
-								</button>
-								<Pointer
-									className="text-primary"
-									initial={{ opacity: 0, scale: 0 }}
-									animate={{ opacity: 0.9, scale: 1 }}
-									exit={{ opacity: 0, scale: 0 }}
-									transition={{ type: "spring", stiffness: 150, damping: 18 }}
-								/>
-							</div>
-						</div>
 						<button
-							onClick={() => {
-								if (typeof window !== "undefined") {
-									window.dispatchEvent(new Event("dealScale:helpFab:show"));
-								}
-							}}
-							className="absolute top-0 right-0 flex h-10 w-10 items-center justify-center rounded-full border border-transparent text-muted-foreground transition hover:bg-muted"
 							type="button"
-							aria-label="Open Quick Start help"
+							onClick={openQuickStartHelp}
+							className="absolute right-0 top-0 flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-background/90 text-muted-foreground shadow-lg backdrop-blur transition hover:scale-105 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
+							aria-label="Open QuickStart help demo"
 						>
-							<HelpCircle className="h-5 w-5" />
+							<HelpCircle className="h-5 w-5" aria-hidden="true" />
 						</button>
-
 						<DynamicHeadline />
 						<QuickStartCTA
 							className="mt-6"
 							displayMode="both"
 							orientation="horizontal"
+							onPrimaryClick={scrollToQuickStartActions}
+							onSecondaryClick={openQuickStartHelp}
 						/>
 						<QuickStartHeroVideo className="mt-10" />
 					</div>
@@ -1741,6 +1760,14 @@ export default function QuickStartPage() {
 						/>
 					</div>
 					<QuickStartWizard />
+					<LaunchOverlay
+						open={isLaunchOverlayOpen}
+						status={launchStatus}
+						onClose={() => {
+							setLaunchOverlayOpen(false);
+							resetLaunchProgress();
+						}}
+					/>
 
 					<input
 						ref={fileInputRef}

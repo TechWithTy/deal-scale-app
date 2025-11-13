@@ -4,7 +4,6 @@ import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useMemo, useState } from "react";
 
 import { AvatarCircles } from "@/components/ui/avatar-circles";
-import { Badge, badgeVariants } from "@/components/ui/badge";
 import { Globe } from "@/components/ui/globe";
 import { ProgressiveBlur } from "@/components/ui/progressive-blur";
 import {
@@ -22,15 +21,16 @@ import type {
 } from "../types/social-proof";
 import type { ResolvedHeroCopy } from "../utils/copy";
 
-const PROBLEM_INTERVAL_MS = 5200;
-const SOLUTION_INTERVAL_MS = 6800;
-const FEAR_INTERVAL_MS = 6000;
+import styles from "../styles/hero-headline.module.css";
 
+const PROBLEM_INTERVAL_MS = 8200;
+const SOLUTION_INTERVAL_MS = 10200;
+const FEAR_INTERVAL_MS = 9400;
 const baseSpanAnimation = {
 	initial: { opacity: 0, y: -10, filter: "blur(6px)" },
 	animate: { opacity: 1, y: 0, filter: "blur(0px)" },
 	exit: { opacity: 0, y: 10, filter: "blur(8px)" },
-	transition: { duration: 0.32 },
+	transition: { duration: 0.46, ease: "easeInOut" as const },
 };
 
 interface HeroHeadlineProps {
@@ -117,29 +117,11 @@ export function HeroHeadline({
 	const primaryChip = copy.chips?.primary;
 	const secondaryChip = copy.chips?.secondary;
 
-	const primaryChipClasses = primaryChip
-		? cn(
-				badgeVariants({ variant: primaryChip.variant ?? "secondary" }),
-				"border border-white/40 bg-primary/90 px-4 py-[6px] text-xs font-semibold uppercase tracking-wide text-primary-foreground shadow-[0_8px_24px_rgba(32,99,255,0.35)]",
-			)
-		: undefined;
-	const secondaryChipClasses = secondaryChip
-		? cn(
-				badgeVariants({ variant: secondaryChip.variant ?? "outline" }),
-				"border border-primary/40 bg-background/65 px-4 py-[6px] text-xs font-semibold uppercase tracking-wide text-foreground shadow-[0_6px_16px_rgba(15,23,42,0.2)]",
-			)
-		: undefined;
-
 	const personaChipLabel =
 		personaLabel ?? copy.chips?.primary?.label ?? "AI Sellers";
 	const personaChipTitle =
 		personaDescription ??
 		(personaChipLabel ? `${personaChipLabel} persona` : undefined);
-	const personaChipClasses = cn(
-		badgeVariants({ variant: "secondary" }),
-		"border border-primary/45 bg-gradient-to-r from-primary/95 via-primary to-primary/85 px-6 py-2 text-lg font-semibold uppercase tracking-[0.4em] text-primary-foreground shadow-[0_18px_55px_rgba(64,106,255,0.45)]",
-	);
-
 	return (
 		<div
 			className={cn(
@@ -172,49 +154,47 @@ export function HeroHeadline({
 			</div>
 
 			<div className="relative z-10 flex w-full flex-col items-center gap-6 text-center">
-				{showChips && (primaryChipClasses || secondaryChipClasses) ? (
+				{showChips && (primaryChip || secondaryChip) ? (
 					<TooltipProvider>
-						<div className="flex flex-col items-center gap-3">
-							<div className="flex flex-wrap items-center justify-center gap-2">
-								{primaryChip && primaryChipClasses ? (
-									<Tooltip delayDuration={150}>
-										<TooltipTrigger asChild>
-											<span className={primaryChipClasses}>
-												{primaryChip.label}
-											</span>
-										</TooltipTrigger>
-										{primaryChip.label ? (
-											<TooltipContent side="top" className="text-xs">
-												{`${primaryChip.label} program`}
-											</TooltipContent>
-										) : null}
-									</Tooltip>
-								) : null}
-								{secondaryChip && secondaryChipClasses ? (
-									<Tooltip delayDuration={150}>
-										<TooltipTrigger asChild>
-											<span className={secondaryChipClasses}>
-												{secondaryChip.label}
-											</span>
-										</TooltipTrigger>
-										{secondaryChip.label ? (
-											<TooltipContent side="top" className="text-xs">
-												{`${secondaryChip.label} focus`}
-											</TooltipContent>
-										) : null}
-									</Tooltip>
-								) : null}
-							</div>
+						<div className={styles.tagRow}>
+							{primaryChip ? (
+								<Tooltip delayDuration={150}>
+									<TooltipTrigger asChild>
+										<span className={styles.tag}>{primaryChip.label}</span>
+									</TooltipTrigger>
+									{primaryChip.label ? (
+										<TooltipContent side="top" className="text-xs">
+											{`${primaryChip.label} program`}
+										</TooltipContent>
+									) : null}
+								</Tooltip>
+							) : null}
+							{secondaryChip ? (
+								<Tooltip delayDuration={150}>
+									<TooltipTrigger asChild>
+										<span className={cn(styles.tag, styles.tagSecondary)}>
+											{secondaryChip.label}
+										</span>
+									</TooltipTrigger>
+									{secondaryChip.label ? (
+										<TooltipContent side="top" className="text-xs">
+											{`${secondaryChip.label} focus`}
+										</TooltipContent>
+									) : null}
+								</Tooltip>
+							) : null}
 						</div>
 					</TooltipProvider>
 				) : null}
 
 				{showPersonaChip && personaChipLabel ? (
 					<TooltipProvider>
-						<div className="flex flex-col items-center gap-3">
+						<div className={styles.personaWrapper}>
 							<Tooltip delayDuration={150}>
 								<TooltipTrigger asChild>
-									<span className={personaChipClasses}>{personaChipLabel}</span>
+									<span className={cn(styles.tag, styles.tagPersona)}>
+										{personaChipLabel}
+									</span>
 								</TooltipTrigger>
 								{personaChipTitle ? (
 									<TooltipContent side="bottom" className="text-xs">
@@ -226,57 +206,58 @@ export function HeroHeadline({
 					</TooltipProvider>
 				) : null}
 
+				<div className="h-px w-20 bg-gradient-to-r from-transparent via-primary/60 to-transparent md:w-32" />
 				<motion.h1
 					initial={{ opacity: 0, y: 8 }}
 					animate={{ opacity: 1, y: 0 }}
 					transition={{ duration: 0.24 }}
-					className="text-balance font-bold text-3xl text-foreground drop-shadow-[0_3px_12px_rgba(8,8,24,0.35)] md:text-4xl"
+					className={cn(styles.heroHeadline, "text-balance font-semibold")}
 				>
-					<span className="whitespace-pre-wrap">Stop </span>
-					<span
-						className="relative inline-flex items-center overflow-hidden rounded-[1.25rem] px-6 py-2 shadow-[0_18px_44px_-18px_rgba(239,68,68,0.55)]"
-						style={{
-							backgroundColor:
-								"var(--hero-problem-bg, rgba(220, 38, 38, 0.96))",
-							color: "var(--hero-problem-text, #ffffff)",
-						}}
-					>
+					<span className={styles.heroHeadlineBlock}>
+						Stop{" "}
 						<AnimatePresence mode="wait" initial={false}>
 							<motion.span
 								key={`${problemIndex}-${problemDisplayText}`}
 								{...baseSpanAnimation}
-								className="relative text-lg font-semibold text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.55)] md:text-xl"
-								style={{
-									color: "var(--hero-problem-text, #ffffff)",
-								}}
+								className={cn(
+									styles.heroHeadlineAccent,
+									styles.heroHeadlineAccentPersona,
+								)}
 							>
 								{problemDisplayText}
 							</motion.span>
 						</AnimatePresence>
 					</span>
-					<span>, start </span>
-					<span className="font-semibold text-primary">
+					<span className="hero-headline__block">
+						Start{" "}
 						<AnimatePresence mode="sync" initial={false}>
 							<motion.span
 								key={`${solutionIndex}-${solutionText}`}
 								{...baseSpanAnimation}
+								className={cn(
+									styles.heroHeadlineAccent,
+									styles.heroHeadlineAccentAction,
+								)}
 							>
 								{solutionText}
 							</motion.span>
 						</AnimatePresence>
 					</span>
-					<span> before </span>
-					<span className="font-semibold text-amber-400 dark:text-amber-300">
+					<span className="hero-headline__block">
+						Before{" "}
 						<AnimatePresence mode="sync" initial={false}>
 							<motion.span
 								key={`${fearIndex}-${fearText}`}
 								{...baseSpanAnimation}
+								className={cn(
+									styles.heroHeadlineAccent,
+									styles.heroHeadlineAccentRisk,
+								)}
 							>
 								{fearText}
 							</motion.span>
 						</AnimatePresence>
 					</span>
-					<span>.</span>
 				</motion.h1>
 
 				{copy.subtitle ? (

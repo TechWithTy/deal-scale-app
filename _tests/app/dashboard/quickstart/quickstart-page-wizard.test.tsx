@@ -472,7 +472,7 @@ describe("QuickStartPage wizard modal", () => {
                 ).toBeDefined();
 
                 const dataState = useQuickStartWizardDataStore.getState();
-                expect(dataState.personaId).toBe("lender");
+                expect(dataState.personaId).toBe("loan_officer");
                 expect(dataState.goalId).toBe("lender-fund-fast");
         });
 

@@ -1,5 +1,11 @@
 "use client";
 
+import {
+	Accordion,
+	AccordionContent,
+	AccordionItem,
+	AccordionTrigger,
+} from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,9 +17,24 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import type { ClientType, DemoConfig } from "@/types/user";
+import {
+	getGoalDefinition,
+	getGoalsForPersona,
+	quickStartGoals,
+	quickStartPersonas,
+} from "@/lib/config/quickstart/wizardFlows";
+import type {
+	ClientType,
+	DemoCRMProvider,
+	DemoConfig,
+	DemoROIProfileConfig,
+} from "@/types/user";
+import type {
+	QuickStartGoalId,
+	QuickStartPersonaId,
+} from "@/lib/config/quickstart/wizardFlows";
 import { Building2, ChevronDown, ChevronUp } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 interface DemoConfigEditorProps {
 	demoConfig?: DemoConfig;
@@ -21,11 +42,64 @@ interface DemoConfigEditorProps {
 	onUpdate: (config: DemoConfig) => void;
 }
 
-const CLIENT_TYPE_LABELS: Record<ClientType, string> = {
-	investor: "Investor",
-	wholesaler: "Wholesaler",
-	agent: "Real Estate Agent",
-	loan_officer: "Loan Officer",
+const PERSONA_TO_CLIENT_TYPE: Record<QuickStartPersonaId, ClientType> = {
+	investor: "investor",
+	wholesaler: "wholesaler",
+	agent: "agent",
+	loan_officer: "loan_officer",
+};
+
+const CLIENT_TYPE_TO_PERSONA: Record<ClientType, QuickStartPersonaId> = {
+	investor: "investor",
+	wholesaler: "wholesaler",
+	agent: "agent",
+	loan_officer: "loan_officer",
+};
+
+const ROI_FIELDS: Array<{
+	key: keyof DemoROIProfileConfig;
+	label: string;
+	placeholder?: string;
+	helper?: string;
+}> = [
+	{
+		key: "dealsPerMonth",
+		label: "Deals per month",
+		placeholder: "8",
+	},
+	{
+		key: "avgDealValue",
+		label: "Avg deal value ($)",
+		placeholder: "45000",
+	},
+	{
+		key: "months",
+		label: "Months in plan",
+		placeholder: "12",
+	},
+	{
+		key: "profitMarginPercent",
+		label: "Profit margin (%)",
+		placeholder: "25",
+	},
+	{
+		key: "monthlyOverhead",
+		label: "Monthly overhead ($)",
+		placeholder: "2500",
+	},
+	{
+		key: "hoursPerDeal",
+		label: "Hours per deal",
+		placeholder: "18",
+		helper: "Used to estimate time savings from automation.",
+	},
+];
+
+const parseNumericInput = (value: string): number | undefined => {
+	const sanitized = value.replace(/[^\d.-]/g, "").trim();
+	if (!sanitized) return undefined;
+	const numeric = Number.parseFloat(sanitized);
+	return Number.isFinite(numeric) ? numeric : undefined;
 };
 
 export function DemoConfigEditor({
@@ -36,6 +110,42 @@ export function DemoConfigEditor({
 	const [isExpanded, setIsExpanded] = useState(false);
 	const [localConfig, setLocalConfig] = useState<DemoConfig>(demoConfig || {});
 
+	useEffect(() => {
+		setLocalConfig(demoConfig || {});
+	}, [demoConfig]);
+
+	const personaOptions = useMemo(
+		() =>
+			quickStartPersonas.filter((persona) =>
+				Object.prototype.hasOwnProperty.call(
+					PERSONA_TO_CLIENT_TYPE,
+					persona.id,
+				),
+			),
+		[],
+	);
+
+	const selectedPersona: QuickStartPersonaId | undefined =
+		localConfig.clientType
+			? CLIENT_TYPE_TO_PERSONA[localConfig.clientType]
+			: undefined;
+
+	const personaGoals = useMemo(() => {
+		if (!selectedPersona) {
+			return quickStartGoals;
+		}
+		return getGoalsForPersona(selectedPersona);
+	}, [selectedPersona]);
+
+	const CRM_OPTIONS: Array<{ value: DemoCRMProvider; label: string }> = [
+		{ value: "gohighlevel", label: "GoHighLevel" },
+		{ value: "salesforce", label: "Salesforce" },
+		{ value: "hubspot", label: "HubSpot" },
+		{ value: "close", label: "Close CRM" },
+		{ value: "zoho", label: "Zoho" },
+		{ value: "other", label: "Other" },
+	];
+
 	const handleFieldChange = (
 		field: keyof DemoConfig,
 		value: string | undefined,
@@ -44,6 +154,64 @@ export function DemoConfigEditor({
 		setLocalConfig(updated);
 		onUpdate(updated);
 	};
+
+	const handlePersonaSelect = (personaId: QuickStartPersonaId) => {
+		const clientType = PERSONA_TO_CLIENT_TYPE[personaId];
+		const goals = getGoalsForPersona(personaId);
+		const currentGoal = localConfig.goal;
+		const hasCurrentGoal = goals.some((goal) => goal.title === currentGoal);
+		const fallbackGoal = goals[0]?.title ?? undefined;
+
+		const updated: DemoConfig = {
+			...localConfig,
+			clientType,
+			goal: hasCurrentGoal ? currentGoal : fallbackGoal,
+		};
+		setLocalConfig(updated);
+		onUpdate(updated);
+	};
+
+	const handleGoalSelect = (goalId: QuickStartGoalId) => {
+		const goal = getGoalDefinition(goalId);
+		handleFieldChange("goal", goal?.title ?? undefined);
+	};
+
+	const handleRoiFieldChange = (
+		field: keyof DemoROIProfileConfig,
+		rawValue: string,
+	) => {
+		const nextProfile: DemoROIProfileConfig = {
+			...(localConfig.roiProfile ?? {}),
+		};
+		const numericValue = parseNumericInput(rawValue);
+
+		if (numericValue === undefined) {
+			delete nextProfile[field];
+		} else {
+			nextProfile[field] = numericValue;
+		}
+
+		const cleanedProfile =
+			Object.keys(nextProfile).length > 0 ? nextProfile : undefined;
+
+		const updated: DemoConfig = { ...localConfig };
+		if (cleanedProfile) {
+			updated.roiProfile = cleanedProfile;
+		} else {
+			delete updated.roiProfile;
+		}
+
+		setLocalConfig(updated);
+		onUpdate(updated);
+	};
+
+	const selectedGoalId = useMemo(() => {
+		if (!localConfig.goal) return "";
+		const goal = personaGoals.find(
+			(definition) => definition.title === localConfig.goal,
+		);
+		return goal?.id ?? "";
+	}, [localConfig.goal, personaGoals]);
 
 	const handleSocialChange = (
 		platform: keyof NonNullable<DemoConfig["social"]>,
@@ -133,21 +301,21 @@ export function DemoConfigEditor({
 								Client Type
 							</Label>
 							<Select
-								value={localConfig.clientType || ""}
+								value={selectedPersona ?? ""}
 								onValueChange={(value) =>
-									handleFieldChange("clientType", value as ClientType)
+									handlePersonaSelect(value as QuickStartPersonaId)
 								}
 							>
 								<SelectTrigger
 									id={`client-type-${userId}`}
 									className="h-8 text-sm"
 								>
-									<SelectValue placeholder="Select type" />
+									<SelectValue placeholder="Select persona" />
 								</SelectTrigger>
 								<SelectContent>
-									{Object.entries(CLIENT_TYPE_LABELS).map(([value, label]) => (
-										<SelectItem key={value} value={value}>
-											{label}
+									{personaOptions.map((persona) => (
+										<SelectItem key={persona.id} value={persona.id}>
+											{persona.title}
 										</SelectItem>
 									))}
 								</SelectContent>
@@ -160,15 +328,115 @@ export function DemoConfigEditor({
 							>
 								Primary Goal
 							</Label>
-							<Input
-								id={`goal-${userId}`}
-								value={localConfig.goal || ""}
-								onChange={(e) => handleFieldChange("goal", e.target.value)}
-								placeholder="Generate 50 leads/month"
-								className="h-8 text-sm"
-							/>
+							<Select
+								value={selectedGoalId}
+								onValueChange={(value) =>
+									handleGoalSelect(value as QuickStartGoalId)
+								}
+								disabled={!selectedPersona || personaGoals.length === 0}
+							>
+								<SelectTrigger id={`goal-${userId}`} className="h-8 text-sm">
+									<SelectValue
+										placeholder={
+											selectedPersona ? "Select goal" : "Select a persona first"
+										}
+									/>
+								</SelectTrigger>
+								<SelectContent>
+									{personaGoals.map((goal) => (
+										<SelectItem key={goal.id} value={goal.id}>
+											{goal.title}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
 						</div>
 					</div>
+
+					<div className="space-y-1">
+						<Label
+							htmlFor={`crm-provider-${userId}`}
+							className="text-muted-foreground text-xs"
+						>
+							CRM Provider (optional)
+						</Label>
+						<Select
+							value={localConfig.crmProvider ?? ""}
+							onValueChange={(value) =>
+								handleFieldChange(
+									"crmProvider",
+									value ? (value as DemoCRMProvider) : undefined,
+								)
+							}
+						>
+							<SelectTrigger
+								id={`crm-provider-${userId}`}
+								className="h-8 text-sm"
+							>
+								<SelectValue placeholder="Select CRM" />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem key="none" value="">
+									No CRM / Not specified
+								</SelectItem>
+								{CRM_OPTIONS.map((option) => (
+									<SelectItem key={option.value} value={option.value}>
+										{option.label}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
+					</div>
+
+					<Accordion
+						type="single"
+						collapsible
+						defaultValue={localConfig.roiProfile ? "roi-overrides" : undefined}
+						className="rounded-md border border-border bg-background/50"
+					>
+						<AccordionItem value="roi-overrides">
+							<AccordionTrigger className="text-left text-sm font-medium">
+								ROI Calculator Overrides
+							</AccordionTrigger>
+							<AccordionContent>
+								<p className="mb-3 text-muted-foreground text-xs">
+									Provide optional ROI inputs to prefill the QuickStart ROI
+									calculator. Leave blank to rely on persona/goal presets.
+								</p>
+								<div className="grid gap-3 sm:grid-cols-2">
+									{ROI_FIELDS.map(({ key, label, placeholder, helper }) => {
+										const value = localConfig.roiProfile?.[key];
+										return (
+											<div key={key} className="space-y-1">
+												<Label
+													htmlFor={`${String(key)}-${userId}`}
+													className="text-muted-foreground text-xs"
+												>
+													{label}
+												</Label>
+												<Input
+													id={`${String(key)}-${userId}`}
+													type="number"
+													inputMode="decimal"
+													value={value === undefined ? "" : String(value)}
+													onChange={(event) =>
+														handleRoiFieldChange(key, event.target.value)
+													}
+													placeholder={placeholder}
+													className="h-8 text-sm"
+												/>
+												{helper ? (
+													<p className="text-muted-foreground text-[11px] leading-snug">
+														{helper}
+													</p>
+												) : null}
+											</div>
+										);
+									})}
+								</div>
+							</AccordionContent>
+						</AccordionItem>
+					</Accordion>
 
 					{/* Contact Info */}
 					<div className="space-y-1">
