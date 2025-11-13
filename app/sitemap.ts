@@ -26,6 +26,24 @@ export default function sitemap(): MetadataRoute.Sitemap {
 			changeFrequency: "monthly",
 			priority: 0.8,
 		},
+		{
+			url: `${baseUrl}/external-tools`,
+			lastModified: new Date(),
+			changeFrequency: "weekly",
+			priority: 0.7,
+		},
+		{
+			url: `${baseUrl}/external-tools/calculators`,
+			lastModified: new Date(),
+			changeFrequency: "weekly",
+			priority: 0.7,
+		},
+		{
+			url: `${baseUrl}/external-tools/calculators/roi`,
+			lastModified: new Date(),
+			changeFrequency: "weekly",
+			priority: 0.6,
+		},
 		// Add more public routes as needed
 		// Dashboard routes are excluded as they require authentication
 	];

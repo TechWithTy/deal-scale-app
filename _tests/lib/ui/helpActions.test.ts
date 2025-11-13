@@ -61,4 +61,21 @@ describe("helpActions utilities", () => {
 			"internal",
 		);
 	});
+
+it("auto starts voice mode when requested", () => {
+	const store = useMusicPreferencesStore.getState();
+	store.setVoiceStatus("idle", { force: true });
+	store.setWidgetView("voice", "minimized");
+
+	const dispatchSpy = vi.spyOn(window, "dispatchEvent");
+
+	openFocusWidget({ autoStartVoice: true });
+
+	const next = useMusicPreferencesStore.getState();
+	expect(next.widgetView.voice).toBe("maximized");
+	expect(next.voiceStatus).toBe("streaming");
+	expect(dispatchSpy).toHaveBeenCalledWith(
+		expect.objectContaining({ type: "dealScale:musicWidget:autoStartVoice" }),
+	);
+});
 });

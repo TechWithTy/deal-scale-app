@@ -1,5 +1,7 @@
 "use client";
 
+import type { HTMLAttributes } from "react";
+
 import {
 	DEFAULT_HERO_VIDEO,
 	resolveHeroThumbnailSrc,
@@ -8,9 +10,9 @@ import { HeroVideoPreview } from "@external/dynamic-hero/components/hero-video-p
 
 import type { QuickStartHeadlineVideo } from "@/lib/config/quickstart/headlines";
 
-interface QuickStartVideoPreviewProps {
+interface QuickStartVideoPreviewProps
+	extends Omit<HTMLAttributes<HTMLDivElement>, "children"> {
 	readonly videoConfig?: QuickStartHeadlineVideo | undefined;
-	readonly className?: string;
 }
 
 export const QUICKSTART_DEFAULT_VIDEO: QuickStartHeadlineVideo =
@@ -19,6 +21,7 @@ export const QUICKSTART_DEFAULT_VIDEO: QuickStartHeadlineVideo =
 export function QuickStartVideoPreview({
 	videoConfig,
 	className,
+	...containerProps
 }: QuickStartVideoPreviewProps) {
 	const config = videoConfig ?? QUICKSTART_DEFAULT_VIDEO;
 
@@ -33,6 +36,7 @@ export function QuickStartVideoPreview({
 				),
 			}}
 			thumbnailAlt="Watch how DealScale automates outreach"
+			{...containerProps}
 		/>
 	);
 }

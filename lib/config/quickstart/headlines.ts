@@ -64,7 +64,7 @@ export type QuickStartHeadlineCta = z.infer<typeof headlineCtaSchema>;
 type QuickStartHeadlineKey = QuickStartPersonaId | "default";
 
 const DEMO_SUPADEMO_SRC =
-	"https://app.supademo.com/embed/JZP1_tcJNyZaQHtc8ZL9p?embed_v=2&panel=false&autoplay=1&loop=1";
+	"https://app.supademo.com/embed/cmhjlwt7i0jk4u1hm0scmf39w?embed_v=2&panel=false&autoplay=1&loop=1";
 const DEMO_POSTER_WEBP = "/demos/svgs/JZP1_tcJNyZaQHtc8ZL9p.webp";
 
 const PERSONA_VIDEO_LIBRARY: Record<QuickStartHeadlineKey, HeroVideoConfig> = {

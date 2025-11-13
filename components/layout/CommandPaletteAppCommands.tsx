@@ -298,7 +298,7 @@ export default function CommandPaletteAppCommands(): null {
 				label: "Open Focus Player",
 				icon: <Radio className={ICON_CLASS} aria-hidden />,
 				action: () => {
-					openFocusWidget();
+					openFocusWidget({ autoStartVoice: true });
 				},
 			},
 		];

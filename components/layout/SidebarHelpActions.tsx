@@ -3,6 +3,7 @@
 import type React from "react";
 import { useEffect, useId, useMemo, useState } from "react";
 
+import type { LucideIcon } from "lucide-react";
 import { LifeBuoy, Radio } from "lucide-react";
 
 import { cn } from "@/lib/_utils";
@@ -17,6 +18,16 @@ interface ShortcutMeta {
 	aria: string;
 	description: string;
 	keys: ShortcutKey[];
+}
+
+interface SidebarAction {
+	key: "assist" | "focus";
+	label: string;
+	description: string;
+	icon: LucideIcon;
+	onSelect: (options?: { autoStartVoice?: boolean }) => void;
+	supportsShortcut: boolean;
+	shortcut?: ShortcutMeta;
 }
 
 function ShortcutGlyph({
@@ -112,13 +123,21 @@ export default function SidebarHelpActions({
 }: SidebarHelpActionsProps): React.ReactElement {
 	const { setOpen, setInitialQuery } = useCommandPalette();
 	const descriptionId = useId();
-	const [shortcut, setShortcut] = useState<ShortcutMeta>({
-		aria: "Control+Shift+D",
-		description: "⌘+Shift+D",
+	const [assistShortcut, setAssistShortcut] = useState<ShortcutMeta>({
+		aria: "Meta+K Meta+Shift+D",
+		description: "⌘+K (⌘+⇧+D backup)",
 		keys: [
-			{ type: "text", label: "⌘" },
-			{ type: "text", label: "Shift" },
-			{ type: "text", label: "D" },
+			{ type: "icon", name: "command", label: "⌘" },
+			{ type: "text", label: "K" },
+		],
+	});
+	const [focusShortcut, setFocusShortcut] = useState<ShortcutMeta>({
+		aria: "Meta+Shift+V",
+		description: "⌘+⇧+V",
+		keys: [
+			{ type: "icon", name: "command", label: "⌘" },
+			{ type: "icon", name: "shift", label: "⇧" },
+			{ type: "text", label: "V" },
 		],
 	});
 
@@ -128,42 +147,86 @@ export default function SidebarHelpActions({
 			// @ts-expect-error Support Chromium UA data
 			navigator.userAgentData?.platform ?? navigator.platform ?? "";
 		const isApple = /mac|iphone|ipad|ipod/i.test(platform);
-		setShortcut(
+		setAssistShortcut(
 			isApple
 				? {
-						aria: "Meta+Shift+D",
-						description: "⌘+⇧+D",
+						aria: "Meta+K Meta+Shift+D",
+						description: "⌘+K (⌘+⇧+D backup)",
 						keys: [
-							{ type: "text", label: "⌘" },
-							{ type: "text", label: "⇧" },
-							{ type: "text", label: "D" },
+							{ type: "icon", name: "command", label: "⌘" },
+							{ type: "text", label: "K" },
 						],
 					}
 				: {
-						aria: "Control+Shift+D",
-						description: "⌘+Shift+D",
+						aria: "Control+K Control+Shift+D",
+						description: "Ctrl+K (Ctrl+Shift+D backup)",
 						keys: [
-							{ type: "text", label: "⌘" },
+							{ type: "text", label: "Ctrl" },
+							{ type: "text", label: "K" },
+						],
+					},
+		);
+		setFocusShortcut(
+			isApple
+				? {
+						aria: "Meta+Shift+V",
+						description: "⌘+⇧+V",
+						keys: [
+							{ type: "icon", name: "command", label: "⌘" },
+							{ type: "icon", name: "shift", label: "⇧" },
+							{ type: "text", label: "V" },
+						],
+					}
+				: {
+						aria: "Control+Shift+V",
+						description: "Ctrl+Shift+V",
+						keys: [
+							{ type: "text", label: "Ctrl" },
 							{ type: "text", label: "Shift" },
-							{ type: "text", label: "D" },
+							{ type: "text", label: "V" },
 						],
 					},
 		);
 	}, []);
 
+	useEffect(() => {
+		if (typeof window === "undefined") return;
+
+		const handleKeydown = (event: KeyboardEvent) => {
+			const platform =
+				// @ts-expect-error Support Chromium UA data
+				navigator.userAgentData?.platform ?? navigator.platform ?? "";
+			const isApple = /mac|iphone|ipad|ipod/i.test(platform);
+			const modPressed = isApple ? event.metaKey : event.ctrlKey;
+			if (
+				modPressed &&
+				event.shiftKey &&
+				(event.key === "v" || event.key === "V")
+			) {
+				event.preventDefault();
+				openFocusWidget({ autoStartVoice: true });
+			}
+		};
+
+		window.addEventListener("keydown", handleKeydown);
+		return () => {
+			window.removeEventListener("keydown", handleKeydown);
+		};
+	}, []);
+
 	const actions = useMemo(
-		() => [
+		(): SidebarAction[] => [
 			{
 				key: "assist",
 				label: "Assist",
-				description: `Use ${shortcut.description.replace(" ", "")} to open the Assist command palette.`,
+				description: `Use ${assistShortcut.description} to open the Assist command palette.`,
 				icon: LifeBuoy,
 				onSelect: () => {
 					setInitialQuery("");
 					setOpen(true);
 				},
 				supportsShortcut: true,
-				shortcut,
+				shortcut: assistShortcut,
 			},
 			{
 				key: "focus",
@@ -171,13 +234,14 @@ export default function SidebarHelpActions({
 				description:
 					"Open the Focus widget to control music mode or switch to Voice mode.",
 				icon: Radio,
-				onSelect: () => {
-					openFocusWidget();
+				onSelect: ({ autoStartVoice } = {}) => {
+					openFocusWidget({ autoStartVoice });
 				},
 				supportsShortcut: false,
+				shortcut: focusShortcut,
 			},
 		],
-		[setInitialQuery, setOpen, shortcut],
+		[assistShortcut, focusShortcut, setInitialQuery, setOpen],
 	);
 
 	return (
@@ -206,7 +270,9 @@ export default function SidebarHelpActions({
 						aria-keyshortcuts={action.shortcut?.aria}
 						onClick={(event) => {
 							event.stopPropagation();
-							action.onSelect();
+							const autoStartVoice =
+								action.key === "focus" && event.detail === 0;
+							action.onSelect({ autoStartVoice });
 						}}
 						className={cn(
 							"sidebar-help-trigger flex w-full items-center rounded-md border border-border bg-card text-primary transition hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",

@@ -41,7 +41,25 @@ const latestStatusText = () =>
 	screen.getAllByTestId("palette-status").at(-1)?.textContent ?? "";
 
 describe("CommandPaletteProvider keyboard shortcuts", () => {
-	it("toggles open state with Ctrl+Shift+D", () => {
+	it("toggles open state with Ctrl+K", () => {
+		render(
+			<CommandPaletteProvider>
+				<PaletteStatus />
+			</CommandPaletteProvider>,
+		);
+
+		expect(latestStatusText()).toBe("closed");
+
+		fireEvent.keyDown(window, { key: "k", ctrlKey: true });
+
+		expect(latestStatusText()).toBe("open");
+
+		fireEvent.keyDown(window, { key: "k", ctrlKey: true });
+
+		expect(latestStatusText()).toBe("closed");
+	});
+
+	it("supports backup Ctrl+Shift+D shortcut", () => {
 		render(
 			<CommandPaletteProvider>
 				<PaletteStatus />
@@ -59,7 +77,12 @@ describe("CommandPaletteProvider keyboard shortcuts", () => {
 		expect(latestStatusText()).toBe("closed");
 	});
 
-	it("does not open with legacy Ctrl+K shortcut", () => {
+	it("supports Cmd+K on macOS with Meta key", () => {
+		Object.defineProperty(window.navigator, "platform", {
+			configurable: true,
+			value: "MacIntel",
+		});
+
 		render(
 			<CommandPaletteProvider>
 				<PaletteStatus />
@@ -68,12 +91,16 @@ describe("CommandPaletteProvider keyboard shortcuts", () => {
 
 		expect(latestStatusText()).toBe("closed");
 
-		fireEvent.keyDown(window, { key: "k", ctrlKey: true });
+		fireEvent.keyDown(window, { key: "k", metaKey: true });
+
+		expect(latestStatusText()).toBe("open");
+
+		fireEvent.keyDown(window, { key: "k", metaKey: true });
 
 		expect(latestStatusText()).toBe("closed");
 	});
 
-	it("supports Cmd+Shift+D on macOS", () => {
+	it("supports Cmd+Shift+D backup on macOS", () => {
 		Object.defineProperty(window.navigator, "platform", {
 			configurable: true,
 			value: "MacIntel",
@@ -90,6 +117,10 @@ describe("CommandPaletteProvider keyboard shortcuts", () => {
 		fireEvent.keyDown(window, { key: "d", metaKey: true, shiftKey: true });
 
 		expect(latestStatusText()).toBe("open");
+
+		fireEvent.keyDown(window, { key: "d", metaKey: true, shiftKey: true });
+
+		expect(latestStatusText()).toBe("closed");
 	});
 
 	it("still opens with the slash shortcut", () => {

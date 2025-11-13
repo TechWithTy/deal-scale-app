@@ -42,6 +42,7 @@ const QuickStartHeroVideo = ({
 
 	return (
 		<QuickStartVideoPreview
+			id="quickstart-hero-video"
 			className={cn("mt-8", className)}
 			videoConfig={video}
 		/>
