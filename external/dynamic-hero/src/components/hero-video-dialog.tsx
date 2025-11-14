@@ -83,6 +83,7 @@ export function HeroVideoDialog({
 	...containerProps
 }: HeroVideoDialogProps): JSX.Element {
 	const [isOpen, setIsOpen] = useState(false);
+	const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
 	const preset = useMemo(
 		() => animationPresets[animationStyle] ?? animationPresets["from-center"],
 		[animationStyle],
@@ -114,6 +115,18 @@ export function HeroVideoDialog({
 	const closeModal = () => {
 		setIsOpen(false);
 	};
+
+	useEffect(() => {
+		const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+		const update = () => setPrefersReducedMotion(mediaQuery.matches);
+		update();
+		mediaQuery.addEventListener("change", update);
+		return () => mediaQuery.removeEventListener("change", update);
+	}, []);
+
+	const shouldAutoPlayThumbnail =
+		!!video.thumbnailVideo && !prefersReducedMotion;
+
 	return (
 		<div
 			className={cn("relative h-full w-full", className)}
@@ -126,7 +139,7 @@ export function HeroVideoDialog({
 					className="group absolute inset-0 z-20 cursor-pointer overflow-hidden rounded-[28px] border-0 bg-transparent p-0 transition duration-200 ease-out"
 					onClick={openModal}
 				>
-					{video.thumbnailVideo ? (
+					{video.thumbnailVideo && shouldAutoPlayThumbnail ? (
 						<video
 							className="absolute inset-0 size-full object-cover transition-all duration-200 ease-out group-hover:brightness-[0.92]"
 							src={video.thumbnailVideo}
@@ -135,6 +148,7 @@ export function HeroVideoDialog({
 							muted
 							loop
 							playsInline
+							preload="metadata"
 						/>
 					) : (
 						<Image
@@ -206,6 +220,7 @@ export function HeroVideoDialog({
 										controls
 										playsInline
 										autoPlay
+										preload="metadata"
 										poster={thumbnailSrc}
 										data-testid="hero-video-html5"
 									>
@@ -218,6 +233,8 @@ export function HeroVideoDialog({
 										src={videoSrc}
 										title="Hero Video player"
 										className="size-full rounded-2xl"
+										loading="lazy"
+										referrerPolicy="strict-origin-when-cross-origin"
 										allowFullScreen
 										allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
 									/>

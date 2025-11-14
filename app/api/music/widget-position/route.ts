@@ -1,78 +1,35 @@
-import { auth } from "@/auth";
 import { NextResponse } from "next/server";
-import { z } from "zod";
 
-const widgetPositionSchema = z.object({
-	position: z.object({
-		x: z.number(),
-		y: z.number(),
-		anchor: z.enum([
-			"top-left",
-			"top-right",
-			"bottom-left",
-			"bottom-right",
-			"floating",
-		]),
-	}),
-});
+export const dynamic = "force-static";
 
-export async function POST(request: Request): Promise<NextResponse> {
-	const session = await auth();
-	const userId = session?.user?.id;
-	if (!userId) {
-		return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-	}
+function ok() {
+	return NextResponse.json({ ok: true });
+}
 
-	let payload: unknown;
-	try {
-		payload = await request.json();
-	} catch (error) {
-		return NextResponse.json({ message: "Invalid JSON" }, { status: 400 });
-	}
+export async function GET() {
+	return ok();
+}
 
-	const parsed = widgetPositionSchema.safeParse(payload);
-	if (!parsed.success) {
-		return NextResponse.json(
-			{
-				message: "Invalid widget position payload",
-				errors: parsed.error.flatten(),
-			},
-			{ status: 422 },
-		);
-	}
+export async function POST() {
+	return ok();
+}
 
-	const fastApiUrl = process.env.FAST_API_URL;
-	if (!fastApiUrl) {
-		return NextResponse.json({ success: true, persisted: false });
-	}
+export async function PUT() {
+	return ok();
+}
 
-	try {
-		const response = await fetch(
-			`${fastApiUrl}/user/preferences/${userId}/music-widget`,
-			{
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify(parsed.data),
-				credentials: "include",
-			},
-		);
-		if (!response.ok) {
-			return NextResponse.json(
-				{ message: "Failed to persist widget position" },
-				{ status: 502 },
-			);
-		}
-	} catch (error) {
-		return NextResponse.json(
-			{
-				message: "Widget position sync error",
-				error: (error as Error).message,
-			},
-			{ status: 500 },
-		);
-	}
+export async function PATCH() {
+	return ok();
+}
 
-	return NextResponse.json({ success: true, persisted: true });
+export async function DELETE() {
+	return ok();
+}
+
+export async function OPTIONS() {
+	return new Response(null, { status: 204 });
+}
+
+export async function HEAD() {
+	return new Response(null, { status: 204 });
 }
