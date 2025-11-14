@@ -16,6 +16,14 @@ export default defineConfig({
 		alias: [
 			{ find: "@", replacement: srcDir },
 			{
+				find: "@app",
+				replacement: path.resolve(projectRoot, "app"),
+			},
+			{
+				find: /^@app\/(.*)$/u,
+				replacement: path.resolve(projectRoot, "app", "$1"),
+			},
+			{
 				find: "@external/dynamic-hero",
 				replacement: path.join(dynamicHeroSrc),
 			},

@@ -9,6 +9,7 @@ const dynamicHeroSrc = path.resolve(
 	"src/components/dynamic-hero/src",
 );
 const shimDir = path.resolve(__dirname, "../vite-preview/src/shims");
+const appDir = path.resolve(projectRoot, "app");
 
 export default defineConfig({
 	root: __dirname,
@@ -19,6 +20,8 @@ export default defineConfig({
 		},
 		alias: {
 			"@": srcDir,
+			"@app": appDir,
+			"@app/*": `${appDir}/*`,
 			"@external/dynamic-hero": dynamicHeroSrc,
 			"@external/dynamic-hero/*": `${dynamicHeroSrc}/*`,
 			"next/image": path.resolve(shimDir, "next-image.tsx"),

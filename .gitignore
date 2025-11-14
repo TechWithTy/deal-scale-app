@@ -63,3 +63,4 @@ node_modules/
 # Lighthouse auth artifacts
 reports/lighthouse/*.headers.json
 reports/lighthouse/.auth-headers.json
+reports/tests/coverage/

@@ -40,6 +40,8 @@ docs/
 | Docker | Buildx enabled; access to GHCR |
 | Trivy | Available in CI runners (installed via `aquasecurity/trivy-action`) |
 | OWASP ZAP | Pulled as Docker image (`ghcr.io/zaproxy/zaproxy:stable`) |
+- If the local Trivy CLI is missing, `pnpm run security:trivy` automatically falls back to `ghcr.io/aquasecurity/trivy` via Docker. Override with `TRIVY_DOCKER_IMAGE` or `TRIVY_DOCKER_ARGS` if needed.
+- If the local Snyk CLI isn’t installed, `pnpm run security:snyk` automatically runs `snyk/snyk:docker` via Docker. Override with `SNYK_DOCKER_IMAGE`, `SNYK_DOCKER_CMD`, or `SNYK_DOCKER_ARGS`.
 | Hetzner | SSH user with access to `/srv/dealscale` |
 | Secrets | Listed below |
 

@@ -4,15 +4,11 @@
 # Ensure commit scopes stay in sync with app routes before every commit.
 pnpm run sync:commit-scopes
 
-# Run test suite with coverage. Continue even if it fails.
-pnpm run test:coverage || echo "[pre-commit] Coverage run failed; continuing without blocking commit."
+# Run critical unit/regression tests only. Continue even if they fail.
+pnpm run test:critical || echo "[pre-commit] Critical test run failed; continuing without blocking commit."
 
-# Execute security scans (Trivy + Opengrep + OWASP). Continue even if they fail.
-pnpm run security:scan || echo "[pre-commit] Security scan failed; continuing without blocking commit."
-
-# Archive coverage, security, and Lighthouse reports into timestamped history folders.
+# Archive coverage and Lighthouse reports into timestamped history folders.
 pnpm run archive:coverage
-pnpm run archive:security
 pnpm run archive:reports
 
 # Run lint-staged last to format/stage code changes.

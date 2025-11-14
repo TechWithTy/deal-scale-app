@@ -5,7 +5,12 @@ import { promisify } from "node:util";
 
 const exec = promisify(execCb);
 
-const COVERAGE_DIR = path.resolve("coverage");
+const COVERAGE_DIR = path.resolve(
+	"reports",
+	"tests",
+	"coverage",
+	"latest",
+);
 const ARCHIVE_ROOT = path.resolve("reports", "tests", "history");
 
 async function directoryExists(dirPath: string) {
