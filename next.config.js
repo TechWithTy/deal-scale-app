@@ -174,11 +174,18 @@ const nextConfig = {
 			),
     };
 
-    // If '@auth/core' cannot be resolved in this environment, alias to shims
-    try {
-      require.resolve("@auth/core");
-      require.resolve("@auth/core/errors");
-    } catch (_) {
+    // If '@auth/core' cannot be resolved or auth is disabled, alias to shims
+    const forceAuthShim = process.env.NEXT_DISABLE_AUTH === "1";
+    let needAliasAuthCore = forceAuthShim;
+    if (!needAliasAuthCore) {
+      try {
+        require.resolve("@auth/core");
+        require.resolve("@auth/core/errors");
+      } catch (_) {
+        needAliasAuthCore = true;
+      }
+    }
+    if (needAliasAuthCore) {
       config.resolve.alias["@auth/core"] = path.resolve(
         __dirname,
         "shims/auth-core-shim.ts",

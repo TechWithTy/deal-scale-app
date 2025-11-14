@@ -13,6 +13,8 @@ export class UnknownAction extends Error {}
 export class UnknownFlow extends Error {}
 export class UnknownMessage extends Error {}
 export class UnknownError extends Error {}
+export class AuthError extends Error {}
+export class CredentialsSignin extends Error {}
 export default {
   OAuthCallbackError,
   InvalidCallbackUrl,
@@ -28,5 +30,6 @@ export default {
   UnknownFlow,
   UnknownMessage,
   UnknownError,
+  AuthError,
+  CredentialsSignin,
 };
-
