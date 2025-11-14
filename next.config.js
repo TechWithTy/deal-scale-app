@@ -174,6 +174,21 @@ const nextConfig = {
 			),
     };
 
+    // If '@auth/core' cannot be resolved in this environment, alias to shims
+    try {
+      require.resolve("@auth/core");
+      require.resolve("@auth/core/errors");
+    } catch (_) {
+      config.resolve.alias["@auth/core"] = path.resolve(
+        __dirname,
+        "shims/auth-core-shim.ts",
+      );
+      config.resolve.alias["@auth/core/errors"] = path.resolve(
+        __dirname,
+        "shims/auth-core-errors-shim.ts",
+      );
+    }
+
     // Allow builds to proceed without next-auth by aliasing to shims
     if (process.env.NEXT_DISABLE_AUTH === "1") {
       config.resolve.alias["next-auth"] = path.resolve(
