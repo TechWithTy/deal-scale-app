@@ -2,6 +2,15 @@ const path = require("node:path");
 const { buildCacheControl } = require("./utils/http/cacheControl.js");
 const { offlineFallback } = require("./public/sw-config.js");
 
+const imageStackValue =
+	process.env.NEXT_IMAGE_STACK ??
+	(process.env.CF_PAGES ? "cloudflare" : "next");
+const imageStack =
+	typeof imageStackValue === "string"
+		? imageStackValue.toLowerCase()
+		: "next";
+const useCloudflareImages = imageStack === "cloudflare";
+
 // Bundle analyzer (run with: ANALYZE=true pnpm build)
 const withBundleAnalyzer = require("@next/bundle-analyzer")({
 	enabled: process.env.ANALYZE === "true",
@@ -89,6 +98,12 @@ const nextConfig = {
 		deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
 		imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
 		minimumCacheTTL: 60 * 60 * 24 * 7, // 7 days
+		...(useCloudflareImages
+			? {
+					loader: "custom",
+					loaderFile: "./lib/images/cloudflare-loader.js",
+			  }
+			: {}),
 	},
 
 	experimental: {
