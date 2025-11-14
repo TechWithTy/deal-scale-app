@@ -17,17 +17,47 @@ const withBundleAnalyzer = require("@next/bundle-analyzer")({
 });
 
 // PWA support - make dashboard installable
-const withPWA = require("next-pwa")({
-	dest: "public",
-	disable: process.env.NODE_ENV === "development",
-	register: true,
-	skipWaiting: true,
-	swSrc: "./public/sw-custom.js",
-	buildExcludes: [/middleware-manifest\.json$/],
-	fallbacks: {
-		document: offlineFallback,
-	},
-});
+// Only require next-pwa in production; allow disabling via env var.
+// If transitive deps are missing, gracefully disable PWA instead of failing the build.
+const isProd = process.env.NODE_ENV === "production";
+const disablePwa = process.env.NEXT_DISABLE_PWA === "1";
+let withPWA = (config) => config;
+if (isProd && !disablePwa) {
+  try {
+    const nextPwa = require("next-pwa");
+    const enhancerFactory = nextPwa({
+      dest: "public",
+      disable: false,
+      register: true,
+      skipWaiting: true,
+      swSrc: "./public/sw-custom.js",
+      buildExcludes: [/middleware-manifest\.json$/],
+      fallbacks: { document: offlineFallback },
+    });
+    // Wrap the enhancer invocation to catch any late requires inside next-pwa
+    withPWA = (config) => {
+      try {
+        return enhancerFactory(config);
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.warn(
+          `[next-pwa] disabled at enhance: ${
+            err && (err.message || err)
+          }. Proceeding without PWA.`,
+        );
+        return config;
+      }
+    };
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.warn(
+      `[next-pwa] disabled at require: ${
+        err && (err.message || err)
+      }. Proceeding without PWA. Install transitive deps if needed.`,
+    );
+    withPWA = (config) => config;
+  }
+}
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -129,11 +159,11 @@ const nextConfig = {
 
 	// Simplified webpack configuration
 	webpack: (config, { isServer }) => {
-		// Basic path aliases
-		config.resolve.alias = {
-			...(config.resolve.alias || {}),
-			"@": path.resolve(__dirname),
-			external: path.resolve(__dirname, "external"),
+    // Basic path aliases
+    config.resolve.alias = {
+      ...(config.resolve.alias || {}),
+      "@": path.resolve(__dirname),
+      external: path.resolve(__dirname, "external"),
 			"@external/dynamic-hero": path.resolve(
 				__dirname,
 				"external/dynamic-hero/src/index.ts",
@@ -142,10 +172,22 @@ const nextConfig = {
 				__dirname,
 				"external/dynamic-hero/src",
 			),
-		};
+    };
 
-		return config;
-	},
+    // Allow builds to proceed without next-auth by aliasing to shims
+    if (process.env.NEXT_DISABLE_AUTH === "1") {
+      config.resolve.alias["next-auth"] = path.resolve(
+        __dirname,
+        "shims/next-auth-shim.ts",
+      );
+      config.resolve.alias["next-auth/react"] = path.resolve(
+        __dirname,
+        "shims/next-auth-react-shim.tsx",
+      );
+    }
+
+    return config;
+  },
 };
 
 module.exports = withBundleAnalyzer(withPWA(nextConfig));
