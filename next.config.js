@@ -32,6 +32,7 @@ const withPWA = require("next-pwa")({
 /** @type {import('next').NextConfig} */
 const nextConfig = {
 	// Essential configurations
+	output: "standalone",
 	transpilePackages: ["shadcn-table"],
 	eslint: { ignoreDuringBuilds: true },
 	typescript: { ignoreBuildErrors: true },

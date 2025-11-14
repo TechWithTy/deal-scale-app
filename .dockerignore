@@ -1,0 +1,31 @@
+# Dependency directories
+node_modules
+.pnpm-store
+
+# Build artifacts
+.next
+out
+dist
+.turbo
+
+# Logs and runtime data
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+logs
+
+# Git and editor files
+.git
+.gitignore
+.DS_Store
+.idea
+.vscode
+
+# Environment files
+.env*
+!.env.example
+
+# Coverage and reports
+coverage
+reports/lighthouse
+
