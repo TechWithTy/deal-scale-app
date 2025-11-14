@@ -1,5 +1,6 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { HelpCircle } from "lucide-react";
@@ -11,27 +12,14 @@ import DynamicHeadline from "@/components/quickstart/DynamicHeadline";
 import QuickStartHeroVideo from "@/components/quickstart/QuickStartHeroVideo";
 import QuickStartCTA from "@/components/quickstart/QuickStartCTA";
 import QuickStartActionsGrid from "@/components/quickstart/QuickStartActionsGrid";
-import QuickStartCrmSyncModal from "@/components/quickstart/QuickStartCrmSyncModal";
 import { computeSmartImportDecision } from "@/components/quickstart/utils/smartImportDecision";
 import { AvatarCircles } from "@/components/ui/avatar-circles";
-import QuickStartLegacyModals, {
-	type QuickStartCampaignContext,
-} from "@/components/quickstart/QuickStartLegacyModals";
 import QuickStartSupportCard from "@/components/quickstart/QuickStartSupportCard";
 import type { QuickStartWizardPreset } from "@/components/quickstart/types";
 import { useBulkCsvUpload } from "@/components/quickstart/useBulkCsvUpload";
 import { useQuickStartCardViewModel } from "@/components/quickstart/useQuickStartCardViewModel";
 import { useQuickStartSavedSearches } from "@/components/quickstart/useQuickStartSavedSearches";
-import QuickStartWizard from "@/components/quickstart/wizard/QuickStartWizard";
-import { CampaignSelectorModal } from "@/components/reusables/modals/user/campaign/CampaignSelectorModal";
-import { AICampaignGenerator } from "@/components/reusables/modals/user/campaign/AICampaignGenerator";
-import SavedCampaignTemplatesModal from "@/components/reusables/modals/user/campaign/SavedCampaignTemplatesModal";
-import { AIWorkflowGenerator } from "@/components/reusables/modals/user/workflow/AIWorkflowGenerator";
-import { WorkflowExportModal } from "@/components/reusables/modals/user/workflow/WorkflowExportModal";
-import SavedWorkflowsModal from "@/components/reusables/modals/user/workflow/SavedWorkflowsModal";
-import { AISavedSearchGenerator } from "@/components/reusables/modals/user/lookalike/AISavedSearchGenerator";
-import { LookalikeConfigModal } from "@/components/reusables/modals/user/lookalike/LookalikeConfigModal";
-import { LookalikeResultsModal } from "@/components/reusables/modals/user/lookalike/LookalikeResultsModal";
+import type { QuickStartCampaignContext } from "@/components/quickstart/QuickStartLegacyModals";
 import { exportToMultiplePlatforms } from "@/lib/api/lookalike/export";
 import { generateLookalikeAudience } from "@/lib/api/lookalike/generate";
 import {
@@ -70,8 +58,102 @@ import { mapTemplateToCampaignWizard } from "@/lib/utils/campaign/templateParser
 import { openHelpModal, showHelpIcon } from "@/lib/ui/helpActions";
 import { toast } from "sonner";
 import { shallow } from "zustand/shallow";
-import LaunchOverlay from "@/components/quickstart/launch/LaunchOverlay";
 import { useLaunchProgressMachine } from "@/hooks/useLaunchProgressMachine";
+
+const QuickStartCrmSyncModal = dynamic(
+	() => import("@/components/quickstart/QuickStartCrmSyncModal"),
+	{ ssr: false, loading: () => null },
+);
+
+const QuickStartLegacyModals = dynamic(
+	() => import("@/components/quickstart/QuickStartLegacyModals"),
+	{ ssr: false, loading: () => null },
+);
+
+const QuickStartWizard = dynamic(
+	() => import("@/components/quickstart/wizard/QuickStartWizard"),
+	{ ssr: false, loading: () => null },
+);
+
+const CampaignSelectorModal = dynamic(
+	() =>
+		import(
+			"@/components/reusables/modals/user/campaign/CampaignSelectorModal"
+		).then((mod) => mod.CampaignSelectorModal),
+	{ ssr: false, loading: () => null },
+);
+
+const AICampaignGenerator = dynamic(
+	() =>
+		import(
+			"@/components/reusables/modals/user/campaign/AICampaignGenerator"
+		).then((mod) => mod.AICampaignGenerator),
+	{ ssr: false, loading: () => null },
+);
+
+const SavedCampaignTemplatesModal = dynamic(
+	() =>
+		import(
+			"@/components/reusables/modals/user/campaign/SavedCampaignTemplatesModal"
+		).then((mod) => mod.default),
+	{ ssr: false, loading: () => null },
+);
+
+const AIWorkflowGenerator = dynamic(
+	() =>
+		import(
+			"@/components/reusables/modals/user/workflow/AIWorkflowGenerator"
+		).then((mod) => mod.AIWorkflowGenerator),
+	{ ssr: false, loading: () => null },
+);
+
+const WorkflowExportModal = dynamic(
+	() =>
+		import(
+			"@/components/reusables/modals/user/workflow/WorkflowExportModal"
+		).then((mod) => mod.WorkflowExportModal),
+	{ ssr: false, loading: () => null },
+);
+
+const SavedWorkflowsModal = dynamic(
+	() =>
+		import(
+			"@/components/reusables/modals/user/workflow/SavedWorkflowsModal"
+		).then((mod) => mod.default),
+	{ ssr: false, loading: () => null },
+);
+
+const LookalikeConfigModal = dynamic(
+	() =>
+		import(
+			"@/components/reusables/modals/user/lookalike/LookalikeConfigModal"
+		).then((mod) => mod.LookalikeConfigModal),
+	{ ssr: false, loading: () => null },
+);
+
+const LookalikeResultsModal = dynamic(
+	() =>
+		import(
+			"@/components/reusables/modals/user/lookalike/LookalikeResultsModal"
+		).then((mod) => mod.LookalikeResultsModal),
+	{ ssr: false, loading: () => null },
+);
+
+const AISavedSearchGenerator = dynamic(
+	() =>
+		import(
+			"@/components/reusables/modals/user/lookalike/AISavedSearchGenerator"
+		).then((mod) => mod.AISavedSearchGenerator),
+	{ ssr: false, loading: () => null },
+);
+
+const LaunchOverlay = dynamic(
+	() =>
+		import("@/components/quickstart/launch/LaunchOverlay").then(
+			(mod) => mod.default,
+		),
+	{ ssr: false, loading: () => null },
+);
 
 let lastAppliedTemplateIdGlobal: QuickStartTemplateId | null = null;
 

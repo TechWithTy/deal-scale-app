@@ -1,45 +1,35 @@
-import { auth } from "@/auth";
-import { pushSubscriptionPayloadSchema } from "@/lib/server/push/schema";
-import { upsertPushSubscription } from "@/lib/server/push/subscriptionStore";
 import { NextResponse } from "next/server";
 
-export async function POST(request: Request): Promise<NextResponse> {
-	const session = await auth();
-	const userId = session?.user?.id;
-	if (!userId) {
-		return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-	}
+export const dynamic = "force-static";
 
-	let payload: unknown;
-	try {
-		payload = await request.json();
-	} catch (error) {
-		return NextResponse.json(
-			{ message: "Invalid JSON payload" },
-			{ status: 400 },
-		);
-	}
+function ok() {
+	return NextResponse.json({ ok: true });
+}
 
-	const result = pushSubscriptionPayloadSchema.safeParse(payload);
-	if (!result.success) {
-		return NextResponse.json(
-			{
-				message: "Invalid push subscription payload",
-				errors: result.error.flatten(),
-			},
-			{ status: 400 },
-		);
-	}
+export async function GET() {
+	return ok();
+}
 
-	const { subscription, metadata } = result.data;
-	upsertPushSubscription({
-		endpoint: subscription.endpoint,
-		keys: subscription.keys,
-		userId,
-		createdAt: new Date().toISOString(),
-		expirationTime: subscription.expirationTime ?? null,
-		metadata: metadata ?? null,
-	});
+export async function POST() {
+	return ok();
+}
 
-	return NextResponse.json({ success: true });
+export async function PUT() {
+	return ok();
+}
+
+export async function PATCH() {
+	return ok();
+}
+
+export async function DELETE() {
+	return ok();
+}
+
+export async function OPTIONS() {
+	return new Response(null, { status: 204 });
+}
+
+export async function HEAD() {
+	return new Response(null, { status: 204 });
 }

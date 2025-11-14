@@ -1,14 +1,14 @@
 
+# ! Do NOT add Husky shim/shebang lines here; PowerShell hooks will break.
+
+# Ensure commit scopes stay in sync with app routes before every commit.
+pnpm run sync:commit-scopes
 
 # Run test suite with coverage. Continue even if it fails.
-if ! pnpm run test:coverage; then
-	echo "[pre-commit] Coverage run failed; continuing without blocking commit."
-fi
+pnpm run test:coverage || echo "[pre-commit] Coverage run failed; continuing without blocking commit."
 
 # Execute security scans (Trivy + Opengrep + OWASP). Continue even if they fail.
-if ! pnpm run security:scan; then
-	echo "[pre-commit] Security scan failed; continuing without blocking commit."
-fi
+pnpm run security:scan || echo "[pre-commit] Security scan failed; continuing without blocking commit."
 
 # Archive coverage, security, and Lighthouse reports into timestamped history folders.
 pnpm run archive:coverage
