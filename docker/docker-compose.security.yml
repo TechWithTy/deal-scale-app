@@ -1,0 +1,24 @@
+services:
+  zap-baseline:
+    image: ghcr.io/zaproxy/zaproxy:stable
+    pull_policy: if_not_present
+    environment:
+      # Allows overriding from host shell: OWASP_TARGET or OWASP_BASELINE_ARGS
+      ZAP_BASELINE_TARGET: ${OWASP_TARGET:-http://host.docker.internal:3000}
+      ZAP_BASELINE_REPORT_HTML: /zap/wrk/latest-report.html
+      ZAP_BASELINE_REPORT_JSON: /zap/wrk/zap_out.json
+      ZAP_BASELINE_EXTRA_ARGS: ${OWASP_BASELINE_ARGS:-}
+    entrypoint:
+      - /bin/sh
+      - -c
+      - >
+        zap-baseline.py
+        -t "$${ZAP_BASELINE_TARGET}"
+        -r "$${ZAP_BASELINE_REPORT_HTML}"
+        -J "$${ZAP_BASELINE_REPORT_JSON}"
+        $${ZAP_BASELINE_EXTRA_ARGS}
+    volumes:
+      - ./reports/security/owasp:/zap/wrk
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
