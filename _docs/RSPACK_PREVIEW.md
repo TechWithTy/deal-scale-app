@@ -64,6 +64,7 @@ When you add new shared components, import them inside `PreviewApp` or create ne
 
 - `pnpm run dev:rspack` – Hot-reload preview server on port 5175.
 - `pnpm run build:rspack` – Production-style Rspack build in `dist/rspack-preview`.
+- `pnpm run test:rspack` – Runs the standard Vitest suite after seeding `.env.preview.local` with the `rspack:test` flag, so component tests pick up the same preview settings.
 - `pnpm run dev:vite` / `pnpm run build:vite` – Same preview surface powered by Vite if you need to compare bundler behavior.
 
 Keep this guide updated whenever we change the preview architecture (e.g., new shims, additional aliases, or different entrypoints).

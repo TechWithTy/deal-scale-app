@@ -1,6 +1,7 @@
 import path from "node:path";
 import { defineConfig } from "@rsbuild/core";
 import { pluginReact } from "@rsbuild/plugin-react";
+import { pluginRsdoctor } from "@rsdoctor/plugin";
 
 const projectRoot = path.resolve(__dirname, "../../");
 const srcDir = path.resolve(projectRoot, "src");
@@ -13,11 +14,16 @@ const appDir = path.resolve(projectRoot, "app");
 
 export default defineConfig({
 	root: __dirname,
-	plugins: [pluginReact()],
+	plugins: [
+		pluginReact(),
+		pluginRsdoctor(),
+	],
 	source: {
 		entry: {
 			main: "./src/main.tsx",
 		},
+	},
+	resolve: {
 		alias: {
 			"@": srcDir,
 			"@app": appDir,
@@ -39,6 +45,7 @@ export default defineConfig({
 		open: true,
 	},
 	output: {
+		cleanDistPath: true,
 		distPath: {
 			root: path.resolve(projectRoot, "dist/rspack-preview"),
 		},

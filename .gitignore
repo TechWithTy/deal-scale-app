@@ -64,3 +64,6 @@ node_modules/
 reports/lighthouse/*.headers.json
 reports/lighthouse/.auth-headers.json
 reports/tests/coverage/
+
+# Rsdoctor output
+.rsdoctor/
