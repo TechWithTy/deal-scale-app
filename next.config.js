@@ -174,6 +174,24 @@ const nextConfig = {
 			),
     };
 
+    // If Tailwind's transitive dep is missing, alias tailwindcss to a no-op shim
+    const forceNoTailwind = process.env.NEXT_DISABLE_TAILWIND === "1";
+    let needAliasTailwind = forceNoTailwind;
+    if (!needAliasTailwind) {
+      try {
+        require.resolve("@alloc/quick-lru");
+        require.resolve("tailwindcss");
+      } catch (_) {
+        needAliasTailwind = true;
+      }
+    }
+    if (needAliasTailwind) {
+      config.resolve.alias["tailwindcss"] = path.resolve(
+        __dirname,
+        "shims/tailwindcss-shim.cjs",
+      );
+    }
+
     // If '@auth/core' cannot be resolved or auth is disabled, alias to shims
     const forceAuthShim = process.env.NEXT_DISABLE_AUTH === "1";
     let needAliasAuthCore = forceAuthShim;
@@ -193,6 +211,15 @@ const nextConfig = {
       config.resolve.alias["@auth/core/errors"] = path.resolve(
         __dirname,
         "shims/auth-core-errors-shim.ts",
+      );
+      // Also alias next-auth packages to shims when core is unavailable
+      config.resolve.alias["next-auth"] = path.resolve(
+        __dirname,
+        "shims/next-auth-shim.ts",
+      );
+      config.resolve.alias["next-auth/react"] = path.resolve(
+        __dirname,
+        "shims/next-auth-react-shim.tsx",
       );
     }
 

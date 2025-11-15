@@ -9,10 +9,15 @@ export async function customFetch(..._args: any[]): Promise<any> {
   return {};
 }
 
+export function createActionURL(..._args: any[]): URL {
+  return new URL('http://localhost/');
+}
+
 export const errors = {} as Record<string, unknown>;
 
 export default {
   Auth,
   customFetch,
+  createActionURL,
   errors,
 } as unknown as Record<string, unknown>;
