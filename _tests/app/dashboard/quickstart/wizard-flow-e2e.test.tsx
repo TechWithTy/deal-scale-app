@@ -3,7 +3,6 @@ import {
 	act,
 	cleanup,
 	fireEvent,
-	render,
 	screen,
 	waitFor,
 	within,
@@ -19,6 +18,7 @@ import { useQuickStartWizardDataStore } from "@/lib/stores/quickstartWizardData"
 import { useModalStore } from "@/lib/stores/dashboard";
 import { useLeadListStore } from "@/lib/stores/leadList";
 import type { ReadonlyURLSearchParams } from "next/navigation";
+import { renderWithNuqs } from "./testUtils";
 
 (globalThis as Record<string, unknown>).React = React;
 (globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true;
@@ -73,12 +73,14 @@ vi.mock("@/components/quickstart/useBulkCsvUpload", () => ({
 }));
 
 // Mock toast notifications
-const toastMock = {
-	success: vi.fn(),
-	error: vi.fn(),
-	loading: vi.fn(),
-	dismiss: vi.fn(),
-};
+const { toastMock } = vi.hoisted(() => ({
+	toastMock: {
+		success: vi.fn(),
+		error: vi.fn(),
+		loading: vi.fn(),
+		dismiss: vi.fn(),
+	},
+}));
 
 vi.mock("sonner", () => ({
 	toast: toastMock,
@@ -143,7 +145,7 @@ describe("Quick Start Wizard Flow E2E", () => {
 
 	it("should complete full wizard flow: persona → goal → summary → campaign → launch → webhooks", async () => {
 		// Render the Quick Start page
-		render(<QuickStartPage />);
+		renderWithNuqs(<QuickStartPage />);
 
 		// Step 1: Open the wizard (auto-opens if user hasn't seen it)
 		await waitFor(() => {
@@ -228,7 +230,7 @@ describe("Quick Start Wizard Flow E2E", () => {
 	});
 
 	it("should open campaign modal and navigate through all steps", async () => {
-		render(<QuickStartPage />);
+		renderWithNuqs(<QuickStartPage />);
 
 		// Open campaign modal directly via state
 		act(() => {
@@ -246,7 +248,7 @@ describe("Quick Start Wizard Flow E2E", () => {
 	});
 
 	it("should handle wizard → campaign modal → launch → webhooks flow", async () => {
-		render(<QuickStartPage />);
+		renderWithNuqs(<QuickStartPage />);
 
 		// Step 1: Complete wizard
 		await waitFor(() => {
@@ -310,7 +312,7 @@ describe("Quick Start Wizard Flow E2E", () => {
 			renderCount++;
 		});
 
-		render(<QuickStartPage />);
+		renderWithNuqs(<QuickStartPage />);
 
 		// Open campaign modal programmatically
 		act(() => {
@@ -355,7 +357,7 @@ describe("Quick Start Wizard Flow E2E", () => {
 	});
 
 	it("should defer webhook modal opening after campaign launch", async () => {
-		render(<QuickStartPage />);
+		renderWithNuqs(<QuickStartPage />);
 
 		// Set up campaign state
 		act(() => {
@@ -383,7 +385,7 @@ describe("Quick Start Wizard Flow E2E", () => {
 	it("should reset campaign store after modal close without infinite loops", async () => {
 		const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
-		render(<QuickStartPage />);
+		renderWithNuqs(<QuickStartPage />);
 
 		// Set up campaign state
 		act(() => {
@@ -418,7 +420,7 @@ describe("Quick Start Wizard Flow E2E", () => {
 	});
 
 	it("should handle complete flow: wizard → import leads → campaign → launch", async () => {
-		render(<QuickStartPage />);
+		renderWithNuqs(<QuickStartPage />);
 
 		// Step 1: Open and complete wizard
 		await waitFor(() => {

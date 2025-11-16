@@ -628,14 +628,27 @@ export default function FloatingMusicWidget(): React.ReactNode {
 				dragHandleClassName="floating-music-widget__drag-area"
 				className="pointer-events-auto"
 			>
-				<div className="pointer-events-auto flex h-full w-full flex-col overflow-hidden rounded-xl border border-primary/40 bg-background shadow-lg backdrop-blur">
-					<div className="floating-music-widget__drag-area flex items-center justify-between bg-primary/10 px-3 py-2 text-xs uppercase tracking-wide">
+				<div className="pointer-events-auto relative flex h-full w-full flex-col overflow-hidden rounded-xl border border-primary/40 bg-background shadow-lg backdrop-blur">
+					<button
+						type="button"
+						onClick={handleClose}
+						className="floating-music-widget__close absolute right-1 top-1 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-destructive text-destructive-foreground shadow-md transition hover:bg-destructive/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive/50 sm:right-2 sm:top-2"
+						aria-label="Close focus widget"
+						onPointerDown={handleControlPointerDown}
+						onMouseDown={handleControlMouseDown}
+					>
+						<X className="h-3.5 w-3.5" aria-hidden />
+					</button>
+					<div className="floating-music-widget__drag-area flex items-center justify-between bg-primary/10 px-3 pr-16 py-2 text-xs uppercase tracking-wide">
 						<div className="flex items-center gap-3">
-							<span className="font-semibold text-primary">Focus</span>
+							<div className="flex items-center gap-2">
+								<span className="font-semibold text-primary">Focus</span>
+								<GripVertical className="h-4 w-4 text-primary/60" aria-hidden />
+							</div>
 							<div className="flex flex-1 min-w-0 justify-center sm:justify-start">
 								<div
 									ref={tabsContainerRef}
-									className="floating-music-widget__tabs relative flex w-[210px] flex-none overflow-x-auto whitespace-nowrap rounded-full bg-primary/10 p-0.5 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden [-webkit-overflow-scrolling:touch] [touch-action:pan-x] [overscroll-behavior-inline:contain] sm:w-[228px]"
+									className="floating-music-widget__tabs relative inline-flex w-full max-w-[208px] flex-none items-center overflow-x-auto whitespace-nowrap rounded-full bg-primary/10 p-0.5 self-center [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden [-webkit-overflow-scrolling:touch] [touch-action:pan-x] [overscroll-behavior-inline:contain] sm:max-w-[240px] sm:self-start"
 									onPointerDown={handleTabsPointerDown}
 									onPointerMove={handleTabsPointerMove}
 									onPointerUp={handleTabsPointerUp}
@@ -701,7 +714,7 @@ export default function FloatingMusicWidget(): React.ReactNode {
 								</div>
 							</div>
 						</div>
-						<div className="flex items-center gap-2">
+						<div className="flex items-center gap-2 pr-10">
 							<button
 								type="button"
 								onClick={handleMinimize}
@@ -730,22 +743,10 @@ export default function FloatingMusicWidget(): React.ReactNode {
 							>
 								<Maximize2 className="h-3.5 w-3.5" aria-hidden />
 							</button>
-							<button
-								type="button"
-								onClick={handleClose}
-								className={controlButtonClasses(false, "destructive")}
-								aria-label="Close focus widget"
-								aria-pressed={false}
-								onPointerDown={handleControlPointerDown}
-								onMouseDown={handleControlMouseDown}
-							>
-								<X className="h-3.5 w-3.5" aria-hidden />
-							</button>
-							<GripVertical className="h-4 w-4 text-primary/60" aria-hidden />
 						</div>
 					</div>
 					{isMinimized ? null : (
-						<div className="flex-1">
+						<div className="flex-1 min-h-0 overflow-hidden">
 							{mode === "music" ? (
 								iframeStatus === "error" ? (
 									<SpotifyBlockedNotice playlistId={playlistId} />

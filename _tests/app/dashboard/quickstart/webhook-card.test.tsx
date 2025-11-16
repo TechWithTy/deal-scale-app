@@ -1,5 +1,5 @@
 import React from "react";
-import { fireEvent, render, screen, within } from "@testing-library/react";
+import { fireEvent, screen, within } from "@testing-library/react";
 import { act } from "react-dom/test-utils";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -8,6 +8,7 @@ import { useModalStore } from "@/lib/stores/dashboard";
 import { useQuickStartWizardStore } from "@/lib/stores/quickstartWizard";
 import { useQuickStartWizardDataStore } from "@/lib/stores/quickstartWizardData";
 import { useCampaignCreationStore } from "@/lib/stores/campaignCreation";
+import { renderWithNuqs } from "./testUtils";
 
 (globalThis as Record<string, unknown>).React = React;
 (globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true;
@@ -55,7 +56,7 @@ describe("QuickStartPage webhook setup card", () => {
         });
 
         it("renders a card for webhook and feed setup", () => {
-                render(<QuickStartPage />);
+                renderWithNuqs(<QuickStartPage />);
 
                 expect(
                         screen.getByRole("heading", {
@@ -78,7 +79,7 @@ describe("QuickStartPage webhook setup card", () => {
                         } as any);
                 });
 
-                render(<QuickStartPage />);
+                renderWithNuqs(<QuickStartPage />);
 
                 const [incomingQuickAction] = screen.getAllByRole("button", {
                         name: /setup incoming/i,

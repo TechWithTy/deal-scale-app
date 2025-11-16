@@ -1,11 +1,12 @@
 import React, { act } from "react";
-import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import QuickStartPage from "@/app/dashboard/page";
 import { useCampaignCreationStore } from "@/lib/stores/campaignCreation";
 import { useQuickStartWizardDataStore } from "@/lib/stores/quickstartWizardData";
 import { useQuickStartWizardStore } from "@/lib/stores/quickstartWizard";
+import { renderWithNuqs } from "./testUtils";
 
 (globalThis as Record<string, unknown>).React = React;
 (globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true;
@@ -85,7 +86,7 @@ describe("QuickStart wizard deferred actions", () => {
         });
 
         it("labels the summary CTA as 'Close wizard' when no follow-up action is queued", () => {
-                render(<QuickStartPage />);
+                renderWithNuqs(<QuickStartPage />);
 
                 act(() => {
                         useQuickStartWizardStore.getState().open({
@@ -109,7 +110,7 @@ describe("QuickStart wizard deferred actions", () => {
         });
 
         it("defers wizard card actions until the plan is completed", () => {
-                render(<QuickStartPage />);
+                renderWithNuqs(<QuickStartPage />);
 
                 const [downloadExtensionButton] = screen.getAllByRole("button", {
                         name: /download extension/i,
@@ -136,7 +137,7 @@ describe("QuickStart wizard deferred actions", () => {
         });
 
         it("cancels pending wizard actions when the wizard is closed", () => {
-                render(<QuickStartPage />);
+                renderWithNuqs(<QuickStartPage />);
 
                 const [downloadExtensionButton] = screen.getAllByRole("button", {
                         name: /download extension/i,
@@ -164,7 +165,7 @@ describe("QuickStart wizard deferred actions", () => {
                         .spyOn(HTMLInputElement.prototype, "click")
                         .mockImplementation(() => {});
 
-                render(<QuickStartPage />);
+                renderWithNuqs(<QuickStartPage />);
 
                 const [launchGuidedButton] = screen.getAllByRole("button", {
                         name: /launch guided setup/i,

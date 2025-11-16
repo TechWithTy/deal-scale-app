@@ -59,6 +59,8 @@ export interface IntentSignal {
 		pageUrl?: string;
 		/** Page title (for website signals) */
 		pageTitle?: string;
+		/** Time spent on page in seconds (for web activity signals) */
+		timeOnPage?: number;
 		/** Call duration in seconds (for call signals) */
 		callDuration?: number;
 		/** Document name (for download signals) */

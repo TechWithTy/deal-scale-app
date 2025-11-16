@@ -10,6 +10,7 @@ import { useQuickStartWizardStore } from "@/lib/stores/quickstartWizard";
 import { useQuickStartWizardExperienceStore } from "@/lib/stores/quickstartWizardExperience";
 import { useUserProfileStore } from "@/lib/stores/user/userProfile";
 import LeadSourceSelector from "@/components/quickstart/wizard/steps/lead/LeadSourceSelector";
+import { renderWithNuqs } from "./testUtils";
 
 (globalThis as Record<string, unknown>).React = React;
 (globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true;
@@ -153,7 +154,7 @@ describe("QuickStartPage wizard modal", () => {
         });
 
         it("renders quickstart cards from configuration", async () => {
-                render(<QuickStartPage />);
+		renderWithNuqs(<QuickStartPage />);
 
                 act(() => {
                         useQuickStartWizardStore.getState().reset();
@@ -180,7 +181,7 @@ describe("QuickStartPage wizard modal", () => {
         });
 
         it("renders quickstart content inside the background collider", async () => {
-                render(<QuickStartPage />);
+		renderWithNuqs(<QuickStartPage />);
 
                 act(() => {
                         useQuickStartWizardStore.getState().reset();
@@ -201,7 +202,7 @@ describe("QuickStartPage wizard modal", () => {
         });
 
         it("opens the wizard on the persona step when the guided card is selected", async () => {
-                render(<QuickStartPage />);
+		renderWithNuqs(<QuickStartPage />);
 
                 act(() => {
                         useQuickStartWizardStore.getState().reset();
@@ -233,7 +234,7 @@ describe("QuickStartPage wizard modal", () => {
         });
 
         it("applies presets and generates a summary plan when launched from a card", async () => {
-                render(<QuickStartPage />);
+		renderWithNuqs(<QuickStartPage />);
 
                 act(() => {
                         useQuickStartWizardStore.getState().reset();
@@ -272,7 +273,7 @@ describe("QuickStartPage wizard modal", () => {
         });
 
         it("reapplies the selected template before launching quickstart actions", async () => {
-                render(<QuickStartPage />);
+		renderWithNuqs(<QuickStartPage />);
 
                 act(() => {
                         useQuickStartWizardStore.getState().reset();
@@ -303,7 +304,7 @@ describe("QuickStartPage wizard modal", () => {
         });
 
         it("restores template defaults when reopening the campaign modal", async () => {
-                render(<QuickStartPage />);
+		renderWithNuqs(<QuickStartPage />);
 
                 act(() => {
                         useQuickStartWizardStore.getState().reset();
@@ -370,7 +371,7 @@ describe("QuickStartPage wizard modal", () => {
         });
 
         it("lets users choose persona and goal before showing a summary", async () => {
-                render(<QuickStartPage />);
+		renderWithNuqs(<QuickStartPage />);
 
                 act(() => {
                         useQuickStartWizardStore.getState().reset();
@@ -422,7 +423,7 @@ describe("QuickStartPage wizard modal", () => {
         });
 
         it("supports lender personas with an automation-focused goal", async () => {
-                render(<QuickStartPage />);
+		renderWithNuqs(<QuickStartPage />);
 
                 act(() => {
                         useQuickStartWizardStore.getState().reset();
@@ -481,7 +482,7 @@ describe("QuickStartPage wizard modal", () => {
                         useQuickStartWizardExperienceStore.getState().reset();
                 });
 
-                render(<QuickStartPage />);
+		renderWithNuqs(<QuickStartPage />);
 
                 await waitFor(() => {
                         expect(useQuickStartWizardStore.getState().isOpen).toBe(true);
@@ -493,7 +494,7 @@ describe("QuickStartPage wizard modal", () => {
                         useQuickStartWizardExperienceStore.getState().reset();
                 });
 
-                const { unmount } = render(<QuickStartPage />);
+		const { unmount } = renderWithNuqs(<QuickStartPage />);
 
                 const closeButton = screen.getByRole("button", { name: /close wizard/i });
 
@@ -507,7 +508,7 @@ describe("QuickStartPage wizard modal", () => {
 
                 unmount();
 
-                render(<QuickStartPage />);
+		renderWithNuqs(<QuickStartPage />);
 
                 await waitFor(() => {
                         expect(useQuickStartWizardStore.getState().isOpen).toBe(false);
@@ -515,7 +516,7 @@ describe("QuickStartPage wizard modal", () => {
         });
 
         it("resets wizard state when closed", async () => {
-                render(<QuickStartPage />);
+		renderWithNuqs(<QuickStartPage />);
 
                 act(() => {
                         useQuickStartWizardStore.getState().reset();

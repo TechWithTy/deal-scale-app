@@ -34,7 +34,6 @@ import { useUserPromptsStore } from "@/lib/stores/user/prompts";
 import { useState, useMemo, useCallback, memo, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { Separator } from "@/components/ui/separator";
-import { FixedSizeList as VirtualList } from "react-window";
 import {
 	Tooltip,
 	TooltipContent,

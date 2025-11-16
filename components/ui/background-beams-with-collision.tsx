@@ -14,6 +14,7 @@ export const BackgroundBeamsWithCollision = ({
 	className,
 	...rest
 }: BackgroundBeamsWithCollisionProps) => {
+	const isBrowser = typeof window !== "undefined";
 	const floorRef = useRef<HTMLDivElement>(null);
 	const parentRef = useRef<HTMLDivElement>(null);
 	const contentRef = useRef<HTMLDivElement>(null);
@@ -46,6 +47,7 @@ export const BackgroundBeamsWithCollision = ({
 	};
 
 	useEffect(() => {
+		if (!isBrowser) return;
 		if (!contentRef.current) {
 			return;
 		}
@@ -135,6 +137,20 @@ export const BackgroundBeamsWithCollision = ({
 		},
 	];
 
+	if (!isBrowser) {
+		return (
+			<div
+				className={cn(
+					"relative flex w-full items-center justify-center overflow-hidden",
+					className,
+				)}
+				{...rest}
+			>
+				<div className="relative z-10 w-full">{children}</div>
+			</div>
+		);
+	}
+
 	return (
 		<div
 			ref={parentRef}
@@ -213,6 +229,17 @@ const CollisionMechanism = React.forwardRef<
 		const [beamKey, setBeamKey] = useState(0);
 		const [cycleCollisionDetected, setCycleCollisionDetected] = useState(false);
 
+		const timeoutsRef = useRef<Array<ReturnType<typeof setTimeout>>>([]);
+
+		useEffect(() => {
+			return () => {
+				for (const id of timeoutsRef.current) {
+					clearTimeout(id);
+				}
+				timeoutsRef.current = [];
+			};
+		}, []);
+
 		useEffect(() => {
 			if (isPaused) return; // Don't check collision when paused
 
@@ -266,14 +293,22 @@ const CollisionMechanism = React.forwardRef<
 
 		useEffect(() => {
 			if (collision.detected && collision.coordinates) {
-				setTimeout(() => {
+				const resetCollision = setTimeout(() => {
 					setCollision({ detected: false, coordinates: null });
 					setCycleCollisionDetected(false);
 				}, 2000);
 
-				setTimeout(() => {
+				const restartBeam = setTimeout(() => {
 					setBeamKey((prevKey) => prevKey + 1);
 				}, 2000);
+
+				timeoutsRef.current.push(resetCollision, restartBeam);
+			} else if (!collision.detected) {
+				// Clear pending timeouts if collision is reset
+				for (const id of timeoutsRef.current) {
+					clearTimeout(id);
+				}
+				timeoutsRef.current = [];
 			}
 		}, [collision]);
 
