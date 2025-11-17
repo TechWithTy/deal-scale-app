@@ -6,6 +6,7 @@ const VITEST_PATTERNS = [
 	"tests/pwa/**/*.spec.ts",
 	"lib/stores/user/_tests/critical/**/*.test.ts",
 	"lib/utils/**/*.critical.test.ts",
+	"_tests/app/dashboard/quickstart/**/*.test.tsx",
 ];
 
 // Helper function to find test files matching a pattern
@@ -87,7 +88,7 @@ const testFiles = VITEST_PATTERNS.flatMap((pattern) => findTestFiles(pattern))
 // If no test files found, exit successfully (passWithNoTests behavior)
 if (testFiles.length === 0) {
 	const noTestsMessage =
-		" critical suites were not detected. Add tests under tests/pwa/, lib/stores/user/_tests/critical/, or lib/utils/**/*.critical.test.ts to enable the modular pre-commit test flow. See docs/CI-CD_SETUP.md for details.\n";
+		" critical suites were not detected. Add tests under tests/pwa/, lib/stores/user/_tests/critical/, lib/utils/**/*.critical.test.ts, or _tests/app/dashboard/quickstart/ to enable the modular pre-commit test flow. See docs/CI-CD_SETUP.md for details.\n";
 	process.stdout.write(
 		`\n[critical-tests] No critical tests ran for this workspace;${noTestsMessage}`,
 	);
@@ -133,7 +134,7 @@ const noTestsDetected =
 
 if (noTestsDetected) {
 	const noTestsMessage =
-		" critical suites were not detected. Add tests under tests/pwa/, lib/stores/user/_tests/critical/, or lib/utils/**/*.critical.test.ts to enable the modular pre-commit test flow. See docs/CI-CD_SETUP.md for details.\n";
+		" critical suites were not detected. Add tests under tests/pwa/, lib/stores/user/_tests/critical/, lib/utils/**/*.critical.test.ts, or _tests/app/dashboard/quickstart/ to enable the modular pre-commit test flow. See docs/CI-CD_SETUP.md for details.\n";
 	process.stdout.write(
 		`\n[critical-tests] No critical tests ran for this workspace;${noTestsMessage}`,
 	);
