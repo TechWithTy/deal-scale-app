@@ -14,12 +14,17 @@ export const BackgroundBeamsWithCollision = ({
 	className,
 	...rest
 }: BackgroundBeamsWithCollisionProps) => {
-	const isBrowser = typeof window !== "undefined";
 	const floorRef = useRef<HTMLDivElement>(null);
 	const parentRef = useRef<HTMLDivElement>(null);
 	const contentRef = useRef<HTMLDivElement>(null);
 	const colliderTargetsRef = useRef<HTMLElement[]>([]);
 	const [isPaused, setIsPaused] = useState(false);
+	const [isMounted, setIsMounted] = useState(false);
+
+	// Ensure client-side hydration matches server render
+	useEffect(() => {
+		setIsMounted(true);
+	}, []);
 
 	const handleMouseOver = (event: React.MouseEvent<HTMLDivElement>) => {
 		const target = event.target as HTMLElement;
@@ -47,7 +52,7 @@ export const BackgroundBeamsWithCollision = ({
 	};
 
 	useEffect(() => {
-		if (!isBrowser) return;
+		if (!isMounted) return;
 		if (!contentRef.current) {
 			return;
 		}
@@ -71,7 +76,7 @@ export const BackgroundBeamsWithCollision = ({
 		return () => {
 			observer.disconnect();
 		};
-	}, [children]);
+	}, [children, isMounted]);
 
 	const getCollisionRects = useCallback((): DOMRect[] => {
 		const rects: DOMRect[] = [];
@@ -137,20 +142,8 @@ export const BackgroundBeamsWithCollision = ({
 		},
 	];
 
-	if (!isBrowser) {
-		return (
-			<div
-				className={cn(
-					"relative flex w-full items-center justify-center overflow-hidden",
-					className,
-				)}
-				{...rest}
-			>
-				<div className="relative z-10 w-full">{children}</div>
-			</div>
-		);
-	}
-
+	// Render the same structure on server and client to prevent hydration mismatch
+	// Only add interactive features after mount
 	return (
 		<div
 			ref={parentRef}
@@ -158,24 +151,25 @@ export const BackgroundBeamsWithCollision = ({
 				"relative flex w-full items-center justify-center overflow-hidden",
 				className,
 			)}
-			onMouseOver={handleMouseOver}
-			onMouseLeave={handleMouseLeave}
+			onMouseOver={isMounted ? handleMouseOver : undefined}
+			onMouseLeave={isMounted ? handleMouseLeave : undefined}
 			{...rest}
 		>
 			{/* Base layers: grid background + soft beams */}
 			<GridBackground />
-			<SoftBeams />
+			{isMounted && <SoftBeams />}
 
-			{/* Beams layer */}
-			{beams.map((beam) => (
-				<CollisionMechanism
-					key={`${beam.initialX}-beam-idx`}
-					beamOptions={beam}
-					getCollisionRects={getCollisionRects}
-					parentRef={parentRef}
-					isPaused={isPaused}
-				/>
-			))}
+			{/* Beams layer - only render after mount to prevent hydration issues */}
+			{isMounted &&
+				beams.map((beam) => (
+					<CollisionMechanism
+						key={`${beam.initialX}-beam-idx`}
+						beamOptions={beam}
+						getCollisionRects={getCollisionRects}
+						parentRef={parentRef}
+						isPaused={isPaused}
+					/>
+				))}
 
 			{/* Content layer with higher z-index */}
 			<div ref={contentRef} className="relative z-10 w-full">
