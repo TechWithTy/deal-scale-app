@@ -1,9 +1,16 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { AlertTriangle, Home, RefreshCcw } from "lucide-react";
+import {
+	AlertTriangle,
+	Bug,
+	ClipboardCopy,
+	Home,
+	RefreshCcw,
+} from "lucide-react";
 import Link from "next/link";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 /**
  * Error Boundary Component
@@ -18,9 +25,44 @@ export default function Error({
 	error: Error & { digest?: string };
 	reset: () => void;
 }) {
+	const [browserLogs, setBrowserLogs] = useState<string>("");
+
 	useEffect(() => {
 		// Log error to error tracking service
 		console.error("Application error:", error);
+
+		// Collect browser information and error details
+		const collectErrorInfo = () => {
+			if (typeof window === "undefined") return "";
+
+			// Build comprehensive error report
+			const logContent = [
+				"=== Error Report ===",
+				`Timestamp: ${new Date().toISOString()}`,
+				`URL: ${window.location.href}`,
+				`User Agent: ${navigator.userAgent}`,
+				`Viewport: ${window.innerWidth}x${window.innerHeight}`,
+				`Screen: ${screen.width}x${screen.height}`,
+				`Language: ${navigator.language}`,
+				`Platform: ${navigator.platform}`,
+				"",
+				"=== Error Details ===",
+				`Message: ${error.message}`,
+				error.digest ? `Error ID: ${error.digest}` : "",
+				error.stack ? `Stack Trace:\n${error.stack}` : "",
+				"",
+				"=== Browser Information ===",
+				`Cookies Enabled: ${navigator.cookieEnabled}`,
+				`Online: ${navigator.onLine}`,
+				`Referrer: ${document.referrer || "N/A"}`,
+			]
+				.filter(Boolean)
+				.join("\n");
+
+			setBrowserLogs(logContent);
+		};
+
+		collectErrorInfo();
 
 		// TODO: Send to error tracking service (Sentry, PostHog, etc.)
 		// if (typeof window !== 'undefined' && window.posthog) {
@@ -31,6 +73,30 @@ export default function Error({
 		//   });
 		// }
 	}, [error]);
+
+	const handleCopyLogs = async () => {
+		try {
+			const logContent =
+				browserLogs ||
+				"Error information not available. Please check the browser console for additional details.";
+			await navigator.clipboard.writeText(logContent);
+			toast.success("Error details copied to clipboard");
+		} catch (err) {
+			console.error("Failed to copy logs:", err);
+			toast.error("Failed to copy to clipboard");
+		}
+	};
+
+	const handleReportIssue = () => {
+		const reportContent = browserLogs || "Error information not available.";
+		const subject = encodeURIComponent(
+			`Error Report: ${error.message.substring(0, 50)}`,
+		);
+		const body = encodeURIComponent(
+			`Please describe what you were doing when this error occurred:\n\n\n\n---\n\nError Details:\n${reportContent}\n\n---\n\nNote: For additional debugging information, please check your browser's developer console (F12 or right-click > Inspect > Console tab) and include any relevant console errors or warnings.`,
+		);
+		window.location.href = `mailto:support@dealscale.app?subject=${subject}&body=${body}`;
+	};
 
 	return (
 		<html lang="en">
@@ -90,6 +156,32 @@ export default function Error({
 								</Link>
 							</Button>
 						</div>
+
+						{/* Debug Actions */}
+						<div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
+							<Button
+								onClick={handleCopyLogs}
+								variant="outline"
+								size="lg"
+								className="inline-flex items-center gap-2"
+							>
+								<ClipboardCopy className="h-5 w-5" aria-hidden="true" />
+								<span>Copy Error Details</span>
+							</Button>
+							<Button
+								onClick={handleReportIssue}
+								variant="outline"
+								size="lg"
+								className="inline-flex items-center gap-2"
+							>
+								<Bug className="h-5 w-5" aria-hidden="true" />
+								<span>Report Issue</span>
+							</Button>
+						</div>
+						<p className="mt-4 text-muted-foreground text-xs">
+							Tip: For additional debugging information, check your browser's
+							developer console (F12 or right-click → Inspect → Console)
+						</p>
 
 						{/* Support Contact */}
 						<p className="mt-8 text-muted-foreground text-sm">

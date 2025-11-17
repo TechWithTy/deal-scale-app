@@ -98,7 +98,7 @@ const QuickStartActionsGrid: FC<QuickStartActionsGridProps> = ({
 }) => {
 	const [loadingAction, setLoadingAction] = useState<string | null>(null);
 	const { personaId, goalId, selectGoal } = useQuickStartWizardDataStore();
-	const { open: openWizard } = useQuickStartWizardStore();
+	const { open: openWizard, launchWithAction } = useQuickStartWizardStore();
 	const leadListStore = useLeadListStore();
 	const campaignStore = useCampaignCreationStore();
 
@@ -184,6 +184,7 @@ const QuickStartActionsGrid: FC<QuickStartActionsGridProps> = ({
 					featureChips,
 					showBorderBeam,
 					borderBeamConfig,
+					wizardPreset,
 				}) => {
 					// For wizard card, separate persona/goal chips
 					const isWizardCard = key === "wizard";
@@ -348,7 +349,12 @@ const QuickStartActionsGrid: FC<QuickStartActionsGridProps> = ({
 														onClick={async () => {
 															setLoadingAction(actionKey);
 															try {
-																await onClick?.();
+																// If card has wizard preset, defer action until wizard completes
+																if (wizardPreset && onClick) {
+																	launchWithAction(wizardPreset, onClick);
+																} else {
+																	await onClick?.();
+																}
 															} finally {
 																// Clear loading after a brief delay
 																setTimeout(() => setLoadingAction(null), 500);

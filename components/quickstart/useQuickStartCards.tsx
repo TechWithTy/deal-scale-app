@@ -114,6 +114,8 @@ export const useQuickStartCards = ({
 				};
 			}
 
+			// Webhook actions - these are handled at the page level to check for wizard presets
+			// For now, just return the direct handler - deferral is handled in the page component
 			return {
 				...base,
 				onClick: () => onOpenWebhookModal(descriptor.stage),

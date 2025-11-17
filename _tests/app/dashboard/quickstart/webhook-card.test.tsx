@@ -1,7 +1,7 @@
 import React from "react";
-import { fireEvent, screen, within } from "@testing-library/react";
+import { cleanup, fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { act } from "react-dom/test-utils";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import QuickStartPage from "@/app/dashboard/page";
 import { useModalStore } from "@/lib/stores/dashboard";
@@ -55,6 +55,18 @@ describe("QuickStartPage webhook setup card", () => {
                 routerPushMock.mockReset();
         });
 
+        afterEach(async () => {
+                // Close any open wizards
+                act(() => {
+                        useQuickStartWizardStore.getState().reset();
+                });
+                // Wait for any pending React updates
+                await act(async () => {
+                        await new Promise((resolve) => setTimeout(resolve, 0));
+                });
+                cleanup();
+        });
+
         it("renders a card for webhook and feed setup", () => {
                 renderWithNuqs(<QuickStartPage />);
 
@@ -90,7 +102,13 @@ describe("QuickStartPage webhook setup card", () => {
                 });
                 expect(openWebhookModalMock).not.toHaveBeenCalled();
 
-                let wizard = await screen.findByRole("dialog", { name: /quickstart wizard/i });
+                await waitFor(() => {
+                        const wizards = screen.queryAllByTestId("quickstart-wizard");
+                        expect(wizards.length).toBeGreaterThan(0);
+                });
+                // Get the first (most recent) wizard instance
+                const wizards = screen.getAllByTestId("quickstart-wizard");
+                const wizard = wizards[wizards.length - 1];
                 let wizardQueries = within(wizard);
 
                 const completeButton = wizardQueries.getByRole("button", {

@@ -241,9 +241,12 @@ const CollisionMechanism = React.forwardRef<
 		}, []);
 
 		useEffect(() => {
-			if (isPaused) return; // Don't check collision when paused
+			// Guard against SSR/test environments
+			if (typeof window === "undefined" || isPaused) return;
 
 			const checkCollision = () => {
+				// Guard against test environment teardown
+				if (typeof window === "undefined") return;
 				if (!beamRef.current || !parentRef.current || cycleCollisionDetected) {
 					return;
 				}
@@ -274,14 +277,17 @@ const CollisionMechanism = React.forwardRef<
 						targetRect.bottom,
 					);
 
-					setCollision({
-						detected: true,
-						coordinates: {
-							x: clampedX - parentRect.left,
-							y: clampedY - parentRect.top,
-						},
-					});
-					setCycleCollisionDetected(true);
+					// Guard setState calls against test environment teardown
+					if (typeof window !== "undefined") {
+						setCollision({
+							detected: true,
+							coordinates: {
+								x: clampedX - parentRect.left,
+								y: clampedY - parentRect.top,
+							},
+						});
+						setCycleCollisionDetected(true);
+					}
 					break;
 				}
 			};
@@ -292,14 +298,23 @@ const CollisionMechanism = React.forwardRef<
 		}, [cycleCollisionDetected, getCollisionRects, isPaused, parentRef]);
 
 		useEffect(() => {
+			// Guard against SSR/test environments
+			if (typeof window === "undefined") return;
+
 			if (collision.detected && collision.coordinates) {
 				const resetCollision = setTimeout(() => {
-					setCollision({ detected: false, coordinates: null });
-					setCycleCollisionDetected(false);
+					// Guard setState calls against test environment teardown
+					if (typeof window !== "undefined") {
+						setCollision({ detected: false, coordinates: null });
+						setCycleCollisionDetected(false);
+					}
 				}, 2000);
 
 				const restartBeam = setTimeout(() => {
-					setBeamKey((prevKey) => prevKey + 1);
+					// Guard setState calls against test environment teardown
+					if (typeof window !== "undefined") {
+						setBeamKey((prevKey) => prevKey + 1);
+					}
 				}, 2000);
 
 				timeoutsRef.current.push(resetCollision, restartBeam);
@@ -310,6 +325,14 @@ const CollisionMechanism = React.forwardRef<
 				}
 				timeoutsRef.current = [];
 			}
+
+			return () => {
+				// Cleanup all timeouts on unmount
+				for (const id of timeoutsRef.current) {
+					clearTimeout(id);
+				}
+				timeoutsRef.current = [];
+			};
 		}, [collision]);
 
 		return (

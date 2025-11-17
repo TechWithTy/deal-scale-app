@@ -53,3 +53,5 @@ Write-Host ""
 Write-Host "✅ Ready to commit!" -ForegroundColor Green
 Write-Host "   Run: git commit -m 'your message'" -ForegroundColor Yellow
 
+
+

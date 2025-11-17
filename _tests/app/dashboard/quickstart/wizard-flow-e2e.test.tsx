@@ -149,15 +149,11 @@ describe("Quick Start Wizard Flow E2E", () => {
 
 		// Step 1: Open the wizard (auto-opens if user hasn't seen it)
 		await waitFor(() => {
-			const wizard = screen.queryByRole("dialog", {
-				name: /quickstart wizard/i,
-			});
+			const wizard = screen.queryByTestId("quickstart-wizard");
 			expect(wizard).not.toBeNull();
 		});
 
-		const wizard = screen.getByRole("dialog", {
-			name: /quickstart wizard/i,
-		});
+		const wizard = screen.getByTestId("quickstart-wizard");
 		const wizardQueries = within(wizard);
 
 		// Step 2: Select a persona
@@ -207,9 +203,7 @@ describe("Quick Start Wizard Flow E2E", () => {
 
 		// Verify wizard is closed
 		await waitFor(() => {
-			const wizard = screen.queryByRole("dialog", {
-				name: /quickstart wizard/i,
-			});
+			const wizard = screen.queryByTestId("quickstart-wizard");
 			expect(wizard).toBeNull();
 		});
 
@@ -252,8 +246,7 @@ describe("Quick Start Wizard Flow E2E", () => {
 
 		// Step 1: Complete wizard
 		await waitFor(() => {
-			const wizard = screen.queryByRole("dialog", {
-				name: /quickstart wizard/i,
+			const wizard = screen.queryByTestId("quickstart-wizard");
 			});
 			if (wizard) {
 				const wizardQueries = within(wizard);
@@ -398,7 +391,11 @@ describe("Quick Start Wizard Flow E2E", () => {
 		act(() => {
 			// This would normally be triggered by clicking close button
 			// We simulate the close handler
-			const quickStartPage = screen.getByText(/quick start/i).closest("div");
+			// Use data-testid or find page container by different means
+			// The page may not have literal "Quick Start" text anymore
+			const quickStartPage = screen.getByTestId("quickstart-page") || 
+				screen.queryByRole("main") || 
+				document.body;
 			if (quickStartPage) {
 				// Trigger store reset (simulating what happens on close)
 				vi.advanceTimersByTime(100);
@@ -430,7 +427,7 @@ describe("Quick Start Wizard Flow E2E", () => {
 			if (!wizard) {
 				// Wizard might auto-open, trigger it if needed
 				const launchWizardButton = screen.queryByRole("button", {
-					name: /launch guided setup|start wizard/i,
+					name: /guided setup|start wizard/i,
 				});
 				if (launchWizardButton) {
 					act(() => {
@@ -441,9 +438,7 @@ describe("Quick Start Wizard Flow E2E", () => {
 		});
 
 		// If wizard is open, complete it
-		const wizard = screen.queryByRole("dialog", {
-			name: /quickstart wizard/i,
-		});
+		const wizard = screen.queryByTestId("quickstart-wizard");
 
 		if (wizard) {
 			const wizardQueries = within(wizard);
@@ -484,9 +479,7 @@ describe("Quick Start Wizard Flow E2E", () => {
 		// Step 2: Verify wizard closed
 		await waitFor(
 			() => {
-				const wizard = screen.queryByRole("dialog", {
-					name: /quickstart wizard/i,
-				});
+				const wizard = screen.queryByTestId("quickstart-wizard");
 				expect(wizard).toBeNull();
 			},
 			{ timeout: 1000 },

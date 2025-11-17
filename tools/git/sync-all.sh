@@ -42,3 +42,5 @@ echo ""
 echo "✅ Ready to commit main repository with updated submodule references"
 echo "   Run: git commit -m \"your message\""
 
+
+

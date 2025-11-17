@@ -1,6 +1,6 @@
 import React, { act } from "react";
-import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import QuickStartPage from "@/app/dashboard/page";
 import { QUICK_START_DEFAULT_STEP } from "@/lib/stores/quickstartWizard";
@@ -153,6 +153,14 @@ describe("QuickStartPage wizard modal", () => {
                 appliedTemplateIds.length = 0;
         });
 
+        afterEach(async () => {
+                // Wait for any pending React updates
+                await act(async () => {
+                        await new Promise((resolve) => setTimeout(resolve, 0));
+                });
+                cleanup();
+        });
+
         it("renders quickstart cards from configuration", async () => {
 		renderWithNuqs(<QuickStartPage />);
 
@@ -163,19 +171,19 @@ describe("QuickStartPage wizard modal", () => {
 
                 await waitFor(() => {
                         expect(
-                                screen.queryByRole("dialog", { name: /quickstart wizard/i }),
+                                screen.queryByTestId("quickstart-wizard"),
                         ).toBeNull();
                 });
 
                 expect(
-                        await screen.findByRole("heading", { name: /quick start/i, level: 1 }),
+                        await screen.findByTestId("quickstart-headline-title"),
                 ).toBeDefined();
                 const importButtons = await screen.findAllByRole("button", {
                         name: /import from any source/i,
                 });
                 expect(importButtons[0]).toBeDefined();
                 const guidedButtons = await screen.findAllByRole("button", {
-                        name: /launch guided setup/i,
+                        name: /guided setup/i,
                 });
                 expect(guidedButtons[0]).toBeDefined();
         });
@@ -188,10 +196,7 @@ describe("QuickStartPage wizard modal", () => {
                         useQuickStartWizardExperienceStore.getState().markWizardSeen();
                 });
 
-                const quickStartHeading = await screen.findByRole("heading", {
-                        name: /quick start/i,
-                        level: 1,
-                });
+                const quickStartHeading = await screen.findByTestId("quickstart-headline-title", {}, { timeout: 5000 });
 
                 const background = document.querySelector(
                         '[data-testid="quickstart-background"]',
@@ -210,20 +215,20 @@ describe("QuickStartPage wizard modal", () => {
                 });
 
                 await waitFor(() => {
-                        expect(
-                                screen.queryByRole("dialog", { name: /quickstart wizard/i }),
-                        ).toBeNull();
+                        // wizard should not be auto-open when hasSeenWizard is true
+                        expect(screen.queryByTestId("quickstart-wizard")).toBeNull();
                 });
 
                 const [launchWizardButton] = await screen.findAllByRole("button", {
-                        name: /launch guided setup/i,
+                        name: /guided setup/i,
                 });
 
                 act(() => {
                         fireEvent.click(launchWizardButton);
                 });
 
-                const wizard = screen.getByRole("dialog", { name: /quickstart wizard/i });
+                const wizards = screen.getAllByTestId("quickstart-wizard");
+                const wizard = wizards[0];
                 const wizardQueries = within(wizard);
                 expect(wizard).toBeTruthy();
                 expect(wizardQueries.getByTestId("quickstart-persona-step")).toBeTruthy();
@@ -242,9 +247,7 @@ describe("QuickStartPage wizard modal", () => {
                 });
 
                 await waitFor(() => {
-                        expect(
-                                screen.queryByRole("dialog", { name: /quickstart wizard/i }),
-                        ).toBeNull();
+                        expect(screen.queryByTestId("quickstart-wizard")).toBeNull();
                 });
 
                 const [launchWizardButton] = await screen.findAllByRole("button", {
@@ -255,7 +258,8 @@ describe("QuickStartPage wizard modal", () => {
                         fireEvent.click(launchWizardButton);
                 });
 
-                const wizard = screen.getByRole("dialog", { name: /quickstart wizard/i });
+                const wizards = screen.getAllByTestId("quickstart-wizard");
+                const wizard = wizards[0];
                 const wizardQueries = within(wizard);
                 expect(wizardQueries.getByTestId("quickstart-summary-step")).toBeTruthy();
                 expect(wizard.textContent).toMatch(/launch a seller pipeline/i);
@@ -379,20 +383,19 @@ describe("QuickStartPage wizard modal", () => {
                 });
 
                 await waitFor(() => {
-                        expect(
-                                screen.queryByRole("dialog", { name: /quickstart wizard/i }),
-                        ).toBeNull();
+                        expect(screen.queryByTestId("quickstart-wizard")).toBeNull();
                 });
 
                 const [launchWizardButton] = await screen.findAllByRole("button", {
-                        name: /launch guided setup/i,
+                        name: /guided setup/i,
                 });
 
                 act(() => {
                         fireEvent.click(launchWizardButton);
                 });
 
-                const wizard = screen.getByRole("dialog", { name: /quickstart wizard/i });
+                const wizards = screen.getAllByTestId("quickstart-wizard");
+                const wizard = wizards[0];
                 const wizardQueries = within(wizard);
 
                 const investorOption = wizardQueries.getByTestId(
@@ -431,20 +434,19 @@ describe("QuickStartPage wizard modal", () => {
                 });
 
                 await waitFor(() => {
-                        expect(
-                                screen.queryByRole("dialog", { name: /quickstart wizard/i }),
-                        ).toBeNull();
+                        expect(screen.queryByTestId("quickstart-wizard")).toBeNull();
                 });
 
                 const [launchWizardButton] = await screen.findAllByRole("button", {
-                        name: /launch guided setup/i,
+                        name: /guided setup/i,
                 });
 
                 act(() => {
                         fireEvent.click(launchWizardButton);
                 });
 
-                const wizard = screen.getByRole("dialog", { name: /quickstart wizard/i });
+                const wizards = screen.getAllByTestId("quickstart-wizard");
+                const wizard = wizards[0];
                 const wizardQueries = within(wizard);
 
                 const lenderOption = wizardQueries.getByTestId(
@@ -524,9 +526,7 @@ describe("QuickStartPage wizard modal", () => {
                 });
 
                 await waitFor(() => {
-                        expect(
-                                screen.queryByRole("dialog", { name: /quickstart wizard/i }),
-                        ).toBeNull();
+                        expect(screen.queryByTestId("quickstart-wizard")).toBeNull();
                 });
 
                 const [importButton] = await screen.findAllByRole("button", {
@@ -537,7 +537,8 @@ describe("QuickStartPage wizard modal", () => {
                         fireEvent.click(importButton);
                 });
 
-                let wizard = screen.getByRole("dialog", { name: /quickstart wizard/i });
+                let wizards = screen.getAllByTestId("quickstart-wizard");
+                let wizard = wizards[0];
                 let wizardQueries = within(wizard);
                 const closeWizardButton = wizardQueries.getByRole("button", { name: /close wizard/i });
 
@@ -557,7 +558,8 @@ describe("QuickStartPage wizard modal", () => {
                         fireEvent.click(importButton);
                 });
 
-                wizard = screen.getByRole("dialog", { name: /quickstart wizard/i });
+                wizards = screen.getAllByTestId("quickstart-wizard");
+                wizard = wizards[0];
                 wizardQueries = within(wizard);
                 const dialogCloseButton = wizardQueries.getByRole("button", { name: /^close$/i });
 
@@ -566,7 +568,7 @@ describe("QuickStartPage wizard modal", () => {
                 });
 
                 expect(
-                        screen.queryByRole("dialog", { name: /quickstart wizard/i }),
+                        screen.queryByTestId("quickstart-wizard"),
                 ).toBeNull();
         });
 

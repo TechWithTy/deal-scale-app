@@ -1,4 +1,4 @@
-import { act } from "@testing-library/react";
+import { act, waitFor } from "@testing-library/react";
 import React from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -47,6 +47,13 @@ vi.mock("@/components/quickstart/QuickStartActionsGrid", () => ({
 	default: () => null,
 }));
 
+vi.mock("@/components/ui/background-beams-with-collision", () => ({
+	__esModule: true,
+	BackgroundBeamsWithCollision: ({ children }: { children: React.ReactNode }) => (
+		<div data-testid="background-beams-mock">{children}</div>
+	),
+}));
+
 vi.mock("@/components/reusables/modals/user/lead/LeadModalMain", () => ({
 	__esModule: true,
 	default: () => null,
@@ -64,16 +71,23 @@ vi.mock(
 		default: ({
 			onOpenChange,
 			onCampaignLaunched,
+			isOpen,
 		}: {
+			isOpen?: boolean;
 			onOpenChange: (open: boolean) => void;
 			onCampaignLaunched?: (payload: {
 				campaignId: string;
 				channelType: string;
 			}) => void;
 		}) => {
-			onOpenChangeRef.current = onOpenChange;
-			onCampaignLaunchedRef.current = onCampaignLaunched ?? null;
-			return <div data-testid="campaign-modal-mock" />;
+			// Capture callbacks immediately when component is created, even if isOpen is false
+			if (onOpenChange) {
+				onOpenChangeRef.current = onOpenChange;
+			}
+			if (onCampaignLaunched) {
+				onCampaignLaunchedRef.current = onCampaignLaunched;
+			}
+			return <div data-testid="campaign-modal-mock" data-is-open={isOpen} />;
 		},
 	}),
 );
@@ -102,12 +116,19 @@ describe("QuickStartPage campaign modal reset timing", () => {
 		vi.useRealTimers();
 	});
 
-	it("resets the campaign store once when the modal transitions from open to closed", () => {
+	it("resets the campaign store once when the modal transitions from open to closed", async () => {
 		const resetSpy = vi.spyOn(useCampaignCreationStore.getState(), "reset");
 
 		renderWithNuqs(<QuickStartPage />);
 
-		expect(onOpenChangeRef.current).toBeTypeOf("function");
+		// Wait for dynamic component to load and modal refs to be populated
+		await waitFor(
+			() => {
+				expect(onOpenChangeRef.current).not.toBeNull();
+				expect(onOpenChangeRef.current).toBeTypeOf("function");
+			},
+			{ timeout: 3000 },
+		);
 
 		act(() => {
 			onOpenChangeRef.current?.(true);
@@ -138,10 +159,17 @@ describe("QuickStartPage campaign modal reset timing", () => {
 		resetSpy.mockRestore();
 	});
 
-	it("closes the modal and navigates when a campaign launches", () => {
+	it("closes the modal and navigates when a campaign launches", async () => {
 		renderWithNuqs(<QuickStartPage />);
 
-		expect(onCampaignLaunchedRef.current).toBeTypeOf("function");
+		// Wait for dynamic component to load and modal refs to be populated
+		await waitFor(
+			() => {
+				expect(onCampaignLaunchedRef.current).not.toBeNull();
+				expect(onCampaignLaunchedRef.current).toBeTypeOf("function");
+			},
+			{ timeout: 3000 },
+		);
 
 		act(() => {
 			onCampaignLaunchedRef.current?.({
@@ -156,13 +184,21 @@ describe("QuickStartPage campaign modal reset timing", () => {
 		);
 	});
 
-	it("defers the campaign store reset until the close timers flush after launch", () => {
+	it("defers the campaign store reset until the close timers flush after launch", async () => {
 		renderWithNuqs(<QuickStartPage />);
 
-		const resetSpy = vi.spyOn(useCampaignCreationStore.getState(), "reset");
+		// Wait for dynamic component to load and modal refs to be populated
+		await waitFor(
+			() => {
+				expect(onOpenChangeRef.current).not.toBeNull();
+				expect(onOpenChangeRef.current).toBeTypeOf("function");
+				expect(onCampaignLaunchedRef.current).not.toBeNull();
+				expect(onCampaignLaunchedRef.current).toBeTypeOf("function");
+			},
+			{ timeout: 3000 },
+		);
 
-		expect(onOpenChangeRef.current).toBeTypeOf("function");
-		expect(onCampaignLaunchedRef.current).toBeTypeOf("function");
+		const resetSpy = vi.spyOn(useCampaignCreationStore.getState(), "reset");
 
 		act(() => {
 			onOpenChangeRef.current?.(true);

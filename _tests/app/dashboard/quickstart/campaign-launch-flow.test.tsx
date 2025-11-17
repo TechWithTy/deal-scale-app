@@ -216,6 +216,10 @@ describe("QuickStart campaign launch flow", () => {
         it("redirects to campaigns and focuses launched record", async () => {
                 const { getByTestId, unmount } = renderWithNuqs(<QuickStartPage />);
 
+                await waitFor(() => {
+                        expect(getByTestId("campaign-launch-trigger")).toBeInTheDocument();
+                });
+
                 act(() => {
                         fireEvent.click(getByTestId("campaign-launch-trigger"));
                 });

@@ -27,3 +27,5 @@ echo.
 echo ✅ Ready to commit!
 echo    Run: git commit -m "your message"
 
+
+

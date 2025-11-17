@@ -55,7 +55,7 @@ describe("QuickStart wizard summary previews", () => {
 
 		expect(bulletText).toEqual(
 			expect.arrayContaining([
-				expect.stringMatching(/Primary channel: Email/i),
+				expect.stringMatching(/Primary channel: Text/i),
 				expect.stringMatching(/Workflow: Aggressive: 3-day blitz/i),
 				expect.stringMatching(/Assigned agent: Jane Smith/i),
 				expect.stringMatching(

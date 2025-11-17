@@ -43,7 +43,7 @@
     "perf:lighthouse:prod-auth": "pnpm tsx scripts/perf/create-lighthouse-headers.ts --base https://app.dealscale.io --output reports/lighthouse/prod.headers.json --dashboard /dashboard && pnpm dlx lighthouse https://app.dealscale.io/dashboard --preset=perf --throttling.cpuSlowdownMultiplier=4 --throttling.downloadThroughputKbps=1500 --throttling.uploadThroughputKbps=750 --max-wait-for-load=15000 --extra-headers=reports/lighthouse/prod.headers.json --output=json --output=html --output-path=reports/lighthouse/prod",
     "postbuild": "pnpm run submit:sitemap || echo \"[postbuild] sitemap submission skipped (script missing)\"",
     "postinstall": "pnpm run sync:commit-scopes && pnpm run postinstall:submodules",
-    "postinstall:submodules": "node scripts/postinstall.js",
+    "postinstall:submodules": "if [ -f scripts/postinstall.js ]; then node scripts/postinstall.js; else echo '[postinstall] submodules script skipped (file not found)'; fi",
     "prepare": "node ./scripts/setup/prepare-husky.cjs",
     "security:owasp": "pnpm exec tsx tools/security/run-owasp-baseline.ts",
     "security:scan": "pnpm run security:trivy && pnpm run security:owasp",
