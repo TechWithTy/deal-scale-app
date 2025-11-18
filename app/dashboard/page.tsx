@@ -291,7 +291,20 @@ export default function QuickStartPage() {
 	} = useQuickStartSavedSearches();
 
 	const triggerFileInput = useCallback(() => {
-		fileInputRef.current?.click();
+		console.log("📁 [triggerFileInput] Called, fileInputRef:", {
+			hasRef: !!fileInputRef.current,
+			refType: fileInputRef.current?.tagName,
+			refId: fileInputRef.current?.id,
+		});
+		if (fileInputRef.current) {
+			console.log("📁 [triggerFileInput] Clicking file input");
+			fileInputRef.current.click();
+			console.log("✅ [triggerFileInput] File input clicked");
+		} else {
+			console.error(
+				"❌ [triggerFileInput] File input ref is null - cannot trigger file picker",
+			);
+		}
 	}, []);
 
 	const handleSelectList = useCallback(() => {
@@ -1727,28 +1740,100 @@ export default function QuickStartPage() {
 	);
 
 	const handleLaunchQuickStartFlow = useCallback(() => {
-		const { goalId } = useQuickStartWizardDataStore.getState();
+		console.log("🚀 [handleLaunchQuickStartFlow] Called");
+		const dataState = useQuickStartWizardDataStore.getState();
+		const { goalId, personaId } = dataState;
+		console.log("🚀 [handleLaunchQuickStartFlow] Wizard data state:", {
+			goalId,
+			personaId,
+		});
+
 		if (!goalId) {
+			console.error("❌ [handleLaunchQuickStartFlow] No goalId found");
 			toast.error("Select a QuickStart goal to launch your workspace.");
 			return;
 		}
 
-		startLaunchProgress(() => performLaunchQuickStartFlow(goalId)).then(
-			(success) => {
-				if (!success) {
-					return;
-				}
-				window.setTimeout(() => {
-					setLaunchOverlayOpen(false);
-					resetLaunchProgress();
-				}, 800);
-			},
+		// When called from wizard completion, directly execute the first step
+		// without showing the launch overlay for a smoother UX
+		const goalDefinition = getGoalDefinition(goalId);
+		console.log("🚀 [handleLaunchQuickStartFlow] Goal definition:", {
+			goalId,
+			hasDefinition: !!goalDefinition,
+			flowLength: goalDefinition?.flow.length ?? 0,
+			flow: goalDefinition?.flow,
+		});
+
+		if (!goalDefinition || goalDefinition.flow.length === 0) {
+			console.error("❌ [handleLaunchQuickStartFlow] Missing flow definition");
+			toast.error("QuickStart goal is missing a launch flow definition.");
+			return;
+		}
+
+		if (goalDefinition.templateId) {
+			console.log(
+				"🚀 [handleLaunchQuickStartFlow] Applying template:",
+				goalDefinition.templateId,
+			);
+			const campaignState = useCampaignCreationStore.getState();
+			campaignState.reset();
+			applyQuickStartTemplatePreset(goalDefinition.templateId, campaignState);
+			updateLastTemplateId(goalDefinition.templateId);
+		}
+
+		const [firstStep] = goalDefinition.flow;
+		console.log("🚀 [handleLaunchQuickStartFlow] First step:", firstStep);
+
+		const launchers: Record<string, () => void> = {
+			import: handleImportFromSource,
+			campaign: handleCampaignCreate,
+			webhooks: () => handleOpenWebhook("incoming"),
+			"market-deals": handleStartPropertySearch,
+			extension: handleBrowserExtension,
+		};
+
+		const launch = launchers[firstStep.cardId];
+		console.log("🚀 [handleLaunchQuickStartFlow] Launcher:", {
+			cardId: firstStep.cardId,
+			hasLauncher: !!launch,
+			launcherType: typeof launch,
+		});
+
+		if (!launch) {
+			console.error(
+				"❌ [handleLaunchQuickStartFlow] Missing launcher for cardId:",
+				firstStep.cardId,
+			);
+			toast.error(
+				`Missing quickstart launcher implementation for "${firstStep.cardId}".`,
+			);
+			return;
+		}
+
+		// Execute the first step directly (e.g., open file input for import)
+		console.log(
+			"🚀 [handleLaunchQuickStartFlow] Executing launcher for:",
+			firstStep.cardId,
 		);
+		try {
+			launch();
+			console.log(
+				"✅ [handleLaunchQuickStartFlow] Launcher executed successfully",
+			);
+		} catch (error) {
+			console.error(
+				"❌ [handleLaunchQuickStartFlow] Error executing launcher:",
+				error,
+			);
+			toast.error("Failed to launch QuickStart flow step.");
+		}
 	}, [
-		performLaunchQuickStartFlow,
-		resetLaunchProgress,
-		setLaunchOverlayOpen,
-		startLaunchProgress,
+		handleImportFromSource,
+		handleCampaignCreate,
+		handleOpenWebhook,
+		handleStartPropertySearch,
+		handleBrowserExtension,
+		updateLastTemplateId,
 	]);
 
 	const quickstartCards = useQuickStartCardViewModel({

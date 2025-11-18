@@ -48,6 +48,8 @@ const QuickStartWizard = () => {
 		activeStep,
 		activePreset,
 		pendingAction,
+		isCompleting,
+		lastCompletionTime,
 		goToStep,
 		cancel,
 		complete,
@@ -58,6 +60,8 @@ const QuickStartWizard = () => {
 			activeStep: state.activeStep,
 			activePreset: state.activePreset,
 			pendingAction: state.pendingAction,
+			isCompleting: state.isCompleting,
+			lastCompletionTime: state.lastCompletionTime,
 			goToStep: state.goToStep,
 			cancel: state.cancel,
 			complete: state.complete,
@@ -73,6 +77,8 @@ const QuickStartWizard = () => {
 		useQuickStartUrlParams();
 	// Guard: if we applied URL defaults, do not let session defaults override
 	const appliedFromUrlRef = useRef(false);
+	// Debounce session sync to prevent rapid re-syncing after reset
+	const lastSyncRef = useRef<number>(0);
 
 	// 🔥 SYNC DEFAULTS TO WIZARD STORE (Priority: URL > Session > Profile)
 	const { data: session } = useSession();
@@ -120,14 +126,52 @@ const QuickStartWizard = () => {
 		if (appliedFromUrlRef.current) {
 			return;
 		}
+		// Don't sync session defaults if wizard is completing (prevents interference)
+		if (isCompleting) {
+			return;
+		}
+		// Check completion cooldown - prevent sync for 2.5 seconds after completion
+		// This prevents the wizard from reopening after "Close & start plan"
+		if (lastCompletionTime !== null) {
+			const timeSinceCompletion = Date.now() - lastCompletionTime;
+			const COMPLETION_COOLDOWN_MS = 2500;
+			if (timeSinceCompletion < COMPLETION_COOLDOWN_MS) {
+				console.log(
+					"🔧 [QuickStart] Session sync blocked by completion cooldown:",
+					`${timeSinceCompletion}ms < ${COMPLETION_COOLDOWN_MS}ms`,
+				);
+				return;
+			}
+		}
+		// Only sync session defaults when wizard is NOT open
+		// This prevents session defaults from being applied after wizard opens
+		// Session defaults should only pre-populate the data store, not trigger step changes
+		// When wizard opens, it will always start at step 1, and the pre-populated values will be visible
+		if (isOpen) {
+			// Wizard is open - don't sync session defaults (they should have been applied before opening)
+			// This prevents the step from changing after the wizard opens
+			return;
+		}
 
-		console.log("🔧 [QuickStart] Syncing session defaults:", defaults);
+		// Debounce: prevent rapid re-syncing (wait at least 200ms between syncs)
+		const now = Date.now();
+		if (now - lastSyncRef.current < 200) {
+			return;
+		}
+		lastSyncRef.current = now;
+
+		console.log(
+			"🔧 [QuickStart] Syncing session defaults (wizard closed):",
+			defaults,
+		);
 		console.log("🔧 [QuickStart] Current wizard state:", { personaId, goalId });
 
-		// If user has a goalId, select that (it will auto-set persona too)
+		// Apply session defaults to data store when wizard is closed
+		// This pre-populates the values so they're visible when wizard opens
+		// The wizard will always start at step 1, regardless of pre-populated values
 		if (!goalId && defaults.goalId) {
 			console.log(
-				"🔧 [QuickStart] Selecting goal from session:",
+				"🔧 [QuickStart] Pre-populating goal from session:",
 				defaults.goalId,
 			);
 			selectGoal(defaults.goalId as QuickStartGoalId);
@@ -137,7 +181,7 @@ const QuickStartWizard = () => {
 		// Otherwise, just select persona if available
 		if (!personaId && defaults.personaId) {
 			console.log(
-				"🔧 [QuickStart] Selecting persona from session:",
+				"🔧 [QuickStart] Pre-populating persona from session:",
 				defaults.personaId,
 			);
 			selectPersona(defaults.personaId as QuickStartPersonaId);
@@ -148,6 +192,9 @@ const QuickStartWizard = () => {
 		session?.user?.quickStartDefaults,
 		personaId,
 		goalId,
+		isCompleting,
+		isOpen,
+		lastCompletionTime,
 		selectPersona,
 		selectGoal,
 		clearUrlParams,
@@ -162,6 +209,29 @@ const QuickStartWizard = () => {
 			// Open the wizard (you'll need to add an 'open' method to the wizard store)
 		}
 	}, [urlParams.shouldOpen, isOpen, clearUrlParams]);
+
+	// 🔄 Update step when persona/goal changes after wizard opens
+	// Only update step when user makes selections, not when session defaults are applied
+	// This allows users to go through the flow step by step even with session defaults
+	useEffect(() => {
+		if (!isOpen) {
+			return;
+		}
+
+		// Don't auto-update step based on session defaults
+		// Let users go through the flow naturally
+		// Only update step if user is already past the current step's requirements
+		// For example: if on "persona" step and goalId is set, that's fine - user can still see persona options
+		// But if on "goal" step and goalId is set, we can move to summary
+
+		// Only auto-advance if:
+		// 1. User is on "persona" step and has selected a goal (should be on goal step)
+		// 2. User is on "goal" step and has selected a goal (should be on summary step)
+		// But don't jump ahead if user hasn't interacted yet
+
+		// For now, let users navigate manually - don't auto-update steps
+		// Session defaults will pre-select options, but users still go through the flow
+	}, [isOpen, personaId, goalId, activeStep, goToStep]);
 
 	const personaOptions = quickStartPersonas;
 	const goalOptions = personaId ? getGoalsForPersona(personaId) : [];
@@ -237,12 +307,30 @@ const QuickStartWizard = () => {
 		stepIndex >= 0 ? `Step ${stepIndex + 1} of ${STEP_ORDER.length}` : null;
 
 	const handlePersonaSelect = (nextPersonaId: QuickStartPersonaId) => {
+		console.log("👤 [WIZARD UI] Persona selected in UI:", nextPersonaId, {
+			currentPersonaId: personaId,
+			currentGoalId: goalId,
+			isCompleting,
+			isOpen,
+			activeStep,
+			stackTrace: new Error().stack,
+		});
 		selectPersona(nextPersonaId);
+		console.log("👤 [WIZARD UI] Moving to goal step after persona selection");
 		goToStep("goal");
 	};
 
 	const handleGoalSelect = (nextGoalId: QuickStartGoalId) => {
+		console.log("🎯 [WIZARD UI] Goal selected in UI:", nextGoalId, {
+			currentPersonaId: personaId,
+			currentGoalId: goalId,
+			isCompleting,
+			isOpen,
+			activeStep,
+			stackTrace: new Error().stack,
+		});
 		selectGoal(nextGoalId);
+		console.log("🎯 [WIZARD UI] Moving to summary step after goal selection");
 		goToStep("summary");
 	};
 
@@ -255,22 +343,6 @@ const QuickStartWizard = () => {
 		if (activeStep === "summary") {
 			goToStep("goal");
 		}
-	};
-
-	const handlePrimary = () => {
-		if (activeStep === "persona") {
-			goToStep("goal");
-			return;
-		}
-
-		if (activeStep === "goal") {
-			if (goalId) {
-				goToStep("summary");
-			}
-			return;
-		}
-
-		complete();
 	};
 
 	const hasPendingAction = Boolean(pendingAction);
@@ -286,11 +358,54 @@ const QuickStartWizard = () => {
 		(activeStep === "persona" && !personaId) ||
 		(activeStep === "goal" && !goalId);
 
+	const handlePrimary = () => {
+		console.log("🔘 [WIZARD UI] Primary button clicked:", {
+			activeStep,
+			primaryLabel,
+			hasPendingAction,
+			isCompleting,
+			personaId,
+			goalId,
+			stackTrace: new Error().stack,
+		});
+
+		if (activeStep === "persona") {
+			console.log("🔘 [WIZARD UI] Moving to goal step");
+			goToStep("goal");
+			return;
+		}
+
+		if (activeStep === "goal") {
+			if (goalId) {
+				console.log("🔘 [WIZARD UI] Moving to summary step");
+				goToStep("summary");
+			} else {
+				console.warn("⚠️ [WIZARD UI] Cannot move to summary - no goalId");
+			}
+			return;
+		}
+
+		// Summary step - complete the wizard
+		// Check store state directly (not component prop) to prevent race conditions
+		const storeState = useQuickStartWizardStore.getState();
+		if (storeState.isCompleting) {
+			console.warn(
+				"⚠️ [WIZARD UI] Already completing (checked store directly) - ignoring duplicate click",
+			);
+			return;
+		}
+
+		console.log("🔘 [WIZARD UI] Calling complete() from summary step");
+		complete();
+	};
+
 	return (
 		<Dialog
 			open={isOpen}
 			onOpenChange={(open) => {
-				if (!open) {
+				if (!open && !isCompleting) {
+					// Only cancel if the user manually closed the dialog
+					// (not when we're programmatically completing)
 					cancel();
 				}
 			}}
@@ -364,7 +479,7 @@ const QuickStartWizard = () => {
 							<Button
 								type="button"
 								onClick={handlePrimary}
-								disabled={primaryDisabled}
+								disabled={primaryDisabled || isCompleting}
 							>
 								{primaryLabel}
 							</Button>

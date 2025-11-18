@@ -349,10 +349,18 @@ const QuickStartActionsGrid: FC<QuickStartActionsGridProps> = ({
 														onClick={async () => {
 															setLoadingAction(actionKey);
 															try {
-																// If card has wizard preset, defer action until wizard completes
-																if (wizardPreset && onClick) {
+																// Only launch wizard for explicit "Guided Setup" actions
+																// All other actions execute directly, even if card has wizardPreset
+																// This decouples wizard launch from regular action execution
+																if (
+																	isGuidedSetupButton &&
+																	wizardPreset &&
+																	onClick
+																) {
+																	// Guided Setup button: launch wizard with action
 																	launchWithAction(wizardPreset, onClick);
 																} else {
+																	// All other actions: execute directly without wizard
 																	await onClick?.();
 																}
 															} finally {
