@@ -44,7 +44,7 @@
     "postbuild": "pnpm run submit:sitemap || echo \"[postbuild] sitemap submission skipped (script missing)\"",
     "postinstall": "pnpm run sync:commit-scopes && pnpm run postinstall:submodules",
     "postinstall:submodules": "if [ -f scripts/postinstall.js ]; then node scripts/postinstall.js; else echo '[postinstall] submodules script skipped (file not found)'; fi",
-    "prepare": "node ./scripts/setup/prepare-husky.cjs",
+    "prepare": "if [ -f scripts/setup/prepare-husky.cjs ]; then node ./scripts/setup/prepare-husky.cjs; else echo '[prepare] Husky setup skipped (file not found)'; fi",
     "security:owasp": "pnpm exec tsx tools/security/run-owasp-baseline.ts",
     "security:scan": "pnpm run security:trivy && pnpm run security:owasp",
     "security:trivy": "pnpm exec tsx tools/security/run-trivy-scan.ts",

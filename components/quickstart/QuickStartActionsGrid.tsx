@@ -355,10 +355,14 @@ const QuickStartActionsGrid: FC<QuickStartActionsGridProps> = ({
 																if (
 																	isGuidedSetupButton &&
 																	wizardPreset &&
-																	onClick
+																	onLaunchGoalFlow
 																) {
-																	// Guided Setup button: launch wizard with action
-																	launchWithAction(wizardPreset, onClick);
+																	// Guided Setup button: launch wizard with onLaunchGoalFlow as the action
+																	// This ensures the action executes the flow directly, not reopening the wizard
+																	launchWithAction(
+																		wizardPreset,
+																		onLaunchGoalFlow,
+																	);
 																} else {
 																	// All other actions: execute directly without wizard
 																	await onClick?.();

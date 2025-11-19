@@ -63,3 +63,4 @@
 2. **Step Update Effect**: Only runs when `isOpen === true`, so it's safe
 3. **Session Sync Timing**: Now protected by cooldown, should prevent reopening
 
+

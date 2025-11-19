@@ -49,6 +49,7 @@ export function Globe({
 	let width = 0;
 	let pixelRatio = 2;
 	const canvasRef = useRef<HTMLCanvasElement>(null);
+	const globeRef = useRef<ReturnType<typeof createGlobe> | null>(null);
 	const pointerInteracting = useRef<number | null>(null);
 	const pointerInteractionMovement = useRef(0);
 	const opacityTimeoutRef = useRef<number | null>(null);
@@ -103,39 +104,57 @@ export function Globe({
 			};
 		}
 
-		const globe = createGlobe(canvas, {
-			...config,
-			devicePixelRatio: pixelRatio,
-			width,
-			height: width,
-			onRender: (state) => {
-				if (!pointerInteracting.current) phi += 0.005;
-				state.phi = phi + rs.get();
-				state.width = width;
-				state.height = width;
-				const elapsedSeconds = (Date.now() - animationStartRef.current) / 1000;
-				state.markers = baseMarkersRef.current.map((marker, index) => {
-					const wave =
-						Math.sin(elapsedSeconds * (0.7 + index * 0.18)) * 0.5 + 0.5;
-					const twinkle =
-						Math.sin(elapsedSeconds * (1 + index * 0.12) + index) * 0.5 + 0.5;
-					const intensity = wave * twinkle;
-					const visibility = intensity > 0.15 ? intensity : 0;
-					return {
-						...marker,
-						size: marker.size * (0.5 + visibility * 1.3),
-					};
-				});
-			},
-		});
+		let globe: ReturnType<typeof createGlobe> | null = null;
+		try {
+			globe = createGlobe(canvas, {
+				...config,
+				devicePixelRatio: pixelRatio,
+				width,
+				height: width,
+				onRender: (state) => {
+					if (!pointerInteracting.current) phi += 0.005;
+					state.phi = phi + rs.get();
+					state.width = width;
+					state.height = width;
+					const elapsedSeconds =
+						(Date.now() - animationStartRef.current) / 1000;
+					state.markers = baseMarkersRef.current.map((marker, index) => {
+						const wave =
+							Math.sin(elapsedSeconds * (0.7 + index * 0.18)) * 0.5 + 0.5;
+						const twinkle =
+							Math.sin(elapsedSeconds * (1 + index * 0.12) + index) * 0.5 + 0.5;
+						const intensity = wave * twinkle;
+						const visibility = intensity > 0.15 ? intensity : 0;
+						return {
+							...marker,
+							size: marker.size * (0.5 + visibility * 1.3),
+						};
+					});
+				},
+			});
+			globeRef.current = globe;
+		} catch (error) {
+			console.error("Failed to create globe:", error);
+			return () => {
+				window.removeEventListener("resize", resolveDimensions);
+			};
+		}
 
 		opacityTimeoutRef.current = window.setTimeout(() => {
 			if (canvasRef.current) {
 				canvasRef.current.style.opacity = "1";
 			}
 		}, 0);
+
 		return () => {
-			globe.destroy();
+			if (globeRef.current) {
+				try {
+					globeRef.current.destroy();
+				} catch (error) {
+					console.error("Error destroying globe:", error);
+				}
+				globeRef.current = null;
+			}
 			if (opacityTimeoutRef.current !== null) {
 				window.clearTimeout(opacityTimeoutRef.current);
 				opacityTimeoutRef.current = null;

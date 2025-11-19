@@ -1643,7 +1643,22 @@ export default function QuickStartPage() {
 			return;
 		}
 
+		// Check if we're within the completion cooldown before auto-opening
+		const wizardState = useQuickStartWizardStore.getState();
+		if (wizardState.lastCompletionTime !== null) {
+			const timeSinceCompletion = Date.now() - wizardState.lastCompletionTime;
+			const COMPLETION_COOLDOWN_MS = 2500;
+			if (timeSinceCompletion < COMPLETION_COOLDOWN_MS) {
+				console.log(
+					"🚫 [Dashboard] Auto-open blocked by completion cooldown:",
+					`${timeSinceCompletion}ms < ${COMPLETION_COOLDOWN_MS}ms`,
+				);
+				return;
+			}
+		}
+
 		if (!hasSeenWizard && !isWizardOpen) {
+			console.log("🚀 [Dashboard] Auto-opening wizard for first-time user");
 			openWizard();
 		}
 	}, [hasSeenWizard, isExperienceHydrated, isWizardOpen, openWizard]);
@@ -1741,6 +1756,10 @@ export default function QuickStartPage() {
 
 	const handleLaunchQuickStartFlow = useCallback(() => {
 		console.log("🚀 [handleLaunchQuickStartFlow] Called");
+		console.log(
+			"🚀 [handleLaunchQuickStartFlow] Stack trace:",
+			new Error().stack,
+		);
 		const dataState = useQuickStartWizardDataStore.getState();
 		const { goalId, personaId } = dataState;
 		console.log("🚀 [handleLaunchQuickStartFlow] Wizard data state:", {

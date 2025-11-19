@@ -109,9 +109,14 @@ describe("QuickStart wizard deferred actions", () => {
                         });
                 });
 
+                // Verify the store state is correct
+                const storeState = useQuickStartWizardStore.getState();
+                expect(storeState.isOpen).toBe(true);
+                expect(storeState.isCompleting).toBe(false);
+
                 await waitFor(() => {
                         expect(screen.getByTestId("quickstart-wizard")).toBeInTheDocument();
-                });
+                }, { timeout: 5000 });
 
                 const wizards = screen.getAllByTestId("quickstart-wizard");
                 const wizard = wizards[0];
@@ -166,7 +171,10 @@ describe("QuickStart wizard deferred actions", () => {
                         fireEvent.click(completeButton);
                 });
 
-                expect(pushMock).toHaveBeenCalledWith("/dashboard/extensions");
+                // Wait for the action to execute (it's delayed by requestAnimationFrame to allow dialog to close)
+                await waitFor(() => {
+                        expect(pushMock).toHaveBeenCalledWith("/dashboard/extensions");
+                }, { timeout: 1000 });
         });
 
         it("cancels pending wizard actions when the wizard is closed", async () => {

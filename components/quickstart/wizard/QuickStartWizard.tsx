@@ -79,6 +79,8 @@ const QuickStartWizard = () => {
 	const appliedFromUrlRef = useRef(false);
 	// Debounce session sync to prevent rapid re-syncing after reset
 	const lastSyncRef = useRef<number>(0);
+	// Track if we've applied session defaults during this wizard open session
+	const hasAppliedDefaultsRef = useRef(false);
 
 	// 🔥 SYNC DEFAULTS TO WIZARD STORE (Priority: URL > Session > Profile)
 	const { data: session } = useSession();
@@ -143,14 +145,22 @@ const QuickStartWizard = () => {
 				return;
 			}
 		}
-		// Only sync session defaults when wizard is NOT open
-		// This prevents session defaults from being applied after wizard opens
-		// Session defaults should only pre-populate the data store, not trigger step changes
-		// When wizard opens, it will always start at step 1, and the pre-populated values will be visible
-		if (isOpen) {
-			// Wizard is open - don't sync session defaults (they should have been applied before opening)
+		// Apply session defaults when wizard is NOT open OR when wizard first opens
+		// If wizard is open but defaults haven't been applied yet, apply them once
+		// This ensures defaults are available when wizard first opens
+		if (isOpen && hasAppliedDefaultsRef.current) {
+			// Wizard is open and we've already applied defaults - don't sync again
 			// This prevents the step from changing after the wizard opens
 			return;
+		}
+
+		// If wizard just opened and we haven't applied defaults yet, allow one-time sync
+		if (isOpen && !hasAppliedDefaultsRef.current) {
+			hasAppliedDefaultsRef.current = true;
+			// Continue to apply defaults below
+		} else if (!isOpen) {
+			// Wizard is closed - reset the flag for next time
+			hasAppliedDefaultsRef.current = false;
 		}
 
 		// Debounce: prevent rapid re-syncing (wait at least 200ms between syncs)
@@ -209,6 +219,54 @@ const QuickStartWizard = () => {
 			// Open the wizard (you'll need to add an 'open' method to the wizard store)
 		}
 	}, [urlParams.shouldOpen, isOpen, clearUrlParams]);
+
+	// 🔧 Apply session defaults when wizard opens if they haven't been applied yet
+	// This ensures defaults are available immediately when wizard opens
+	useEffect(() => {
+		if (!isOpen) {
+			// Reset flag when wizard closes
+			hasAppliedDefaultsRef.current = false;
+			return;
+		}
+
+		// If wizard is open and we haven't applied defaults yet, apply them now
+		if (!hasAppliedDefaultsRef.current) {
+			const defaults = session?.user?.quickStartDefaults;
+			if (defaults && !appliedFromUrlRef.current) {
+				console.log(
+					"🔧 [QuickStart] Applying session defaults on wizard open:",
+					defaults,
+				);
+
+				// Apply defaults immediately when wizard opens
+				if (!goalId && defaults.goalId) {
+					console.log(
+						"🔧 [QuickStart] Applying goal from session on open:",
+						defaults.goalId,
+					);
+					selectGoal(defaults.goalId as QuickStartGoalId);
+					hasAppliedDefaultsRef.current = true;
+					return;
+				}
+
+				if (!personaId && defaults.personaId) {
+					console.log(
+						"🔧 [QuickStart] Applying persona from session on open:",
+						defaults.personaId,
+					);
+					selectPersona(defaults.personaId as QuickStartPersonaId);
+					hasAppliedDefaultsRef.current = true;
+				}
+			}
+		}
+	}, [
+		isOpen,
+		session?.user?.quickStartDefaults,
+		personaId,
+		goalId,
+		selectPersona,
+		selectGoal,
+	]);
 
 	// 🔄 Update step when persona/goal changes after wizard opens
 	// Only update step when user makes selections, not when session defaults are applied

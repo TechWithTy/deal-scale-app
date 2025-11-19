@@ -150,3 +150,4 @@ The completion cooldown (2.5 seconds) prevents auto-open triggers from firing im
 3. Auto-open wizard (bypasses cooldown)
 4. User sees onboarding flow ✅
 
+

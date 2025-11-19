@@ -4,12 +4,12 @@
  */
 "use client";
 
-import * as React from "react";
+import LeadMainModal from "@/components/reusables/modals/user/lead/LeadModalMain";
+import SkipTraceModalMain from "@/components/reusables/modals/user/skipTrace/SkipTraceModalMain";
 import LeadsDemoTable, {
 	type LeadsDemoTableProps,
 } from "external/shadcn-table/src/examples/Lead/LeadsDemoTable";
-import LeadMainModal from "@/components/reusables/modals/user/lead/LeadModalMain";
-import SkipTraceModalMain from "@/components/reusables/modals/user/skipTrace/SkipTraceModalMain";
+import * as React from "react";
 
 /** Minimal init payload kept local so external module stays decoupled */
 type SkipTraceInit =
