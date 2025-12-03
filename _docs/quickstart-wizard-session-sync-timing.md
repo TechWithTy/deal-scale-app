@@ -60,3 +60,4 @@ Add a completion cooldown timestamp that prevents session sync for 2-3 seconds a
 4. Reset cooldown when wizard explicitly opened by user
 
 
+
