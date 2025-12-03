@@ -11,6 +11,7 @@ import { campaignSteps } from "@/_tests/tours/campaignTour";
 import DynamicHeadline from "@/components/quickstart/DynamicHeadline";
 import QuickStartHeroVideo from "@/components/quickstart/QuickStartHeroVideo";
 import QuickStartCTA from "@/components/quickstart/QuickStartCTA";
+import { QuickStartInputCard } from "@/components/quickstart/QuickStartInputCard";
 import QuickStartActionsGrid from "@/components/quickstart/QuickStartActionsGrid";
 import { computeSmartImportDecision } from "@/components/quickstart/utils/smartImportDecision";
 import { AvatarCircles } from "@/components/ui/avatar-circles";
@@ -1950,12 +1951,15 @@ export default function QuickStartPage() {
 						<button
 							type="button"
 							onClick={openQuickStartHelp}
-							className="absolute right-0 top-0 flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-background/90 text-muted-foreground shadow-lg backdrop-blur transition hover:scale-105 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
+							className="absolute right-0 top-0 z-10 flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-background/90 text-muted-foreground shadow-lg backdrop-blur transition hover:scale-105 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
 							aria-label="Open QuickStart help demo"
 						>
 							<HelpCircle className="h-5 w-5" aria-hidden="true" />
 						</button>
-						<DynamicHeadline />
+						<QuickStartInputCard
+							onUploadClick={triggerFileInput}
+							className="mb-6"
+						/>
 						<QuickStartCTA
 							className="mt-6"
 							displayMode="both"

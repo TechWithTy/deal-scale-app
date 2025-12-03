@@ -42,6 +42,7 @@ import {
 	Users,
 	Webhook,
 	X,
+	BookOpen,
 } from "lucide-react";
 
 export type Icon = LucideIcon;
@@ -86,6 +87,7 @@ export const Icons = {
 	users: Users,
 	separator: Minus,
 	calculator: Calculator,
+	bookOpen: BookOpen,
 	gitHub: ({ ...props }: LucideProps) => (
 		<svg
 			aria-hidden="true"
