@@ -23,6 +23,7 @@
 		"paths": {
 			"@/*": ["./*"],
 			"@root/*": ["./*"],
+			"@app/*": ["app/*"],
 			"@ssf/*": ["external/score-streak-flow/src/*"],
 			"external/*": ["external/*"],
 			"@external/dynamic-hero": ["external/dynamic-hero/src/index.ts"],

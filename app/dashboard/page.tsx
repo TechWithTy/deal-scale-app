@@ -1,5 +1,6 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { HelpCircle } from "lucide-react";
@@ -10,28 +11,16 @@ import { campaignSteps } from "@/_tests/tours/campaignTour";
 import DynamicHeadline from "@/components/quickstart/DynamicHeadline";
 import QuickStartHeroVideo from "@/components/quickstart/QuickStartHeroVideo";
 import QuickStartCTA from "@/components/quickstart/QuickStartCTA";
+import { QuickStartInputCard } from "@/components/quickstart/QuickStartInputCard";
 import QuickStartActionsGrid from "@/components/quickstart/QuickStartActionsGrid";
-import QuickStartCrmSyncModal from "@/components/quickstart/QuickStartCrmSyncModal";
 import { computeSmartImportDecision } from "@/components/quickstart/utils/smartImportDecision";
 import { AvatarCircles } from "@/components/ui/avatar-circles";
-import QuickStartLegacyModals, {
-	type QuickStartCampaignContext,
-} from "@/components/quickstart/QuickStartLegacyModals";
 import QuickStartSupportCard from "@/components/quickstart/QuickStartSupportCard";
 import type { QuickStartWizardPreset } from "@/components/quickstart/types";
 import { useBulkCsvUpload } from "@/components/quickstart/useBulkCsvUpload";
 import { useQuickStartCardViewModel } from "@/components/quickstart/useQuickStartCardViewModel";
 import { useQuickStartSavedSearches } from "@/components/quickstart/useQuickStartSavedSearches";
-import QuickStartWizard from "@/components/quickstart/wizard/QuickStartWizard";
-import { CampaignSelectorModal } from "@/components/reusables/modals/user/campaign/CampaignSelectorModal";
-import { AICampaignGenerator } from "@/components/reusables/modals/user/campaign/AICampaignGenerator";
-import SavedCampaignTemplatesModal from "@/components/reusables/modals/user/campaign/SavedCampaignTemplatesModal";
-import { AIWorkflowGenerator } from "@/components/reusables/modals/user/workflow/AIWorkflowGenerator";
-import { WorkflowExportModal } from "@/components/reusables/modals/user/workflow/WorkflowExportModal";
-import SavedWorkflowsModal from "@/components/reusables/modals/user/workflow/SavedWorkflowsModal";
-import { AISavedSearchGenerator } from "@/components/reusables/modals/user/lookalike/AISavedSearchGenerator";
-import { LookalikeConfigModal } from "@/components/reusables/modals/user/lookalike/LookalikeConfigModal";
-import { LookalikeResultsModal } from "@/components/reusables/modals/user/lookalike/LookalikeResultsModal";
+import type { QuickStartCampaignContext } from "@/components/quickstart/QuickStartLegacyModals";
 import { exportToMultiplePlatforms } from "@/lib/api/lookalike/export";
 import { generateLookalikeAudience } from "@/lib/api/lookalike/generate";
 import {
@@ -70,8 +59,102 @@ import { mapTemplateToCampaignWizard } from "@/lib/utils/campaign/templateParser
 import { openHelpModal, showHelpIcon } from "@/lib/ui/helpActions";
 import { toast } from "sonner";
 import { shallow } from "zustand/shallow";
-import LaunchOverlay from "@/components/quickstart/launch/LaunchOverlay";
 import { useLaunchProgressMachine } from "@/hooks/useLaunchProgressMachine";
+
+const QuickStartCrmSyncModal = dynamic(
+	() => import("@/components/quickstart/QuickStartCrmSyncModal"),
+	{ ssr: false, loading: () => null },
+);
+
+const QuickStartLegacyModals = dynamic(
+	() => import("@/components/quickstart/QuickStartLegacyModals"),
+	{ ssr: false, loading: () => null },
+);
+
+const QuickStartWizard = dynamic(
+	() => import("@/components/quickstart/wizard/QuickStartWizard"),
+	{ ssr: false, loading: () => null },
+);
+
+const CampaignSelectorModal = dynamic(
+	() =>
+		import(
+			"@/components/reusables/modals/user/campaign/CampaignSelectorModal"
+		).then((mod) => mod.CampaignSelectorModal),
+	{ ssr: false, loading: () => null },
+);
+
+const AICampaignGenerator = dynamic(
+	() =>
+		import(
+			"@/components/reusables/modals/user/campaign/AICampaignGenerator"
+		).then((mod) => mod.AICampaignGenerator),
+	{ ssr: false, loading: () => null },
+);
+
+const SavedCampaignTemplatesModal = dynamic(
+	() =>
+		import(
+			"@/components/reusables/modals/user/campaign/SavedCampaignTemplatesModal"
+		).then((mod) => mod.default),
+	{ ssr: false, loading: () => null },
+);
+
+const AIWorkflowGenerator = dynamic(
+	() =>
+		import(
+			"@/components/reusables/modals/user/workflow/AIWorkflowGenerator"
+		).then((mod) => mod.AIWorkflowGenerator),
+	{ ssr: false, loading: () => null },
+);
+
+const WorkflowExportModal = dynamic(
+	() =>
+		import(
+			"@/components/reusables/modals/user/workflow/WorkflowExportModal"
+		).then((mod) => mod.WorkflowExportModal),
+	{ ssr: false, loading: () => null },
+);
+
+const SavedWorkflowsModal = dynamic(
+	() =>
+		import(
+			"@/components/reusables/modals/user/workflow/SavedWorkflowsModal"
+		).then((mod) => mod.default),
+	{ ssr: false, loading: () => null },
+);
+
+const LookalikeConfigModal = dynamic(
+	() =>
+		import(
+			"@/components/reusables/modals/user/lookalike/LookalikeConfigModal"
+		).then((mod) => mod.LookalikeConfigModal),
+	{ ssr: false, loading: () => null },
+);
+
+const LookalikeResultsModal = dynamic(
+	() =>
+		import(
+			"@/components/reusables/modals/user/lookalike/LookalikeResultsModal"
+		).then((mod) => mod.LookalikeResultsModal),
+	{ ssr: false, loading: () => null },
+);
+
+const AISavedSearchGenerator = dynamic(
+	() =>
+		import(
+			"@/components/reusables/modals/user/lookalike/AISavedSearchGenerator"
+		).then((mod) => mod.AISavedSearchGenerator),
+	{ ssr: false, loading: () => null },
+);
+
+const LaunchOverlay = dynamic(
+	() =>
+		import("@/components/quickstart/launch/LaunchOverlay").then(
+			(mod) => mod.default,
+		),
+	{ ssr: false, loading: () => null },
+);
 
 let lastAppliedTemplateIdGlobal: QuickStartTemplateId | null = null;
 
@@ -209,7 +292,20 @@ export default function QuickStartPage() {
 	} = useQuickStartSavedSearches();
 
 	const triggerFileInput = useCallback(() => {
-		fileInputRef.current?.click();
+		console.log("📁 [triggerFileInput] Called, fileInputRef:", {
+			hasRef: !!fileInputRef.current,
+			refType: fileInputRef.current?.tagName,
+			refId: fileInputRef.current?.id,
+		});
+		if (fileInputRef.current) {
+			console.log("📁 [triggerFileInput] Clicking file input");
+			fileInputRef.current.click();
+			console.log("✅ [triggerFileInput] File input clicked");
+		} else {
+			console.error(
+				"❌ [triggerFileInput] File input ref is null - cannot trigger file picker",
+			);
+		}
 	}, []);
 
 	const handleSelectList = useCallback(() => {
@@ -1548,7 +1644,22 @@ export default function QuickStartPage() {
 			return;
 		}
 
+		// Check if we're within the completion cooldown before auto-opening
+		const wizardState = useQuickStartWizardStore.getState();
+		if (wizardState.lastCompletionTime !== null) {
+			const timeSinceCompletion = Date.now() - wizardState.lastCompletionTime;
+			const COMPLETION_COOLDOWN_MS = 2500;
+			if (timeSinceCompletion < COMPLETION_COOLDOWN_MS) {
+				console.log(
+					"🚫 [Dashboard] Auto-open blocked by completion cooldown:",
+					`${timeSinceCompletion}ms < ${COMPLETION_COOLDOWN_MS}ms`,
+				);
+				return;
+			}
+		}
+
 		if (!hasSeenWizard && !isWizardOpen) {
+			console.log("🚀 [Dashboard] Auto-opening wizard for first-time user");
 			openWizard();
 		}
 	}, [hasSeenWizard, isExperienceHydrated, isWizardOpen, openWizard]);
@@ -1645,28 +1756,104 @@ export default function QuickStartPage() {
 	);
 
 	const handleLaunchQuickStartFlow = useCallback(() => {
-		const { goalId } = useQuickStartWizardDataStore.getState();
+		console.log("🚀 [handleLaunchQuickStartFlow] Called");
+		console.log(
+			"🚀 [handleLaunchQuickStartFlow] Stack trace:",
+			new Error().stack,
+		);
+		const dataState = useQuickStartWizardDataStore.getState();
+		const { goalId, personaId } = dataState;
+		console.log("🚀 [handleLaunchQuickStartFlow] Wizard data state:", {
+			goalId,
+			personaId,
+		});
+
 		if (!goalId) {
+			console.error("❌ [handleLaunchQuickStartFlow] No goalId found");
 			toast.error("Select a QuickStart goal to launch your workspace.");
 			return;
 		}
 
-		startLaunchProgress(() => performLaunchQuickStartFlow(goalId)).then(
-			(success) => {
-				if (!success) {
-					return;
-				}
-				window.setTimeout(() => {
-					setLaunchOverlayOpen(false);
-					resetLaunchProgress();
-				}, 800);
-			},
+		// When called from wizard completion, directly execute the first step
+		// without showing the launch overlay for a smoother UX
+		const goalDefinition = getGoalDefinition(goalId);
+		console.log("🚀 [handleLaunchQuickStartFlow] Goal definition:", {
+			goalId,
+			hasDefinition: !!goalDefinition,
+			flowLength: goalDefinition?.flow.length ?? 0,
+			flow: goalDefinition?.flow,
+		});
+
+		if (!goalDefinition || goalDefinition.flow.length === 0) {
+			console.error("❌ [handleLaunchQuickStartFlow] Missing flow definition");
+			toast.error("QuickStart goal is missing a launch flow definition.");
+			return;
+		}
+
+		if (goalDefinition.templateId) {
+			console.log(
+				"🚀 [handleLaunchQuickStartFlow] Applying template:",
+				goalDefinition.templateId,
+			);
+			const campaignState = useCampaignCreationStore.getState();
+			campaignState.reset();
+			applyQuickStartTemplatePreset(goalDefinition.templateId, campaignState);
+			updateLastTemplateId(goalDefinition.templateId);
+		}
+
+		const [firstStep] = goalDefinition.flow;
+		console.log("🚀 [handleLaunchQuickStartFlow] First step:", firstStep);
+
+		const launchers: Record<string, () => void> = {
+			import: handleImportFromSource,
+			campaign: handleCampaignCreate,
+			webhooks: () => handleOpenWebhook("incoming"),
+			"market-deals": handleStartPropertySearch,
+			extension: handleBrowserExtension,
+		};
+
+		const launch = launchers[firstStep.cardId];
+		console.log("🚀 [handleLaunchQuickStartFlow] Launcher:", {
+			cardId: firstStep.cardId,
+			hasLauncher: !!launch,
+			launcherType: typeof launch,
+		});
+
+		if (!launch) {
+			console.error(
+				"❌ [handleLaunchQuickStartFlow] Missing launcher for cardId:",
+				firstStep.cardId,
+			);
+			toast.error(
+				`Missing quickstart launcher implementation for "${firstStep.cardId}".`,
+			);
+			return;
+		}
+
+		// Execute the first step directly (e.g., open file input for import)
+		console.log(
+			"🚀 [handleLaunchQuickStartFlow] Executing launcher for:",
+			firstStep.cardId,
 		);
+		try {
+			launch();
+			console.log(
+				"✅ [handleLaunchQuickStartFlow] Launcher executed successfully",
+			);
+		} catch (error) {
+			console.error(
+				"❌ [handleLaunchQuickStartFlow] Error executing launcher:",
+				error,
+			);
+			toast.error("Failed to launch QuickStart flow step.");
+		}
 	}, [
-		performLaunchQuickStartFlow,
-		resetLaunchProgress,
-		setLaunchOverlayOpen,
-		startLaunchProgress,
+		handleImportFromSource,
+		handleCampaignCreate,
+		handleOpenWebhook,
+		handleStartPropertySearch,
+		handleBrowserExtension,
+		updateLastTemplateId,
 	]);
 
 	const quickstartCards = useQuickStartCardViewModel({
@@ -1764,12 +1951,15 @@ export default function QuickStartPage() {
 						<button
 							type="button"
 							onClick={openQuickStartHelp}
-							className="absolute right-0 top-0 flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-background/90 text-muted-foreground shadow-lg backdrop-blur transition hover:scale-105 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
+							className="absolute right-0 top-0 z-10 flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-background/90 text-muted-foreground shadow-lg backdrop-blur transition hover:scale-105 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
 							aria-label="Open QuickStart help demo"
 						>
 							<HelpCircle className="h-5 w-5" aria-hidden="true" />
 						</button>
-						<DynamicHeadline />
+						<QuickStartInputCard
+							onUploadClick={triggerFileInput}
+							className="mb-6"
+						/>
 						<QuickStartCTA
 							className="mt-6"
 							displayMode="both"

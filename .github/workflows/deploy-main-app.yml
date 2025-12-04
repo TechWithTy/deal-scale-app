@@ -1,0 +1,32 @@
+name: Deal Scale Hetzner CI/CD
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  quality:
+    uses: ./.github/workflows/subworkflows/code-quality.yml
+
+  security:
+    needs: quality
+    if: ${{ needs.quality.result == 'success' }}
+    uses: ./.github/workflows/subworkflows/security.yml
+    with:
+      registry: ghcr.io
+      image_name: dealscale/main-app
+    secrets: inherit
+
+  deploy:
+    needs: security
+    if: ${{ needs.security.result == 'success' }}
+    uses: ./.github/workflows/subworkflows/deploy.yml
+    with:
+      registry: ghcr.io
+      image_name: dealscale/main-app
+      deploy_path: /srv/dealscale
+      compose_file: infra/hetzner/docker-compose.yml
+    secrets: inherit
+

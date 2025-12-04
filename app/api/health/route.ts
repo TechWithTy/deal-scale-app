@@ -1,17 +1,15 @@
 import { NextResponse } from "next/server";
 
-const NO_STORE_HEADER = { "cache-control": "no-store, max-age=0" };
+export const dynamic = "force-static";
 
-/**
- * Lightweight health-check endpoint for connectivity probes.
- */
-export async function GET(): Promise<NextResponse> {
-	return NextResponse.json({ status: "ok" }, { headers: NO_STORE_HEADER });
+function ok() {
+	return NextResponse.json({ ok: true });
 }
 
-export async function HEAD(): Promise<Response> {
-	return new Response(null, {
-		status: 204,
-		headers: NO_STORE_HEADER,
-	});
+export async function GET() {
+	return ok();
+}
+
+export async function HEAD() {
+	return new Response(null, { status: 204 });
 }

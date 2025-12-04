@@ -13,7 +13,9 @@ import QuickStartPage from "@/app/dashboard/page";
 import CampaignPage from "@/components/campaigns/campaignPage";
 import { useCampaignRowFocus } from "@/components/campaigns/utils/useCampaignRowFocus";
 import { useCampaignStore } from "@/lib/stores/campaigns";
-import { createLaunchCampaign } from "@/tests/dashboard/campaigns/helpers/campaignFactories";
+import type { createLaunchCampaign } from "@/tests/dashboard/campaigns/helpers/campaignFactories";
+import type { ReadonlyURLSearchParams } from "next/navigation";
+import { renderWithNuqs } from "./testUtils";
 
 (globalThis as Record<string, unknown>).React = React;
 (globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true;
@@ -212,7 +214,11 @@ describe("QuickStart campaign launch flow", () => {
         });
 
         it("redirects to campaigns and focuses launched record", async () => {
-                const { getByTestId, unmount } = render(<QuickStartPage />);
+                const { getByTestId, unmount } = renderWithNuqs(<QuickStartPage />);
+
+                await waitFor(() => {
+                        expect(getByTestId("campaign-launch-trigger")).toBeInTheDocument();
+                });
 
                 act(() => {
                         fireEvent.click(getByTestId("campaign-launch-trigger"));

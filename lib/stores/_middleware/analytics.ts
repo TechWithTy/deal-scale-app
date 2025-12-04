@@ -7,22 +7,38 @@ import type { StateCreator } from "zustand";
 
 const MAX_DIFF_KEYS = 20;
 
+type AnalyticsWindow = Window & {
+	posthog?: {
+		capture?: (event: string, properties?: Record<string, unknown>) => void;
+	};
+	clarity?: (
+		type: "event",
+		name: string,
+		properties?: Record<string, unknown>,
+	) => void;
+};
+
 function isBrowser(): boolean {
 	return typeof window !== "undefined";
 }
 
+function getAnalyticsWindow(): AnalyticsWindow | null {
+	if (!isBrowser()) return null;
+	return window as AnalyticsWindow;
+}
+
 function safeCapture(event: string, props: Record<string, unknown>): void {
-	if (!isBrowser()) return;
+	const analyticsWindow = getAnalyticsWindow();
+	if (!analyticsWindow) return;
 	try {
 		const enablePosthog = process?.env?.NEXT_PUBLIC_ENABLE_POSTHOG === "true";
 		const enableClarity = process?.env?.NEXT_PUBLIC_ENABLE_CLARITY === "true";
 
 		if (enablePosthog) {
-			// Optional chaining to avoid calls before init
-			window.posthog?.capture?.(event, props);
+			analyticsWindow.posthog?.capture?.(event, props);
 		}
-		if (enableClarity && typeof window.clarity === "function") {
-			window.clarity("event", event, props);
+		if (enableClarity && typeof analyticsWindow.clarity === "function") {
+			analyticsWindow.clarity("event", event, props);
 		}
 	} catch {
 		// Swallow analytics errors

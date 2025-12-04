@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import {
 	DEFAULT_PLAYLIST_URI,
@@ -14,23 +14,47 @@ import {
 import { calculateSnapAnchor, snapToEdge } from "@/lib/utils/snapToEdge";
 
 export function useFloatingMusicPortal(): HTMLElement | null {
-	return useMemo(() => {
-		if (typeof document === "undefined") return null;
+	const [portalNode, setPortalNode] = useState<HTMLElement | null>(null);
+	const createdRef = useRef(false);
+
+	useEffect(() => {
+		if (typeof document === "undefined") return;
 		const fallback = document.body;
-		if (!fallback) return null;
-		const host = document.getElementById("floating-ui-root");
-		if (host) return host;
-		const created = document.createElement("div");
-		created.id = "floating-ui-root";
-		created.style.position = "fixed";
-		created.style.top = "0";
-		created.style.left = "0";
-		created.style.width = "100%";
-		created.style.height = "100%";
-		created.style.pointerEvents = "none";
-		fallback.append(created);
-		return created;
+		if (!fallback) return;
+
+		let host = document.getElementById("floating-ui-root") as HTMLElement;
+		if (!host) {
+			host = document.createElement("div");
+			host.id = "floating-ui-root";
+			host.style.position = "fixed";
+			host.style.top = "0";
+			host.style.left = "0";
+			host.style.width = "100%";
+			host.style.height = "100%";
+			host.style.pointerEvents = "none";
+			fallback.append(host);
+			createdRef.current = true;
+		}
+		setPortalNode(host);
+
+		return () => {
+			// Only cleanup if we created it and it still exists
+			if (createdRef.current && host && host.parentNode === fallback) {
+				try {
+					fallback.removeChild(host);
+					createdRef.current = false;
+				} catch (e) {
+					// Element may have already been removed
+					console.debug(
+						"[FocusWidget] Portal cleanup: element already removed",
+						e,
+					);
+				}
+			}
+		};
 	}, []);
+
+	return portalNode;
 }
 
 export function useFloatingMusicDebug(): {

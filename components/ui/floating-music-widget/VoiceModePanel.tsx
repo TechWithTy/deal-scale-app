@@ -15,14 +15,17 @@ import {
 	ArrowUpRight,
 	Bookmark,
 	BookmarkCheck,
-	Clipboard,
 	Check,
+	Clipboard,
 	Globe,
+	Layers,
 	Loader2,
 	MessageSquare,
 	MonitorUp,
 	Phone,
 	PhoneCall,
+	Search,
+	ShieldCheck,
 	Sparkles,
 	Target,
 	Timer,
@@ -31,6 +34,7 @@ import {
 } from "lucide-react";
 
 import { TrackCommandPalette } from "@/components/ui/track-command-palette";
+import { Input } from "@/components/ui/input";
 import {
 	Tooltip,
 	TooltipContent,
@@ -77,6 +81,8 @@ import {
 	VOICE_SESSION_OPTIONS,
 	VOICE_SPRINT_OPTIONS,
 	VOICE_ASSET_OPTIONS,
+	PHONE_COMMS_OPTIONS,
+	PHONE_DIALER_RECOMMENDATIONS,
 } from "./constants";
 
 const PROMPT_CATEGORY_LABELS: Record<PromptCategory, string> = {
@@ -195,6 +201,11 @@ type VoiceIconComponent = React.ComponentType<{ className?: string }>;
 const VOICE_ICON_MAP: Record<string, VoiceIconComponent> = {
 	activity: Activity,
 	"message-square": MessageSquare,
+	globe: Globe,
+	layers: Layers,
+	"shield-check": ShieldCheck,
+	phone: Phone,
+	"phone-call": PhoneCall,
 	sparkles: Sparkles,
 	timer: Timer,
 	target: Target,
@@ -219,6 +230,39 @@ const QUICK_SECTION_ORDER = [
 	"Outreach",
 	"Analytics",
 	"Custom Templates",
+];
+
+type FocusWidgetVariant = FocusModePanelProps["variant"];
+
+type VariantSectionConfig = {
+	id: string;
+	label: string;
+	description?: string;
+	options: ReadonlyArray<VoicePaletteOption>;
+	variants: ReadonlyArray<FocusWidgetVariant>;
+	accent?: "primary" | "neutral";
+	injectIntoQuickSections?: boolean;
+};
+
+const VARIANT_SECTION_CONFIGS: VariantSectionConfig[] = [
+	{
+		id: "phone-communications",
+		label: "Call & SMS Actions",
+		description: "Dialer-ready playbooks for live calls and instant texting.",
+		options: PHONE_COMMS_OPTIONS,
+		variants: ["phone"],
+		accent: "primary",
+		injectIntoQuickSections: true,
+	},
+	{
+		id: "phone-dialer-recommendations",
+		label: "Dialer Feature Highlights",
+		description: "What makes DealScale’s power dialer stand out.",
+		options: PHONE_DIALER_RECOMMENDATIONS,
+		variants: ["phone"],
+		accent: "neutral",
+		injectIntoQuickSections: false,
+	},
 ];
 
 function resolveVoiceIcon(name?: string): VoiceIconComponent | null {
@@ -407,6 +451,8 @@ function FocusModePanel({
 		templates: state.templates,
 		savedPrompts: state.savedPrompts,
 	}));
+	const [optionFilter, setOptionFilter] = useState("");
+	const normalizedFilter = optionFilter.trim().toLowerCase();
 	const chipOptions = useMemo(() => {
 		const variables = PLATFORM_VARIABLES.map((chip) =>
 			buildChipOption(chip, {
@@ -605,6 +651,24 @@ function FocusModePanel({
 		}
 	}, [clipboardError, clipboardStatus]);
 
+	const filterOptionsByQuery = useCallback(
+		(options: ReadonlyArray<VoicePaletteOption>) => {
+			if (!normalizedFilter) return options as VoicePaletteOption[];
+			return (options as VoicePaletteOption[]).filter((option) => {
+				const haystack = [
+					option.name,
+					option.description ?? "",
+					option.category ?? "",
+					...(option.types ?? []),
+				]
+					.join(" ")
+					.toLowerCase();
+				return haystack.includes(normalizedFilter);
+			});
+		},
+		[normalizedFilter],
+	);
+
 	const baseResourceOptions = useMemo<VoicePaletteOption[]>(() => {
 		return assetLibrary.length > 0 ? assetLibrary : VOICE_ASSET_OPTIONS;
 	}, [assetLibrary]);
@@ -751,8 +815,15 @@ function FocusModePanel({
 		const addSection = (
 			label: string,
 			options: ReadonlyArray<VoicePaletteOption>,
+			config?: { variants?: ReadonlyArray<FocusWidgetVariant> },
 		) => {
 			if (!options.length) {
+				return;
+			}
+			if (
+				config?.variants &&
+				!config.variants.some((target) => target === variant)
+			) {
 				return;
 			}
 			const existing = sectionMap.get(label);
@@ -773,6 +844,12 @@ function FocusModePanel({
 		promptSections.forEach((section) =>
 			addSection(section.label, section.options),
 		);
+		VARIANT_SECTION_CONFIGS.forEach((section) => {
+			if (!section.injectIntoQuickSections) return;
+			addSection(section.label, section.options, {
+				variants: section.variants,
+			});
+		});
 
 		const ordered: Array<{ title: string; options: VoicePaletteOption[] }> = [];
 		QUICK_SECTION_ORDER.forEach((label) => {
@@ -785,7 +862,15 @@ function FocusModePanel({
 		sectionMap.forEach((options, label) => {
 			ordered.push({ title: label, options });
 		});
-		return ordered;
+
+		const filtered = ordered
+			.map(({ title, options }) => ({
+				title,
+				options: filterOptionsByQuery(options),
+			}))
+			.filter((section) => section.options.length);
+
+		return filtered;
 	}, [
 		sessionOptions,
 		agentOptions,
@@ -794,7 +879,21 @@ function FocusModePanel({
 		chipOptions.variables,
 		promptSections,
 		resourceOptions,
+		filterOptionsByQuery,
+		variant,
 	]);
+
+	const variantHighlightSections = useMemo(() => {
+		return VARIANT_SECTION_CONFIGS.filter((section) =>
+			section.variants.includes(variant),
+		)
+			.map((section) => ({
+				...section,
+				options: filterOptionsByQuery(section.options),
+			}))
+			.filter((section) => section.options.length);
+	}, [filterOptionsByQuery, variant]);
+	const hasSearchFilter = Boolean(normalizedFilter);
 
 	const paletteOptions = useMemo<VoicePaletteOption[]>(() => {
 		const history = sessionHistory
@@ -841,7 +940,7 @@ function FocusModePanel({
 	]);
 
 	const historyPreview = useMemo<VoicePaletteOption[]>(() => {
-		return sessionHistory
+		const preview = sessionHistory
 			.slice()
 			.sort((a, b) => b.lastUsed - a.lastUsed)
 			.slice(0, 3)
@@ -855,7 +954,13 @@ function FocusModePanel({
 					bookmarked: isBookmarked,
 				};
 			});
-	}, [bookmarkedSessionIds, sessionHistory]);
+		return filterOptionsByQuery(preview);
+	}, [bookmarkedSessionIds, filterOptionsByQuery, sessionHistory]);
+
+	const hasActionResults =
+		variantHighlightSections.length > 0 ||
+		quickSections.length > 0 ||
+		historyPreview.length > 0;
 
 	const handleOptionSelect = useCallback(
 		(option: VoicePaletteOption) => {
@@ -1169,7 +1274,7 @@ function FocusModePanel({
 	const browserHoldIntervalRef = useRef<NodeJS.Timeout | null>(null);
 	const browserHoldStartRef = useRef<number | null>(null);
 	const browserHoldCompletedRef = useRef(false);
-	const HOLD_DURATION_MS = 1500;
+	const HOLD_DURATION_MS = 3000;
 
 	const clearBrowserHoldTimers = useCallback(() => {
 		if (browserHoldTimerRef.current) {
@@ -1197,6 +1302,21 @@ function FocusModePanel({
 		setBrowserAccessState("idle");
 	}, [clearBrowserHoldTimers]);
 
+	const grantBrowserAccess = useCallback(() => {
+		if (!onRequestBrowserAccess || browserAccessState === "granted") {
+			clearBrowserHoldTimers();
+			setIsHoldingBrowser(false);
+			setBrowserHoldProgress(100);
+			return;
+		}
+		clearBrowserHoldTimers();
+		browserHoldCompletedRef.current = true;
+		setIsHoldingBrowser(false);
+		setBrowserHoldProgress(100);
+		setBrowserAccessState("granted");
+		onRequestBrowserAccess();
+	}, [browserAccessState, clearBrowserHoldTimers, onRequestBrowserAccess]);
+
 	const handleBrowserPointerDown = useCallback(() => {
 		if (!onRequestBrowserAccess) {
 			return;
@@ -1217,27 +1337,26 @@ function FocusModePanel({
 		}, 50);
 
 		browserHoldTimerRef.current = setTimeout(() => {
-			clearBrowserHoldTimers();
-			browserHoldCompletedRef.current = true;
-			setIsHoldingBrowser(false);
-			setBrowserHoldProgress(100);
-			setBrowserAccessState("granted");
-			onRequestBrowserAccess?.();
+			grantBrowserAccess();
 		}, HOLD_DURATION_MS);
-	}, [HOLD_DURATION_MS, clearBrowserHoldTimers, onRequestBrowserAccess]);
+	}, [
+		HOLD_DURATION_MS,
+		clearBrowserHoldTimers,
+		grantBrowserAccess,
+		onRequestBrowserAccess,
+	]);
 
-	const handleBrowserPointerEnd = useCallback(() => {
+	const handleBrowserPointerUp = useCallback(() => {
 		if (browserHoldCompletedRef.current) {
 			browserHoldCompletedRef.current = false;
 			return;
 		}
+		grantBrowserAccess();
+	}, [grantBrowserAccess]);
 
-		if (!browserHoldStartRef.current && !isHoldingBrowser) {
-			return;
-		}
-
+	const handleBrowserPointerCancel = useCallback(() => {
 		resetBrowserHold();
-	}, [isHoldingBrowser, resetBrowserHold]);
+	}, [resetBrowserHold]);
 
 	const browserProgressStyle =
 		isHoldingBrowser || browserAccessState === "pending"
@@ -1369,7 +1488,7 @@ function FocusModePanel({
 	const browserTooltipText =
 		browserAccessState === "granted"
 			? "Browser assistance enabled"
-			: "Press and hold to enable browser assistance";
+			: "Click to enable instantly or press and hold for 3 seconds to confirm";
 
 	return (
 		<div className="relative flex h-full flex-col overflow-hidden bg-gradient-to-b from-secondary/30 to-background text-secondary-foreground">
@@ -1381,10 +1500,16 @@ function FocusModePanel({
 								<button
 									type="button"
 									aria-label="Press and hold to enable browser assistance"
+									title="Enable browser assistance"
+									aria-pressed={browserAccessState === "granted"}
+									onClick={(event) => {
+										event.preventDefault();
+										grantBrowserAccess();
+									}}
 									onPointerDown={handleBrowserPointerDown}
-									onPointerUp={handleBrowserPointerEnd}
-									onPointerLeave={handleBrowserPointerEnd}
-									onPointerCancel={handleBrowserPointerEnd}
+									onPointerUp={handleBrowserPointerUp}
+									onPointerLeave={handleBrowserPointerCancel}
+									onPointerCancel={handleBrowserPointerCancel}
 									className={cn(
 										"relative flex h-10 w-10 items-center justify-center rounded-full border border-primary/40 bg-background/70 text-primary shadow-md transition focus:outline-none focus:ring-2 focus:ring-primary/30",
 										browserAccessState === "granted" &&
@@ -1401,6 +1526,9 @@ function FocusModePanel({
 									/>
 									<span className="relative flex h-8 w-8 items-center justify-center rounded-full bg-background/70">
 										{browserButtonIcon}
+									</span>
+									<span className="sr-only">
+										Browser assistance status: {browserAccessState}
 									</span>
 								</button>
 							</TooltipTrigger>
@@ -1478,6 +1606,28 @@ function FocusModePanel({
 						/>
 						{heroContent}
 					</div>
+					<div className="space-y-2">
+						<label
+							htmlFor="focus-widget-search"
+							className="text-[11px] font-semibold uppercase tracking-wide text-primary/60"
+						>
+							Quick filter
+						</label>
+						<div className="relative">
+							<Search
+								className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-primary/50"
+								aria-hidden
+							/>
+							<Input
+								id="focus-widget-search"
+								type="search"
+								value={optionFilter}
+								onChange={(event) => setOptionFilter(event.target.value)}
+								placeholder="Search sessions, prompts, or automations"
+								className="w-full bg-primary/5 pl-9 text-sm text-primary placeholder:text-primary/50 focus-visible:ring-primary/40"
+							/>
+						</div>
+					</div>
 					<Accordion
 						type="single"
 						collapsible
@@ -1523,69 +1673,120 @@ function FocusModePanel({
 							</AccordionContent>
 						</AccordionItem>
 					</Accordion>
-					<Accordion
-						type="multiple"
-						defaultValue={
-							quickSections.length > 0
-								? [`quick-${slugify(quickSections[0].title)}`]
-								: []
-						}
-						className="overflow-hidden rounded-2xl border border-primary/15 bg-primary/5 backdrop-blur-sm"
-					>
-						{quickSections.map((section) => {
-							const value = `quick-${slugify(section.title)}`;
-							return (
-								<AccordionItem
-									value={value}
-									key={value}
-									className="border-none"
-								>
+					{variantHighlightSections.map((section) => (
+						<Accordion
+							key={section.id}
+							type="single"
+							collapsible
+							defaultValue={section.id}
+							className={cn(
+								"overflow-hidden rounded-2xl border border-primary/20 bg-primary/5 backdrop-blur-sm",
+								section.accent === "primary" &&
+									"border-primary/40 bg-primary/10 shadow-[0_8px_30px_rgba(59,130,246,0.25)]",
+							)}
+						>
+							<AccordionItem value={section.id} className="border-none">
+								<AccordionTrigger className="px-4 py-3 text-left text-sm font-semibold text-primary hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30">
+									<div className="flex w-full flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+										<span className="flex items-center gap-2">
+											{section.accent === "primary" ? (
+												<span className="rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary">
+													Phone Mode
+												</span>
+											) : null}
+											<span>{section.label}</span>
+										</span>
+										{section.description ? (
+											<span className="text-xs font-medium text-primary/70">
+												{section.description}
+											</span>
+										) : null}
+									</div>
+								</AccordionTrigger>
+								<AccordionContent className="px-4 pb-4">
+									<OptionStrip
+										title={section.label}
+										options={section.options}
+										onSelect={handleOptionSelect}
+										onBookmarkToggle={handleBookmarkToggle}
+										showHeading={false}
+										layout="grid"
+										maxItems={section.options.length}
+									/>
+								</AccordionContent>
+							</AccordionItem>
+						</Accordion>
+					))}
+					<div className="space-y-4">
+						<Accordion
+							type="multiple"
+							defaultValue={
+								quickSections.length > 0
+									? [`quick-${slugify(quickSections[0].title)}`]
+									: []
+							}
+							className="overflow-hidden rounded-2xl border border-primary/15 bg-primary/5 backdrop-blur-sm"
+						>
+							{quickSections.map((section) => {
+								const value = `quick-${slugify(section.title)}`;
+								return (
+									<AccordionItem
+										value={value}
+										key={value}
+										className="border-none"
+									>
+										<AccordionTrigger className="px-4 py-3 text-left text-sm font-semibold text-primary hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30">
+											<div className="flex w-full items-center justify-between gap-2">
+												<span>{section.title}</span>
+												<span className="text-[11px] font-medium text-primary/60">
+													{section.options.length} options
+												</span>
+											</div>
+										</AccordionTrigger>
+										<AccordionContent className="px-4 pb-4">
+											<OptionStrip
+												title={section.title}
+												options={section.options}
+												onSelect={handleOptionSelect}
+												onBookmarkToggle={handleBookmarkToggle}
+												showHeading={false}
+												layout="scroll"
+												maxItems={section.options.length}
+											/>
+										</AccordionContent>
+									</AccordionItem>
+								);
+							})}
+							{historyPreview.length > 0 ? (
+								<AccordionItem value="quick-recent" className="border-none">
 									<AccordionTrigger className="px-4 py-3 text-left text-sm font-semibold text-primary hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30">
 										<div className="flex w-full items-center justify-between gap-2">
-											<span>{section.title}</span>
+											<span>Recent</span>
 											<span className="text-[11px] font-medium text-primary/60">
-												{section.options.length} options
+												{historyPreview.length} items
 											</span>
 										</div>
 									</AccordionTrigger>
 									<AccordionContent className="px-4 pb-4">
 										<OptionStrip
-											title={section.title}
-											options={section.options}
+											title="Recent"
+											options={historyPreview}
 											onSelect={handleOptionSelect}
 											onBookmarkToggle={handleBookmarkToggle}
 											showHeading={false}
 											layout="scroll"
-											maxItems={section.options.length}
+											maxItems={historyPreview.length}
 										/>
 									</AccordionContent>
 								</AccordionItem>
-							);
-						})}
-						{historyPreview.length > 0 ? (
-							<AccordionItem value="quick-recent" className="border-none">
-								<AccordionTrigger className="px-4 py-3 text-left text-sm font-semibold text-primary hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30">
-									<div className="flex w-full items-center justify-between gap-2">
-										<span>Recent</span>
-										<span className="text-[11px] font-medium text-primary/60">
-											{historyPreview.length} items
-										</span>
-									</div>
-								</AccordionTrigger>
-								<AccordionContent className="px-4 pb-4">
-									<OptionStrip
-										title="Recent"
-										options={historyPreview}
-										onSelect={handleOptionSelect}
-										onBookmarkToggle={handleBookmarkToggle}
-										showHeading={false}
-										layout="scroll"
-										maxItems={historyPreview.length}
-									/>
-								</AccordionContent>
-							</AccordionItem>
-						) : null}
-					</Accordion>
+							) : null}
+						</Accordion>
+					</div>
+					{hasSearchFilter && !hasActionResults ? (
+						<div className="rounded-2xl border border-primary/15 bg-primary/5 px-4 py-3 text-center text-sm text-primary/70">
+							No matches for “{optionFilter.trim()}”. Try different keywords.
+						</div>
+					) : null}
 					<p className="text-center text-[11px] text-primary/70">
 						{footerCopy}
 					</p>
@@ -1636,8 +1837,8 @@ const TONE_STYLES: Record<
 		wrapper: "border-sky-400/50 bg-sky-500/10 text-sky-700",
 	},
 	idle: {
-		dot: "bg-muted-foreground/70",
-		wrapper: "border-border/60 bg-muted/40 text-muted-foreground",
+		dot: "bg-primary/60",
+		wrapper: "border-primary/30 bg-primary/15 text-primary",
 	},
 };
 
@@ -1850,7 +2051,7 @@ function OptionStrip({
 	const limit = maxItems ?? (layout === "grid" ? options.length : 4);
 	const limited = options.slice(0, Math.max(limit, 0));
 	return (
-		<section className="flex flex-col gap-1">
+		<section className="flex w-full flex-col gap-1">
 			{showHeading ? (
 				<h3 className="text-[11px] font-semibold uppercase tracking-wide text-primary/70">
 					{title}
@@ -1858,10 +2059,10 @@ function OptionStrip({
 			) : null}
 			<div
 				className={cn(
-					"flex gap-2 pb-1",
+					"gap-2 pb-1",
 					layout === "scroll"
-						? "overflow-x-auto flex-nowrap [touch-action:pan-x] [overscroll-behavior-inline:contain] [-webkit-overflow-scrolling:touch]"
-						: "flex-wrap overflow-visible",
+						? "flex flex-nowrap overflow-x-auto [touch-action:pan-x] [overscroll-behavior-inline:contain] [-webkit-overflow-scrolling:touch] sm:flex-wrap sm:overflow-visible sm:[touch-action:auto] sm:[overscroll-behavior-inline:auto]"
+						: "grid [grid-template-columns:repeat(auto-fit,minmax(180px,1fr))]",
 				)}
 			>
 				{limited.map((option) => {
@@ -1875,7 +2076,12 @@ function OptionStrip({
 					return (
 						<div
 							key={option.id}
-							className="flex min-w-[140px] items-stretch gap-1"
+							className={cn(
+								"flex items-stretch gap-1",
+								layout === "scroll"
+									? "min-w-[160px] flex-none sm:flex-1 sm:min-w-[200px]"
+									: "w-full",
+							)}
 						>
 							<button
 								type="button"

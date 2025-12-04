@@ -3,6 +3,8 @@ import { fileURLToPath } from "node:url";
 import { defineConfig } from "vitest/config";
 
 const rootDir = fileURLToPath(new URL(".", import.meta.url));
+const coverageEnabled =
+	process.env.CI === "true" || process.env.VITEST_COVERAGE === "1";
 
 export default defineConfig({
 	test: {
@@ -46,5 +48,19 @@ export default defineConfig({
 				"node_modules/react/jsx-runtime",
 			),
 		},
+	},
+	coverage: {
+		enabled: coverageEnabled,
+		provider: "v8",
+		reportsDirectory: path.resolve(
+			rootDir,
+			"reports",
+			"tests",
+			"coverage",
+			"latest",
+		),
+		reporter: ["text", "json-summary", "lcov"],
+		clean: true,
+		exclude: ["**/node_modules/**", "**/.next/**", "vitest.config.ts"],
 	},
 });

@@ -1,0 +1,104 @@
+name: "Notify Slack"
+description: "Send a formatted Slack message with optional status coloring."
+author: "Deal Scale DevOps"
+
+inputs:
+  webhook:
+    description: "Slack incoming webhook URL"
+    required: true
+  message:
+    description: "Message body (supports Slack markdown)"
+    required: true
+  status:
+    description: "Status indicator (success, warning, failure, info)"
+    required: false
+    default: "info"
+  title:
+    description: "Optional message title"
+    required: false
+  channel:
+    description: "Override Slack channel (optional if webhook is channel-bound)"
+    required: false
+  username:
+    description: "Display name override"
+    required: false
+  icon_emoji:
+    description: "Emoji icon override (e.g. :rocket:)"
+    required: false
+  icon_url:
+    description: "Icon URL override"
+    required: false
+
+branding:
+  icon: "bell"
+  color: "36C5F0"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Send Slack notification
+      shell: bash
+      env:
+        SLACK_WEBHOOK: ${{ inputs.webhook }}
+        SLACK_MESSAGE: ${{ inputs.message }}
+        SLACK_STATUS: ${{ inputs.status }}
+        SLACK_TITLE: ${{ inputs.title }}
+        SLACK_CHANNEL: ${{ inputs.channel }}
+        SLACK_USERNAME: ${{ inputs.username }}
+        SLACK_ICON_EMOJI: ${{ inputs.icon_emoji }}
+        SLACK_ICON_URL: ${{ inputs.icon_url }}
+      run: |
+        set -Eeuo pipefail
+
+        if [[ -z "${SLACK_WEBHOOK}" ]]; then
+          echo "::error title=Slack::Webhook URL is required"
+          exit 1
+        fi
+
+        python3 <<'PY' > payload.json
+import json
+import os
+
+status = (os.environ.get("SLACK_STATUS") or "info").lower()
+color_map = {
+    "success": "#2eb886",
+    "warning": "#daa038",
+    "failure": "#e01e5a",
+    "error": "#e01e5a",
+    "info": "#439fe0",
+}
+payload = {}
+text = os.environ.get("SLACK_MESSAGE") or ""
+title = os.environ.get("SLACK_TITLE")
+channel = os.environ.get("SLACK_CHANNEL")
+username = os.environ.get("SLACK_USERNAME")
+icon_emoji = os.environ.get("SLACK_ICON_EMOJI")
+icon_url = os.environ.get("SLACK_ICON_URL")
+
+if channel:
+    payload["channel"] = channel
+if username:
+    payload["username"] = username
+if icon_emoji:
+    payload["icon_emoji"] = icon_emoji
+if icon_url:
+    payload["icon_url"] = icon_url
+
+attachment = {
+    "color": color_map.get(status, color_map["info"]),
+    "text": text,
+    "mrkdwn_in": ["text", "pretext"],
+}
+if title:
+    attachment["title"] = title
+
+payload["attachments"] = [attachment]
+
+print(json.dumps(payload))
+PY
+
+        curl -sS -X POST \
+          -H 'Content-type: application/json' \
+          --data @payload.json \
+          "${SLACK_WEBHOOK}"
+

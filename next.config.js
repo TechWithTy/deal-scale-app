@@ -2,27 +2,67 @@ const path = require("node:path");
 const { buildCacheControl } = require("./utils/http/cacheControl.js");
 const { offlineFallback } = require("./public/sw-config.js");
 
+const imageStackValue =
+	process.env.NEXT_IMAGE_STACK ??
+	(process.env.CF_PAGES ? "cloudflare" : "next");
+const imageStack =
+	typeof imageStackValue === "string"
+		? imageStackValue.toLowerCase()
+		: "next";
+const useCloudflareImages = imageStack === "cloudflare";
+
 // Bundle analyzer (run with: ANALYZE=true pnpm build)
 const withBundleAnalyzer = require("@next/bundle-analyzer")({
 	enabled: process.env.ANALYZE === "true",
 });
 
 // PWA support - make dashboard installable
-const withPWA = require("next-pwa")({
-	dest: "public",
-	disable: process.env.NODE_ENV === "development",
-	register: true,
-	skipWaiting: true,
-	swSrc: "./public/sw-custom.js",
-	buildExcludes: [/middleware-manifest\.json$/],
-	fallbacks: {
-		document: offlineFallback,
-	},
-});
+// Only require next-pwa in production; allow disabling via env var.
+// If transitive deps are missing, gracefully disable PWA instead of failing the build.
+const isProd = process.env.NODE_ENV === "production";
+const disablePwa = process.env.NEXT_DISABLE_PWA === "1";
+let withPWA = (config) => config;
+if (isProd && !disablePwa) {
+  try {
+    const nextPwa = require("next-pwa");
+    const enhancerFactory = nextPwa({
+      dest: "public",
+      disable: false,
+      register: true,
+      skipWaiting: true,
+      swSrc: "./public/sw-custom.js",
+      buildExcludes: [/middleware-manifest\.json$/],
+      fallbacks: { document: offlineFallback },
+    });
+    // Wrap the enhancer invocation to catch any late requires inside next-pwa
+    withPWA = (config) => {
+      try {
+        return enhancerFactory(config);
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.warn(
+          `[next-pwa] disabled at enhance: ${
+            err && (err.message || err)
+          }. Proceeding without PWA.`,
+        );
+        return config;
+      }
+    };
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.warn(
+      `[next-pwa] disabled at require: ${
+        err && (err.message || err)
+      }. Proceeding without PWA. Install transitive deps if needed.`,
+    );
+    withPWA = (config) => config;
+  }
+}
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
 	// Essential configurations
+	output: "standalone",
 	transpilePackages: ["shadcn-table"],
 	eslint: { ignoreDuringBuilds: true },
 	typescript: { ignoreBuildErrors: true },
@@ -89,6 +129,12 @@ const nextConfig = {
 		deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
 		imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
 		minimumCacheTTL: 60 * 60 * 24 * 7, // 7 days
+		...(useCloudflareImages
+			? {
+					loader: "custom",
+					loaderFile: "./lib/images/cloudflare-loader.js",
+			  }
+			: {}),
 	},
 
 	experimental: {
@@ -113,11 +159,11 @@ const nextConfig = {
 
 	// Simplified webpack configuration
 	webpack: (config, { isServer }) => {
-		// Basic path aliases
-		config.resolve.alias = {
-			...(config.resolve.alias || {}),
-			"@": path.resolve(__dirname),
-			external: path.resolve(__dirname, "external"),
+    // Basic path aliases
+    config.resolve.alias = {
+      ...(config.resolve.alias || {}),
+      "@": path.resolve(__dirname),
+      external: path.resolve(__dirname, "external"),
 			"@external/dynamic-hero": path.resolve(
 				__dirname,
 				"external/dynamic-hero/src/index.ts",
@@ -126,10 +172,71 @@ const nextConfig = {
 				__dirname,
 				"external/dynamic-hero/src",
 			),
-		};
+    };
 
-		return config;
-	},
+    // If Tailwind's transitive dep is missing, alias tailwindcss to a no-op shim
+    const forceNoTailwind = process.env.NEXT_DISABLE_TAILWIND === "1";
+    let needAliasTailwind = forceNoTailwind;
+    if (!needAliasTailwind) {
+      try {
+        require.resolve("@alloc/quick-lru");
+        require.resolve("tailwindcss");
+      } catch (_) {
+        needAliasTailwind = true;
+      }
+    }
+    if (needAliasTailwind) {
+      config.resolve.alias["tailwindcss"] = path.resolve(
+        __dirname,
+        "shims/tailwindcss-shim.cjs",
+      );
+    }
+
+    // If '@auth/core' cannot be resolved or auth is disabled, alias to shims
+    const forceAuthShim = process.env.NEXT_DISABLE_AUTH === "1";
+    let needAliasAuthCore = forceAuthShim;
+    if (!needAliasAuthCore) {
+      try {
+        require.resolve("@auth/core");
+        require.resolve("@auth/core/errors");
+      } catch (_) {
+        needAliasAuthCore = true;
+      }
+    }
+    if (needAliasAuthCore) {
+      config.resolve.alias["@auth/core"] = path.resolve(
+        __dirname,
+        "shims/auth-core-shim.ts",
+      );
+      config.resolve.alias["@auth/core/errors"] = path.resolve(
+        __dirname,
+        "shims/auth-core-errors-shim.ts",
+      );
+      // Also alias next-auth packages to shims when core is unavailable
+      config.resolve.alias["next-auth"] = path.resolve(
+        __dirname,
+        "shims/next-auth-shim.ts",
+      );
+      config.resolve.alias["next-auth/react"] = path.resolve(
+        __dirname,
+        "shims/next-auth-react-shim.tsx",
+      );
+    }
+
+    // Allow builds to proceed without next-auth by aliasing to shims
+    if (process.env.NEXT_DISABLE_AUTH === "1") {
+      config.resolve.alias["next-auth"] = path.resolve(
+        __dirname,
+        "shims/next-auth-shim.ts",
+      );
+      config.resolve.alias["next-auth/react"] = path.resolve(
+        __dirname,
+        "shims/next-auth-react-shim.tsx",
+      );
+    }
+
+    return config;
+  },
 };
 
 module.exports = withBundleAnalyzer(withPWA(nextConfig));

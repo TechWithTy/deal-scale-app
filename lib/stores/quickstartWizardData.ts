@@ -15,10 +15,12 @@ import type { QuickStartDefaults } from "@/types/userProfile";
 interface QuickStartWizardDataState {
 	readonly personaId: QuickStartPersonaId | null;
 	readonly goalId: QuickStartGoalId | null;
+	readonly isCompleting: boolean;
 	readonly selectPersona: (personaId: QuickStartPersonaId) => void;
 	readonly selectGoal: (goalId: QuickStartGoalId) => void;
 	readonly applyPreset: (preset?: QuickStartWizardPreset) => void;
 	readonly reset: () => void;
+	readonly setCompleting: (completing: boolean) => void;
 }
 
 const deriveStateFromDefaults = (
@@ -65,7 +67,9 @@ const createInitialState = () => {
 	}
 
 	// If no profile, try to get from session (for auth users)
-	// This will be populated by the subscriber below
+	// We need to dynamically check session here since it's not available at module load time
+	// The SessionDefaultsSync component will handle syncing session defaults
+	// For now, return null values - they'll be populated by the sync
 	return {
 		personaId: null as QuickStartPersonaId | null,
 		goalId: null as QuickStartGoalId | null,
@@ -76,20 +80,47 @@ export const useQuickStartWizardDataStore =
 	createWithEqualityFn<QuickStartWizardDataState>(
 		(set, get) => ({
 			...createInitialState(),
+			isCompleting: false,
+			setCompleting: (completing: boolean) => {
+				set({ isCompleting: completing });
+			},
 			selectPersona: (personaId) => {
+				console.log("👤 [WIZARD DATA] selectPersona() called:", personaId);
 				const previousState = get();
+				console.log("👤 [WIZARD DATA] Previous state:", {
+					personaId: previousState.personaId,
+					goalId: previousState.goalId,
+					isCompleting: previousState.isCompleting,
+				});
+
+				// Prevent selection if completing
+				if (previousState.isCompleting) {
+					console.warn(
+						"⚠️ [WIZARD DATA] selectPersona() called while completing - ignoring",
+					);
+					return;
+				}
+
 				set((state) => {
 					if (state.goalId) {
 						const definition = getGoalDefinition(state.goalId);
 						if (definition?.personaId === personaId) {
+							console.log(
+								"👤 [WIZARD DATA] Persona matches existing goal, keeping goalId",
+							);
 							return { personaId, goalId: definition.id };
 						}
 					}
 
+					console.log("👤 [WIZARD DATA] Setting persona, clearing goalId");
 					return { personaId, goalId: null };
 				});
 
 				const { goalId } = get();
+				console.log("👤 [WIZARD DATA] Persona selected, new state:", {
+					personaId,
+					goalId,
+				});
 				captureQuickStartEvent("quickstart_persona_selected", {
 					personaId,
 					goalId,
@@ -98,13 +129,36 @@ export const useQuickStartWizardDataStore =
 				});
 			},
 			selectGoal: (goalId) => {
+				console.log("🎯 [WIZARD DATA] selectGoal() called:", goalId);
 				const previousState = get();
+				console.log("🎯 [WIZARD DATA] Previous state:", {
+					personaId: previousState.personaId,
+					goalId: previousState.goalId,
+					isCompleting: previousState.isCompleting,
+				});
+
+				// Prevent selection if completing
+				if (previousState.isCompleting) {
+					console.warn(
+						"⚠️ [WIZARD DATA] selectGoal() called while completing - ignoring",
+					);
+					return;
+				}
+
 				set(() => {
 					const definition = getGoalDefinition(goalId);
 					if (!definition) {
+						console.warn(
+							"⚠️ [WIZARD DATA] Goal definition not found for:",
+							goalId,
+						);
 						return {};
 					}
 
+					console.log("🎯 [WIZARD DATA] Setting goal and persona:", {
+						personaId: definition.personaId,
+						goalId: definition.id,
+					});
 					return {
 						personaId: definition.personaId,
 						goalId: definition.id,
@@ -113,9 +167,14 @@ export const useQuickStartWizardDataStore =
 
 				const nextState = get();
 				if (!nextState.goalId) {
+					console.warn("⚠️ [WIZARD DATA] Goal not set after selectGoal()");
 					return;
 				}
 
+				console.log("🎯 [WIZARD DATA] Goal selected, new state:", {
+					personaId: nextState.personaId,
+					goalId: nextState.goalId,
+				});
 				captureQuickStartEvent("quickstart_goal_selected", {
 					personaId: nextState.personaId,
 					goalId: nextState.goalId,
@@ -148,7 +207,7 @@ export const useQuickStartWizardDataStore =
 
 					return createInitialState();
 				}),
-			reset: () => set(createInitialState()),
+			reset: () => set({ ...createInitialState(), isCompleting: false }),
 		}),
 		Object.is,
 	);
@@ -158,6 +217,10 @@ useUserProfileStore.subscribe(
 	(state) => state.userProfile?.quickStartDefaults,
 	(defaults) => {
 		useQuickStartWizardDataStore.setState((current) => {
+			// Don't sync if wizard is completing (prevents interference with modal opening)
+			if (current.isCompleting) {
+				return {};
+			}
 			if (current.personaId || current.goalId) {
 				return {};
 			}

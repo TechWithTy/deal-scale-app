@@ -54,6 +54,7 @@ export type LeadTypeGlobal = {
 	lastUpdate: string; // Last update timestamp
 	address1: Address; // Address of the lead (optional)
 	campaignID?: string;
+	dealId?: string; // Link to Deal Room if lead converted to deal
 	// Social media links
 	socials?: SocialLinks;
 	// Additional social data

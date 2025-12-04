@@ -132,6 +132,140 @@ export const VOICE_SPRINT_OPTIONS: VoicePaletteOption[] = [
 	},
 ] as const;
 
+export const PHONE_COMMS_OPTIONS: VoicePaletteOption[] = [
+	{
+		id: "phone-call-playbook",
+		name: "Power Dial Playbook",
+		category: "Call & SMS Actions",
+		types: ["phone", "call", "sequence", "playbook"],
+		description: "Launch a call-first cadence with AI logging and talk tracks.",
+		icon: "phone-call",
+		badge: "Dial",
+	},
+	{
+		id: "phone-sms-followup",
+		name: "SMS Follow-up",
+		category: "Call & SMS Actions",
+		types: ["phone", "sms", "follow-up"],
+		description:
+			"Send auto-personalized SMS nudges when calls go to voicemail.",
+		icon: "message-square",
+		badge: "SMS",
+	},
+	{
+		id: "phone-voicemail-drop",
+		name: "Voicemail Drop",
+		category: "Call & SMS Actions",
+		types: ["phone", "voicemail", "automation"],
+		description: "Drop branded voicemail and log outcomes with one tap.",
+		icon: "sparkles",
+		badge: "Automation",
+	},
+] as const;
+
+export const PHONE_DIALER_RECOMMENDATIONS: VoicePaletteOption[] = [
+	{
+		id: "dialer-multi-mode",
+		name: "Multi-mode Dialing",
+		category: "Dialer Essentials",
+		types: ["dialer", "power", "preview", "predictive"],
+		description:
+			"Switch between single-line, power, and parallel dialing for any list size.",
+		icon: "phone-call",
+		badge: "Modes",
+	},
+	{
+		id: "dialer-enrichment-skiptrace",
+		name: "Enrichment & Skip Trace",
+		category: "Dialer Essentials",
+		types: ["enrichment", "skiptrace", "data"],
+		description:
+			"Enrich every lead with owner intel and skip-trace details before dialing.",
+		icon: "globe",
+		badge: "Data",
+	},
+	{
+		id: "dialer-compliance",
+		name: "Compliance Guardrails",
+		category: "Dialer Essentials",
+		types: ["compliance", "dnc"],
+		description:
+			"Auto-scrub DNC lists, respect time zones, and log consent for every call.",
+		icon: "shield-check",
+		badge: "DNC",
+	},
+	{
+		id: "dialer-crm-sync",
+		name: "CRM & Automation Sync",
+		category: "Dialer Essentials",
+		types: ["crm", "automation", "integration"],
+		description:
+			"Push dispositions to HubSpot, Zoho, or custom webhooks with one click.",
+		icon: "activity",
+		badge: "Sync",
+	},
+	{
+		id: "dialer-analytics",
+		name: "Performance Analytics",
+		category: "Dialer Essentials",
+		types: ["analytics", "dashboards"],
+		description:
+			"Live dashboards for calls, talk time, appointments set, and team heat maps.",
+		icon: "target",
+		badge: "Insights",
+	},
+	{
+		id: "dialer-caller-id",
+		name: "Caller ID Reputation",
+		category: "Dialer Essentials",
+		types: ["caller-id", "local-presence"],
+		description:
+			"Rotate local area codes and monitor spam flags to keep connect rates high.",
+		icon: "phone",
+		badge: "Trust",
+	},
+	{
+		id: "dialer-mobile-agents",
+		name: "Mobile & Remote Agents",
+		category: "Dialer Essentials",
+		types: ["mobile", "remote"],
+		description:
+			"Let field agents dial from browser or mobile with synced lists.",
+		icon: "monitor-up",
+		badge: "Mobile",
+	},
+	{
+		id: "dialer-real-estate-templates",
+		name: "Real Estate Templates",
+		category: "Dialer Essentials",
+		types: ["templates", "real-estate"],
+		description:
+			"FSBO, expired, investor, and circle prospecting scripts baked in.",
+		icon: "sparkles",
+		badge: "Templates",
+	},
+	{
+		id: "dialer-flow-builder",
+		name: "Campaign Flow Builder",
+		category: "Dialer Essentials",
+		types: ["workflow", "builder"],
+		description:
+			"Design import → enrich → dial → follow-up drips with one visual builder.",
+		icon: "layers",
+		badge: "Flow",
+	},
+	{
+		id: "dialer-multi-tenant",
+		name: "Multi-tenant Controls",
+		category: "Dialer Essentials",
+		types: ["multi-tenant", "white-label"],
+		description:
+			"Give teams and brokerages sub-accounts, role-based access, and branding.",
+		icon: "users",
+		badge: "Teams",
+	},
+] as const;
+
 export const DEFAULT_WIDGET_WIDTH = WIDGET_WIDTH;
 
 export const MIN_WIDGET_HEIGHTS = {

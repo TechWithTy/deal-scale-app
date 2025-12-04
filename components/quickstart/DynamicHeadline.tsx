@@ -281,41 +281,52 @@ const DynamicHeadline = ({ personaId }: DynamicHeadlineProps) => {
 	}, [problemsKey, solutionsKey, fearsKey, hopesKey]);
 
 	useEffect(() => {
+		// Guard against SSR/test environments
+		if (typeof window === "undefined") return;
+
 		const intervals: Array<ReturnType<typeof setInterval>> = [];
 
 		if (problems.length > 1) {
 			intervals.push(
-				setInterval(
-					() => setProblemIndex((current) => (current + 1) % problems.length),
-					PROBLEM_INTERVAL_MS,
-				),
+				setInterval(() => {
+					// Guard setState calls against test environment teardown
+					if (typeof window !== "undefined") {
+						setProblemIndex((current) => (current + 1) % problems.length);
+					}
+				}, PROBLEM_INTERVAL_MS),
 			);
 		}
 
 		if (solutions.length > 1) {
 			intervals.push(
-				setInterval(
-					() => setSolutionIndex((current) => (current + 1) % solutions.length),
-					SOLUTION_INTERVAL_MS,
-				),
+				setInterval(() => {
+					// Guard setState calls against test environment teardown
+					if (typeof window !== "undefined") {
+						setSolutionIndex((current) => (current + 1) % solutions.length);
+					}
+				}, SOLUTION_INTERVAL_MS),
 			);
 		}
 
 		if (fears.length > 1) {
 			intervals.push(
-				setInterval(
-					() => setFearIndex((current) => (current + 1) % fears.length),
-					FEAR_INTERVAL_MS,
-				),
+				setInterval(() => {
+					// Guard setState calls against test environment teardown
+					if (typeof window !== "undefined") {
+						setFearIndex((current) => (current + 1) % fears.length);
+					}
+				}, FEAR_INTERVAL_MS),
 			);
 		}
 
 		if (hopes.length > 1) {
 			intervals.push(
-				setInterval(
-					() => setHopeIndex((current) => (current + 1) % hopes.length),
-					HOPE_INTERVAL_MS,
-				),
+				setInterval(() => {
+					// Guard setState calls against test environment teardown
+					if (typeof window !== "undefined") {
+						setHopeIndex((current) => (current + 1) % hopes.length);
+					}
+				}, HOPE_INTERVAL_MS),
 			);
 		}
 

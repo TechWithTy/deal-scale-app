@@ -1,0 +1,16 @@
+name = "dealscale"
+compatibility_date = "2025-11-14"
+main = ".open-next/worker.js"
+
+[build]
+command = "pnpm run build:cf"
+cwd = "."
+
+# Environment variables for Cloudflare deployment
+[vars]
+NODE_ENV = "production"
+NEXTAUTH_URL = "https://your-domain.pages.dev"
+# Secrets (set with wrangler secret put)
+# DATABASE_URL = "your-database-url"
+# NEXTAUTH_SECRET = "your-secret"
+# REDIS_URL = "your-redis-url"

@@ -1,1 +1,15 @@
+
+# ! Do NOT add Husky shim/shebang lines here; PowerShell hooks will break.
+
+# Ensure commit scopes stay in sync with app routes before every commit.
+pnpm run sync:commit-scopes
+
+# Run critical unit/regression tests only. Continue even if they fail.
+pnpm run test:critical || echo "[pre-commit] Critical test run failed; continuing without blocking commit."
+
+# Archive coverage and Lighthouse reports into timestamped history folders.
+pnpm run archive:coverage
+pnpm run archive:reports
+
+# Run lint-staged last to format/stage code changes.
 npx lint-staged

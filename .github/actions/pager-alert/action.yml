@@ -1,0 +1,105 @@
+name: "Pager Alert"
+description: "Trigger or update a PagerDuty incident via the Events API v2."
+author: "Deal Scale DevOps"
+
+inputs:
+  routing_key:
+    description: "PagerDuty Events API routing (integration) key"
+    required: true
+  summary:
+    description: "Incident summary/title"
+    required: true
+  source:
+    description: "Unique identifier of the event source (e.g., service name, host)"
+    required: true
+  severity:
+    description: "Severity level (info, warning, error, critical)"
+    required: false
+    default: "info"
+  dedup_key:
+    description: "Deduplication key to correlate related events"
+    required: false
+  component:
+    description: "Component or service affected"
+    required: false
+  group:
+    description: "Functional group or pod"
+    required: false
+  klass:
+    description: "Event class or type"
+    required: false
+  custom_details:
+    description: "JSON string with additional context"
+    required: false
+
+branding:
+  icon: "alert-triangle"
+  color: "e01e5a"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Send PagerDuty event
+      shell: bash
+      env:
+        PD_ROUTING_KEY: ${{ inputs.routing_key }}
+        PD_SUMMARY: ${{ inputs.summary }}
+        PD_SOURCE: ${{ inputs.source }}
+        PD_SEVERITY: ${{ inputs.severity }}
+        PD_DEDUP_KEY: ${{ inputs.dedup_key }}
+        PD_COMPONENT: ${{ inputs.component }}
+        PD_GROUP: ${{ inputs.group }}
+        PD_CLASS: ${{ inputs.klass }}
+        PD_CUSTOM_DETAILS: ${{ inputs.custom_details }}
+      run: |
+        set -Eeuo pipefail
+
+        if [[ -z "${PD_ROUTING_KEY}" ]]; then
+          echo "::error title=PagerDuty::routing_key is required"
+          exit 1
+        fi
+
+        python3 <<'PY' > pager.json
+import json
+import os
+
+payload = {
+    "routing_key": os.environ["PD_ROUTING_KEY"],
+    "event_action": "trigger",
+    "payload": {
+        "summary": os.environ["PD_SUMMARY"],
+        "source": os.environ["PD_SOURCE"],
+        "severity": (os.environ.get("PD_SEVERITY") or "info").lower(),
+    },
+}
+
+if os.environ.get("PD_DEDUP_KEY"):
+    payload["dedup_key"] = os.environ["PD_DEDUP_KEY"]
+if os.environ.get("PD_COMPONENT"):
+    payload["payload"]["component"] = os.environ["PD_COMPONENT"]
+if os.environ.get("PD_GROUP"):
+    payload["payload"]["group"] = os.environ["PD_GROUP"]
+if os.environ.get("PD_CLASS"):
+    payload["payload"]["class"] = os.environ["PD_CLASS"]
+
+custom_details = os.environ.get("PD_CUSTOM_DETAILS")
+if custom_details:
+    try:
+        payload["payload"]["custom_details"] = json.loads(custom_details)
+    except json.JSONDecodeError:
+        payload["payload"]["custom_details"] = {"message": custom_details}
+
+print(json.dumps(payload))
+PY
+
+        curl -sS -X POST https://events.pagerduty.com/v2/enqueue \
+          -H "Content-Type: application/json" \
+          --data @pager.json
+
+
+
+
+
+
+
+

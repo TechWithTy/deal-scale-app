@@ -1,11 +1,12 @@
 import React from "react";
-import { act, render, screen, within } from "@testing-library/react";
+import { act, screen, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it } from "vitest";
 
 import QuickStartWizard from "@/components/quickstart/wizard/QuickStartWizard";
 import { getQuickStartTemplate } from "@/lib/config/quickstart/templates";
 import { useQuickStartWizardStore } from "@/lib/stores/quickstartWizard";
 import { useQuickStartWizardDataStore } from "@/lib/stores/quickstartWizardData";
+import { renderWithNuqs } from "./testUtils";
 
 (globalThis as Record<string, unknown>).React = React;
 (globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true;
@@ -23,7 +24,7 @@ describe("QuickStart wizard summary previews", () => {
 	});
 
 	it("shows the template defaults preview for the lender automation play", async () => {
-		render(<QuickStartWizard />);
+		renderWithNuqs(<QuickStartWizard />);
 
 		act(() => {
 			useQuickStartWizardStore.getState().open({
@@ -54,7 +55,7 @@ describe("QuickStart wizard summary previews", () => {
 
 		expect(bulletText).toEqual(
 			expect.arrayContaining([
-				expect.stringMatching(/Primary channel: Email/i),
+				expect.stringMatching(/Primary channel: Text/i),
 				expect.stringMatching(/Workflow: Aggressive: 3-day blitz/i),
 				expect.stringMatching(/Assigned agent: Jane Smith/i),
 				expect.stringMatching(

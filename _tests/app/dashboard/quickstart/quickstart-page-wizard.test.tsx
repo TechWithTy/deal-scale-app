@@ -1,6 +1,6 @@
 import React, { act } from "react";
-import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import QuickStartPage from "@/app/dashboard/page";
 import { QUICK_START_DEFAULT_STEP } from "@/lib/stores/quickstartWizard";
@@ -10,6 +10,7 @@ import { useQuickStartWizardStore } from "@/lib/stores/quickstartWizard";
 import { useQuickStartWizardExperienceStore } from "@/lib/stores/quickstartWizardExperience";
 import { useUserProfileStore } from "@/lib/stores/user/userProfile";
 import LeadSourceSelector from "@/components/quickstart/wizard/steps/lead/LeadSourceSelector";
+import { renderWithNuqs } from "./testUtils";
 
 (globalThis as Record<string, unknown>).React = React;
 (globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true;
@@ -152,8 +153,16 @@ describe("QuickStartPage wizard modal", () => {
                 appliedTemplateIds.length = 0;
         });
 
+        afterEach(async () => {
+                // Wait for any pending React updates
+                await act(async () => {
+                        await new Promise((resolve) => setTimeout(resolve, 0));
+                });
+                cleanup();
+        });
+
         it("renders quickstart cards from configuration", async () => {
-                render(<QuickStartPage />);
+		renderWithNuqs(<QuickStartPage />);
 
                 act(() => {
                         useQuickStartWizardStore.getState().reset();
@@ -162,35 +171,32 @@ describe("QuickStartPage wizard modal", () => {
 
                 await waitFor(() => {
                         expect(
-                                screen.queryByRole("dialog", { name: /quickstart wizard/i }),
+                                screen.queryByTestId("quickstart-wizard"),
                         ).toBeNull();
                 });
 
                 expect(
-                        await screen.findByRole("heading", { name: /quick start/i, level: 1 }),
+                        await screen.findByTestId("quickstart-headline-title"),
                 ).toBeDefined();
                 const importButtons = await screen.findAllByRole("button", {
                         name: /import from any source/i,
                 });
                 expect(importButtons[0]).toBeDefined();
                 const guidedButtons = await screen.findAllByRole("button", {
-                        name: /launch guided setup/i,
+                        name: /guided setup/i,
                 });
                 expect(guidedButtons[0]).toBeDefined();
         });
 
         it("renders quickstart content inside the background collider", async () => {
-                render(<QuickStartPage />);
+		renderWithNuqs(<QuickStartPage />);
 
                 act(() => {
                         useQuickStartWizardStore.getState().reset();
                         useQuickStartWizardExperienceStore.getState().markWizardSeen();
                 });
 
-                const quickStartHeading = await screen.findByRole("heading", {
-                        name: /quick start/i,
-                        level: 1,
-                });
+                const quickStartHeading = await screen.findByTestId("quickstart-headline-title", {}, { timeout: 5000 });
 
                 const background = document.querySelector(
                         '[data-testid="quickstart-background"]',
@@ -201,7 +207,7 @@ describe("QuickStartPage wizard modal", () => {
         });
 
         it("opens the wizard on the persona step when the guided card is selected", async () => {
-                render(<QuickStartPage />);
+		renderWithNuqs(<QuickStartPage />);
 
                 act(() => {
                         useQuickStartWizardStore.getState().reset();
@@ -209,20 +215,20 @@ describe("QuickStartPage wizard modal", () => {
                 });
 
                 await waitFor(() => {
-                        expect(
-                                screen.queryByRole("dialog", { name: /quickstart wizard/i }),
-                        ).toBeNull();
+                        // wizard should not be auto-open when hasSeenWizard is true
+                        expect(screen.queryByTestId("quickstart-wizard")).toBeNull();
                 });
 
                 const [launchWizardButton] = await screen.findAllByRole("button", {
-                        name: /launch guided setup/i,
+                        name: /guided setup/i,
                 });
 
                 act(() => {
                         fireEvent.click(launchWizardButton);
                 });
 
-                const wizard = screen.getByRole("dialog", { name: /quickstart wizard/i });
+                const wizards = screen.getAllByTestId("quickstart-wizard");
+                const wizard = wizards[0];
                 const wizardQueries = within(wizard);
                 expect(wizard).toBeTruthy();
                 expect(wizardQueries.getByTestId("quickstart-persona-step")).toBeTruthy();
@@ -233,7 +239,7 @@ describe("QuickStartPage wizard modal", () => {
         });
 
         it("applies presets and generates a summary plan when launched from a card", async () => {
-                render(<QuickStartPage />);
+		renderWithNuqs(<QuickStartPage />);
 
                 act(() => {
                         useQuickStartWizardStore.getState().reset();
@@ -241,9 +247,7 @@ describe("QuickStartPage wizard modal", () => {
                 });
 
                 await waitFor(() => {
-                        expect(
-                                screen.queryByRole("dialog", { name: /quickstart wizard/i }),
-                        ).toBeNull();
+                        expect(screen.queryByTestId("quickstart-wizard")).toBeNull();
                 });
 
                 const [launchWizardButton] = await screen.findAllByRole("button", {
@@ -254,7 +258,8 @@ describe("QuickStartPage wizard modal", () => {
                         fireEvent.click(launchWizardButton);
                 });
 
-                const wizard = screen.getByRole("dialog", { name: /quickstart wizard/i });
+                const wizards = screen.getAllByTestId("quickstart-wizard");
+                const wizard = wizards[0];
                 const wizardQueries = within(wizard);
                 expect(wizardQueries.getByTestId("quickstart-summary-step")).toBeTruthy();
                 expect(wizard.textContent).toMatch(/launch a seller pipeline/i);
@@ -272,7 +277,7 @@ describe("QuickStartPage wizard modal", () => {
         });
 
         it("reapplies the selected template before launching quickstart actions", async () => {
-                render(<QuickStartPage />);
+		renderWithNuqs(<QuickStartPage />);
 
                 act(() => {
                         useQuickStartWizardStore.getState().reset();
@@ -303,7 +308,7 @@ describe("QuickStartPage wizard modal", () => {
         });
 
         it("restores template defaults when reopening the campaign modal", async () => {
-                render(<QuickStartPage />);
+		renderWithNuqs(<QuickStartPage />);
 
                 act(() => {
                         useQuickStartWizardStore.getState().reset();
@@ -370,7 +375,7 @@ describe("QuickStartPage wizard modal", () => {
         });
 
         it("lets users choose persona and goal before showing a summary", async () => {
-                render(<QuickStartPage />);
+		renderWithNuqs(<QuickStartPage />);
 
                 act(() => {
                         useQuickStartWizardStore.getState().reset();
@@ -378,20 +383,19 @@ describe("QuickStartPage wizard modal", () => {
                 });
 
                 await waitFor(() => {
-                        expect(
-                                screen.queryByRole("dialog", { name: /quickstart wizard/i }),
-                        ).toBeNull();
+                        expect(screen.queryByTestId("quickstart-wizard")).toBeNull();
                 });
 
                 const [launchWizardButton] = await screen.findAllByRole("button", {
-                        name: /launch guided setup/i,
+                        name: /guided setup/i,
                 });
 
                 act(() => {
                         fireEvent.click(launchWizardButton);
                 });
 
-                const wizard = screen.getByRole("dialog", { name: /quickstart wizard/i });
+                const wizards = screen.getAllByTestId("quickstart-wizard");
+                const wizard = wizards[0];
                 const wizardQueries = within(wizard);
 
                 const investorOption = wizardQueries.getByTestId(
@@ -422,7 +426,7 @@ describe("QuickStartPage wizard modal", () => {
         });
 
         it("supports lender personas with an automation-focused goal", async () => {
-                render(<QuickStartPage />);
+		renderWithNuqs(<QuickStartPage />);
 
                 act(() => {
                         useQuickStartWizardStore.getState().reset();
@@ -430,20 +434,19 @@ describe("QuickStartPage wizard modal", () => {
                 });
 
                 await waitFor(() => {
-                        expect(
-                                screen.queryByRole("dialog", { name: /quickstart wizard/i }),
-                        ).toBeNull();
+                        expect(screen.queryByTestId("quickstart-wizard")).toBeNull();
                 });
 
                 const [launchWizardButton] = await screen.findAllByRole("button", {
-                        name: /launch guided setup/i,
+                        name: /guided setup/i,
                 });
 
                 act(() => {
                         fireEvent.click(launchWizardButton);
                 });
 
-                const wizard = screen.getByRole("dialog", { name: /quickstart wizard/i });
+                const wizards = screen.getAllByTestId("quickstart-wizard");
+                const wizard = wizards[0];
                 const wizardQueries = within(wizard);
 
                 const lenderOption = wizardQueries.getByTestId(
@@ -481,7 +484,7 @@ describe("QuickStartPage wizard modal", () => {
                         useQuickStartWizardExperienceStore.getState().reset();
                 });
 
-                render(<QuickStartPage />);
+		renderWithNuqs(<QuickStartPage />);
 
                 await waitFor(() => {
                         expect(useQuickStartWizardStore.getState().isOpen).toBe(true);
@@ -493,7 +496,7 @@ describe("QuickStartPage wizard modal", () => {
                         useQuickStartWizardExperienceStore.getState().reset();
                 });
 
-                const { unmount } = render(<QuickStartPage />);
+		const { unmount } = renderWithNuqs(<QuickStartPage />);
 
                 const closeButton = screen.getByRole("button", { name: /close wizard/i });
 
@@ -507,7 +510,7 @@ describe("QuickStartPage wizard modal", () => {
 
                 unmount();
 
-                render(<QuickStartPage />);
+		renderWithNuqs(<QuickStartPage />);
 
                 await waitFor(() => {
                         expect(useQuickStartWizardStore.getState().isOpen).toBe(false);
@@ -515,7 +518,7 @@ describe("QuickStartPage wizard modal", () => {
         });
 
         it("resets wizard state when closed", async () => {
-                render(<QuickStartPage />);
+		renderWithNuqs(<QuickStartPage />);
 
                 act(() => {
                         useQuickStartWizardStore.getState().reset();
@@ -523,9 +526,7 @@ describe("QuickStartPage wizard modal", () => {
                 });
 
                 await waitFor(() => {
-                        expect(
-                                screen.queryByRole("dialog", { name: /quickstart wizard/i }),
-                        ).toBeNull();
+                        expect(screen.queryByTestId("quickstart-wizard")).toBeNull();
                 });
 
                 const [importButton] = await screen.findAllByRole("button", {
@@ -536,7 +537,8 @@ describe("QuickStartPage wizard modal", () => {
                         fireEvent.click(importButton);
                 });
 
-                let wizard = screen.getByRole("dialog", { name: /quickstart wizard/i });
+                let wizards = screen.getAllByTestId("quickstart-wizard");
+                let wizard = wizards[0];
                 let wizardQueries = within(wizard);
                 const closeWizardButton = wizardQueries.getByRole("button", { name: /close wizard/i });
 
@@ -556,7 +558,8 @@ describe("QuickStartPage wizard modal", () => {
                         fireEvent.click(importButton);
                 });
 
-                wizard = screen.getByRole("dialog", { name: /quickstart wizard/i });
+                wizards = screen.getAllByTestId("quickstart-wizard");
+                wizard = wizards[0];
                 wizardQueries = within(wizard);
                 const dialogCloseButton = wizardQueries.getByRole("button", { name: /^close$/i });
 
@@ -565,7 +568,7 @@ describe("QuickStartPage wizard modal", () => {
                 });
 
                 expect(
-                        screen.queryByRole("dialog", { name: /quickstart wizard/i }),
+                        screen.queryByTestId("quickstart-wizard"),
                 ).toBeNull();
         });
 

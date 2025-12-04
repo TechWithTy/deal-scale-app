@@ -1,0 +1,40 @@
+version: "3.9"
+
+services:
+  app:
+    image: "${APP_IMAGE:-ghcr.io/dealscale/main-app:latest}"
+    container_name: dealscale-app
+    restart: always
+    env_file:
+      - "${APP_ENV_FILE:-../../env/.env.production}"
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+    networks:
+      - web
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.dealscale-app.rule=Host(`app.dealscale.io`)
+      - traefik.http.routers.dealscale-app.entrypoints=websecure
+      - traefik.http.routers.dealscale-app.tls.certresolver=letsencrypt
+      - traefik.http.services.dealscale-app.loadbalancer.server.port=3000
+    healthcheck:
+      test:
+        - "CMD-SHELL"
+        - "curl -f http://localhost:3000/api/health || exit 1"
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+networks:
+  web:
+    external: true
+
+
+
+
+
+
+
+

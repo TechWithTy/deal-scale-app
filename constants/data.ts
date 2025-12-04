@@ -246,6 +246,20 @@ export const navItems: NavItem[] = [
 		featureKey: "navigation.calculators",
 	},
 	{
+		title: "Resources",
+		href: "/dashboard/resources",
+		icon: "bookOpen",
+		label: "Resources",
+		featureKey: "navigation.resources",
+	},
+	{
+		title: "Deal Room",
+		href: "/dashboard/deal-room",
+		icon: "briefcase",
+		label: "Deal Room",
+		featureKey: "navigation.dealRoom",
+	},
+	{
 		title: "Employee",
 		href: "/dashboard/employee",
 		icon: "employee",

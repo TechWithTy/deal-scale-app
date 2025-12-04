@@ -1,0 +1,113 @@
+name: "Twilio VAPI Notifier"
+description: "Send Twilio SMS alerts or initiate VAPI-powered voice calls."
+author: "Deal Scale DevOps"
+
+inputs:
+  account_sid:
+    description: "Twilio Account SID"
+    required: true
+  auth_token:
+    description: "Twilio Auth Token"
+    required: true
+  from_number:
+    description: "Twilio phone number or Messaging Service SID"
+    required: true
+  to_number:
+    description: "Destination phone number"
+    required: true
+  mode:
+    description: "Notification mode: sms or call"
+    required: false
+    default: "sms"
+  sms_body:
+    description: "Body for SMS mode"
+    required: false
+  call_url:
+    description: "TwiML URL for call mode (defaults to vapi_url when provided)"
+    required: false
+  vapi_url:
+    description: "VAPI Assistant endpoint to drive the voice call"
+    required: false
+  status_callback:
+    description: "Optional Twilio status callback URL"
+    required: false
+
+branding:
+  icon: "phone"
+  color: "F22F46"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Dispatch Twilio notification
+      shell: bash
+      env:
+        TWILIO_ACCOUNT_SID: ${{ inputs.account_sid }}
+        TWILIO_AUTH_TOKEN: ${{ inputs.auth_token }}
+        TWILIO_FROM: ${{ inputs.from_number }}
+        TWILIO_TO: ${{ inputs.to_number }}
+        TWILIO_MODE: ${{ inputs.mode }}
+        TWILIO_SMS_BODY: ${{ inputs.sms_body }}
+        TWILIO_CALL_URL: ${{ inputs.call_url }}
+        TWILIO_VAPI_URL: ${{ inputs.vapi_url }}
+        TWILIO_STATUS_CALLBACK: ${{ inputs.status_callback }}
+      run: |
+        set -Eeuo pipefail
+
+        if [[ -z "${TWILIO_ACCOUNT_SID}" || -z "${TWILIO_AUTH_TOKEN}" ]]; then
+          echo "::error title=Twilio::Missing credentials"
+          exit 1
+        fi
+
+        if [[ -z "${TWILIO_FROM}" || -z "${TWILIO_TO}" ]]; then
+          echo "::error title=Twilio::Both from_number and to_number are required"
+          exit 1
+        fi
+
+        MODE=$(echo "${TWILIO_MODE:-sms}" | tr '[:upper:]' '[:lower:]')
+
+        if [[ "${MODE}" == "sms" ]]; then
+          if [[ -z "${TWILIO_SMS_BODY}" ]]; then
+            echo "::error title=Twilio::sms_body is required for SMS mode"
+            exit 1
+          fi
+
+          curl -sS -X POST "https://api.twilio.com/2010-04-01/Accounts/${TWILIO_ACCOUNT_SID}/Messages.json" \
+            --user "${TWILIO_ACCOUNT_SID}:${TWILIO_AUTH_TOKEN}" \
+            --data-urlencode "To=${TWILIO_TO}" \
+            --data-urlencode "From=${TWILIO_FROM}" \
+            --data-urlencode "Body=${TWILIO_SMS_BODY}" \
+            $( [[ -n "${TWILIO_STATUS_CALLBACK}" ]] && printf -- "--data-urlencode StatusCallback=%s" "${TWILIO_STATUS_CALLBACK}" )
+          exit 0
+        fi
+
+        if [[ "${MODE}" == "call" ]]; then
+          CALL_URL="${TWILIO_CALL_URL}"
+          if [[ -z "${CALL_URL}" && -n "${TWILIO_VAPI_URL}" ]]; then
+            CALL_URL="${TWILIO_VAPI_URL}"
+          fi
+
+          if [[ -z "${CALL_URL}" ]]; then
+            echo "::error title=Twilio::call_url or vapi_url is required for call mode"
+            exit 1
+          fi
+
+          curl -sS -X POST "https://api.twilio.com/2010-04-01/Accounts/${TWILIO_ACCOUNT_SID}/Calls.json" \
+            --user "${TWILIO_ACCOUNT_SID}:${TWILIO_AUTH_TOKEN}" \
+            --data-urlencode "To=${TWILIO_TO}" \
+            --data-urlencode "From=${TWILIO_FROM}" \
+            --data-urlencode "Url=${CALL_URL}" \
+            $( [[ -n "${TWILIO_STATUS_CALLBACK}" ]] && printf -- "--data-urlencode StatusCallback=%s" "${TWILIO_STATUS_CALLBACK}" )
+          exit 0
+        fi
+
+        echo "::error title=Twilio::Unsupported mode '${MODE}'. Use sms or call."
+        exit 1
+
+
+
+
+
+
+
+

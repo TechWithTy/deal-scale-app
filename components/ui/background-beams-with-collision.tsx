@@ -19,6 +19,12 @@ export const BackgroundBeamsWithCollision = ({
 	const contentRef = useRef<HTMLDivElement>(null);
 	const colliderTargetsRef = useRef<HTMLElement[]>([]);
 	const [isPaused, setIsPaused] = useState(false);
+	const [isMounted, setIsMounted] = useState(false);
+
+	// Ensure client-side hydration matches server render
+	useEffect(() => {
+		setIsMounted(true);
+	}, []);
 
 	const handleMouseOver = (event: React.MouseEvent<HTMLDivElement>) => {
 		const target = event.target as HTMLElement;
@@ -46,6 +52,7 @@ export const BackgroundBeamsWithCollision = ({
 	};
 
 	useEffect(() => {
+		if (!isMounted) return;
 		if (!contentRef.current) {
 			return;
 		}
@@ -69,7 +76,7 @@ export const BackgroundBeamsWithCollision = ({
 		return () => {
 			observer.disconnect();
 		};
-	}, [children]);
+	}, [children, isMounted]);
 
 	const getCollisionRects = useCallback((): DOMRect[] => {
 		const rects: DOMRect[] = [];
@@ -135,6 +142,8 @@ export const BackgroundBeamsWithCollision = ({
 		},
 	];
 
+	// Render the same structure on server and client to prevent hydration mismatch
+	// Only add interactive features after mount
 	return (
 		<div
 			ref={parentRef}
@@ -142,24 +151,25 @@ export const BackgroundBeamsWithCollision = ({
 				"relative flex w-full items-center justify-center overflow-hidden",
 				className,
 			)}
-			onMouseOver={handleMouseOver}
-			onMouseLeave={handleMouseLeave}
+			onMouseOver={isMounted ? handleMouseOver : undefined}
+			onMouseLeave={isMounted ? handleMouseLeave : undefined}
 			{...rest}
 		>
 			{/* Base layers: grid background + soft beams */}
 			<GridBackground />
-			<SoftBeams />
+			{isMounted && <SoftBeams />}
 
-			{/* Beams layer */}
-			{beams.map((beam) => (
-				<CollisionMechanism
-					key={`${beam.initialX}-beam-idx`}
-					beamOptions={beam}
-					getCollisionRects={getCollisionRects}
-					parentRef={parentRef}
-					isPaused={isPaused}
-				/>
-			))}
+			{/* Beams layer - only render after mount to prevent hydration issues */}
+			{isMounted &&
+				beams.map((beam) => (
+					<CollisionMechanism
+						key={`${beam.initialX}-beam-idx`}
+						beamOptions={beam}
+						getCollisionRects={getCollisionRects}
+						parentRef={parentRef}
+						isPaused={isPaused}
+					/>
+				))}
 
 			{/* Content layer with higher z-index */}
 			<div ref={contentRef} className="relative z-10 w-full">
@@ -213,10 +223,24 @@ const CollisionMechanism = React.forwardRef<
 		const [beamKey, setBeamKey] = useState(0);
 		const [cycleCollisionDetected, setCycleCollisionDetected] = useState(false);
 
+		const timeoutsRef = useRef<Array<ReturnType<typeof setTimeout>>>([]);
+
 		useEffect(() => {
-			if (isPaused) return; // Don't check collision when paused
+			return () => {
+				for (const id of timeoutsRef.current) {
+					clearTimeout(id);
+				}
+				timeoutsRef.current = [];
+			};
+		}, []);
+
+		useEffect(() => {
+			// Guard against SSR/test environments
+			if (typeof window === "undefined" || isPaused) return;
 
 			const checkCollision = () => {
+				// Guard against test environment teardown
+				if (typeof window === "undefined") return;
 				if (!beamRef.current || !parentRef.current || cycleCollisionDetected) {
 					return;
 				}
@@ -247,14 +271,17 @@ const CollisionMechanism = React.forwardRef<
 						targetRect.bottom,
 					);
 
-					setCollision({
-						detected: true,
-						coordinates: {
-							x: clampedX - parentRect.left,
-							y: clampedY - parentRect.top,
-						},
-					});
-					setCycleCollisionDetected(true);
+					// Guard setState calls against test environment teardown
+					if (typeof window !== "undefined") {
+						setCollision({
+							detected: true,
+							coordinates: {
+								x: clampedX - parentRect.left,
+								y: clampedY - parentRect.top,
+							},
+						});
+						setCycleCollisionDetected(true);
+					}
 					break;
 				}
 			};
@@ -265,16 +292,41 @@ const CollisionMechanism = React.forwardRef<
 		}, [cycleCollisionDetected, getCollisionRects, isPaused, parentRef]);
 
 		useEffect(() => {
+			// Guard against SSR/test environments
+			if (typeof window === "undefined") return;
+
 			if (collision.detected && collision.coordinates) {
-				setTimeout(() => {
-					setCollision({ detected: false, coordinates: null });
-					setCycleCollisionDetected(false);
+				const resetCollision = setTimeout(() => {
+					// Guard setState calls against test environment teardown
+					if (typeof window !== "undefined") {
+						setCollision({ detected: false, coordinates: null });
+						setCycleCollisionDetected(false);
+					}
 				}, 2000);
 
-				setTimeout(() => {
-					setBeamKey((prevKey) => prevKey + 1);
+				const restartBeam = setTimeout(() => {
+					// Guard setState calls against test environment teardown
+					if (typeof window !== "undefined") {
+						setBeamKey((prevKey) => prevKey + 1);
+					}
 				}, 2000);
+
+				timeoutsRef.current.push(resetCollision, restartBeam);
+			} else if (!collision.detected) {
+				// Clear pending timeouts if collision is reset
+				for (const id of timeoutsRef.current) {
+					clearTimeout(id);
+				}
+				timeoutsRef.current = [];
 			}
+
+			return () => {
+				// Cleanup all timeouts on unmount
+				for (const id of timeoutsRef.current) {
+					clearTimeout(id);
+				}
+				timeoutsRef.current = [];
+			};
 		}, [collision]);
 
 		return (

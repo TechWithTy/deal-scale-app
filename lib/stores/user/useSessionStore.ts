@@ -7,6 +7,9 @@ import type { ImpersonationIdentity } from "@/types/impersonation";
 import { withAnalytics } from "../_middleware/analytics";
 
 type SessionUser = Session["user"];
+type ExtendedSession = Session & {
+	impersonator?: ImpersonationIdentity | null;
+};
 
 interface SessionState {
 	user: SessionUser | null;
@@ -24,7 +27,7 @@ export const useSessionStore = create<SessionState>()(
 		setFromSession: (session) =>
 			set({
 				user: session?.user ?? null,
-				impersonator: session?.impersonator ?? null,
+				impersonator: (session as ExtendedSession | null)?.impersonator ?? null,
 			}),
 		setSessionUser: (user) => set({ user }),
 		setImpersonator: (impersonator) => set({ impersonator }),
