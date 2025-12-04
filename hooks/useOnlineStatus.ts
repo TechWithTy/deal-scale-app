@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 
 const ONLINE_PROBE_INTERVAL_MS = 15_000;
 const ONLINE_PROBE_URL = "/api/health";
+const PRODUCTION_VERIFICATION_REQUIRED = process.env.NODE_ENV === "production";
 
 interface OnlineStatus {
 	isOnline: boolean;
@@ -12,14 +13,73 @@ interface OnlineStatus {
 
 export function useOnlineStatus(): OnlineStatus {
 	const [state, setState] = useState<OnlineStatus>(() => ({
-		isOnline: typeof navigator === "undefined" ? true : navigator.onLine,
+		isOnline: true, // Start optimistic - assume online
 		lastChangedAt: null,
 	}));
 
+	// Initial connectivity check on mount
+	useEffect(() => {
+		if (typeof window === "undefined" || typeof fetch !== "function") {
+			return;
+		}
+
+		let cancelled = false;
+
+		const initialCheck = async () => {
+			try {
+				const response = await fetch(ONLINE_PROBE_URL, {
+					method: "HEAD",
+					cache: "no-store",
+					credentials: "same-origin",
+				});
+				if (!cancelled) {
+					setState({
+						isOnline: response.ok,
+						lastChangedAt: response.ok ? null : Date.now(),
+					});
+				}
+			} catch {
+				// In production, verify with multiple checks before showing offline banner
+				if (!cancelled && !PRODUCTION_VERIFICATION_REQUIRED) {
+					setState({ isOnline: false, lastChangedAt: Date.now() });
+				}
+			}
+		};
+
+		void initialCheck();
+
+		return () => {
+			cancelled = true;
+		};
+	}, []);
+
 	useEffect(() => {
 		function handleChange(nextStatus: boolean) {
-			setState({ isOnline: nextStatus, lastChangedAt: Date.now() });
+			// In production, double-check with actual fetch before trusting navigator.onLine
+			if (PRODUCTION_VERIFICATION_REQUIRED && !nextStatus) {
+				// Don't immediately trust offline signal in production
+				verifyConnectivity();
+			} else {
+				setState({ isOnline: nextStatus, lastChangedAt: Date.now() });
+			}
 		}
+
+		const verifyConnectivity = async () => {
+			try {
+				const response = await fetch(ONLINE_PROBE_URL, {
+					method: "HEAD",
+					cache: "no-store",
+					credentials: "same-origin",
+				});
+				setState({
+					isOnline: response.ok,
+					lastChangedAt: response.ok ? null : Date.now(),
+				});
+			} catch {
+				setState({ isOnline: false, lastChangedAt: Date.now() });
+			}
+		};
+
 		const onOnline = () => handleChange(true);
 		const onOffline = () => handleChange(false);
 		window.addEventListener("online", onOnline);

@@ -17,6 +17,8 @@ This guide captures how the dashboard behaves when installed as a Progressive We
   - Workbox-powered runtime caching with navigation preload at `public/sw-custom.js` and configuration in `public/sw-config.js`.
   - Campaign drafts persist offline via `useCampaignDraftStore` and background sync queues.
   - Analytics data falls back to cached copies and displays an offline banner.
+  - **Production-aware offline detection**: Uses verified connectivity checks to prevent false positives in production/Vercel environments.
+  - **Persistent dismiss state**: Banner dismiss persists for 5 minutes in localStorage to prevent notification fatigue.
 
 - **Update detection**
   - `useServiceWorkerUpdate` watches for waiting service workers and offers a toast-based refresh via `components/pwa/UpdatePrompt.tsx`.
