@@ -54,6 +54,7 @@
     "test:coverage": "pnpm exec vitest run --run --passWithNoTests",
     "test:critical": "pnpm exec tsx tools/tests/run-critical-tests.ts",
     "test:pwa": "vitest run tests/pwa/pwa.spec.ts --config vitest.config.ts --reporter=dot",
+    "test:pwa:local": "node scripts/pwa/test-local.js",
     "test:rspack": "pnpm exec tsx scripts/bundlers/ensure-preview-flag.ts rspack:test && pnpm run test:vitest",
     "test:stores": "vitest run \"lib/stores/__tests__/**/*.test.ts\" --config vitest.config.ts --reporter=dot",
     "test:stores:playwright": "playwright test lib/stores/user/_tests",
