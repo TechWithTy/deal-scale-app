@@ -1,7 +1,12 @@
 import React from "react";
 
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { describe, expect, test } from "vitest";
+import {
+	fireEvent,
+	render,
+	screen,
+	waitFor,
+} from "@testing-library/react";
+import { describe, expect, test, vi } from "vitest";
 
 import { HeroVideoDialog } from "@external/dynamic-hero/components/hero-video-dialog";
 
@@ -63,11 +68,14 @@ describe("HeroVideoDialog", () => {
 	});
 
 	test("closes when overlay is clicked", async () => {
+		const onOpenChange = vi.fn();
+
 		render(
 			<HeroVideoDialog
 				video={VIDEO_CONFIG}
 				thumbnailAlt="Preview video"
 				className="w-full"
+				onOpenChange={onOpenChange}
 			/>,
 		);
 
@@ -80,8 +88,7 @@ describe("HeroVideoDialog", () => {
 		fireEvent.click(closeButton);
 
 		await waitFor(() => {
-			expect(screen.queryByTitle("Hero Video player")).toBeNull();
+			expect(onOpenChange).toHaveBeenCalledWith(false);
 		});
 	});
 });
-

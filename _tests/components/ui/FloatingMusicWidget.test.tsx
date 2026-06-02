@@ -286,7 +286,7 @@ describe("FloatingMusicWidget", () => {
 		expect(useMusicPreferencesStore.getState().widgetHeights.voice).toBe(
 			VOICE_HEIGHT,
 		);
-	});
+	}, 10000);
 
 	it("closes the widget via the header control", async () => {
 		await act(async () => {

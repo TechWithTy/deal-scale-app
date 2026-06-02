@@ -1,11 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-// Type declaration for the PostCSS config module
 interface PostCSSConfig {
-	plugins: unknown[];
-	createPurgeCssPlugin: () => unknown;
-	purgeCssContentGlobs: string[];
+	plugins: Record<string, unknown>;
 }
+
+const loadConfig = () => {
+	delete require.cache[require.resolve("../postcss.config.js")];
+	return require("../postcss.config.js") as PostCSSConfig;
+};
 
 describe("postcss configuration", () => {
 	beforeEach(() => {
@@ -16,63 +18,36 @@ describe("postcss configuration", () => {
 		vi.unstubAllEnvs();
 	});
 
-	it("enables the purgecss plugin in production builds", async () => {
+	it("enables tailwindcss in production builds", async () => {
 		vi.stubEnv("NODE_ENV", "production");
-		// Reload the module to pick up the new env var
 		vi.resetModules();
-		const mod = require("../../postcss.config.js") as PostCSSConfig;
-		const config = mod as { plugins: unknown[] };
-
-		const pluginNames = config.plugins
-			.map((plugin) => {
-				if (plugin && typeof plugin === "object" && "postcssPlugin" in plugin) {
-					return (plugin as { postcssPlugin: string }).postcssPlugin;
-				}
-
-				if (typeof plugin === "function" && "postcssPlugin" in plugin) {
-					return (plugin as { postcssPlugin: string }).postcssPlugin;
-				}
-
-				return null;
-			})
-			.filter(Boolean);
-
-		expect(pluginNames).toContain("postcss-purgecss");
+		const mod = loadConfig();
+		expect(Object.keys(mod.plugins).sort()).toEqual([
+			"autoprefixer",
+			"tailwindcss",
+		]);
 	});
 
-	it("omits purgecss outside production to preserve DX", async () => {
+	it("keeps tailwindcss enabled when the disable flag is unset", async () => {
 		vi.stubEnv("NODE_ENV", "development");
-		// Reload the module to pick up the new env var
 		vi.resetModules();
-		const mod = require("../../postcss.config.js") as PostCSSConfig;
-		const config = mod as { plugins: unknown[] };
-
-		const pluginNames = config.plugins
-			.map((plugin) => {
-				if (plugin && typeof plugin === "object" && "postcssPlugin" in plugin) {
-					return (plugin as { postcssPlugin: string }).postcssPlugin;
-				}
-
-				if (typeof plugin === "function" && "postcssPlugin" in plugin) {
-					return (plugin as { postcssPlugin: string }).postcssPlugin;
-				}
-
-				return null;
-			})
-			.filter(Boolean);
-
-		expect(pluginNames).not.toContain("postcss-purgecss");
+		const mod = loadConfig();
+		expect(Object.keys(mod.plugins).sort()).toEqual([
+			"autoprefixer",
+			"tailwindcss",
+		]);
 	});
 
-	it("documents the purgecss glob coverage for audits", async () => {
-		const mod = require("../../postcss.config.js") as PostCSSConfig;
-		const purgeGlobs = mod.purgeCssContentGlobs as string[];
-		expect(purgeGlobs).toEqual(
-			expect.arrayContaining([
-				expect.stringContaining("app/"),
-				expect.stringContaining("components/"),
-				expect.stringContaining("utils/"),
-			]),
-		);
+	it("omits tailwindcss when NEXT_DISABLE_TAILWIND is set", async () => {
+		vi.stubEnv("NEXT_DISABLE_TAILWIND", "1");
+		vi.resetModules();
+		const mod = loadConfig();
+		expect(Object.keys(mod.plugins)).toEqual(["autoprefixer"]);
+	});
+
+	it("always keeps autoprefixer enabled", async () => {
+		const mod = loadConfig();
+		expect(mod.plugins).toHaveProperty("autoprefixer");
+		expect(mod.plugins).not.toHaveProperty("purgecss");
 	});
 });

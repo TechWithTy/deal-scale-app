@@ -1,3 +1,4 @@
+import React from "react";
 import { mockUserProfile } from "@/constants/_faker/profile/userProfile"; // * Using mock user profile for phone number
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { FC } from "react";

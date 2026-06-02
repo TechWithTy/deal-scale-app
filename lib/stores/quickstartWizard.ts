@@ -241,25 +241,13 @@ export const useQuickStartWizardStore =
 					actionType: typeof pendingAction,
 					actionString: pendingAction?.toString().substring(0, 100),
 				});
-				// Execute pending action after dialog is fully closed
-				// Use a longer delay (300ms) to ensure the modal closing animation completes
-				// and the modal is fully removed from the DOM before triggering file input
-				// This prevents the browser from blocking the file picker
-				// Store pendingAction in a closure to prevent it from being cleared
-				// This ensures the action can execute even if the state is reset
 				const actionToExecute = pendingAction;
-
-				setTimeout(() => {
-					console.log(
-						"🎯 [WIZARD] setTimeout callback executing after 300ms delay",
-					);
+				const executePendingAction = () => {
 					console.log("🎯 [WIZARD] Checking pending action:", {
 						hasPendingAction: !!actionToExecute,
 						actionType: typeof actionToExecute,
 						hasStatePendingAction: !!get().pendingAction,
 					});
-					// Execute the action BEFORE resetting wizard data
-					// This ensures the action has access to wizard data (goalId, personaId, etc.)
 					if (actionToExecute) {
 						console.log("🎯 [WIZARD] Executing pending action");
 						try {
@@ -278,27 +266,17 @@ export const useQuickStartWizardStore =
 					}
 
 					console.log("🎯 [WIZARD] Setting isCompleting=false in wizard store");
-					// Reset isCompleting flag immediately after action executes
-					// This ensures modals can open without the flag interfering
 					set({ isCompleting: false });
 
 					console.log("🎯 [WIZARD] Scheduling wizard data reset in 500ms");
-					// Delay resetting wizard data significantly to ensure modal has time to open
-					// This prevents the reset from triggering session sync effects that close the modal
-					// We need enough time for the modal to fully mount and stabilize
 					setTimeout(() => {
 						console.log("🎯 [WIZARD] Resetting wizard data");
 						resetWizardData();
-						// Reset completing flag in data store after reset
-						// Delay resetting the completing flag to prevent session sync from running immediately
 						setTimeout(() => {
 							console.log("🎯 [WIZARD] Setting data store isCompleting=false");
 							setDataCompleting(false);
-						}, 200); // Give session sync time to not interfere
+						}, 200);
 
-						// Finally reset the remaining wizard state after data reset
-						// BUT: Don't clear pendingAction here - it might still be needed
-						// Clear it only after a longer delay to ensure action has fully executed
 						setTimeout(() => {
 							console.log("🎯 [WIZARD] Resetting remaining wizard state");
 							set({
@@ -307,9 +285,32 @@ export const useQuickStartWizardStore =
 								pendingAction: null,
 							});
 							console.log("🎯 [WIZARD] Complete flow finished");
-						}, 1000); // Increased delay to ensure action has fully executed
-					}, 500); // Increased delay to ensure modal is fully stable before resetting
-				}, 300); // 300ms delay to ensure modal is fully closed before triggering file input
+						}, 1000);
+					}, 500);
+				};
+
+				const shouldExecuteImmediately = Boolean(
+					(actionToExecute as (() => void) & {
+						__executeImmediately?: boolean;
+					})?.__executeImmediately,
+				);
+
+				if (shouldExecuteImmediately) {
+					console.log(
+						"🎯 [WIZARD] Immediate pending action flagged - executing without delay",
+					);
+					executePendingAction();
+				} else {
+					console.log(
+						"🎯 [WIZARD] Scheduling action execution with delay to ensure modal is fully closed",
+					);
+					setTimeout(() => {
+						console.log(
+							"🎯 [WIZARD] setTimeout callback executing after 300ms delay",
+						);
+						executePendingAction();
+					}, 300);
+				}
 			},
 			goToStep: (step) => {
 				if (!get().isOpen) {

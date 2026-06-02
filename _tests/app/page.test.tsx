@@ -1,65 +1,46 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import React from "react";
+import { render, screen } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
 
-vi.mock("next/navigation", () => ({
-        redirect: vi.fn(),
+import HomePage from "@/app/page";
+
+vi.mock("@/components/home/chat-workbench", () => ({
+	ChatWorkbench: () => (
+		<div>
+			<h1>Chat first. Manual second.</h1>
+			<p>Submodule mounted directly in the main app</p>
+			<div role="tab">Chat</div>
+			<div role="tab">Manual</div>
+		</div>
+	),
 }));
 
-describe("HomePage redirects", () => {
-        beforeEach(() => {
-                vi.resetModules();
-        });
+describe("HomePage", () => {
+	it("renders the chat workbench headline", () => {
+		render(<HomePage />);
 
-        afterEach(() => {
-                vi.restoreAllMocks();
-        });
+		expect(
+			screen.getByRole("heading", {
+				name: /chat first\. manual second\./i,
+			}),
+		).toBeInTheDocument();
+		expect(
+			screen.getByText(/submodule mounted directly in the main app/i),
+		).toBeInTheDocument();
+	});
 
-        it("redirects authenticated users to the dashboard", async () => {
-                vi.doMock("@/auth", () => ({
-                        auth: vi.fn().mockResolvedValue({
-                                user: { id: "user-123" },
-                        }),
-                }));
+	it("renders the chat and manual tabs", () => {
+		render(<HomePage />);
 
-                vi.doMock("@/constants/testingMode", () => ({
-                        NEXT_PUBLIC_APP_TESTING_MODE: true,
-                }));
-
-                const HomePage = (await import("@/app/page")).default;
-                await HomePage();
-
-                const { redirect } = await import("next/navigation");
-                expect(redirect).toHaveBeenCalledWith("/dashboard");
-        });
-
-        it("redirects guests to the sign-in page when testing mode is enabled", async () => {
-                vi.doMock("@/auth", () => ({
-                        auth: vi.fn().mockResolvedValue(null),
-                }));
-
-                vi.doMock("@/constants/testingMode", () => ({
-                        NEXT_PUBLIC_APP_TESTING_MODE: true,
-                }));
-
-                const HomePage = (await import("@/app/page")).default;
-                await HomePage();
-
-                const { redirect } = await import("next/navigation");
-                expect(redirect).toHaveBeenCalledWith("/signin");
-        });
-
-        it("redirects guests to the sign-in page when testing mode is disabled", async () => {
-                vi.doMock("@/auth", () => ({
-                        auth: vi.fn().mockResolvedValue(null),
-                }));
-
-                vi.doMock("@/constants/testingMode", () => ({
-                        NEXT_PUBLIC_APP_TESTING_MODE: false,
-                }));
-
-                const HomePage = (await import("@/app/page")).default;
-                await HomePage();
-
-                const { redirect } = await import("next/navigation");
-                expect(redirect).toHaveBeenLastCalledWith("/signin");
-        });
+		expect(
+			screen.getAllByRole("tab", {
+				name: /chat/i,
+			})[0],
+		).toBeInTheDocument();
+		expect(
+			screen.getAllByRole("tab", {
+				name: /manual/i,
+			})[0],
+		).toBeInTheDocument();
+	});
 });

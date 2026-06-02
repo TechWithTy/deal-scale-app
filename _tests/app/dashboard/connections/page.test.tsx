@@ -71,7 +71,7 @@ describe("ConnectionsPage", () => {
                         );
                 });
 
-                expect(openWebhookModalMock).toHaveBeenCalledWith("incoming");
+                expect(openWebhookModalMock).toHaveBeenCalledWith("incoming", "leads");
 
                 act(() => {
                         useModalStore.getState().setWebhookStage("outgoing");
@@ -85,7 +85,7 @@ describe("ConnectionsPage", () => {
                         fireEvent.click(outgoingButtons[0]);
                 });
 
-                expect(openWebhookModalMock).toHaveBeenLastCalledWith("outgoing");
+                expect(openWebhookModalMock).toHaveBeenLastCalledWith("outgoing", "leads");
 
                 act(() => {
                         useModalStore.getState().setWebhookStage("feeds");
@@ -99,6 +99,6 @@ describe("ConnectionsPage", () => {
                         fireEvent.click(feedButtons[0]);
                 });
 
-                expect(openWebhookModalMock).toHaveBeenLastCalledWith("feeds");
+                expect(openWebhookModalMock).toHaveBeenLastCalledWith("feeds", "leads");
         });
 });

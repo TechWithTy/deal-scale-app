@@ -1,6 +1,6 @@
 "use client";
 
-import type React from "react";
+import React from "react";
 import { createContext, useContext, useMemo, useState } from "react";
 
 export enum StreamingAvatarSessionState {

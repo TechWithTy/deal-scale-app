@@ -30,17 +30,13 @@ export function useCampaignRowFocus<TData>(
 			| undefined;
 
 		if (!campaignId) {
-			const hasAnySelected =
-				currentSelection && Object.values(currentSelection).some(Boolean);
-			if (hasAnySelected) {
-				try {
-					table.setRowSelection?.({});
-				} catch (error) {
-					console.warn(
-						"Failed to reset row selection for campaign focus",
-						error,
-					);
-				}
+			try {
+				table.setRowSelection?.({});
+			} catch (error) {
+				console.warn(
+					"Failed to reset row selection for campaign focus",
+					error,
+				);
 			}
 			setFocusedRowId(null);
 			setStatus("idle");

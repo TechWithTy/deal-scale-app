@@ -1,14 +1,16 @@
-import { expect, test } from "@playwright/test";
+import { describe, expect, it } from "vitest";
 import { useUserLeadsReportsStore } from "../userProfile";
 
-test("Leads reports dnc and status summaries exist", () => {
-	const s = useUserLeadsReportsStore.getState();
+describe("Leads reports summaries", () => {
+	it("expose DNC and status summaries", () => {
+		const s = useUserLeadsReportsStore.getState();
 
-	const dnc = s.dncSummary();
-	expect(dnc).toHaveProperty("totalDNC");
-	expect(dnc).toHaveProperty("byFlag");
-	expect(dnc).toHaveProperty("bySource");
+		const dnc = s.dncSummary();
+		expect(dnc).toHaveProperty("totalDNC");
+		expect(dnc).toHaveProperty("byFlag");
+		expect(dnc).toHaveProperty("bySource");
 
-	const statuses = s.statusCounts();
-	expect(typeof statuses).toBe("object");
+		const statuses = s.statusCounts();
+		expect(typeof statuses).toBe("object");
+	});
 });

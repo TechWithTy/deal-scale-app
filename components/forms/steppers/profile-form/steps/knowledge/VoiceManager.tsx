@@ -4,6 +4,7 @@
  * Record, clone, create, and manage all voices in one place
  */
 
+import React, { useState } from "react";
 import { MonetizationToggle } from "@/components/reusables/ai/shared/MonetizationToggle";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -48,7 +49,6 @@ import {
 	Wand2,
 	X,
 } from "lucide-react";
-import { useState } from "react";
 import { toast } from "sonner";
 import {
 	type VoiceCreationPreferences,

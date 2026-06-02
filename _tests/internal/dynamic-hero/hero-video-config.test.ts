@@ -16,7 +16,8 @@ describe("heroVideoConfigSchema", () => {
 			heroVideoConfigSchema.parse({
 				src: "not-a-valid-url",
 			}),
-		).toThrowError(/Invalid url/);
+		).toThrowError(
+			/Expected an absolute URL, data URI, or root-relative path\./,
+		);
 	});
 });
-

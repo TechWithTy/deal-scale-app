@@ -23,7 +23,7 @@ describe("QuickStartCTA", () => {
 		expect(primaryButton).not.toBeNull();
 		expect(
 			screen.queryByRole("button", {
-				name: /see how it works/i,
+				name: /see how quickstart works/i,
 			}),
 		).toBeNull();
 	});
@@ -35,7 +35,7 @@ describe("QuickStartCTA", () => {
 			screen.getByRole("button", { name: /launch my first ai campaign/i }),
 		).not.toBeNull();
 		expect(
-			screen.getByRole("button", { name: /see how it works/i }),
+			screen.getByRole("button", { name: /see how quickstart works/i }),
 		).not.toBeNull();
 	});
 
@@ -48,10 +48,10 @@ describe("QuickStartCTA", () => {
 		render(<QuickStartCTA displayMode="both" />);
 
 		expect(
-			screen.getByRole("button", { name: /automate my next deal/i }),
+			screen.getByRole("button", { name: /set up my first campaign/i }),
 		).not.toBeNull();
 		expect(
-			screen.getByText(/See how top investors keep their pipeline warm/i),
+			screen.getByText(/turn raw lists into an ai deal pipeline/i),
 		).toBeTruthy();
 	});
 
@@ -71,11 +71,10 @@ describe("QuickStartCTA", () => {
 			screen.getByRole("button", { name: /launch my first ai campaign/i }),
 		);
 		fireEvent.click(
-			screen.getByRole("button", { name: /see how it works/i }),
+			screen.getByRole("button", { name: /see how quickstart works/i }),
 		);
 
 		expect(handlePrimary).toHaveBeenCalledTimes(1);
 		expect(handleSecondary).toHaveBeenCalledTimes(1);
 	});
 });
-

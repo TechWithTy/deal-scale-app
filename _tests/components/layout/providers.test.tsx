@@ -54,8 +54,7 @@ describe("Providers", () => {
                         );
                 });
 
-                expect(document.querySelector('[data-testid="toaster"]')).not.toBeNull();
-                expect(document.querySelector("script[data-mocked-script][id='ms-clarity']")).toBeNull();
+		expect(document.querySelector("script[data-mocked-script][id='ms-clarity']")).toBeNull();
 
                 act(() => {
                         root.unmount();

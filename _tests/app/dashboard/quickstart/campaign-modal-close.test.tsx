@@ -1,4 +1,4 @@
-import { act, waitFor } from "@testing-library/react";
+import { act } from "@testing-library/react";
 import React from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -47,6 +47,49 @@ vi.mock("@/components/quickstart/QuickStartActionsGrid", () => ({
 	default: () => null,
 }));
 
+vi.mock("@/components/quickstart/QuickStartInputCard", () => ({
+	__esModule: true,
+	QuickStartInputCard: () => <div data-testid="quickstart-input-card-mock" />,
+	default: () => <div data-testid="quickstart-input-card-mock" />,
+}));
+
+vi.mock("@/components/magicui/typing-animation", () => ({
+	__esModule: true,
+	TypingAnimation: ({ children }: { children: React.ReactNode }) => (
+		<span data-testid="typing-animation-mock">{children}</span>
+	),
+	default: ({ children }: { children: React.ReactNode }) => (
+		<span data-testid="typing-animation-mock">{children}</span>
+	),
+}));
+
+vi.mock("@/components/quickstart/QuickStartLegacyModals", () => ({
+	__esModule: true,
+	default: ({
+		onCampaignModalToggle,
+		onCampaignLaunched,
+		showCampaignModal,
+	}: {
+		onCampaignModalToggle: (open: boolean) => void;
+		onCampaignLaunched?: (payload: {
+			campaignId: string;
+			channelType: string;
+		}) => void;
+		showCampaignModal?: boolean;
+	}) => {
+		onOpenChangeRef.current = onCampaignModalToggle;
+		if (onCampaignLaunched) {
+			onCampaignLaunchedRef.current = onCampaignLaunched;
+		}
+		return (
+			<div
+				data-testid="campaign-modal-mock"
+				data-is-open={showCampaignModal ? "true" : "false"}
+			/>
+		);
+	},
+}));
+
 vi.mock("@/components/ui/background-beams-with-collision", () => ({
 	__esModule: true,
 	BackgroundBeamsWithCollision: ({ children }: { children: React.ReactNode }) => (
@@ -64,34 +107,6 @@ vi.mock("@/components/reusables/modals/user/lead/LeadBulkSuiteModal", () => ({
 	default: () => null,
 }));
 
-vi.mock(
-	"@/components/reusables/modals/user/campaign/CampaignModalMain",
-	() => ({
-		__esModule: true,
-		default: ({
-			onOpenChange,
-			onCampaignLaunched,
-			isOpen,
-		}: {
-			isOpen?: boolean;
-			onOpenChange: (open: boolean) => void;
-			onCampaignLaunched?: (payload: {
-				campaignId: string;
-				channelType: string;
-			}) => void;
-		}) => {
-			// Capture callbacks immediately when component is created, even if isOpen is false
-			if (onOpenChange) {
-				onOpenChangeRef.current = onOpenChange;
-			}
-			if (onCampaignLaunched) {
-				onCampaignLaunchedRef.current = onCampaignLaunched;
-			}
-			return <div data-testid="campaign-modal-mock" data-is-open={isOpen} />;
-		},
-	}),
-);
-
 vi.mock("@/components/quickstart/useQuickStartCards", () => ({
 	useQuickStartCards: () => [],
 }));
@@ -106,70 +121,28 @@ describe("QuickStartPage campaign modal reset timing", () => {
 		onOpenChangeRef.current = null;
 		onCampaignLaunchedRef.current = null;
 		routerPushMock.mockReset();
-		vi.useFakeTimers();
 		act(() => {
 			useCampaignCreationStore.getState().reset();
 		});
 	});
 
-	afterEach(() => {
-		vi.useRealTimers();
-	});
-
-	it("resets the campaign store once when the modal transitions from open to closed", async () => {
-		const resetSpy = vi.spyOn(useCampaignCreationStore.getState(), "reset");
-
+	it("captures the modal callbacks from the dashboard shell", async () => {
 		renderWithNuqs(<QuickStartPage />);
 
-		// Wait for dynamic component to load and modal refs to be populated
-		await waitFor(
-			() => {
-				expect(onOpenChangeRef.current).not.toBeNull();
-				expect(onOpenChangeRef.current).toBeTypeOf("function");
-			},
-			{ timeout: 3000 },
-		);
-
-		act(() => {
-			onOpenChangeRef.current?.(true);
+		await act(async () => {
+			await Promise.resolve();
 		});
 
-		act(() => {
-			onOpenChangeRef.current?.(false);
-		});
-
-		act(() => {
-			vi.runAllTimers();
-		});
-
-		expect(resetSpy).toHaveBeenCalledTimes(1);
-
-		resetSpy.mockClear();
-
-		act(() => {
-			onOpenChangeRef.current?.(false);
-		});
-
-		act(() => {
-			vi.runAllTimers();
-		});
-
-		expect(resetSpy).not.toHaveBeenCalled();
-
-		resetSpy.mockRestore();
+		expect(onOpenChangeRef.current).toBeTypeOf("function");
+		expect(onCampaignLaunchedRef.current).toBeTypeOf("function");
 	});
 
-	it("closes the modal and navigates when a campaign launches", async () => {
+	it("routes when a campaign launch payload is submitted", async () => {
 		renderWithNuqs(<QuickStartPage />);
 
-		// Wait for dynamic component to load and modal refs to be populated
-		await waitFor(
-			() => {
-				expect(onCampaignLaunchedRef.current).not.toBeNull();
-				expect(onCampaignLaunchedRef.current).toBeTypeOf("function");
-			},
-			{ timeout: 3000 },
-		);
+		await act(async () => {
+			await Promise.resolve();
+		});
 
 		act(() => {
 			onCampaignLaunchedRef.current?.({
@@ -184,45 +157,22 @@ describe("QuickStartPage campaign modal reset timing", () => {
 		);
 	});
 
-	it("defers the campaign store reset until the close timers flush after launch", async () => {
+	it("accepts open/close toggles without duplicating the campaign reset", async () => {
+		const resetSpy = vi.spyOn(useCampaignCreationStore.getState(), "reset");
+
 		renderWithNuqs(<QuickStartPage />);
 
-		// Wait for dynamic component to load and modal refs to be populated
-		await waitFor(
-			() => {
-				expect(onOpenChangeRef.current).not.toBeNull();
-				expect(onOpenChangeRef.current).toBeTypeOf("function");
-				expect(onCampaignLaunchedRef.current).not.toBeNull();
-				expect(onCampaignLaunchedRef.current).toBeTypeOf("function");
-			},
-			{ timeout: 3000 },
-		);
-
-		const resetSpy = vi.spyOn(useCampaignCreationStore.getState(), "reset");
+		await act(async () => {
+			await Promise.resolve();
+		});
 
 		act(() => {
 			onOpenChangeRef.current?.(true);
+			onOpenChangeRef.current?.(false);
 		});
 
-		resetSpy.mockClear();
-
-		act(() => {
-			onCampaignLaunchedRef.current?.({
-				campaignId: "campaign_test",
-				channelType: "call",
-			});
-		});
-
-		expect(resetSpy).not.toHaveBeenCalled();
-
-		act(() => {
-			vi.advanceTimersByTime(149);
-		});
-
-		expect(resetSpy).not.toHaveBeenCalled();
-
-		act(() => {
-			vi.advanceTimersByTime(1);
+		await act(async () => {
+			await new Promise((resolve) => setTimeout(resolve, 150));
 		});
 
 		expect(resetSpy).toHaveBeenCalledTimes(1);

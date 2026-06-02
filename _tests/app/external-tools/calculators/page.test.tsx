@@ -3,6 +3,9 @@ import React from "react";
 import { describe, expect, it, vi } from "vitest";
 
 vi.stubGlobal("React", React);
+vi.mock("@/auth", () => ({
+	auth: vi.fn().mockResolvedValue(null),
+}));
 
 const calculatorDefinitionsMock = [
 	{
@@ -44,5 +47,4 @@ describe("External calculators page", () => {
 		);
 	});
 });
-
 

@@ -5,7 +5,7 @@ import { cn } from "@/lib/_utils";
 import { useModalStore } from "@/lib/stores/dashboard";
 import { useGamificationStore } from "@/lib/stores/gamification";
 import { Trophy } from "lucide-react";
-import { useEffect } from "react";
+import React, { useEffect } from "react";
 
 const topRankStyles: Record<
 	1 | 2 | 3,

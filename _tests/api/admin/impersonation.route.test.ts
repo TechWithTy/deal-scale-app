@@ -4,7 +4,7 @@ import { POST } from "@/app/api/admin/impersonation/route";
 const authMock = vi.hoisted(() => vi.fn());
 
 vi.mock("@/auth", () => ({
-        auth: authMock,
+	auth: authMock,
 }));
 
 describe("POST /api/admin/impersonation", () => {

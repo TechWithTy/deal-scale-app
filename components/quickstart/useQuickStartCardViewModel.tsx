@@ -71,6 +71,23 @@ const enhanceCard = (
 	}
 
 	// For all other cards, return unchanged (no "Guided Setup" button)
+	if (card.key === "webhooks" && card.wizardPreset) {
+		return {
+			...card,
+			footer,
+			actions: card.actions.map((action) => ({
+				...action,
+				onClick: () => {
+					const immediateAction = () => action.onClick();
+					(immediateAction as typeof immediateAction & {
+						__executeImmediately?: boolean;
+					}).__executeImmediately = true;
+					onLaunchWizard(card.wizardPreset, immediateAction);
+				},
+			})),
+		};
+	}
+
 	return { ...card, footer };
 };
 

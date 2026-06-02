@@ -1,6 +1,6 @@
 import { cn } from "@/lib/_utils";
 import { ArrowUpRight } from "lucide-react"; // You can use any icon library
-import type React from "react";
+import React from "react";
 import { useEffect, useState } from "react";
 
 interface StatCardProps {

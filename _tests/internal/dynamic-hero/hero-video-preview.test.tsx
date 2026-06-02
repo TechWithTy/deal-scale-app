@@ -24,7 +24,8 @@ describe("HeroVideoPreview", () => {
 			name: "Automated outreach preview",
 		});
 
-		expect(thumbnail).toHaveAttribute("src", VIDEO_CONFIG.poster);
+		expect(thumbnail.getAttribute("src")).toContain(
+			encodeURIComponent(VIDEO_CONFIG.poster),
+		);
 	});
 });
-

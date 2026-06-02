@@ -3,6 +3,9 @@ import React from "react";
 import { describe, expect, it, vi } from "vitest";
 
 vi.stubGlobal("React", React);
+vi.mock("@/auth", () => ({
+	auth: vi.fn().mockResolvedValue(null),
+}));
 
 describe("External tools landing page", () => {
 	it("lists the calculator hub with a public URL", async () => {
@@ -16,9 +19,9 @@ describe("External tools landing page", () => {
 			}),
 		).toBeInTheDocument();
 
-		const calculatorsLink = screen.getByRole("link", {
-			name: /calculator hub/i,
-		});
+		const calculatorsLink = screen.getAllByRole("link", {
+			name: /explore tool/i,
+		})[0];
 
 		expect(calculatorsLink).toHaveAttribute(
 			"href",
@@ -26,5 +29,3 @@ describe("External tools landing page", () => {
 		);
 	});
 });
-
-

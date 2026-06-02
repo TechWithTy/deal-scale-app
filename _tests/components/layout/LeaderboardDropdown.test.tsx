@@ -1,3 +1,4 @@
+import React from "react";
 import { render, screen } from "@testing-library/react";
 import { act } from "react";
 import { beforeEach, describe, expect, it } from "vitest";
@@ -26,9 +27,9 @@ describe("LeaderboardDropdown rank styling", () => {
 
 		render(<LeaderboardDropdown />);
 
-		const trigger = screen.getByRole("button", {
+		const trigger = screen.getAllByRole("button", {
 			name: /open leaderboard/i,
-		});
+		})[0];
 		expect(trigger.getAttribute("aria-label")).toContain("#1");
 
 		const badge = screen.getByText("1");
@@ -43,12 +44,12 @@ describe("LeaderboardDropdown rank styling", () => {
 
 		render(<LeaderboardDropdown />);
 
-		const trigger = screen.getByRole("button", {
+		const trigger = screen.getAllByRole("button", {
 			name: /open leaderboard/i,
-		});
+		})[0];
 		expect(trigger.getAttribute("aria-label")).toContain("#2");
 
-		const badge = screen.getByText("2");
+		const badge = screen.getAllByText("2")[0];
 		expect(badge).toHaveClass("text-blue-950");
 		expect(badge).toHaveClass("bg-gradient-to-br");
 	});
@@ -60,12 +61,12 @@ describe("LeaderboardDropdown rank styling", () => {
 
 		render(<LeaderboardDropdown />);
 
-		const trigger = screen.getByRole("button", {
+		const trigger = screen.getAllByRole("button", {
 			name: /open leaderboard/i,
-		});
+		})[0];
 		expect(trigger.getAttribute("aria-label")).toContain("#3");
 
-		const badge = screen.getByText("3");
+		const badge = screen.getAllByText("3")[0];
 		expect(badge).toHaveClass("text-red-950");
 		expect(badge).toHaveClass("bg-gradient-to-br");
 	});
@@ -80,9 +81,6 @@ describe("LeaderboardDropdown rank styling", () => {
 		expect(screen.queryByText("5")).toBeNull();
 	});
 });
-
-
-
 
 
 

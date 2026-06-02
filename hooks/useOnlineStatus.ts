@@ -13,17 +13,23 @@ interface OnlineStatus {
 
 export function useOnlineStatus(): OnlineStatus {
 	const [state, setState] = useState<OnlineStatus>(() => ({
-		isOnline: true, // Start optimistic - assume online
+		isOnline:
+			typeof navigator !== "undefined" ? navigator.onLine : true,
 		lastChangedAt: null,
 	}));
 
 	// Initial connectivity check on mount
 	useEffect(() => {
-		if (typeof window === "undefined" || typeof fetch !== "function") {
+		if (
+			typeof window === "undefined" ||
+			typeof fetch !== "function" ||
+			navigator.onLine
+		) {
 			return;
 		}
 
 		let cancelled = false;
+		const controller = new AbortController();
 
 		const initialCheck = async () => {
 			try {
@@ -31,11 +37,12 @@ export function useOnlineStatus(): OnlineStatus {
 					method: "HEAD",
 					cache: "no-store",
 					credentials: "same-origin",
+					signal: controller.signal,
 				});
 				if (!cancelled) {
 					setState({
 						isOnline: response.ok,
-						lastChangedAt: response.ok ? null : Date.now(),
+						lastChangedAt: Date.now(),
 					});
 				}
 			} catch {
@@ -50,6 +57,7 @@ export function useOnlineStatus(): OnlineStatus {
 
 		return () => {
 			cancelled = true;
+			controller.abort();
 		};
 	}, []);
 
@@ -73,7 +81,7 @@ export function useOnlineStatus(): OnlineStatus {
 				});
 				setState({
 					isOnline: response.ok,
-					lastChangedAt: response.ok ? null : Date.now(),
+					lastChangedAt: Date.now(),
 				});
 			} catch {
 				setState({ isOnline: false, lastChangedAt: Date.now() });
@@ -138,7 +146,6 @@ export function useOnlineStatus(): OnlineStatus {
 			}
 		};
 
-		void probeConnectivity();
 		intervalId = window.setInterval(
 			probeConnectivity,
 			ONLINE_PROBE_INTERVAL_MS,

@@ -9,6 +9,7 @@ const clarity = vi.fn();
 
 describe("QuickStart analytics instrumentation", () => {
         beforeEach(() => {
+                vi.useFakeTimers();
                 capture.mockReset();
                 clarity.mockReset();
 
@@ -28,6 +29,8 @@ describe("QuickStart analytics instrumentation", () => {
         });
 
         afterEach(() => {
+                vi.runOnlyPendingTimers();
+                vi.useRealTimers();
                 delete process.env.NEXT_PUBLIC_ENABLE_POSTHOG;
                 delete process.env.NEXT_PUBLIC_ENABLE_CLARITY;
                 window.posthog = undefined;
@@ -94,18 +97,25 @@ describe("QuickStart analytics instrumentation", () => {
                         useQuickStartWizardStore.getState().complete();
                 });
 
-                expect(capture).toHaveBeenCalledWith(
-                        "quickstart_plan_completed",
-                        expect.objectContaining({
-                                personaId: "investor",
-                                goalId: "investor-pipeline",
-                                triggeredAction: "launchWithAction",
-                        }),
-                );
-                expect(pending).toHaveBeenCalledTimes(1);
-                expect(useQuickStartWizardDataStore.getState()).toMatchObject({
-                        personaId: null,
-                        goalId: null,
+                act(() => {
+                        vi.advanceTimersByTime(350);
                 });
-        });
+
+				expect(capture).toHaveBeenCalledWith(
+						"quickstart_plan_completed",
+						expect.objectContaining({
+								personaId: "investor",
+								goalId: "investor-pipeline",
+								triggeredAction: "launchWithAction",
+						}),
+				);
+				expect(pending).toHaveBeenCalledTimes(1);
+				act(() => {
+						vi.advanceTimersByTime(850);
+				});
+				expect(useQuickStartWizardDataStore.getState()).toMatchObject({
+						personaId: null,
+						goalId: null,
+				});
+		});
 });

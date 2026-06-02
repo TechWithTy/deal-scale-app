@@ -1,6 +1,6 @@
 import React from "react";
-import { fireEvent, render, screen } from "@testing-library/react";
-import { describe, expect, it, beforeEach, vi } from "vitest";
+import { render, screen } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { act } from "react";
 
 import { UserNav } from "@/components/layout/user-nav";
@@ -15,6 +15,14 @@ vi.mock("next/navigation", () => ({
 
 vi.mock("next-auth/react", () => ({
         signOut: vi.fn(),
+}));
+
+vi.mock("@/components/ui/avatar", () => ({
+	Avatar: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
+	AvatarFallback: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
+	AvatarImage: ({ src, alt }: { src?: string; alt?: string }) => (
+		<img src={src} alt={alt} />
+	),
 }));
 
 describe("UserNav", () => {
@@ -73,9 +81,9 @@ describe("UserNav", () => {
 				} as any);
 		});
 
-		render(<UserNav />);
+	render(<UserNav />);
 
-		const avatarImg = screen.getByRole("img", { name: /demo user/i });
-		expect(avatarImg?.getAttribute("src")).toBe(companyLogo);
+	const avatarImg = screen.getAllByAltText(/demo user/i)[0];
+	expect(avatarImg?.getAttribute("src")).toBe(companyLogo);
 	});
 });

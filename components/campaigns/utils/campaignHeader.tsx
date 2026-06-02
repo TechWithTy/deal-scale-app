@@ -20,6 +20,7 @@ import {
 } from "@/constants/_faker/profile/userProfile";
 
 import { HelpCircle } from "lucide-react";
+import React, { useEffect, useState } from "react";
 const creditsRemaining =
 	mockUserProfile && "subscription" in mockUserProfile
 		? mockUserProfile.subscription.aiCredits.allotted -

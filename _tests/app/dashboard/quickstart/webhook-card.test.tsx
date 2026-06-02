@@ -1,6 +1,6 @@
 import React from "react";
 import { cleanup, fireEvent, screen, waitFor, within } from "@testing-library/react";
-import { act } from "react-dom/test-utils";
+import { act } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import QuickStartPage from "@/app/dashboard/page";

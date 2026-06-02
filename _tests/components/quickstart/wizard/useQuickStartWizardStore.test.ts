@@ -1,4 +1,4 @@
-import { act } from "@testing-library/react";
+import { act, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
@@ -68,9 +68,9 @@ describe("useQuickStartWizardStore", () => {
                 expect(nextState.pendingAction).toBeNull();
         });
 
-        it("queues a pending action when launching with an action", () => {
-                const store = useQuickStartWizardStore.getState();
-                const action = vi.fn();
+		it("queues a pending action when launching with an action", async () => {
+				const store = useQuickStartWizardStore.getState();
+				const action = vi.fn();
 
                 act(() => {
                         store.launchWithAction({ personaId: "agent" }, action);
@@ -81,16 +81,26 @@ describe("useQuickStartWizardStore", () => {
                 expect(nextState.pendingAction).toBe(action);
                 expect(action).not.toHaveBeenCalled();
 
-                act(() => {
-                        store.complete();
-                });
+				act(() => {
+						store.complete();
+				});
 
-                expect(action).toHaveBeenCalledTimes(1);
+				await waitFor(
+						() => {
+								expect(action).toHaveBeenCalledTimes(1);
+						},
+						{ timeout: 3000 },
+				);
 
-                const finalState = useQuickStartWizardStore.getState();
-                expect(finalState.isOpen).toBe(false);
-                expect(finalState.pendingAction).toBeNull();
-        });
+				await waitFor(
+						() => {
+								const finalState = useQuickStartWizardStore.getState();
+								expect(finalState.isOpen).toBe(false);
+								expect(finalState.pendingAction).toBeNull();
+						},
+						{ timeout: 3000 },
+				);
+		});
 
         it("cancels any pending action when cancel is invoked", () => {
                 const store = useQuickStartWizardStore.getState();

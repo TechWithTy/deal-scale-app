@@ -1,6 +1,6 @@
 // biome-ignore lint/style/useImportType: <explanation>
 import React from "react";
-import { fireEvent, render, screen, act } from "@testing-library/react";
+import { fireEvent, render, screen, act, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import CampaignModalMain from "@/components/reusables/modals/user/campaign/CampaignModalMain";
@@ -24,6 +24,12 @@ vi.mock("@/components/ui/dialog", () => ({
 		children: React.ReactNode;
 		className?: string;
 	}) => <div>{children}</div>,
+	DialogHeader: ({ children }: { children: React.ReactNode }) => (
+		<div>{children}</div>
+	),
+	DialogTitle: ({ children }: { children: React.ReactNode }) => (
+		<h2>{children}</h2>
+	),
 }));
 
 vi.mock("@/components/ui/tooltip", () => ({
@@ -157,7 +163,7 @@ describe("CampaignModalMain", () => {
                 });
         });
 
-        it("closes the modal before notifying launch listeners", () => {
+	it("notifies launch listeners before the deferred close completes", async () => {
                 const callOrder: string[] = [];
                 const handleOpenChange = vi.fn((open: boolean) => {
                         if (!open) {
@@ -186,18 +192,18 @@ describe("CampaignModalMain", () => {
                 });
                 const launchButton = launchButtons[launchButtons.length - 1];
 
-                fireEvent.click(launchButton);
+		fireEvent.click(launchButton);
 
-                expect(handleOpenChange).toHaveBeenCalledWith(false);
-                expect(handleCampaignLaunched).toHaveBeenCalledTimes(1);
-                expect(callOrder).toEqual(["close", "launched"]);
-                expect(pushMock).not.toHaveBeenCalled();
+		await waitFor(() => expect(handleOpenChange).toHaveBeenCalledWith(false));
+		await waitFor(() => expect(handleCampaignLaunched).toHaveBeenCalledTimes(1));
+		expect(callOrder).toEqual(["launched", "close"]);
+		expect(pushMock).not.toHaveBeenCalled();
                 const payload = handleCampaignLaunched.mock.calls[0]?.[0];
                 expect(payload?.campaignId).toMatch(/^campaign_\d+$/);
                 expect(payload?.channelType).toBe("call");
         });
 
-        it("navigates with campaign query parameters when no listeners are provided", () => {
+	it("navigates with campaign query parameters when no listeners are provided", async () => {
                 const callOrder: string[] = [];
                 const handleOpenChange = vi.fn((open: boolean) => {
                         if (!open) {
@@ -225,21 +231,21 @@ describe("CampaignModalMain", () => {
                         },
                 });
 
-                const launchButtons = screen.getAllByRole("button", {
-                        name: /launch campaign/i,
-                });
-                const launchButton = launchButtons[launchButtons.length - 1];
-                fireEvent.click(launchButton);
+		const launchButtons = screen.getAllByRole("button", {
+			name: /launch campaign/i,
+		});
+		const launchButton = launchButtons[launchButtons.length - 1];
+		fireEvent.click(launchButton);
 
-                expect(callOrder).toEqual(["close", "navigate"]);
-                expect(pushMock).toHaveBeenCalledTimes(1);
+		await waitFor(() => expect(callOrder).toEqual(["close", "navigate"]));
+		expect(pushMock).toHaveBeenCalledTimes(1);
                 const destination = pushMock.mock.calls[0]?.[0];
                 expect(destination).toContain("/dashboard/campaigns?");
                 expect(destination).toContain("type=call");
                 expect(destination).toMatch(/campaignId=campaign_\d+/);
         });
 
-        it("ignores duplicate launch attempts once the modal has started closing", () => {
+	it("ignores duplicate launch attempts once the modal has started closing", async () => {
                 const callOrder: string[] = [];
                 const handleOpenChange = vi.fn();
                 const handleCampaignLaunched = vi.fn((payload?: { campaignId: string; channelType: string }) => {
@@ -256,17 +262,17 @@ describe("CampaignModalMain", () => {
                         />,
                 );
 
-                const launchButtons = screen.getAllByRole("button", {
-                        name: /launch campaign/i,
-                });
-                const launchButton = launchButtons[launchButtons.length - 1];
+		const launchButtons = screen.getAllByRole("button", {
+			name: /launch campaign/i,
+		});
+		const launchButton = launchButtons[launchButtons.length - 1];
 
-                fireEvent.click(launchButton);
-                fireEvent.click(launchButton);
+		fireEvent.click(launchButton);
+		await waitFor(() => expect(handleOpenChange).toHaveBeenCalledTimes(1));
+		fireEvent.click(launchButton);
 
-                expect(handleOpenChange).toHaveBeenCalledTimes(1);
-                expect(handleOpenChange).toHaveBeenCalledWith(false);
-                expect(handleCampaignLaunched).toHaveBeenCalledTimes(1);
-                warnSpy.mockRestore();
-        });
+		expect(handleOpenChange).toHaveBeenCalledWith(false);
+		expect(handleCampaignLaunched).toHaveBeenCalledTimes(1);
+		warnSpy.mockRestore();
+	});
 });

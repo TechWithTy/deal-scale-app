@@ -1,4 +1,4 @@
-import type { FC } from "react";
+import React, { type FC } from "react";
 import AgentVoiceDropdown, { type AgentOption } from "./AgentVoiceDropdown";
 
 export type BasicPerson = {

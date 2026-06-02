@@ -1,5 +1,5 @@
 "use client";
-import type React from "react";
+import React from "react";
 import CampaignHeader from "./utils/campaignHeader";
 import CampaignsMainContent from "./utils/campaignTable";
 

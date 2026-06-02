@@ -29,20 +29,37 @@ const WebhookHistory = ({
 	activeStage,
 	historyByStage,
 }: WebhookHistoryProps) => {
-	const webhookHistory =
-		historyByStage[activeStage === "feeds" ? "incoming" : activeStage];
+	const isFeedsStage = activeStage === "feeds";
+	const webhookHistory = isFeedsStage
+		? historyByStage.incoming
+		: historyByStage[activeStage];
+	const stageLabel =
+		activeStage === "incoming"
+			? "Incoming"
+			: activeStage === "outgoing"
+				? "Outgoing"
+				: "Webhook";
 
 	return (
 		<div className="mt-6">
 			<h3 className="font-medium text-lg dark:text-gray-200">
-				Webhook History
+				{stageLabel} Webhook History
 			</h3>
 			<Separator className="my-2 dark:border-gray-600" />
-			{webhookHistory.length === 0 ? (
+			{isFeedsStage ? (
+				<div className="rounded-md border bg-muted/40 p-4 text-sm text-muted-foreground">
+					<p className="font-medium text-foreground">
+						Webhook history unavailable in feed view
+					</p>
+					<p className="mt-1">
+						Feeds tab now includes its own expandable RSS preview.
+					</p>
+				</div>
+			) : webhookHistory.length === 0 ? (
 				<div className="flex h-32 flex-col items-center justify-center">
 					<FileSearch className="h-10 w-10 text-gray-400 dark:text-gray-500" />
 					<p className="mt-2 text-gray-500 dark:text-gray-400">
-						No webhook history available
+						No webhook attempts recorded yet
 					</p>
 				</div>
 			) : (
@@ -65,6 +82,9 @@ const WebhookHistory = ({
 									<div className="flex flex-col text-left">
 										<span className="font-medium text-sm">
 											Webhook sent on {entry.date}
+										</span>
+										<span className="text-muted-foreground text-xs">
+											Event: {entry.event}
 										</span>
 										{payloadPreview ? (
 											<span className="text-muted-foreground text-xs">

@@ -1,7 +1,19 @@
+import React from "react";
 import { render } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it, vi } from "vitest";
 
 import { TypewriterEffect } from "@/components/ui/typewriter-effect";
+
+beforeAll(() => {
+	vi.stubGlobal(
+		"IntersectionObserver",
+		class {
+			observe() {}
+			unobserve() {}
+			disconnect() {}
+		},
+	);
+});
 
 describe("TypewriterEffect", () => {
 	it("uses a compact cursor size by default to pair with smaller text", () => {
@@ -38,4 +50,3 @@ describe("TypewriterEffect", () => {
 		);
 	});
 });
-

@@ -1,15 +1,17 @@
-import { expect, test } from "@playwright/test";
+import { describe, expect, it } from "vitest";
 import { useUserSubscriptionStore } from "../subscription";
 import { useUserCreditsStore } from "../userProfile";
 
-test("Credits and subscription selectors return numbers/strings", () => {
-	const credits = useUserCreditsStore.getState();
-	const remaining = credits.remaining();
-	expect(typeof remaining.ai).toBe("number");
-	expect(typeof remaining.leads).toBe("number");
-	expect(typeof remaining.skipTraces).toBe("number");
+describe("Credits and subscription selectors", () => {
+	it("return numbers and strings", () => {
+		const credits = useUserCreditsStore.getState();
+		const remaining = credits.remaining();
+		expect(typeof remaining.ai).toBe("number");
+		expect(typeof remaining.leads).toBe("number");
+		expect(typeof remaining.skipTraces).toBe("number");
 
-	const sub = useUserSubscriptionStore.getState();
-	expect(typeof sub.planName()).toBe("string");
-	expect(["active", "inactive", "unknown"]).toContain(sub.status());
+		const sub = useUserSubscriptionStore.getState();
+		expect(typeof sub.planName()).toBe("string");
+		expect(["active", "inactive", "unknown"]).toContain(sub.status());
+	});
 });

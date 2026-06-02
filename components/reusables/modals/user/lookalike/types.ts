@@ -96,8 +96,6 @@ export const lookalikeConfigSchema = z.object({
 	intentLevels: z.array(z.string()).optional(),
 	corporateOwnership: z.string().optional(),
 	absenteeOwner: z.string().optional(),
-	lotSizeMin: z.number().optional(),
-	lotSizeMax: z.number().optional(),
 
 	// Efficiency & Deduplication options
 	skipDuplicates: z.boolean().optional().default(true),

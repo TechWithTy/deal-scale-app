@@ -8,7 +8,6 @@ import { BackgroundBeamsWithCollision } from "@/components/ui/background-beams-w
 import { LightRays } from "@/components/ui/light-rays";
 
 import { campaignSteps } from "@/_tests/tours/campaignTour";
-import DynamicHeadline from "@/components/quickstart/DynamicHeadline";
 import QuickStartHeroVideo from "@/components/quickstart/QuickStartHeroVideo";
 import QuickStartCTA from "@/components/quickstart/QuickStartCTA";
 import { QuickStartInputCard } from "@/components/quickstart/QuickStartInputCard";
@@ -1879,13 +1878,15 @@ export default function QuickStartPage() {
 		onLaunchQuickStartFlow: handleLaunchQuickStartFlow,
 	});
 
-	const handlePostLaunch = useCallback(() => {
-		// After launching a campaign, defer opening webhooks modal
-		// to avoid render-time state updates during modal close
-		setTimeout(() => {
-			openWebhookModal("incoming");
-		}, 0);
-	}, [openWebhookModal]);
+	const handlePostLaunch = useCallback(
+		(payload: { campaignId: string; channelType: string }) => {
+			const params = new URLSearchParams();
+			params.set("campaignId", payload.campaignId);
+			params.set("type", payload.channelType);
+			router.push(`/dashboard/campaigns?${params.toString()}`);
+		},
+		[router],
+	);
 
 	const scrollToQuickStartActions = useCallback(() => {
 		if (typeof window === "undefined") {
@@ -2054,7 +2055,7 @@ export default function QuickStartPage() {
 								? t.primaryChannel
 								: undefined;
 						})()}
-						onCampaignLaunched={() => handlePostLaunch()}
+						onCampaignLaunched={handlePostLaunch}
 					/>
 
 					<CampaignSelectorModal

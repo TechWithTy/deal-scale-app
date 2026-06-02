@@ -1,5 +1,6 @@
 "use client";
 
+import React, { useEffect, useRef, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,7 +18,6 @@ import {
 	Loader2,
 	XCircle,
 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
 
 interface EvaluationReportModalProps {
 	evalRunId: string | null;
