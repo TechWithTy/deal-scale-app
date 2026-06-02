@@ -60,6 +60,10 @@ async function submitSitemaps() {
                 return 0;
         }
 
+        if (process.env.CI !== "true" && process.env.SITEMAP_SUBMIT_DISABLE !== "0") {
+                return 0;
+        }
+
         if (process.env.NODE_ENV === "test") {
                 console.log("[sitemap] Skipping submission in test environment.");
                 return 0;

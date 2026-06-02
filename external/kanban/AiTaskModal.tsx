@@ -14,7 +14,6 @@ import { Label } from "@/components/ui/label";
 import type { KanbanTask } from "./utils/types";
 import { useTaskStore } from "./utils/store";
 import { useUserStore } from "@/lib/stores/userStore";
-
 interface AiTaskModalProps {
 	task: KanbanTask | null;
 	open: boolean;

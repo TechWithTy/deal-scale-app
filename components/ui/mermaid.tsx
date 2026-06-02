@@ -6,7 +6,7 @@ interface MermaidProps {
 	chart: string;
 }
 
-export default function Mermaid({ chart }: MermaidProps) {
+export function Mermaid({ chart }: MermaidProps) {
 	const containerRef = useRef<HTMLDivElement>(null);
 
 	useEffect(() => {
@@ -67,3 +67,5 @@ export default function Mermaid({ chart }: MermaidProps) {
 		/>
 	);
 }
+
+export default Mermaid;

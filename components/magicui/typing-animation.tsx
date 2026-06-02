@@ -21,6 +21,12 @@ export function TypingAnimation({
 	const [displayedText, setDisplayedText] = useState<string>("");
 	const [started, setStarted] = useState(false);
 	const elementRef = useRef<HTMLSpanElement | null>(null);
+	const typingText =
+		typeof children === "string"
+			? children
+			: children == null
+				? ""
+				: String(children);
 
 	useEffect(() => {
 		const startTimeout = setTimeout(() => {
@@ -32,10 +38,11 @@ export function TypingAnimation({
 	useEffect(() => {
 		if (!started) return;
 
+		setDisplayedText("");
 		let i = 0;
 		const typingEffect = setInterval(() => {
-			if (i < children.length) {
-				setDisplayedText(children.substring(0, i + 1));
+			if (i < typingText.length) {
+				setDisplayedText(typingText.substring(0, i + 1));
 				i++;
 			} else {
 				clearInterval(typingEffect);
@@ -46,7 +53,7 @@ export function TypingAnimation({
 		return () => {
 			clearInterval(typingEffect);
 		};
-	}, [children, duration, started, onComplete]);
+	}, [duration, onComplete, started, typingText]);
 
 	return (
 		<span ref={elementRef} className={cn("", className)}>

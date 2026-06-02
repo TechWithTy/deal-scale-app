@@ -1,0 +1,3 @@
+[submodule "external/interactive-avatar-nextjs-demo"]
+	path = external/interactive-avatar-nextjs-demo
+	url = https://github.com/Deal-Scale/InteractiveAvatarNextJSDemo
