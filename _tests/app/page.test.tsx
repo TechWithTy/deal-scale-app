@@ -4,20 +4,40 @@ import { describe, expect, it, vi } from "vitest";
 
 import HomePage from "@/app/page";
 
-vi.mock("@/components/home/chat-workbench", () => ({
-	ChatWorkbench: () => (
+const { authMock } = vi.hoisted(() => ({
+	authMock: vi.fn(),
+}));
+
+vi.mock("@/auth", () => ({
+	auth: authMock,
+}));
+
+vi.mock("@/components/home/authenticated-home-shell", () => ({
+	AuthenticatedHomeShell: () => (
 		<div>
 			<h1>Chat first. Manual second.</h1>
-			<p>Submodule mounted directly in the main app</p>
+			<p>Chat and quick start live together</p>
 			<div role="tab">Chat</div>
 			<div role="tab">Manual</div>
 		</div>
 	),
 }));
 
+vi.mock("@/app/(auth)/signin/page", () => ({
+	default: () => (
+		<div>
+			<h1>Demo login</h1>
+			<p>Mocked users available</p>
+			<button type="button">Sign in</button>
+		</div>
+	),
+}));
+
 describe("HomePage", () => {
-	it("renders the chat workbench headline", () => {
-		render(<HomePage />);
+	it("renders the chat workbench for authenticated users", async () => {
+		authMock.mockResolvedValue({ user: { id: "user-1" } });
+		const page = await HomePage();
+		render(page);
 
 		expect(
 			screen.getByRole("heading", {
@@ -25,22 +45,22 @@ describe("HomePage", () => {
 			}),
 		).toBeInTheDocument();
 		expect(
-			screen.getByText(/submodule mounted directly in the main app/i),
+			screen.getByText(/chat and quick start live together/i),
 		).toBeInTheDocument();
 	});
 
-	it("renders the chat and manual tabs", () => {
-		render(<HomePage />);
+	it("renders the demo login components when signed out", async () => {
+		authMock.mockResolvedValue(null);
+		const page = await HomePage();
+		render(page);
 
 		expect(
-			screen.getAllByRole("tab", {
-				name: /chat/i,
-			})[0],
+			screen.getByRole("heading", {
+				name: /demo login/i,
+			}),
 		).toBeInTheDocument();
 		expect(
-			screen.getAllByRole("tab", {
-				name: /manual/i,
-			})[0],
+			screen.getByText(/mocked users available/i),
 		).toBeInTheDocument();
 	});
 });

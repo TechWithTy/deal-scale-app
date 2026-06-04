@@ -22,19 +22,23 @@ vi.mock("external/action-bar", () => ({
 	ActionBarRoot: () => <div data-testid="command-root" />,
 }));
 
-vi.mock("@/components/layout/AuthenticatedAppShell", () => ({
-	__esModule: true,
-	default: ({ children }: { children: React.ReactNode }) => (
-		<div data-testid="authenticated-shell">{children}</div>
-	),
-}));
-
 vi.mock("@uploadthing/react/styles.css", () => ({}), { virtual: true });
 
 vi.mock("@/components/layout/providers", () => ({
 	__esModule: true,
 	default: ({ children }: { children: React.ReactNode }) => (
 		<div data-testid="providers">{children}</div>
+	),
+}));
+
+vi.mock("@/components/layout/AuthenticatedAppShell", () => ({
+	__esModule: true,
+	default: ({ children }: { children: React.ReactNode }) => (
+		<div data-testid="authenticated-shell">
+			<div data-testid="command-palette">{children}</div>
+			<div data-testid="session-sync" />
+			<div data-testid="nuqs" />
+		</div>
 	),
 }));
 
@@ -86,6 +90,9 @@ describe("RootLayout conditional shell", () => {
 	it("renders the authenticated app shell when a session exists", async () => {
 		const dom = await renderLayoutWithSession({ user: { id: "123" } });
 		expect(dom.querySelector("[data-testid='authenticated-shell']")).not.toBeNull();
+		expect(dom.querySelector("[data-testid='command-palette']")).not.toBeNull();
+		expect(dom.querySelector("[data-testid='session-sync']")).not.toBeNull();
+		expect(dom.querySelector("[data-testid='nuqs']")).not.toBeNull();
 		const supademoScript = dom.querySelector("script#supademo-script");
 		expect(supademoScript).not.toBeNull();
 		expect(supademoScript?.getAttribute("src")).toBe("/api/supademo/script");

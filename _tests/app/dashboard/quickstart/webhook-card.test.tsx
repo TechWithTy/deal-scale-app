@@ -3,7 +3,7 @@ import { cleanup, fireEvent, screen, waitFor, within } from "@testing-library/re
 import { act } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import QuickStartPage from "@/app/dashboard/page";
+import QuickStartPage from "@/components/quickstart/QuickStartDashboardPage";
 import { useModalStore } from "@/lib/stores/dashboard";
 import { useQuickStartWizardStore } from "@/lib/stores/quickstartWizard";
 import { useQuickStartWizardDataStore } from "@/lib/stores/quickstartWizardData";

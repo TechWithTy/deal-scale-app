@@ -1,29 +1,21 @@
 import React from "react";
-import { render, screen } from "@testing-library/react";
+import { cleanup, render, screen } from "@testing-library/react";
 import { useForm } from "react-hook-form";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import type { z } from "zod";
 
 import {
 	ChannelCustomizationStep,
+	FormSchema,
 } from "@/components/reusables/modals/user/campaign/steps/ChannelCustomizationStep";
 import { useCampaignCreationStore } from "@/lib/stores/campaignCreation";
 
-type FormValues = {
-	primaryPhoneNumber: string;
-	areaMode: "zip" | "leadList";
-	selectedLeadListId?: string;
-};
+type FormValues = z.infer<typeof FormSchema>;
 
-const Harness = ({
-	onBack = vi.fn(),
-	onNext = vi.fn(),
-}: {
-	onBack?: () => void;
-	onNext?: () => void;
-}) => {
+function TestHarness() {
 	const form = useForm<FormValues>({
 		defaultValues: {
-			primaryPhoneNumber: "",
+			primaryPhoneNumber: "+15551234567",
 			areaMode: "zip",
 			selectedLeadListId: "",
 		},
@@ -31,36 +23,39 @@ const Harness = ({
 
 	return (
 		<ChannelCustomizationStep
-			onBack={onBack}
-			onNext={onNext}
-			form={form as never}
+			onBack={() => undefined}
+			onNext={() => undefined}
+			form={form}
 		/>
 	);
-};
+}
 
 describe("ChannelCustomizationStep", () => {
 	beforeEach(() => {
 		useCampaignCreationStore.getState().reset();
 	});
 
-	it("shows the channel guard when no primary channel is selected", () => {
-		render(<Harness />);
+	afterEach(() => {
+		useCampaignCreationStore.getState().reset();
+		cleanup();
+	});
 
+	it("shows a channel selection message when no channel is selected", () => {
+		render(<TestHarness />);
 		expect(
 			screen.getByText(/please select a channel first/i),
 		).toBeInTheDocument();
 	});
 
-	it("renders the customization form when a channel is selected", () => {
-		useCampaignCreationStore.getState().setPrimaryChannel("text");
+	it("renders the channel customization form when a channel is selected", () => {
+		useCampaignCreationStore.setState({ primaryChannel: "call" });
+		render(<TestHarness />);
 
-	render(<Harness />);
-
-	expect(
-		screen.getAllByRole("heading", { name: /channel customization/i })[0],
-	).toBeInTheDocument();
-	expect(
-		screen.getAllByText(/customize settings for your text campaign/i)[0],
-	).toBeInTheDocument();
+		expect(
+			screen.getAllByRole("heading", { name: /channel customization/i })[0],
+		).toBeInTheDocument();
+		expect(
+			screen.getByText(/customize settings for your call campaign/i),
+		).toBeInTheDocument();
 	});
 });

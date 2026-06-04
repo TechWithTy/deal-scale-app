@@ -9,7 +9,7 @@ import {
 } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import QuickStartPage from "@/app/dashboard/page";
+import QuickStartPage from "@/components/quickstart/QuickStartDashboardPage";
 import CampaignPage from "@/components/campaigns/campaignPage";
 import { useCampaignRowFocus } from "@/components/campaigns/utils/useCampaignRowFocus";
 import { useCampaignStore } from "@/lib/stores/campaigns";
@@ -253,4 +253,3 @@ describe("QuickStart campaign launch flow", () => {
                 });
         });
 });
-

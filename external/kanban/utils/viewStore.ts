@@ -16,24 +16,37 @@ export interface ViewFilters {
 	assignedToTeamMember: string[]; // empty = no filter
 }
 
+export interface ViewScope {
+	mode: "all" | "lead" | "leadList";
+	value: string;
+}
+
 export interface ViewSort {
 	field: SortField;
 	direction: SortDirection;
+}
+
+export interface SavedViewState {
+	filters: ViewFilters;
+	sort: ViewSort;
+	scope: ViewScope;
 }
 
 export interface ViewState {
 	searchQuery: string;
 	filters: ViewFilters;
 	sort: ViewSort;
+	scope: ViewScope;
 	// Which fields to show on the card preview area (caller decides how to use this)
 	previewFields: Array<keyof KanbanTask>;
 	// Optional user-saved filters snapshot
-	savedFilters?: ViewFilters | null;
+	savedFilters?: SavedViewState | null;
 }
 
 interface Actions {
 	setSearchQuery: (q: string) => void;
 	setFilters: (filters: Partial<ViewFilters>) => void;
+	setScope: (scope: Partial<ViewScope>) => void;
 	clearFilters: () => void;
 	// Force-write whatever the current filters are to persisted storage (mostly a UX affordance)
 	saveFilters: () => void;
@@ -58,6 +71,7 @@ const defaultState: ViewState = {
 		assignedToTeamMember: [],
 	},
 	sort: { field: "dueDate", direction: "asc" },
+	scope: { mode: "all", value: "" },
 	previewFields: ["priority", "dueDate", "assignedToTeamMember"],
 	savedFilters: null,
 };
@@ -76,8 +90,22 @@ function textIncludes(haystack: string | undefined, needle: string): boolean {
 }
 
 function applyFilters(tasks: KanbanTask[], v: ViewState): KanbanTask[] {
-	const { filters, searchQuery } = v;
+	const { filters, searchQuery, scope } = v;
 	return tasks.filter((t) => {
+		if (
+			scope.mode === "lead" &&
+			scope.value &&
+			String(t.leadId ?? "") !== scope.value
+		) {
+			return false;
+		}
+		if (
+			scope.mode === "leadList" &&
+			scope.value &&
+			String(t.leadListId ?? "") !== scope.value
+		) {
+			return false;
+		}
 		// status
 		if (filters.status.length > 0 && !filters.status.includes(t.status))
 			return false;
@@ -145,14 +173,34 @@ export const useKanbanView = create<ViewState & Actions>()(
 							filters.assignedToTeamMember ?? s.filters.assignedToTeamMember,
 					},
 				})),
+			setScope: (scope) =>
+				set((s) => ({
+					scope: {
+						mode: scope.mode ?? s.scope.mode,
+						value: scope.value ?? s.scope.value,
+					},
+				})),
 			clearFilters: () =>
-				set((s) => ({ filters: { ...defaultState.filters } })),
+				set(() => ({
+					filters: { ...defaultState.filters },
+					scope: { ...defaultState.scope },
+				})),
 			saveFilters: () => set((s) => ({ filters: { ...s.filters } })),
 			saveCurrentFilters: () =>
-				set((s) => ({ savedFilters: { ...s.filters } })),
+				set((s) => ({
+					savedFilters: {
+						filters: { ...s.filters },
+						sort: { ...s.sort },
+						scope: { ...s.scope },
+					},
+				})),
 			loadSavedFilters: () =>
 				set((s) => ({
-					filters: s.savedFilters ? { ...s.savedFilters } : { ...s.filters },
+					filters: s.savedFilters
+						? { ...s.savedFilters.filters }
+						: { ...s.filters },
+					sort: s.savedFilters ? { ...s.savedFilters.sort } : { ...s.sort },
+					scope: s.savedFilters ? { ...s.savedFilters.scope } : { ...s.scope },
 				})),
 			clearSavedFilters: () => set({ savedFilters: null }),
 			setSort: (sort) =>

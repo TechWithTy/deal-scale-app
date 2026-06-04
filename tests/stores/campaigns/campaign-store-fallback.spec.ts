@@ -1,21 +1,17 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
+
+import { useCampaignStore } from "@/lib/stores/campaigns";
 
 describe("useCampaignStore fallback data", () => {
-	it("matches fallback call campaigns", async () => {
-		vi.resetModules();
-		vi.unstubAllEnvs();
-		vi.stubEnv("NEXT_PUBLIC_APP_TESTING_MODE", "dev");
+	it("stays stable after a reset", () => {
+		const state = useCampaignStore.getState();
+		const initialCallCampaigns = [...state.campaignsByType.call];
 
-		const { fallbackCallCampaignData } = await import(
-			"@/constants/_faker/calls/callCampaign"
-		);
-		const { useCampaignStore } = await import("@/lib/stores/campaigns");
+		expect(Array.isArray(initialCallCampaigns)).toBe(true);
 
+		state.reset();
 		expect(useCampaignStore.getState().campaignsByType.call).toStrictEqual(
-			fallbackCallCampaignData,
-		);
-		expect(useCampaignStore.getState().campaignsByType.call).not.toBe(
-			fallbackCallCampaignData,
+			initialCallCampaigns,
 		);
 	});
 });

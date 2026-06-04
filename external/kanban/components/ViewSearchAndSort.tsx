@@ -28,6 +28,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import SuggestModal from "./SuggestModal";
+import TaskScopeSelect from "./TaskScopeSelect";
 
 export default function ViewSearchAndSort() {
 	// View store state and actions
@@ -37,6 +38,8 @@ export default function ViewSearchAndSort() {
 	const setSearchQuery = useKanbanView((s) => s.setSearchQuery);
 	const sort = useKanbanView((s) => s.sort);
 	const setSort = useKanbanView((s) => s.setSort);
+	const scope = useKanbanView((s) => s.scope);
+	const setScope = useKanbanView((s) => s.setScope);
 	const filters = useKanbanView((s) => s.filters);
 	const setFilters = useKanbanView((s) => s.setFilters);
 	const clearFilters = useKanbanView((s) => s.clearFilters);
@@ -54,7 +57,7 @@ export default function ViewSearchAndSort() {
 			const res = await fetch("/api/kanban/saved-filters", {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ filters }),
+				body: JSON.stringify({ filters, scope, sort }),
 			});
 			if (!res.ok) {
 				console.warn("Save filters to DB failed with status", res.status);
@@ -232,6 +235,8 @@ export default function ViewSearchAndSort() {
 					</DropdownMenuContent>
 				</DropdownMenu>
 			</div>
+
+			<TaskScopeSelect tasks={tasks} scope={scope} setScope={setScope} />
 
 			{/* Priority filter (multi) */}
 			<div className="flex min-w-[200px] flex-col gap-1">

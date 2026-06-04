@@ -218,7 +218,7 @@ export const handleLogin = async (user: EditableUser) => {
 				: undefined,
 			isCustomUser: String(isCustomUser),
 			customUserData: JSON.stringify(payload),
-			callbackUrl: "/dashboard",
+			callbackUrl: "/",
 			redirect: true,
 		});
 	} catch (error) {

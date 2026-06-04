@@ -6,21 +6,16 @@ import type {
 	SocialMediaCampaign,
 	Stat,
 } from "@/types/_dashboard/campaign"; // Types for campaigns
-import { Search } from "lucide-react";
-import type React from "react";
-import { useEffect, useState } from "react";
-import StatCard from "./statCard";
-
 import type { EmailCampaign } from "@/types/goHighLevel/email";
 import type { GHLTextMessageCampaign } from "@/types/goHighLevel/text";
-
 import {
 	MockUserProfile,
 	mockUserProfile,
 } from "@/constants/_faker/profile/userProfile";
-
-import { HelpCircle } from "lucide-react";
 import React, { useEffect, useState } from "react";
+import { HelpCircle, Search } from "lucide-react";
+
+import StatCard from "./statCard";
 const creditsRemaining =
 	mockUserProfile && "subscription" in mockUserProfile
 		? mockUserProfile.subscription.aiCredits.allotted -

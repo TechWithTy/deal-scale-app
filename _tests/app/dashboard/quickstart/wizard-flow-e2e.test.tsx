@@ -10,7 +10,7 @@ import {
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 // Note: Using fireEvent for compatibility; userEvent can be added if available
 
-import QuickStartPage from "@/app/dashboard/page";
+import QuickStartPage from "@/components/quickstart/QuickStartDashboardPage";
 import { useCampaignCreationStore } from "@/lib/stores/campaignCreation";
 import { useCampaignStore } from "@/lib/stores/campaigns";
 import { useQuickStartWizardStore } from "@/lib/stores/quickstartWizard";

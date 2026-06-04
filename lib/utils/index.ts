@@ -1,4 +1,5 @@
 export { cn } from "../_utils";
 
-export const safeWindow =
-	typeof window !== "undefined" ? window : (undefined as Window | undefined);
+export function safeWindow(): Window | undefined {
+	return typeof window !== "undefined" ? window : undefined;
+}

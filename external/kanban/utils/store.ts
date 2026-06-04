@@ -8,9 +8,24 @@ import { defaultCols, mockKanbanState } from "./mocks";
 
 export type KanbanTask = BaseKanbanTask & {
 	appointmentDate?: string;
+	appointmentTimezone?: string;
+	scheduledDate?: string;
+	scheduledTimezone?: string;
 	leadId?: string;
 	leadListId?: string;
 	assignedToTeamMember?: string;
+	aiState?: AiTaskState;
+	aiErrorMessage?: string;
+	aiMissingParams?: string[];
+	aiStartedAt?: string;
+	aiEtaSeconds?: number;
+	aiStreamText?: string;
+	outputAttachments?: { filename: string; url: string }[];
+	outputImageUrl?: string;
+	outputMarkdown?: string;
+	outputVideoUrl?: string;
+	costType?: "ai" | "leads" | "skipTraces";
+	costAmount?: number;
 };
 
 const safeKanbanState: KanbanState = mockKanbanState || {
@@ -20,22 +35,7 @@ const safeKanbanState: KanbanState = mockKanbanState || {
 };
 
 interface Actions {
-	addTask: (
-		title: string,
-		description: string,
-		assignedToTeamMember: string,
-		dueDate: string,
-		scheduledDate?: string,
-		scheduledTimezone?: string,
-		appointmentDate?: string,
-		appointmentTime?: string,
-		appointmentTimezone?: string,
-		leadId?: string,
-		leadListId?: string,
-		youtubeUrl?: string,
-		outputVideoUrl?: string,
-		attachments?: { filename: string; url: string }[],
-	) => void;
+	addTask: (...args: AddTaskArgs) => void;
 	addCol: (title: string) => void;
 	dragTask: (id: string | null) => void;
 	removeTask: (id: string) => void;
@@ -84,51 +84,143 @@ interface Actions {
 	setAiPending: (id: string) => void;
 }
 
+type LegacyAddTaskArgs = [
+	title: string,
+	description: string,
+	assignedToTeamMember: string,
+	dueDate: string,
+	appointmentDate?: string,
+	appointmentTime?: string,
+	leadId?: string,
+	leadListId?: string,
+	youtubeUrl?: string,
+	outputVideoUrl?: string,
+	attachments?: { filename: string; url: string }[],
+];
+
+type ExtendedAddTaskArgs = [
+	title: string,
+	description: string,
+	assignedToTeamMember: string,
+	dueDate: string,
+	scheduledDate?: string,
+	scheduledTimezone?: string,
+	appointmentDate?: string,
+	appointmentTime?: string,
+	appointmentTimezone?: string,
+	leadId?: string,
+	leadListId?: string,
+	youtubeUrl?: string,
+	outputVideoUrl?: string,
+	attachments?: { filename: string; url: string }[],
+];
+
+type AddTaskArgs = LegacyAddTaskArgs | ExtendedAddTaskArgs;
+
+function normalizeAddTaskArgs(args: AddTaskArgs) {
+	const values = [...args] as Array<
+		string | { filename: string; url: string }[] | undefined
+	>;
+	const [
+		title,
+		description,
+		assignedToTeamMember,
+		dueDate,
+		fifth,
+		sixth,
+		seventh,
+		eighth,
+		ninth,
+		tenth,
+		eleventh,
+		twelfth,
+		thirteenth,
+		fourteenth,
+	] = values;
+
+	if (values.length >= 14) {
+		return {
+			title: title ?? "",
+			description: description ?? "",
+			assignedToTeamMember: assignedToTeamMember ?? "",
+			dueDate: dueDate ?? "",
+			scheduledDate: fifth,
+			scheduledTimezone: sixth,
+			appointmentDate: seventh,
+			appointmentTime: eighth,
+			appointmentTimezone: ninth,
+			leadId: tenth,
+			leadListId: eleventh,
+			youtubeUrl: twelfth,
+			outputVideoUrl: thirteenth,
+			attachments: fourteenth,
+		};
+	}
+
+	return {
+		title: title ?? "",
+		description: description ?? "",
+		assignedToTeamMember: assignedToTeamMember ?? "",
+		dueDate: dueDate ?? "",
+		appointmentDate: fifth,
+		appointmentTime: sixth,
+		leadId: seventh,
+		leadListId: eighth,
+		youtubeUrl: ninth,
+		outputVideoUrl: tenth,
+		attachments: eleventh,
+	};
+}
+
 export const useTaskStore = create<KanbanState & Actions>()(
 	persist(
 		(set) => ({
 			tasks: safeKanbanState.tasks,
 			columns: safeKanbanState.columns,
 			draggedTask: null,
-			addTask: (
-				title,
-				description,
-				assignedToTeamMember,
-				dueDate,
-				scheduledDate,
-				scheduledTimezone,
-				appointmentDate,
-				appointmentTime,
-				appointmentTimezone,
-				leadId,
-				leadListId,
-				youtubeUrl,
-				outputVideoUrl,
-				attachments,
-			) =>
+			addTask: (...args) => {
+				const normalized = normalizeAddTaskArgs(args);
 				set((state) => ({
 					tasks: [
 						...state.tasks,
 						{
 							id: uuid(),
-							title,
-							description,
+							title: normalized.title,
+							description: normalized.description,
 							status: "TODO",
-							assignedToTeamMember: assignedToTeamMember || undefined,
-							leadId: leadId || undefined,
-							leadListId: leadListId || undefined,
-							dueDate,
-							...(scheduledDate ? { scheduledDate } : {}),
-							...(scheduledTimezone ? { scheduledTimezone } : {}),
-							...(appointmentTime ? { appointmentTime } : {}),
-							...(appointmentDate ? { appointmentDate } : {}),
-							...(appointmentTimezone ? { appointmentTimezone } : {}),
-							...(youtubeUrl ? { youtubeUrl } : {}),
-							...(outputVideoUrl ? { outputVideoUrl } : {}),
-							...(attachments && attachments.length ? { attachments } : {}),
+							assignedToTeamMember:
+								normalized.assignedToTeamMember || undefined,
+							leadId: normalized.leadId || undefined,
+							leadListId: normalized.leadListId || undefined,
+							dueDate: normalized.dueDate,
+							...(normalized.scheduledDate
+								? { scheduledDate: normalized.scheduledDate }
+								: {}),
+							...(normalized.scheduledTimezone
+								? { scheduledTimezone: normalized.scheduledTimezone }
+								: {}),
+							...(normalized.appointmentDate
+								? { appointmentDate: normalized.appointmentDate }
+								: {}),
+							...(normalized.appointmentTime
+								? { appointmentTime: normalized.appointmentTime }
+								: {}),
+							...(normalized.appointmentTimezone
+								? { appointmentTimezone: normalized.appointmentTimezone }
+								: {}),
+							...(normalized.youtubeUrl
+								? { youtubeUrl: normalized.youtubeUrl }
+								: {}),
+							...(normalized.outputVideoUrl
+								? { outputVideoUrl: normalized.outputVideoUrl }
+								: {}),
+							...(normalized.attachments?.length
+								? { attachments: normalized.attachments }
+								: {}),
 						},
 					],
-				})),
+				}));
+			},
 			updateTask: (id, updates) =>
 				set((state) => ({
 					tasks: state.tasks.map((t) =>
@@ -299,6 +391,6 @@ export const useTaskStore = create<KanbanState & Actions>()(
 			setTasks: (newTasks: KanbanTask[]) => set({ tasks: newTasks }),
 			setCols: (newCols: KanbanColumn[]) => set({ columns: newCols }),
 		}),
-		{ name: "external-task-store", skipHydration: true },
+		{ name: "task-store", skipHydration: true },
 	),
 );

@@ -2,7 +2,7 @@ import React, { act } from "react";
 import { cleanup, fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import QuickStartPage from "@/app/dashboard/page";
+import QuickStartPage from "@/components/quickstart/QuickStartDashboardPage";
 import { useQuickStartWizardStore } from "@/lib/stores/quickstartWizard";
 import { useQuickStartWizardDataStore } from "@/lib/stores/quickstartWizardData";
 import { useQuickStartWizardExperienceStore } from "@/lib/stores/quickstartWizardExperience";

@@ -2,7 +2,7 @@ import { act } from "@testing-library/react";
 import React from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import QuickStartPage from "@/app/dashboard/page";
+import QuickStartPage from "@/components/quickstart/QuickStartDashboardPage";
 import { useCampaignCreationStore } from "@/lib/stores/campaignCreation";
 import { renderWithNuqs } from "./testUtils";
 

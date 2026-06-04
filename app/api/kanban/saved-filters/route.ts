@@ -9,6 +9,8 @@ export async function POST(req: Request) {
 		const BodySchema = z
 			.object({
 				filters: z.unknown().nullable().optional(),
+				scope: z.unknown().nullable().optional(),
+				sort: z.unknown().nullable().optional(),
 			})
 			.strict();
 

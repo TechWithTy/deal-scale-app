@@ -25,7 +25,7 @@ export function CredentialSignInForm({
 	const searchParams = useSearchParams();
 
 	const callbackUrl = useMemo(() => {
-		return searchParams?.get("callbackUrl") ?? "/dashboard";
+		return searchParams?.get("callbackUrl") ?? "/";
 	}, [searchParams]);
 
 	const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {

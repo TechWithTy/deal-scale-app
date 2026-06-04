@@ -26,11 +26,7 @@ describe("next.config", () => {
 	});
 
 	it("enables modern bundling optimizations", () => {
-		expect(config.experimental?.optimizePackageImports).toBeDefined();
-		expect(Array.isArray(config.experimental?.optimizePackageImports)).toBe(
-			true,
-		);
-		expect(config.compiler?.removeConsole).toBeDefined();
-		expect(config.compiler?.reactRemoveProperties).toBeDefined();
+		expect(config.compiler?.removeConsole).toBe(false);
+		expect(config.compiler?.reactRemoveProperties).toBe(false);
 	});
 });

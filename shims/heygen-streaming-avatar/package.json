@@ -1,0 +1,8 @@
+{
+  "name": "@heygen/streaming-avatar",
+  "version": "2.1.1-shim",
+  "type": "module",
+  "main": "./index.js",
+  "module": "./index.js",
+  "types": "./index.d.ts"
+}
