@@ -10,6 +10,11 @@ const embeddedAvatarEnvPath = path.join(
 	"interactive-avatar-nextjs-demo",
 	".env",
 );
+const embeddedAvatarRoot = path.join(
+	__dirname,
+	"external",
+	"interactive-avatar-nextjs-demo",
+);
 
 if (fs.existsSync(embeddedAvatarEnvPath)) {
 	dotenv.config({ path: embeddedAvatarEnvPath });
@@ -34,15 +39,15 @@ const isProd = process.env.NODE_ENV === "production";
 const disablePwa = process.env.NEXT_DISABLE_PWA === "1";
 let withPWA = (config) => config;
 if (isProd && !disablePwa) {
-		try {
-			const nextPwa = require("next-pwa");
-			const enhancerFactory = nextPwa({
-				dest: "public",
-				disable: false,
-				maximumFileSizeToCacheInBytes: 12 * 1024 * 1024,
-				register: true,
-				skipWaiting: true,
-				swSrc: "./public/sw-custom.js",
+	try {
+		const nextPwa = require("next-pwa");
+		const enhancerFactory = nextPwa({
+			dest: "public",
+			disable: false,
+			maximumFileSizeToCacheInBytes: 12 * 1024 * 1024,
+			register: true,
+			skipWaiting: true,
+			swSrc: "./public/sw-custom.js",
 			buildExcludes: [/middleware-manifest\.json$/],
 			fallbacks: { document: offlineFallback },
 		});
@@ -94,7 +99,7 @@ const nextConfig = {
 			{
 				key: "Permissions-Policy",
 				value:
-					"camera=(self \"https://embed.liveavatar.com\"), microphone=(self \"https://embed.liveavatar.com\"), geolocation=(), interest-cohort=()",
+					'camera=(self "https://embed.liveavatar.com"), microphone=(self "https://embed.liveavatar.com"), geolocation=(), interest-cohort=()',
 			},
 			{ key: "X-Frame-Options", value: "SAMEORIGIN" },
 		];
@@ -171,7 +176,7 @@ const nextConfig = {
 	},
 
 	// Simplified webpack configuration
-	webpack: (config, { isServer }) => {
+	webpack: (config, { isServer, webpack }) => {
 		// Basic path aliases
 		config.resolve.alias = {
 			...(config.resolve.alias || {}),
@@ -186,6 +191,24 @@ const nextConfig = {
 				"external/dynamic-hero/src",
 			),
 		};
+
+		config.plugins = config.plugins || [];
+		config.plugins.push(
+			new webpack.NormalModuleReplacementPlugin(/^@\//, (resource) => {
+				const issuer = resource.contextInfo?.issuer || resource.context || "";
+				const normalizedIssuer = path.normalize(issuer);
+				const normalizedAvatarRoot = path.normalize(embeddedAvatarRoot);
+
+				if (!normalizedIssuer.startsWith(normalizedAvatarRoot)) {
+					return;
+				}
+
+				resource.request = path.join(
+					embeddedAvatarRoot,
+					resource.request.slice(2),
+				);
+			}),
+		);
 
 		// If Tailwind's transitive dep is missing, alias tailwindcss to a no-op shim
 		const forceNoTailwind = process.env.NEXT_DISABLE_TAILWIND === "1";
