@@ -13,16 +13,6 @@ import { cn } from "@/lib/_utils";
 const OPAQUE_OVERLAY_BACKGROUND = "#020617";
 const OPAQUE_OVERLAY_FOREGROUND = "#f8fafc";
 
-const dismissRadixOverlay = () => {
-	document.dispatchEvent(
-		new KeyboardEvent("keydown", {
-			bubbles: true,
-			cancelable: true,
-			key: "Escape",
-		}),
-	);
-};
-
 const DropdownMenu = DropdownMenuPrimitive.Root;
 
 const DropdownMenuTrigger = DropdownMenuPrimitive.Trigger;
@@ -93,7 +83,6 @@ const DropdownMenuContent = React.forwardRef<
 			align = "start",
 			avoidCollisions = false,
 			style,
-			onPointerDownOutside,
 			...props
 		},
 		ref,
@@ -116,10 +105,6 @@ const DropdownMenuContent = React.forwardRef<
 					color: OPAQUE_OVERLAY_FOREGROUND,
 					isolation: "isolate",
 					opacity: 1,
-				}}
-				onPointerDownOutside={(event) => {
-					onPointerDownOutside?.(event);
-					dismissRadixOverlay();
 				}}
 				{...props}
 			/>
