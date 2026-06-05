@@ -687,6 +687,60 @@ video {
 	body {
 		@apply box-border bg-background text-foreground;
 	}
+
+	/*
+	 * Overlay surfaces must be opaque even when Radix portals move them outside
+	 * the themed subtree or a native select uses browser-rendered options.
+	 */
+	select,
+	select option,
+	select optgroup {
+		background-color: #020617 !important;
+		color: #f8fafc !important;
+		color-scheme: dark;
+		opacity: 1 !important;
+	}
+
+	[data-radix-popper-content-wrapper] > *,
+	[data-radix-popper-content-wrapper] [cmdk-list],
+	[data-radix-select-content],
+	[data-radix-dropdown-menu-content],
+	[data-radix-dropdown-menu-sub-content],
+	[data-radix-popover-content],
+	[data-radix-dialog-content] {
+		background-color: #020617 !important;
+		color: #f8fafc !important;
+		opacity: 1 !important;
+		isolation: isolate;
+		backdrop-filter: none !important;
+	}
+
+	[data-radix-popper-content-wrapper] [data-highlighted],
+	[data-radix-select-item],
+	[data-radix-dropdown-menu-item],
+	[data-radix-popper-content-wrapper] [role="option"],
+	[data-radix-popper-content-wrapper] [role="menuitem"],
+	[data-radix-popper-content-wrapper] [role="menuitemcheckbox"],
+	[data-radix-popper-content-wrapper] [role="menuitemradio"],
+	[data-radix-popper-content-wrapper] [data-radix-collection-item] {
+		background-color: #020617 !important;
+		color: #f8fafc !important;
+		opacity: 1 !important;
+	}
+
+	[data-radix-popper-content-wrapper] [data-highlighted],
+	[data-radix-select-item][data-highlighted],
+	[data-radix-dropdown-menu-item][data-highlighted],
+	[data-radix-popper-content-wrapper] [role="option"][data-highlighted],
+	[data-radix-popper-content-wrapper] [role="menuitem"][data-highlighted],
+	[data-radix-popper-content-wrapper]
+		[role="menuitemcheckbox"][data-highlighted],
+	[data-radix-popper-content-wrapper] [role="menuitemradio"][data-highlighted],
+	[data-radix-popper-content-wrapper]
+		[data-radix-collection-item][data-highlighted] {
+		background-color: #1e293b !important;
+		color: #f8fafc !important;
+	}
 }
 
 @layer utilities {
