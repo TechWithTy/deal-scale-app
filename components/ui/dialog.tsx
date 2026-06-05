@@ -6,6 +6,9 @@ import * as React from "react";
 
 import { cn } from "@/lib/_utils";
 
+const OPAQUE_DIALOG_BACKGROUND = "#020617";
+const OPAQUE_DIALOG_FOREGROUND = "#f8fafc";
+
 const Dialog = DialogPrimitive.Root;
 
 const DialogTrigger = DialogPrimitive.Trigger;
@@ -43,8 +46,7 @@ const DialogOverlay = React.forwardRef<
 					element.nodeType === Node.ELEMENT_NODE
 				) {
 					const isToast =
-						(element.hasAttribute &&
-							element.hasAttribute("data-sonner-toast")) ||
+						element.hasAttribute?.("data-sonner-toast") ||
 						(element.closest &&
 							element.closest("[data-sonner-toast]") !== null) ||
 						(element.closest &&
@@ -119,8 +121,7 @@ const DialogOverlay = React.forwardRef<
 					element.nodeType === Node.ELEMENT_NODE
 				) {
 					const isToast =
-						(element.hasAttribute &&
-							element.hasAttribute("data-sonner-toast")) ||
+						element.hasAttribute?.("data-sonner-toast") ||
 						(element.closest &&
 							element.closest("[data-sonner-toast]") !== null) ||
 						(element.closest &&
@@ -185,7 +186,7 @@ DialogOverlay.displayName = DialogPrimitive.Overlay.displayName;
 const DialogContent = React.forwardRef<
 	React.ElementRef<typeof DialogPrimitive.Content>,
 	React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
->(({ className, children, ...props }, ref) => (
+>(({ className, children, style, ...props }, ref) => (
 	<DialogPortal>
 		<DialogOverlay />
 		<DialogPrimitive.Content
@@ -194,6 +195,13 @@ const DialogContent = React.forwardRef<
 				"-translate-x-1/2 -translate-y-1/2 !border-border !bg-card !text-card-foreground !h-auto !max-h-[90vh] !min-h-0 !overflow-auto data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 pointer-events-auto fixed top-[50%] left-[50%] z-50 grid w-full max-w-lg gap-4 border p-6 shadow-lg duration-200 data-[state=closed]:animate-out data-[state=open]:animate-in sm:rounded-lg md:w-full",
 				className,
 			)}
+			style={{
+				...style,
+				backgroundColor: OPAQUE_DIALOG_BACKGROUND,
+				color: OPAQUE_DIALOG_FOREGROUND,
+				isolation: "isolate",
+				opacity: 1,
+			}}
 			onInteractOutside={(e) => {
 				// Don't close modal if clicking on toast
 				const target = e.target as HTMLElement;
@@ -213,8 +221,7 @@ const DialogContent = React.forwardRef<
 					) {
 						// Check for toast attributes/classes
 						const isToast =
-							(element.hasAttribute &&
-								element.hasAttribute("data-sonner-toast")) ||
+							element.hasAttribute?.("data-sonner-toast") ||
 							(element.closest &&
 								element.closest("[data-sonner-toast]") !== null) ||
 							(element.closest &&

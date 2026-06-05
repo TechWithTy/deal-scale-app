@@ -1,6 +1,19 @@
 const path = require("node:path");
+const fs = require("node:fs");
+const dotenv = require("dotenv");
 const { buildCacheControl } = require("./utils/http/cacheControl.js");
 const { offlineFallback } = require("./public/sw-config.js");
+
+const embeddedAvatarEnvPath = path.join(
+	__dirname,
+	"external",
+	"interactive-avatar-nextjs-demo",
+	".env",
+);
+
+if (fs.existsSync(embeddedAvatarEnvPath)) {
+	dotenv.config({ path: embeddedAvatarEnvPath });
+}
 
 const imageStackValue =
 	process.env.NEXT_IMAGE_STACK ??
@@ -70,7 +83,7 @@ const nextConfig = {
 			{
 				key: "Content-Security-Policy",
 				value:
-					"default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https: blob:; connect-src 'self' https:; img-src 'self' data: https: blob:; style-src 'self' 'unsafe-inline' https:; font-src 'self' data: https:; media-src 'self' https: blob: data:; frame-src 'self' https://app.supademo.com https://www.youtube.com https://open.spotify.com https://sdk.scdn.co; frame-ancestors 'self'; form-action 'self'; base-uri 'self';",
+					"default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https: blob:; connect-src 'self' https:; img-src 'self' data: https: blob:; style-src 'self' 'unsafe-inline' https:; font-src 'self' data: https:; media-src 'self' https: blob: data:; frame-src 'self' https://app.supademo.com https://www.youtube.com https://open.spotify.com https://sdk.scdn.co https://embed.liveavatar.com; frame-ancestors 'self'; form-action 'self'; base-uri 'self';",
 			},
 			{
 				key: "Strict-Transport-Security",
@@ -80,7 +93,8 @@ const nextConfig = {
 			{ key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
 			{
 				key: "Permissions-Policy",
-				value: "camera=(), microphone=(), geolocation=(), interest-cohort=()",
+				value:
+					"camera=(self \"https://embed.liveavatar.com\"), microphone=(self \"https://embed.liveavatar.com\"), geolocation=(), interest-cohort=()",
 			},
 			{ key: "X-Frame-Options", value: "SAMEORIGIN" },
 		];

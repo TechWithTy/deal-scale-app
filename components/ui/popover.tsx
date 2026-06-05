@@ -5,6 +5,9 @@ import * as React from "react";
 
 import { cn } from "@/lib/_utils";
 
+const OPAQUE_OVERLAY_BACKGROUND = "#020617";
+const OPAQUE_OVERLAY_FOREGROUND = "#f8fafc";
+
 const Popover = PopoverPrimitive.Root;
 
 const PopoverTrigger = PopoverPrimitive.Trigger;
@@ -34,6 +37,7 @@ const PopoverContent = React.forwardRef<
 			sideOffset = 4,
 			avoidPortal = false,
 			portalProps,
+			style,
 			...props
 		},
 		ref,
@@ -46,9 +50,16 @@ const PopoverContent = React.forwardRef<
 				onOpenAutoFocus={(event) => event.preventDefault()}
 				onCloseAutoFocus={(event) => event.preventDefault()}
 				className={cn(
-					"z-50 w-72 rounded-md border border-border bg-popover text-popover-foreground shadow-md outline-none",
+					"!bg-popover !text-popover-foreground !opacity-100 z-50 w-72 rounded-md border border-border shadow-md outline-none backdrop-blur-none",
 					className,
 				)}
+				style={{
+					...style,
+					backgroundColor: OPAQUE_OVERLAY_BACKGROUND,
+					color: OPAQUE_OVERLAY_FOREGROUND,
+					isolation: "isolate",
+					opacity: 1,
+				}}
 				{...props}
 			/>
 		);

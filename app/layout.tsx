@@ -1,3 +1,4 @@
+import AuthenticatedAppShell from "@/components/layout/AuthenticatedAppShell";
 import NonCriticalStyles from "@/components/layout/NonCriticalStyles";
 import Providers from "@/components/layout/providers";
 import type { Metadata } from "next";
@@ -5,18 +6,9 @@ import { Inter } from "next/font/google";
 import React, { type ReactNode } from "react";
 import "./globals.css";
 import { auth } from "@/auth";
-import dynamic from "next/dynamic";
 import Script from "next/script";
 
 const inter = Inter({ subsets: ["latin"] });
-
-const SupademoClient = dynamic(
-	() => import("@/components/integrations/SupademoClient"),
-	{
-		ssr: false,
-		loading: () => null,
-	},
-);
 
 const organizationJsonLd = {
 	"@context": "https://schema.org",
@@ -119,9 +111,6 @@ export default async function RootLayout({
 }): Promise<React.ReactElement> {
 	const session = await auth();
 	const isAuthenticated = Boolean(session);
-	const AuthenticatedAppShell = isAuthenticated
-		? (await import("@/components/layout/AuthenticatedAppShell")).default
-		: null;
 	void React;
 
 	return (
@@ -160,7 +149,7 @@ export default async function RootLayout({
 			</head>
 			<body className={inter.className} suppressHydrationWarning={true}>
 				<NonCriticalStyles />
-				{isAuthenticated && AuthenticatedAppShell ? (
+				{isAuthenticated ? (
 					<AuthenticatedAppShell session={session}>
 						{children}
 					</AuthenticatedAppShell>

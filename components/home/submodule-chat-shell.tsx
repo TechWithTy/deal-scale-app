@@ -88,9 +88,11 @@ const UUID_PATTERN =
 
 function EmbeddedShellControls({
 	chatMinimized,
+	hidden,
 	onRestoreChat,
 }: {
 	chatMinimized: boolean;
+	hidden: boolean;
 	onRestoreChat: () => void;
 }) {
 	const { viewTab, setViewTab, controlsMinimized, setControlsMinimized } =
@@ -101,7 +103,11 @@ function EmbeddedShellControls({
 	);
 
 	return (
-		<div className="pointer-events-none absolute inset-0 z-[220]">
+		<div
+			className={`pointer-events-none absolute inset-0 z-[220] ${
+				hidden ? "hidden" : ""
+			}`}
+		>
 			{sidebarCollapsed ? (
 				<button
 					aria-label="Open workspace sidebar"
@@ -200,7 +206,9 @@ function WorkspacePanel({ tab }: { tab: WorkspaceTab }) {
 	const [liveAvatarEmbedUrl, setLiveAvatarEmbedUrl] = useState<string | null>(
 		null,
 	);
+	const [isEmbedLoading, setIsEmbedLoading] = useState(false);
 	const [isConnecting, setIsConnecting] = useState(false);
+	const embedFrameRef = useRef<HTMLIFrameElement | null>(null);
 	const [selectedAvatar, setSelectedAvatar] = useState("");
 	const [customAvatarId, setCustomAvatarId] = useState("");
 	const [knowledgeBaseId, setKnowledgeBaseId] = useState("");
@@ -229,6 +237,28 @@ function WorkspacePanel({ tab }: { tab: WorkspaceTab }) {
 			setSelectedVoiceId(voiceOptions[0].value);
 		}
 	}, [selectedVoiceId, voiceOptions]);
+
+	useEffect(() => {
+		if (!liveAvatarEmbedUrl) {
+			setIsEmbedLoading(false);
+			return;
+		}
+
+		setIsEmbedLoading(true);
+
+		const frame = embedFrameRef.current;
+		const clearLoading = () => setIsEmbedLoading(false);
+		const forceReadyTimer = window.setTimeout(clearLoading, 4000);
+
+		frame?.addEventListener("load", clearLoading);
+		frame?.addEventListener("error", clearLoading);
+
+		return () => {
+			window.clearTimeout(forceReadyTimer);
+			frame?.removeEventListener("load", clearLoading);
+			frame?.removeEventListener("error", clearLoading);
+		};
+	}, [liveAvatarEmbedUrl]);
 
 	const avatarOptions = avatarOptionItems.map((option) => ({
 		avatar_id: option.value,
@@ -298,6 +328,7 @@ function WorkspacePanel({ tab }: { tab: WorkspaceTab }) {
 					"[VideoSetupPanel] Failed to start avatar session",
 					error,
 				);
+				setIsEmbedLoading(false);
 			} finally {
 				setIsConnecting(false);
 			}
@@ -309,26 +340,36 @@ function WorkspacePanel({ tab }: { tab: WorkspaceTab }) {
 				data-tour="avatar-video"
 			>
 				{liveAvatarEmbedUrl ? (
-					<div className="absolute inset-0 min-h-0 bg-black">
-						<Button
-							size="icon"
-							type="button"
-							variant="secondary"
-							title="Stop avatar"
-							className="absolute right-4 top-4 z-20"
-							onClick={() => setLiveAvatarEmbedUrl(null)}
-						>
-							<XIcon className="h-4 w-4" />
-						</Button>
-						<iframe
-							allow="microphone; camera; autoplay; fullscreen"
-							className="absolute left-1/2 top-0 block h-full min-w-full -translate-x-1/2 border-0"
-							src={liveAvatarEmbedUrl}
-							style={{
-								width: "max(100%, calc(100dvh * 16 / 9))",
-							}}
-							title="LiveAvatar session"
-						/>
+					<div className="absolute inset-0 bg-black">
+						<div className="relative h-full w-full overflow-hidden bg-black">
+							<Button
+								size="icon"
+								type="button"
+								variant="secondary"
+								title="Stop avatar"
+								className="absolute right-4 top-4 z-20"
+								onClick={() => {
+									setIsEmbedLoading(false);
+									setLiveAvatarEmbedUrl(null);
+								}}
+							>
+								<XIcon className="h-4 w-4" />
+							</Button>
+							{isEmbedLoading ? (
+								<div className="absolute inset-0 z-10 flex items-center justify-center bg-black/70 text-sm text-white/80">
+									Loading LiveAvatar session...
+								</div>
+							) : null}
+							<iframe
+								allow="camera; microphone; autoplay; clipboard-read; clipboard-write; fullscreen"
+								className="absolute left-1/2 top-1/2 block h-full min-w-full -translate-x-1/2 -translate-y-1/2 border-0"
+								ref={embedFrameRef}
+								referrerPolicy="strict-origin-when-cross-origin"
+								src={liveAvatarEmbedUrl}
+								style={{ aspectRatio: "16 / 9" }}
+								title="LiveAvatar session"
+							/>
+						</div>
 					</div>
 				) : (
 					<div className="absolute inset-0 flex items-center justify-center">
@@ -402,6 +443,7 @@ function SubmoduleChatPanel() {
 	);
 	const [chatMinimized, setChatMinimized] = useState(false);
 	const [chatMaximized, setChatMaximized] = useState(false);
+	const [videoSelectOpen, setVideoSelectOpen] = useState(false);
 	const [mountedWorkspaceTabs, setMountedWorkspaceTabs] = useState<
 		Record<WorkspaceTab, boolean>
 	>({
@@ -441,6 +483,24 @@ function SubmoduleChatPanel() {
 		};
 	}, []);
 
+	useEffect(() => {
+		const handleVideoSelectOpen = (event: Event) => {
+			const detail = (event as CustomEvent<{ open?: boolean }>).detail;
+			setVideoSelectOpen(Boolean(detail?.open));
+		};
+
+		window.addEventListener(
+			"deal-scale:video-select-open",
+			handleVideoSelectOpen,
+		);
+		return () => {
+			window.removeEventListener(
+				"deal-scale:video-select-open",
+				handleVideoSelectOpen,
+			);
+		};
+	}, []);
+
 	const showWorkspace = chatMinimized;
 
 	return (
@@ -448,6 +508,7 @@ function SubmoduleChatPanel() {
 			<SubmoduleSidebar showCollapsedTrigger={false} />
 			<EmbeddedShellControls
 				chatMinimized={chatMinimized}
+				hidden={videoSelectOpen}
 				onRestoreChat={() => {
 					setChatMinimized(false);
 				}}
@@ -571,7 +632,7 @@ function SubmoduleChatPanel() {
 					</div>
 				</div>
 			</div>
-			{chatMinimized ? (
+			{chatMinimized && !videoSelectOpen ? (
 				<div className="pointer-events-none fixed bottom-6 left-1/2 z-[500] -translate-x-1/2">
 					<button
 						aria-label="Restore chat"
