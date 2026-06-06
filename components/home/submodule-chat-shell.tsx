@@ -14,7 +14,6 @@ import {
 } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useEffect, useRef, useState } from "react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import {
 	StreamingAvatarProvider,
@@ -25,6 +24,7 @@ import { defaultGraphData } from "@/external/interactive-avatar-nextjs-demo/comp
 import { Chat } from "@/external/interactive-avatar-nextjs-demo/components/AvatarSession/Chat";
 import { useChatController } from "@/external/interactive-avatar-nextjs-demo/components/AvatarSession/hooks/useChatController";
 import { ApiServiceProvider } from "@/external/interactive-avatar-nextjs-demo/components/logic/ApiServiceContext";
+import { AvatarQueryProvider } from "@/external/interactive-avatar-nextjs-demo/components/logic/QueryProvider";
 import SubmoduleSidebar from "@/external/interactive-avatar-nextjs-demo/components/Sidebar";
 import { ToastProvider } from "@/external/interactive-avatar-nextjs-demo/components/ui/toaster";
 import {
@@ -653,10 +653,9 @@ function SubmoduleChatPanel() {
 
 export function SubmoduleChatShell() {
 	const [apiService, setApiService] = useState<ApiService | null>(null);
-	const [queryClient] = useState(() => new QueryClient());
 
 	return (
-		<QueryClientProvider client={queryClient}>
+		<AvatarQueryProvider>
 			<ApiServiceProvider service={apiService} setApiService={setApiService}>
 				<ToastProvider>
 					<StreamingAvatarProvider>
@@ -664,6 +663,6 @@ export function SubmoduleChatShell() {
 					</StreamingAvatarProvider>
 				</ToastProvider>
 			</ApiServiceProvider>
-		</QueryClientProvider>
+		</AvatarQueryProvider>
 	);
 }
