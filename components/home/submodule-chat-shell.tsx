@@ -26,6 +26,7 @@ import { useChatController } from "@/external/interactive-avatar-nextjs-demo/com
 import { ApiServiceProvider } from "@/external/interactive-avatar-nextjs-demo/components/logic/ApiServiceContext";
 import { AvatarQueryProvider } from "@/external/interactive-avatar-nextjs-demo/components/logic/QueryProvider";
 import SubmoduleSidebar from "@/external/interactive-avatar-nextjs-demo/components/Sidebar";
+import { AppTourProvider } from "@/external/interactive-avatar-nextjs-demo/components/tour/AppTourProvider";
 import { ToastProvider } from "@/external/interactive-avatar-nextjs-demo/components/ui/toaster";
 import {
 	useAvatarOptionsQuery,
@@ -658,9 +659,11 @@ export function SubmoduleChatShell() {
 		<AvatarQueryProvider>
 			<ApiServiceProvider service={apiService} setApiService={setApiService}>
 				<ToastProvider>
-					<StreamingAvatarProvider>
-						<SubmoduleChatPanel />
-					</StreamingAvatarProvider>
+					<AppTourProvider>
+						<StreamingAvatarProvider>
+							<SubmoduleChatPanel />
+						</StreamingAvatarProvider>
+					</AppTourProvider>
 				</ToastProvider>
 			</ApiServiceProvider>
 		</AvatarQueryProvider>
