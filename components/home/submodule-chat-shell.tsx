@@ -1,6 +1,28 @@
 "use client";
 
-import React from "react";
+import {
+	StreamingAvatarProvider,
+	StreamingAvatarSessionState,
+} from "@/components/logic/context";
+import { Button } from "@/components/ui/button";
+import { BasicChatSettingsModal } from "@/external/interactive-avatar-nextjs-demo/components/AvatarSession/BasicChatSettingsModal";
+import { Chat } from "@/external/interactive-avatar-nextjs-demo/components/AvatarSession/Chat";
+import { SessionQuickStartCard } from "@/external/interactive-avatar-nextjs-demo/components/AvatarSession/SessionQuickStartCard";
+import { useChatController } from "@/external/interactive-avatar-nextjs-demo/components/AvatarSession/hooks/useChatController";
+import SubmoduleSidebar from "@/external/interactive-avatar-nextjs-demo/components/Sidebar";
+import { defaultGraphData } from "@/external/interactive-avatar-nextjs-demo/components/data-viewer";
+import { ApiServiceProvider } from "@/external/interactive-avatar-nextjs-demo/components/logic/ApiServiceContext";
+import { AvatarQueryProvider } from "@/external/interactive-avatar-nextjs-demo/components/logic/QueryProvider";
+import { AppTourProvider } from "@/external/interactive-avatar-nextjs-demo/components/tour/AppTourProvider";
+import { ToastProvider } from "@/external/interactive-avatar-nextjs-demo/components/ui/toaster";
+import {
+	useAvatarOptionsQuery,
+	useKnowledgeBaseOptionsQuery,
+	useVoiceOptionsQuery,
+} from "@/external/interactive-avatar-nextjs-demo/data/options";
+import type { ApiService } from "@/lib/services/api";
+import { usePlacementStore } from "@/lib/stores/placement";
+import { type ChatExperience, useSessionStore } from "@/lib/stores/session";
 import {
 	Brain,
 	ChevronRight,
@@ -13,29 +35,8 @@ import {
 	XIcon,
 } from "lucide-react";
 import dynamic from "next/dynamic";
+import React from "react";
 import { useEffect, useRef, useState } from "react";
-import { Button } from "@/components/ui/button";
-import {
-	StreamingAvatarProvider,
-	StreamingAvatarSessionState,
-} from "@/components/logic/context";
-import { SessionQuickStartCard } from "@/external/interactive-avatar-nextjs-demo/components/AvatarSession/SessionQuickStartCard";
-import { defaultGraphData } from "@/external/interactive-avatar-nextjs-demo/components/data-viewer";
-import { Chat } from "@/external/interactive-avatar-nextjs-demo/components/AvatarSession/Chat";
-import { useChatController } from "@/external/interactive-avatar-nextjs-demo/components/AvatarSession/hooks/useChatController";
-import { ApiServiceProvider } from "@/external/interactive-avatar-nextjs-demo/components/logic/ApiServiceContext";
-import { AvatarQueryProvider } from "@/external/interactive-avatar-nextjs-demo/components/logic/QueryProvider";
-import SubmoduleSidebar from "@/external/interactive-avatar-nextjs-demo/components/Sidebar";
-import { AppTourProvider } from "@/external/interactive-avatar-nextjs-demo/components/tour/AppTourProvider";
-import { ToastProvider } from "@/external/interactive-avatar-nextjs-demo/components/ui/toaster";
-import {
-	useAvatarOptionsQuery,
-	useKnowledgeBaseOptionsQuery,
-	useVoiceOptionsQuery,
-} from "@/external/interactive-avatar-nextjs-demo/data/options";
-import type { ApiService } from "@/lib/services/api";
-import { usePlacementStore } from "@/lib/stores/placement";
-import { useSessionStore } from "@/lib/stores/session";
 
 const BrainGraphViewer = dynamic(
 	() =>
@@ -124,6 +125,7 @@ function EmbeddedShellControls({
 				<button
 					aria-label="Restore chat"
 					className="pointer-events-auto absolute bottom-2 left-1/2 flex -translate-x-1/2 items-center gap-2 rounded-md border border-primary bg-background px-3 py-2 text-foreground shadow-lg shadow-black/30 hover:bg-muted"
+					data-tour="bottom-chat-panel-toggle"
 					type="button"
 					onClick={onRestoreChat}
 				>
@@ -144,7 +146,10 @@ function EmbeddedShellControls({
 					<span className="text-xs font-medium">Controls</span>
 				</button>
 			) : (
-				<div className="pointer-events-auto absolute left-1/2 top-3 flex -translate-x-1/2 items-center gap-2 rounded-full border border-border bg-card px-2 py-1 text-card-foreground shadow-lg shadow-black/30">
+				<div
+					className="pointer-events-auto absolute left-1/2 top-3 flex -translate-x-1/2 items-center gap-2 rounded-full border border-border bg-card px-2 py-1 text-card-foreground shadow-lg shadow-black/30"
+					data-tour="top-panel-tabs"
+				>
 					<Button
 						className={`h-9 w-9 rounded-xl !border !border-border !p-0 ${
 							viewTab === "video"
@@ -162,6 +167,7 @@ function EmbeddedShellControls({
 								? "!bg-primary !text-primary-foreground"
 								: "!bg-muted !text-foreground"
 						}`}
+						data-tour="brain-tab"
 						title="Brain"
 						onClick={() => setViewTab("brain")}
 					>
@@ -173,6 +179,7 @@ function EmbeddedShellControls({
 								? "!bg-primary !text-primary-foreground"
 								: "!bg-muted !text-foreground"
 						}`}
+						data-tour="data-tab"
 						title="Data"
 						onClick={() => setViewTab("data")}
 					>
@@ -184,6 +191,7 @@ function EmbeddedShellControls({
 								? "!bg-primary !text-primary-foreground"
 								: "!bg-muted !text-foreground"
 						}`}
+						data-tour="actions-tab"
 						title="Actions"
 						onClick={() => setViewTab("actions")}
 					>
@@ -203,7 +211,7 @@ function EmbeddedShellControls({
 }
 
 function WorkspacePanel({ tab }: { tab: WorkspaceTab }) {
-	const { openChatSettings } = useSessionStore();
+	const { chatExperience, openChatSettings } = useSessionStore();
 	const [liveAvatarEmbedUrl, setLiveAvatarEmbedUrl] = useState<string | null>(
 		null,
 	);
@@ -278,7 +286,7 @@ function WorkspacePanel({ tab }: { tab: WorkspaceTab }) {
 					isHighlightActive
 					isEditing
 					nodesToHighlight={["root"]}
-					showControls={false}
+					showControls
 				/>
 			</div>
 		);
@@ -384,31 +392,82 @@ function WorkspacePanel({ tab }: { tab: WorkspaceTab }) {
 						>
 							<Settings2Icon className="h-4 w-4" />
 						</Button>
-						<SessionQuickStartCard
-							avatarOptions={avatarOptions}
-							contextOptions={contextOptions}
-							voiceOptions={voiceOptions}
-							customAvatarId={customAvatarId}
-							customIdValid={customIdValid}
-							isConnecting={isConnecting}
-							isLoadingAvatarOptions={isLoadingAvatarOptions}
-							isLoadingContextOptions={isLoadingContextOptions}
-							isLoadingVoiceOptions={isLoadingVoiceOptions}
-							kbIdValid={kbIdValid}
-							knowledgeBaseId={knowledgeBaseId}
-							onCustomAvatarChange={setCustomAvatarId}
-							onKnowledgeBaseChange={setKnowledgeBaseId}
-							onSelectAvatar={setSelectedAvatar}
-							onSelectVoice={setSelectedVoiceId}
-							onStartSession={startSession}
-							onStartWithoutAvatar={() => {
-								window.dispatchEvent(
-									new CustomEvent("deal-scale:restore-chat"),
-								);
-							}}
-							selectedAvatar={selectedAvatar}
-							selectedVoiceId={selectedVoiceId}
-						/>
+						{chatExperience === "basic" ? (
+							<div
+								className="relative w-full max-w-md rounded-lg border border-border bg-card/80 p-4 text-card-foreground shadow-lg backdrop-blur"
+								data-tour="basic-chat-card"
+							>
+								<span
+									aria-hidden="true"
+									className="pointer-events-none absolute left-1/2 top-3 z-30 h-2 w-2 -translate-x-1/2"
+									data-tour="basic-chat-tour-anchor"
+								/>
+								<div className="mb-4 flex items-start justify-between gap-3">
+									<div>
+										<div className="font-semibold text-lg">Basic Chat</div>
+										<div className="mt-1 text-muted-foreground text-sm">
+											Use chat without starting an avatar session.
+										</div>
+									</div>
+									<Button
+										size="icon"
+										type="button"
+										variant="ghost"
+										title="Chat settings"
+										onClick={() => openChatSettings("text")}
+									>
+										<Settings2Icon className="h-4 w-4" />
+									</Button>
+								</div>
+								<Button
+									className="w-full"
+									type="button"
+									onClick={() => {
+										window.dispatchEvent(
+											new CustomEvent("deal-scale:restore-chat"),
+										);
+									}}
+								>
+									Open Basic Chat
+								</Button>
+							</div>
+						) : (
+							<div
+								className="relative w-[360px] max-w-[calc(100vw-2rem)]"
+								data-tour="live-avatar-start-card"
+							>
+								<span
+									aria-hidden="true"
+									className="pointer-events-none absolute left-1/2 top-3 z-30 h-2 w-2 -translate-x-1/2"
+									data-tour="live-avatar-tour-anchor"
+								/>
+								<SessionQuickStartCard
+									avatarOptions={avatarOptions}
+									contextOptions={contextOptions}
+									voiceOptions={voiceOptions}
+									customAvatarId={customAvatarId}
+									customIdValid={customIdValid}
+									isConnecting={isConnecting}
+									isLoadingAvatarOptions={isLoadingAvatarOptions}
+									isLoadingContextOptions={isLoadingContextOptions}
+									isLoadingVoiceOptions={isLoadingVoiceOptions}
+									kbIdValid={kbIdValid}
+									knowledgeBaseId={knowledgeBaseId}
+									onCustomAvatarChange={setCustomAvatarId}
+									onKnowledgeBaseChange={setKnowledgeBaseId}
+									onSelectAvatar={setSelectedAvatar}
+									onSelectVoice={setSelectedVoiceId}
+									onStartSession={startSession}
+									onStartWithoutAvatar={() => {
+										window.dispatchEvent(
+											new CustomEvent("deal-scale:restore-chat"),
+										);
+									}}
+									selectedAvatar={selectedAvatar}
+									selectedVoiceId={selectedVoiceId}
+								/>
+							</div>
+						)}
 					</div>
 				)}
 			</div>
@@ -421,7 +480,14 @@ function WorkspacePanel({ tab }: { tab: WorkspaceTab }) {
 }
 
 function SubmoduleChatPanel() {
+	const chatExperience = useSessionStore((state) => state.chatExperience);
+	const closeChatSettings = useSessionStore((state) => state.closeChatSettings);
+	const isChatSettingsOpen = useSessionStore(
+		(state) => state.isChatSettingsOpen,
+	);
 	const messages = useSessionStore((state) => state.messages);
+	const openChatSettings = useSessionStore((state) => state.openChatSettings);
+	const setChatExperience = useSessionStore((state) => state.setChatExperience);
 	const viewTab = useSessionStore((state) => state.viewTab);
 	const setViewTab = useSessionStore((state) => state.setViewTab);
 	const {
@@ -439,9 +505,13 @@ function SubmoduleChatPanel() {
 	const setSidebarCollapsed = usePlacementStore(
 		(state) => state.setSidebarCollapsed,
 	);
+	const setBottomHeightFrac = usePlacementStore(
+		(state) => state.setBottomHeightFrac,
+	);
 	const setControlsMinimized = useSessionStore(
 		(state) => state.setControlsMinimized,
 	);
+	const setDockMode = usePlacementStore((state) => state.setDockMode);
 	const [chatMinimized, setChatMinimized] = useState(false);
 	const [chatMaximized, setChatMaximized] = useState(false);
 	const [videoSelectOpen, setVideoSelectOpen] = useState(false);
@@ -477,10 +547,21 @@ function SubmoduleChatPanel() {
 	useEffect(() => {
 		const restoreChat = () => {
 			setChatMinimized(false);
+			setChatMaximized(false);
+		};
+		const minimizeChat = () => {
+			setChatMinimized(true);
+			setChatMaximized(false);
 		};
 		window.addEventListener("deal-scale:restore-chat", restoreChat);
+		window.addEventListener("tour-show-chat-reopen", restoreChat);
+		window.addEventListener("tour-hide-chat-reopen", minimizeChat);
+		window.addEventListener("tour-minimize-chat", minimizeChat);
 		return () => {
 			window.removeEventListener("deal-scale:restore-chat", restoreChat);
+			window.removeEventListener("tour-show-chat-reopen", restoreChat);
+			window.removeEventListener("tour-hide-chat-reopen", minimizeChat);
+			window.removeEventListener("tour-minimize-chat", minimizeChat);
 		};
 	}, []);
 
@@ -503,9 +584,37 @@ function SubmoduleChatPanel() {
 	}, []);
 
 	const showWorkspace = chatMinimized;
+	const handleChatExperienceChange = (mode: ChatExperience) => {
+		setChatExperience(mode);
+		setViewTab("video");
+
+		if (mode === "avatar") {
+			setChatMinimized(true);
+			setChatMaximized(false);
+			setBottomHeightFrac(0);
+			return;
+		}
+
+		setDockMode("bottom");
+		setBottomHeightFrac(mode === "basic" ? 1 : 0.5);
+		setChatMinimized(false);
+		setChatMaximized(false);
+	};
 
 	return (
 		<div className="relative flex h-[calc(100vh-8rem)] min-h-0 w-full flex-1 overflow-visible bg-slate-950 text-foreground">
+			<BasicChatSettingsModal
+				mode={chatExperience}
+				open={isChatSettingsOpen}
+				onModeChange={handleChatExperienceChange}
+				onOpenChange={(open) => {
+					if (open) {
+						openChatSettings();
+					} else {
+						closeChatSettings();
+					}
+				}}
+			/>
 			<SubmoduleSidebar showCollapsedTrigger={false} />
 			<EmbeddedShellControls
 				chatMinimized={chatMinimized}
@@ -616,6 +725,7 @@ function SubmoduleChatPanel() {
 									? "w-full"
 									: ""
 						}`}
+						data-tour="bottom-chat-panel"
 					>
 						<Chat
 							chatInput={chatInput}
@@ -638,6 +748,7 @@ function SubmoduleChatPanel() {
 					<button
 						aria-label="Restore chat"
 						className="pointer-events-auto flex items-center gap-2 rounded-full border border-primary bg-background px-4 py-3 text-foreground shadow-2xl shadow-black/60 hover:bg-muted"
+						data-tour="bottom-chat-panel-toggle"
 						type="button"
 						onClick={() => {
 							setChatMinimized(false);

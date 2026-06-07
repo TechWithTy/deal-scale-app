@@ -707,7 +707,11 @@ video {
 	[data-radix-dropdown-menu-content],
 	[data-radix-dropdown-menu-sub-content],
 	[data-radix-popover-content],
-	[data-radix-dialog-content] {
+	[data-radix-dialog-content],
+	[data-overlay-surface="opaque"],
+	[data-video-select-surface="true"],
+	[role="menu"][data-floating-ui],
+	[role="listbox"][data-floating-ui] {
 		background-color: #020617 !important;
 		color: #f8fafc !important;
 		opacity: 1 !important;
@@ -722,7 +726,10 @@ video {
 	[data-radix-popper-content-wrapper] [role="menuitem"],
 	[data-radix-popper-content-wrapper] [role="menuitemcheckbox"],
 	[data-radix-popper-content-wrapper] [role="menuitemradio"],
-	[data-radix-popper-content-wrapper] [data-radix-collection-item] {
+	[data-radix-popper-content-wrapper] [data-radix-collection-item],
+	[data-overlay-surface="opaque"] [role="menuitem"],
+	[data-overlay-surface="opaque"] [role="option"],
+	[data-video-select-surface="true"] [role="option"] {
 		background-color: #020617 !important;
 		color: #f8fafc !important;
 		opacity: 1 !important;
@@ -737,7 +744,10 @@ video {
 		[role="menuitemcheckbox"][data-highlighted],
 	[data-radix-popper-content-wrapper] [role="menuitemradio"][data-highlighted],
 	[data-radix-popper-content-wrapper]
-		[data-radix-collection-item][data-highlighted] {
+		[data-radix-collection-item][data-highlighted],
+	[data-overlay-surface="opaque"] [role="menuitem"]:hover,
+	[data-overlay-surface="opaque"] [role="option"]:hover,
+	[data-video-select-surface="true"] [role="option"]:hover {
 		background-color: #1e293b !important;
 		color: #f8fafc !important;
 	}
