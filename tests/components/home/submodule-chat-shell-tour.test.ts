@@ -10,6 +10,19 @@ const shellPath = path.join(
 	"home",
 	"submodule-chat-shell.tsx",
 );
+const rootProvidersPath = path.join(
+	root,
+	"components",
+	"layout",
+	"providers.tsx",
+);
+const themeBridgePath = path.join(
+	root,
+	"external",
+	"interactive-avatar-nextjs-demo",
+	"components",
+	"ThemeBridge.tsx",
+);
 const tourHelpersPath = path.join(
 	root,
 	"external",
@@ -151,6 +164,30 @@ const messageItemPath = path.join(
 	"AvatarSession",
 	"MessageItem.tsx",
 );
+const avatarControlsPath = path.join(
+	root,
+	"external",
+	"interactive-avatar-nextjs-demo",
+	"components",
+	"AvatarSession",
+	"AvatarControls.tsx",
+);
+const chatSettingsModalPath = path.join(
+	root,
+	"external",
+	"interactive-avatar-nextjs-demo",
+	"components",
+	"AvatarSession",
+	"BasicChatSettingsModal.tsx",
+);
+const themeEmotionSelectPath = path.join(
+	root,
+	"external",
+	"interactive-avatar-nextjs-demo",
+	"components",
+	"ui",
+	"theme-emotion-select.tsx",
+);
 const liveMermaidPath = path.join(
 	root,
 	"external",
@@ -256,6 +293,28 @@ describe("SubmoduleChatShell tours", () => {
 		expect(source).toContain("handleChatExperienceChange");
 	});
 
+	it("applies chat emotion color settings through the host theme bridge", () => {
+		const providers = readFileSync(rootProvidersPath, "utf8");
+		const themeBridge = readFileSync(themeBridgePath, "utf8");
+		const chatSettingsModal = readFileSync(chatSettingsModalPath, "utf8");
+		const themeEmotionSelect = readFileSync(themeEmotionSelectPath, "utf8");
+
+		expect(providers).toContain(
+			'import ThemeBridge from "@/external/interactive-avatar-nextjs-demo/components/ThemeBridge";',
+		);
+		expect(providers).toContain("<ThemeBridge />");
+		expect(themeBridge).toContain("computeHostMoodClass");
+		expect(themeBridge).toContain('"variant-mood-calm"');
+		expect(themeBridge).toContain('"variant-mood-energetic"');
+		expect(themeBridge).toContain('"variant-mood-focused"');
+		expect(themeBridge).toContain("root.classList.add(hostMoodClass)");
+		expect(chatSettingsModal).toContain("ThemeEmotionSelect");
+		expect(chatSettingsModal).toContain("Emotion colors");
+		expect(chatSettingsModal).toContain("Update chat accent colors");
+		expect(themeEmotionSelect).toContain("useThemeStore");
+		expect(themeEmotionSelect).toContain('className="h-8 w-full min-w-[140px]"');
+	});
+
 	it("bridges tour chat events into the embedded shell state", () => {
 		const source = readFileSync(shellPath, "utf8");
 
@@ -283,6 +342,27 @@ describe("SubmoduleChatShell tours", () => {
 		expect(source).toContain("rounded-md border border-primary");
 		expect(source).not.toContain("fixed bottom-6 left-1/2");
 		expect(source).not.toContain("shadow-2xl shadow-black/60");
+	});
+
+	it("minimizes workspace controls when switching top workspace tabs", () => {
+		const source = readFileSync(shellPath, "utf8");
+		const avatarControls = readFileSync(avatarControlsPath, "utf8");
+
+		expect(source).toContain("const selectViewTab = (tab: WorkspaceTab) =>");
+		expect(source).toMatch(
+			/selectViewTab[\s\S]*setViewTab\(tab\)[\s\S]*setControlsMinimized\(true\)/,
+		);
+		expect(source).toContain('onClick={() => selectViewTab("brain")}');
+		expect(source).toContain('onClick={() => selectViewTab("data")}');
+		expect(source).toContain('onClick={() => selectViewTab("actions")}');
+		expect(source).toMatch(
+			/nextTab !== previousTabRef\.current[\s\S]*setChatMinimized\(true\)[\s\S]*setControlsMinimized\(true\)/,
+		);
+		expect(avatarControls).toContain("const showVideoView = () =>");
+		expect(avatarControls).toMatch(
+			/showVideoView[\s\S]*setViewTab\("video"\)[\s\S]*setControlsMinimized\(true\)/,
+		);
+		expect(avatarControls).toContain("switchWorkspaceView(tab)");
 	});
 
 	it("opens the left sidebar Chats step against the rendered chats section", () => {

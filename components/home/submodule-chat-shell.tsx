@@ -103,6 +103,10 @@ function EmbeddedShellControls({
 	const setSidebarCollapsed = usePlacementStore(
 		(state) => state.setSidebarCollapsed,
 	);
+	const selectViewTab = (tab: WorkspaceTab) => {
+		setViewTab(tab);
+		setControlsMinimized(true);
+	};
 
 	return (
 		<div
@@ -157,7 +161,7 @@ function EmbeddedShellControls({
 								: "!bg-muted !text-foreground"
 						}`}
 						title="Video"
-						onClick={() => setViewTab("video")}
+						onClick={() => selectViewTab("video")}
 					>
 						<Play className="h-4 w-4" />
 					</Button>
@@ -169,7 +173,7 @@ function EmbeddedShellControls({
 						}`}
 						data-tour="brain-tab"
 						title="Brain"
-						onClick={() => setViewTab("brain")}
+						onClick={() => selectViewTab("brain")}
 					>
 						<Brain className="h-4 w-4" />
 					</Button>
@@ -181,7 +185,7 @@ function EmbeddedShellControls({
 						}`}
 						data-tour="data-tab"
 						title="Data"
-						onClick={() => setViewTab("data")}
+						onClick={() => selectViewTab("data")}
 					>
 						<Database className="h-4 w-4" />
 					</Button>
@@ -193,7 +197,7 @@ function EmbeddedShellControls({
 						}`}
 						data-tour="actions-tab"
 						title="Actions"
-						onClick={() => setViewTab("actions")}
+						onClick={() => selectViewTab("actions")}
 					>
 						<LayoutDashboard className="h-4 w-4" />
 					</Button>
@@ -541,8 +545,9 @@ function SubmoduleChatPanel() {
 			previousTabRef.current = nextTab;
 			setChatMinimized(true);
 			setChatMaximized(false);
+			setControlsMinimized(true);
 		}
-	}, [viewTab]);
+	}, [setControlsMinimized, viewTab]);
 
 	useEffect(() => {
 		const restoreChat = () => {

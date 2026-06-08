@@ -1,9 +1,10 @@
 "use client";
 import PostHogProviderBridge from "@/components/analytics/PostHogProviderBridge";
 import GlobalLoadProgress from "@/components/layout/GlobalLoadProgress";
-import { PushManager } from "@/components/pwa/PushManager";
 import { InstallPrompt } from "@/components/pwa/InstallPrompt";
+import { PushManager } from "@/components/pwa/PushManager";
 import { UpdatePrompt } from "@/components/pwa/UpdatePrompt";
+import ThemeBridge from "@/external/interactive-avatar-nextjs-demo/components/ThemeBridge";
 import { QueryProvider } from "@/lib/providers/QueryProvider";
 import { SessionProvider, type SessionProviderProps } from "next-auth/react";
 import dynamic from "next/dynamic";
@@ -27,6 +28,7 @@ export default function Providers({
 			<SessionProvider session={session}>
 				<QueryProvider>
 					<GlobalLoadProgress />
+					<ThemeBridge />
 					<PushManager>
 						<PostHogProviderBridge>{children}</PostHogProviderBridge>
 						<InstallPrompt />
