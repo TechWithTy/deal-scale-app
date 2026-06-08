@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
+import { normalizeMarkdownContent } from "../../../external/interactive-avatar-nextjs-demo/components/ui/markdown-normalize";
 
 const root = process.cwd();
 const shellPath = path.join(
@@ -25,6 +26,70 @@ const mermaidPath = path.join(
 	"ui",
 	"mermaid.tsx",
 );
+const mermaidActionsMenuPath = path.join(
+	root,
+	"external",
+	"interactive-avatar-nextjs-demo",
+	"components",
+	"ui",
+	"mermaid-actions-menu.tsx",
+);
+const mermaidPreviewModalPath = path.join(
+	root,
+	"external",
+	"interactive-avatar-nextjs-demo",
+	"components",
+	"ui",
+	"mermaid-preview-modal.tsx",
+);
+const mermaidSourcePath = path.join(
+	root,
+	"external",
+	"interactive-avatar-nextjs-demo",
+	"components",
+	"ui",
+	"mermaid-source.ts",
+);
+const markdownPath = path.join(
+	root,
+	"external",
+	"interactive-avatar-nextjs-demo",
+	"components",
+	"ui",
+	"markdown.tsx",
+);
+const markdownNormalizePath = path.join(
+	root,
+	"external",
+	"interactive-avatar-nextjs-demo",
+	"components",
+	"ui",
+	"markdown-normalize.ts",
+);
+const codeBlockPath = path.join(
+	root,
+	"external",
+	"interactive-avatar-nextjs-demo",
+	"components",
+	"ui",
+	"code-block.tsx",
+);
+const hoverCardPath = path.join(
+	root,
+	"external",
+	"interactive-avatar-nextjs-demo",
+	"components",
+	"ui",
+	"hover-card.tsx",
+);
+const sourcePath = path.join(
+	root,
+	"external",
+	"interactive-avatar-nextjs-demo",
+	"components",
+	"ui",
+	"source.tsx",
+);
 const jsxPreviewPath = path.join(
 	root,
 	"external",
@@ -32,6 +97,59 @@ const jsxPreviewPath = path.join(
 	"components",
 	"ui",
 	"jsx-preview.tsx",
+);
+const messagePrimitivePath = path.join(
+	root,
+	"external",
+	"interactive-avatar-nextjs-demo",
+	"components",
+	"ui",
+	"message.tsx",
+);
+const reasoningPrimitivePath = path.join(
+	root,
+	"external",
+	"interactive-avatar-nextjs-demo",
+	"components",
+	"ui",
+	"reasoning.tsx",
+);
+const messageListPath = path.join(
+	root,
+	"external",
+	"interactive-avatar-nextjs-demo",
+	"components",
+	"AvatarSession",
+	"chat",
+	"MessageList.tsx",
+);
+const exampleReasoningPath = path.join(
+	root,
+	"external",
+	"interactive-avatar-nextjs-demo",
+	"components",
+	"AvatarSession",
+	"chat",
+	"_mock_data",
+	"example-reasoning.ts",
+);
+const exampleMarkdownCodePath = path.join(
+	root,
+	"external",
+	"interactive-avatar-nextjs-demo",
+	"components",
+	"AvatarSession",
+	"chat",
+	"_mock_data",
+	"example-markdown-code.tsx",
+);
+const messageItemPath = path.join(
+	root,
+	"external",
+	"interactive-avatar-nextjs-demo",
+	"components",
+	"AvatarSession",
+	"MessageItem.tsx",
 );
 const liveMermaidPath = path.join(
 	root,
@@ -155,6 +273,18 @@ describe("SubmoduleChatShell tours", () => {
 		);
 	});
 
+	it("keeps a single rectangular bottom chat restore trigger in the chat shell", () => {
+		const source = readFileSync(shellPath, "utf8");
+
+		expect(source.match(/data-tour="bottom-chat-panel-toggle"/g)).toHaveLength(
+			1,
+		);
+		expect(source).toContain("absolute bottom-2 left-1/2");
+		expect(source).toContain("rounded-md border border-primary");
+		expect(source).not.toContain("fixed bottom-6 left-1/2");
+		expect(source).not.toContain("shadow-2xl shadow-black/60");
+	});
+
 	it("opens the left sidebar Chats step against the rendered chats section", () => {
 		const source = readFileSync(tourHelpersPath, "utf8");
 
@@ -165,14 +295,20 @@ describe("SubmoduleChatShell tours", () => {
 
 	it("renders Mermaid action targets used by chat and data grid tours", () => {
 		const source = readFileSync(mermaidPath, "utf8");
+		const menuSource = readFileSync(mermaidActionsMenuPath, "utf8");
+		const modalSource = readFileSync(mermaidPreviewModalPath, "utf8");
+		const sourceHelper = readFileSync(mermaidSourcePath, "utf8");
 
-		expect(source).toContain('data-tour="mermaid-actions"');
-		expect(source).toContain('data-tour="mermaid-add-to-grid"');
-		expect(source).toContain("MoreHorizontal");
-		expect(source).toContain('aria-label="Mermaid actions"');
-		expect(source).toContain("bg-slate-800");
-		expect(source).toContain("absolute right-3 top-3");
-		expect(source).toContain("bg-slate-950");
+		expect(menuSource).toContain('data-tour="mermaid-actions"');
+		expect(menuSource).toContain('data-tour="mermaid-add-to-grid"');
+		expect(menuSource).toContain("MoreHorizontal");
+		expect(menuSource).toContain('aria-label="Mermaid actions"');
+		expect(menuSource).toContain("bg-slate-800");
+		expect(menuSource).toContain("absolute right-3 top-3");
+		expect(menuSource).toContain("bg-slate-950");
+		expect(menuSource).toContain("View diagram");
+		expect(menuSource).toContain("onReload");
+		expect(menuSource).toContain("onCopy");
 		expect(source).toContain("useDataGridStore");
 		expect(source).toContain("addMermaidChart");
 		expect(source).toContain("addLiveMermaidChart");
@@ -185,6 +321,96 @@ describe("SubmoduleChatShell tours", () => {
 		expect(source).toContain("getCachedSvg(cacheKey)");
 		expect(source).toContain("cacheRenderedSvg(cacheKey, svg)");
 		expect(source).toContain("dangerouslySetInnerHTML");
+		expect(source).toContain("normalizeMermaidSource");
+		expect(sourceHelper).toContain("getNodeText");
+		expect(sourceHelper).toContain("decodeHtmlEntities");
+		expect(sourceHelper).toContain("MERMAID_PREAMBLE_PATTERN");
+		expect(sourceHelper).toContain("MERMAID_FENCE_PATTERN");
+		expect(source).toContain("viewOpen");
+		expect(source).toContain("MermaidPreviewModal");
+		expect(modalSource).toContain('role="dialog"');
+		expect(source).toContain("reloadDiagram");
+		expect(source).not.toContain('String(chart ?? children ?? "").trim()');
+	});
+
+	it("routes Mermaid markdown aliases and JSX children into the live renderer", () => {
+		const mermaidSource = readFileSync(mermaidSourcePath, "utf8");
+		const markdownSource = readFileSync(markdownPath, "utf8");
+
+		expect(mermaidSource).toContain(".replace(/&gt;/g");
+		expect(mermaidSource).toContain(".replace(/&#123;/g");
+		expect(mermaidSource).toContain("React.isValidElement");
+		expect(markdownSource).toContain("isMermaidLanguage");
+		expect(markdownSource).toContain('"textmermaid"');
+		expect(markdownSource).toContain('"mmd"');
+		expect(markdownSource).toContain("<Mermaid chart={codeStr} />");
+	});
+
+	it("normalizes PromptKit docs markdown before rendering", () => {
+		const markdownSource = readFileSync(markdownPath, "utf8");
+		const normalizeSource = readFileSync(markdownNormalizePath, "utf8");
+		const exampleMarkdownCode = readFileSync(exampleMarkdownCodePath, "utf8");
+		const codeBlockSource = readFileSync(codeBlockPath, "utf8");
+		const normalizedCodeBlocks = normalizeMarkdownContent(`~~~bash
+pnpm install
+pnpm dev
+~~~
+
+~~~js
+export function sum(a, b) {
+  return a + b;
+}
+~~~
+
+~~~ts
+type User = { id: "1"; name: "Ada" };
+const u: User = { id: "1", name: "Ada" };
+~~~
+
+~~~tsx
+import { useState } from "react";
+
+export default function Counter() {
+  const [c, setC] = useState(0);
+  return <button>Count</button>;
+}
+~~~`);
+
+		expect(markdownSource).toContain("normalizeMarkdownContent");
+		expect(markdownSource).toContain("normalizedChildren");
+		expect(markdownSource).toContain("const language = extractLanguage(className)");
+		expect(markdownSource).toContain("!className &&");
+		expect(markdownSource).toContain("table: function TableComponent");
+		expect(markdownSource).toContain("blockquote: function BlockquoteComponent");
+		expect(normalizeSource).toContain("ComponentCodePreview");
+		expect(normalizeSource).toContain("CODE_BLOCK_TAG");
+		expect(normalizeSource).toContain("collectTag");
+		expect(normalizeSource).toContain("looksLikeCodeStart");
+		expect(normalizeSource).toContain("shouldCloseCodeBlock");
+		expect(normalizeSource).toContain("normalizeFenceLine");
+		expect(normalizeSource).toContain("inExplicitCodeFence");
+		expect(normalizeSource).toContain(".replace(/<kbd>(.*?)<\\/kbd>/g");
+		expect(normalizedCodeBlocks).not.toContain("~~~");
+		expect(normalizedCodeBlocks).toContain("```bash");
+		expect(normalizedCodeBlocks).toContain("```js");
+		expect(normalizedCodeBlocks).toContain("```ts");
+		expect(normalizedCodeBlocks).toContain("```tsx");
+		expect(normalizedCodeBlocks).toContain('import { useState } from "react";');
+		expect(normalizedCodeBlocks).toContain(
+			'type User = { id: "1"; name: "Ada" };\nconst u: User',
+		);
+		expect(normalizedCodeBlocks).not.toContain("```tsx\nconst u: User");
+		expect(exampleMarkdownCode).toContain(
+			"/demos/svgs/JZP1_tcJNyZaQHtc8ZL9p.webp",
+		);
+		expect(exampleMarkdownCode).not.toContain("/demo.png");
+		expect(codeBlockSource).toContain('import("shiki")');
+		expect(codeBlockSource).toContain("codeToHtml(code");
+		expect(codeBlockSource).toContain("normalizeShikiLanguage");
+		expect(codeBlockSource).toContain('js: "javascript"');
+		expect(codeBlockSource).toContain('ts: "typescript"');
+		expect(codeBlockSource).toContain("dangerouslySetInnerHTML");
+		expect(codeBlockSource).toContain("data-language={language}");
 	});
 
 	it("passes live Mermaid metadata through Add to Grid", () => {
@@ -228,7 +454,81 @@ describe("SubmoduleChatShell tours", () => {
 		expect(source).toContain('import JsxParser from "react-jsx-parser"');
 		expect(source).toContain("<JsxParser");
 		expect(source).toContain("components={parserComponents}");
+		expect(source).toContain("normalizePreviewJsx");
+		expect(source).toContain(".replace(/\\{\\/\\*[\\s\\S]*?\\*\\/\\}/g");
+		expect(source).toContain('.replace(/\\sclass=/g, " className=")');
+		expect(source).toContain("setParseError(null)");
 		expect(source).toContain("onError");
+	});
+
+	it("keeps source details in a hover card instead of inline message text", () => {
+		const hoverCardSource = readFileSync(hoverCardPath, "utf8");
+		const sourceSource = readFileSync(sourcePath, "utf8");
+
+		expect(hoverCardSource).toContain("@radix-ui/react-hover-card");
+		expect(hoverCardSource).toContain("HoverCardPrimitive.Portal");
+		expect(hoverCardSource).toContain("HoverCardPrimitive.Content");
+		expect(hoverCardSource).not.toContain("return <div>{children}</div>");
+		expect(sourceSource).toContain('alt=""');
+		expect(sourceSource).toContain('aria-hidden="true"');
+		expect(sourceSource).toContain("event.currentTarget.style.display = \"none\"");
+		expect(sourceSource).toContain("<HoverCardContent");
+	});
+
+	it("renders markdown and reasoning markdown through the Markdown renderer", () => {
+		const messagePrimitive = readFileSync(messagePrimitivePath, "utf8");
+		const reasoningPrimitive = readFileSync(reasoningPrimitivePath, "utf8");
+		const markdownSource = readFileSync(markdownPath, "utf8");
+
+		expect(messagePrimitive).toContain('import { Markdown } from "./markdown"');
+		expect(messagePrimitive).toContain(
+			'if (markdown && typeof children === "string")',
+		);
+		expect(messagePrimitive).toContain("showHeader={showHeader}");
+		expect(messagePrimitive).toContain("headerLabel={headerLabel}");
+		expect(markdownSource).toContain("ul: function UlComponent");
+		expect(markdownSource).toContain("list-disc");
+		expect(markdownSource).toContain("ol: function OlComponent");
+		expect(reasoningPrimitive).toContain(
+			'import { Markdown } from "./markdown"',
+		);
+		expect(reasoningPrimitive).toContain(
+			'markdown && typeof children === "string"',
+		);
+		expect(reasoningPrimitive).toContain("<Markdown showHeader={false}>");
+	});
+
+	it("keeps the reasoning demo hidden until the Reasoning panel is opened", () => {
+		const messageList = readFileSync(messageListPath, "utf8");
+		const exampleReasoning = readFileSync(exampleReasoningPath, "utf8");
+		const messageItem = readFileSync(messageItemPath, "utf8");
+
+		expect(messageList.match(/message\.reasoningOpen \?\? false/g)).toHaveLength(
+			2,
+		);
+		expect(messageList).not.toContain(
+			"reasoningOpen={message.id === exampleReasoning.message.id}",
+		);
+		expect(exampleReasoning).not.toContain("sources:");
+		expect(exampleReasoning).not.toContain("Reasoning Demo");
+		expect(exampleReasoning).not.toContain("hidden chain-of-thought");
+		expect(exampleReasoning).toContain("collapsible reasoning summary");
+		expect(exampleReasoning).not.toContain('href: "#"');
+		expect(messageItem).toContain("isReasoningOpen");
+		expect(messageItem).toContain("setIsReasoningOpen");
+		expect(messageItem).toContain("onOpenChange={setIsReasoningOpen}");
+		expect(messageItem).toContain("isReasoningCopied");
+		expect(messageItem).toContain("handleCopyReasoning");
+		expect(messageItem).toContain('aria-label="Copy reasoning"');
+		expect(messageItem).toContain("rounded-md border border-border bg-background");
+		expect(messageItem).toContain('"Hide reasoning" : "Show reasoning"');
+		expect(messageItem).toContain("navigator.clipboard.writeText(reasoning)");
+		expect(messageItem).toMatch(
+			/message\.content[\s\S]*<MessageContent[\s\S]*reasoning &&/,
+		);
+		expect(messageItem).not.toContain(
+			"<Reasoning isStreaming={isStreaming} open={reasoningOpen}>",
+		);
 	});
 
 	it("forces custom overlay surfaces to render with opaque backgrounds", () => {

@@ -743,22 +743,6 @@ function SubmoduleChatPanel() {
 					</div>
 				</div>
 			</div>
-			{chatMinimized && !videoSelectOpen ? (
-				<div className="pointer-events-none fixed bottom-6 left-1/2 z-[500] -translate-x-1/2">
-					<button
-						aria-label="Restore chat"
-						className="pointer-events-auto flex items-center gap-2 rounded-full border border-primary bg-background px-4 py-3 text-foreground shadow-2xl shadow-black/60 hover:bg-muted"
-						data-tour="bottom-chat-panel-toggle"
-						type="button"
-						onClick={() => {
-							setChatMinimized(false);
-						}}
-					>
-						<span className="h-2 w-2 rounded-full bg-primary" />
-						<span className="text-xs font-semibold">Chat</span>
-					</button>
-				</div>
-			) : null}
 		</div>
 	);
 }
