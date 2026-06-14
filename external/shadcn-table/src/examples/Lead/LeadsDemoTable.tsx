@@ -18,6 +18,8 @@ import type { DemoRow } from "./types";
 import { summarizeRows } from "./utils/leadHelpers";
 import type { SkipTraceInit } from "./utils/leadHelpers";
 
+const DEFAULT_LEAD_LIST_PAGE_SIZE = 10;
+
 export interface LeadsDemoTableProps {
 	/** Called when user wants to add a lead */
 	onOpenLeadModal?: (opts?: { initialListMode?: "select" | "create" }) => void;
@@ -57,13 +59,15 @@ export default function LeadsDemoTable({
 		);
 	}, [data, query]);
 
-	const pageSize = 8;
 	const { table } = useDataTable<DemoRow>({
 		data: filtered,
 		columns: leadColumns,
-		pageCount: Math.max(1, Math.ceil(filtered.length / pageSize)),
+		pageCount: Math.max(
+			1,
+			Math.ceil(filtered.length / DEFAULT_LEAD_LIST_PAGE_SIZE),
+		),
 		initialState: {
-			pagination: { pageIndex: 0, pageSize },
+			pagination: { pageIndex: 0, pageSize: DEFAULT_LEAD_LIST_PAGE_SIZE },
 			columnPinning: { left: ["select"], right: ["actions"] },
 			columnOrder: [
 				"select",
@@ -77,6 +81,7 @@ export default function LeadsDemoTable({
 			],
 		},
 		enableColumnPinning: true,
+		manualPagination: false,
 		// Do not inject global per-lead columns at all for this list view
 		disableGlobalColumns: {
 			dnc: true,
@@ -124,6 +129,8 @@ export default function LeadsDemoTable({
 					aria-label="Show help and demo"
 				>
 					<svg
+						aria-hidden="true"
+						focusable="false"
 						xmlns="http://www.w3.org/2000/svg"
 						width="20"
 						height="20"

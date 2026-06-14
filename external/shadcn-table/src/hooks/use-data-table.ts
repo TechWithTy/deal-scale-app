@@ -1,8 +1,16 @@
 "use client";
 
+import { Badge } from "@/components/ui/badge";
 import {
-	type ColumnFiltersState,
 	type ColumnDef,
+	type ColumnFiltersState,
+	type PaginationState,
+	type RowSelectionState,
+	type SortingState,
+	type TableOptions,
+	type TableState,
+	type Updater,
+	type VisibilityState,
 	getCoreRowModel,
 	getFacetedMinMaxValues,
 	getFacetedRowModel,
@@ -10,23 +18,15 @@ import {
 	getFilteredRowModel,
 	getPaginationRowModel,
 	getSortedRowModel,
-	type PaginationState,
-	type RowSelectionState,
-	type SortingState,
-	type TableOptions,
-	type TableState,
-	type Updater,
 	useReactTable,
-	type VisibilityState,
 } from "@tanstack/react-table";
 import * as React from "react";
-import { Badge } from "@/components/ui/badge";
 import type { ExtendedColumnSort } from "../types/data-table";
 
-import { useNuqsIntegration } from "./data-table/use-nuqs-integration";
+import { useAdjustedInitialState } from "./data-table/use-adjusted-initial-state";
 import { useFilterHandling } from "./data-table/use-filter-handling";
 import { useGlobalColumns } from "./data-table/use-global-columns";
-import { useAdjustedInitialState } from "./data-table/use-adjusted-initial-state";
+import { useNuqsIntegration } from "./data-table/use-nuqs-integration";
 
 export interface UseDataTableProps<TData>
 	extends Omit<
@@ -35,7 +35,6 @@ export interface UseDataTableProps<TData>
 			| "pageCount"
 			| "getCoreRowModel"
 			| "manualFiltering"
-			| "manualPagination"
 			| "manualSorting"
 		>,
 		Required<Pick<TableOptions<TData>, "pageCount">> {
@@ -78,6 +77,7 @@ export function useDataTable<TData>(props: UseDataTableProps<TData>) {
 		shallow = true,
 		startTransition,
 		disableGlobalColumns,
+		manualPagination = true,
 		...tableProps
 	} = props;
 
@@ -179,7 +179,7 @@ export function useDataTable<TData>(props: UseDataTableProps<TData>) {
 		getFacetedRowModel: getFacetedRowModel(),
 		getFacetedUniqueValues: getFacetedUniqueValues(),
 		getFacetedMinMaxValues: getFacetedMinMaxValues(),
-		manualPagination: true,
+		manualPagination,
 		manualSorting: false,
 		manualFiltering: false,
 	});
