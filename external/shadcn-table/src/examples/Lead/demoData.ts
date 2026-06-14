@@ -1,7 +1,7 @@
-import type { ActivityEvent, DemoLead, DemoRow } from "./types";
 import { generateIntentSignalProfile } from "../../../../../constants/_faker/intentSignals";
 import { calculateIntentScore } from "../../../../../lib/scoring/intentScoring";
 import type { LeadStatus } from "../../../../../types/_dashboard/leads";
+import type { ActivityEvent, DemoLead, DemoRow } from "./types";
 
 const DEMO_LISTS = [
 	"Austin Leads",
@@ -10,6 +10,7 @@ const DEMO_LISTS = [
 	"Direct Mail Outreach",
 	"Phone Sweep",
 ] as const;
+const DEFAULT_LEADS_PER_LIST = 10;
 
 const FIRST = [
 	"Ruth",
@@ -207,67 +208,25 @@ export function makeLeads(n: number, listName: string): DemoLead[] {
 	// Cache the results
 	_leadCache.set(cacheKey, leads);
 
-	// Debug log for first lead
-	if (leads.length > 0 && typeof window !== "undefined") {
-		console.log(`✅ Generated ${listName}:`, {
-			count: leads.length,
-			firstLead: {
-				name: leads[0]?.name,
-				hasIntentSignals: !!leads[0]?.intentSignals,
-				signalCount: leads[0]?.intentSignals?.length || 0,
-				hasScore: !!leads[0]?.intentScore,
-				score: leads[0]?.intentScore?.total,
-			},
-		});
-	}
-
 	return leads;
 }
 
 export function makeRow(i: number): DemoRow {
 	const list = DEMO_LISTS[i % DEMO_LISTS.length] as string;
-	const leads = makeLeads(3, list);
-
-	// Debug first row only
-	if (i === 0 && typeof window !== "undefined") {
-		console.log(`🔍 makeRow Debug - First Row (${list}):`, {
-			rowId: `${i + 1}`,
-			listName: list,
-			leadsCount: leads.length,
-			firstLeadSample: {
-				id: leads[0]?.id,
-				name: leads[0]?.name,
-				hasIntentSignals: !!leads[0]?.intentSignals,
-				signalCount: leads[0]?.intentSignals?.length,
-				hasScore: !!leads[0]?.intentScore,
-				score: leads[0]?.intentScore?.total,
-			},
-		});
-	}
+	const leads = makeLeads(DEFAULT_LEADS_PER_LIST, list);
 
 	return {
 		id: `${i + 1}`,
 		list,
 		uploadDate: new Date(Date.now() - i * 86_400_000).toISOString(),
-		records: Math.floor(Math.random() * 5000) + 100,
-		phone: Math.floor(Math.random() * 2000),
-		emails: Math.floor(Math.random() * 1500),
-		socials: Math.floor(Math.random() * 800),
+		records: leads.length,
+		phone: leads.filter((lead) => Boolean(lead.phone)).length,
+		emails: leads.filter((lead) => Boolean(lead.email)).length,
+		socials: leads.filter((lead) => (lead.socials?.length ?? 0) > 0).length,
 		leads,
 	} satisfies DemoRow;
 }
 
 export const makeData = (count = 123): DemoRow[] => {
-	const rows = Array.from({ length: count }, (_, i) => makeRow(i));
-
-	// Debug log
-	if (typeof window !== "undefined" && rows.length > 0 && rows[0]) {
-		console.log("📊 makeData called:", {
-			totalRows: rows.length,
-			firstRowHasLeads: rows[0].leads?.length > 0,
-			firstLeadInFirstRow: rows[0].leads?.[0],
-		});
-	}
-
-	return rows;
+	return Array.from({ length: count }, (_, i) => makeRow(i));
 };
