@@ -50,7 +50,7 @@ export function AgentForm({
 
 	return (
 		<>
-			<Card>
+			<Card data-tour="agent-manager-form">
 				<CardHeader>
 					<CardTitle>
 						{isEditing ? "Edit AI Agent" : "Create AI Agent"}
@@ -85,7 +85,10 @@ export function AgentForm({
 								<AgentDirectMailForm form={form} />
 							)}
 
-							<div className="flex justify-end space-x-2">
+							<div
+								className="flex justify-end space-x-2"
+								data-tour="agent-manager-save"
+							>
 								<Button type="button" variant="outline" onClick={onCancel}>
 									Cancel
 								</Button>

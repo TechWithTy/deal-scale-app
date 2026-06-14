@@ -1,4 +1,8 @@
 "use client";
+import {
+	MockUserProfile,
+	mockUserProfile,
+} from "@/constants/_faker/profile/userProfile";
 import { cn } from "@/lib/_utils";
 import { useCampaignStore } from "@/lib/stores/campaigns"; // Import the Zustand store
 import type {
@@ -8,12 +12,8 @@ import type {
 } from "@/types/_dashboard/campaign"; // Types for campaigns
 import type { EmailCampaign } from "@/types/goHighLevel/email";
 import type { GHLTextMessageCampaign } from "@/types/goHighLevel/text";
-import {
-	MockUserProfile,
-	mockUserProfile,
-} from "@/constants/_faker/profile/userProfile";
-import React, { useEffect, useState } from "react";
 import { HelpCircle, Search } from "lucide-react";
+import React, { useEffect, useState } from "react";
 
 import StatCard from "./statCard";
 const creditsRemaining =
@@ -218,7 +218,10 @@ const CampaignHeader: React.FC = () => {
 
 	return (
 		<div className="p-4">
-			<div className="mb-6 flex flex-col items-center gap-4 text-center sm:flex-row sm:items-start sm:justify-between sm:text-left">
+			<div
+				className="mb-6 flex flex-col items-center gap-4 text-center sm:flex-row sm:items-start sm:justify-between sm:text-left"
+				data-tour="campaigns-header"
+			>
 				<div className="flex-1 space-y-2">
 					<h1 className="font-bold text-3xl text-foreground tracking-tight">
 						Campaigns
@@ -255,7 +258,7 @@ const CampaignHeader: React.FC = () => {
 			</div>
 
 			{/* Search Bar */}
-			<div className="relative mb-4">
+			<div className="relative mb-4" data-tour="campaigns-search">
 				<Search className="-translate-y-1/2 absolute top-1/2 left-3 transform text-muted-foreground" />
 				<input
 					type="text"
@@ -265,7 +268,10 @@ const CampaignHeader: React.FC = () => {
 			</div>
 
 			{/* Campaign Filter Buttons */}
-			<div className="mb-4 flex w-full flex-wrap gap-2 sm:gap-4">
+			<div
+				className="mb-4 flex w-full flex-wrap gap-2 sm:gap-4"
+				data-tour="campaigns-filters"
+			>
 				{campaignFilters.map((filter) => {
 					const isActive = activeFilter === filter.value;
 					return (
@@ -289,7 +295,10 @@ const CampaignHeader: React.FC = () => {
 			</div>
 
 			{/* Statistics Grid */}
-			<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+			<div
+				className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5"
+				data-tour="campaigns-stats"
+			>
 				{stats.map((stat, index) => (
 					<StatCard
 						key={stat.title}

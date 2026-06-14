@@ -1,7 +1,6 @@
 "use client";
 
-import { trainingVideos } from "@/constants/resourcesData";
-import type { TrainingVideo } from "@/types/_dashboard/resources";
+import WalkThroughModal from "@/components/leadsSearch/search/WalkthroughModal";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,7 +10,8 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-import WalkThroughModal from "@/components/leadsSearch/search/WalkthroughModal";
+import { trainingVideos } from "@/constants/resourcesData";
+import type { TrainingVideo } from "@/types/_dashboard/resources";
 import { Play, Video } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
@@ -48,7 +48,7 @@ export function TrainingVideosSection() {
 	};
 
 	return (
-		<div className="space-y-6">
+		<div className="space-y-6" data-tour="resources-training">
 			{/* Section Header */}
 			<div className="flex items-center gap-3">
 				<div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
@@ -64,11 +64,12 @@ export function TrainingVideosSection() {
 
 			{/* Videos Grid */}
 			<div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-				{trainingVideos.map((video) => (
+				{trainingVideos.map((video, index) => (
 					<Card
 						key={video.id}
 						className="group cursor-pointer overflow-hidden transition-all hover:shadow-lg"
 						onClick={() => handleVideoClick(video)}
+						data-tour={index === 0 ? "resources-training-card" : undefined}
 					>
 						<div className="relative aspect-video overflow-hidden bg-muted">
 							<Image
@@ -78,12 +79,15 @@ export function TrainingVideosSection() {
 								className="object-cover transition-transform group-hover:scale-105"
 								unoptimized
 							/>
-							<div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
+							<div
+								className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity group-hover:opacity-100"
+								data-tour={index === 0 ? "resources-training-open" : undefined}
+							>
 								<div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary">
 									<Play className="ml-1 h-8 w-8 text-primary-foreground" />
 								</div>
 							</div>
-							<div className="absolute bottom-2 right-2 rounded bg-black/70 px-2 py-1 font-medium text-white text-xs">
+							<div className="absolute right-2 bottom-2 rounded bg-black/70 px-2 py-1 font-medium text-white text-xs">
 								{video.duration}
 							</div>
 						</div>

@@ -254,7 +254,7 @@ export default function SidebarHelpActions({
 			{actions.map((action) => {
 				const ActionIcon = action.icon;
 				const shortcutBadge =
-					action.supportsShortcut && action.shortcut ? (
+					action.supportsShortcut && action.shortcut && !isCollapsed ? (
 						<ShortcutBadge
 							isCollapsed={isCollapsed}
 							keys={action.shortcut.keys}
@@ -275,26 +275,23 @@ export default function SidebarHelpActions({
 							action.onSelect({ autoStartVoice });
 						}}
 						className={cn(
-							"sidebar-help-trigger flex w-full items-center rounded-md border border-border bg-card text-primary transition hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+							"sidebar-help-trigger flex items-center rounded-md border border-border bg-card text-primary transition hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
 							isCollapsed
-								? "flex-col justify-center gap-1 px-2 py-2"
-								: "justify-between gap-2 px-3 py-2",
+								? "w-10 h-10 justify-center p-0 mx-auto"
+								: "w-full justify-between gap-2 px-3 py-2",
 						)}
 					>
-						<div
-							className={cn(
-								"flex w-full items-center",
-								isCollapsed ? "flex-col gap-1" : "justify-between gap-2",
-							)}
-						>
-							<div className="flex items-center gap-2">
-								<ActionIcon className="h-4 w-4" aria-hidden />
-								{!isCollapsed && (
+						{isCollapsed ? (
+							<ActionIcon className="h-4 w-4" aria-hidden />
+						) : (
+							<div className="flex w-full items-center justify-between gap-2">
+								<div className="flex items-center gap-2">
+									<ActionIcon className="h-4 w-4" aria-hidden />
 									<span className="font-medium text-sm">{action.label}</span>
-								)}
+								</div>
+								{shortcutBadge}
 							</div>
-							{shortcutBadge}
-						</div>
+						)}
 						<span id={`${descriptionId}-${action.key}`} className="sr-only">
 							{action.description}
 						</span>

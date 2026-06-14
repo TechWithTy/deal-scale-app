@@ -56,27 +56,29 @@ export default function LeadListTableWithModals(
 	}, []);
 
 	return (
-		<LeadsDemoTable
-			{...props}
-			onOpenLeadModal={handleOpenLead}
-			onOpenSkipTrace={handleOpenSkipTrace}
-			onOpenCreateList={handleOpenCreateList}
-			renderModals={
-				<>
-					<LeadMainModal
-						isOpen={isLeadOpen}
-						onClose={() => setIsLeadOpen(false)}
-						initialListMode={leadInitialMode}
-					/>
-					<SkipTraceModalMain
-						isOpen={isSkipTraceOpen}
-						onClose={() => setIsSkipTraceOpen(false)}
-						initialData={skipTraceInit}
-					/>
-					{/* Always mounted; opens via useModalStore */}
-					<SkipTraceDialog />
-				</>
-			}
-		/>
+		<div data-tour="lead-list-table">
+			<LeadsDemoTable
+				{...props}
+				onOpenLeadModal={handleOpenLead}
+				onOpenSkipTrace={handleOpenSkipTrace}
+				onOpenCreateList={handleOpenCreateList}
+				renderModals={
+					<>
+						<LeadMainModal
+							isOpen={isLeadOpen}
+							onClose={() => setIsLeadOpen(false)}
+							initialListMode={leadInitialMode}
+						/>
+						<SkipTraceModalMain
+							isOpen={isSkipTraceOpen}
+							onClose={() => setIsSkipTraceOpen(false)}
+							initialData={skipTraceInit}
+						/>
+						{/* Always mounted; opens via useModalStore */}
+						<SkipTraceDialog />
+					</>
+				}
+			/>
+		</div>
 	);
 }

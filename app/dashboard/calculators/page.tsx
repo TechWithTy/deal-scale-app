@@ -13,8 +13,8 @@ export const metadata: Metadata = {
 export default function CalculatorsPage() {
 	return (
 		<PageContainer scrollable>
-			<div className="space-y-8">
-				<header className="space-y-2">
+			<div className="space-y-8" data-tour="calculations-page">
+				<header className="space-y-2" data-tour="calculations-header">
 					<h1 className="font-semibold text-3xl text-foreground">
 						Calculator Hub
 					</h1>
@@ -25,7 +25,9 @@ export default function CalculatorsPage() {
 					</p>
 				</header>
 
-				<CalculatorHub calculators={calculatorDefinitions} />
+				<div data-tour="calculations-hub">
+					<CalculatorHub calculators={calculatorDefinitions} />
+				</div>
 			</div>
 		</PageContainer>
 	);

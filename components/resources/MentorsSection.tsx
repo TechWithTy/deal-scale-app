@@ -1,7 +1,5 @@
 "use client";
 
-import { mentors } from "@/constants/resourcesData";
-import type { Mentor } from "@/types/_dashboard/resources";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -12,6 +10,8 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
+import { mentors } from "@/constants/resourcesData";
+import type { Mentor } from "@/types/_dashboard/resources";
 import { Calendar, Mail, MessageCircle, Users } from "lucide-react";
 
 export function MentorsSection() {
@@ -74,7 +74,7 @@ export function MentorsSection() {
 	};
 
 	return (
-		<div className="space-y-6">
+		<div className="space-y-6" data-tour="resources-mentors">
 			{/* Section Header */}
 			<div className="flex items-center gap-3">
 				<div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
@@ -90,27 +90,28 @@ export function MentorsSection() {
 
 			{/* Mentors Grid */}
 			<div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-				{mentors.map((mentor) => (
+				{mentors.map((mentor, index) => (
 					<Card
 						key={mentor.id}
 						className="group transition-all hover:shadow-lg"
+						data-tour={index === 0 ? "resources-mentor-card" : undefined}
 					>
 						<CardHeader className="p-4 pb-3">
 							<div className="mb-3 flex items-start gap-3">
 								<div className="relative">
 									<Avatar className="h-16 w-16">
 										<AvatarImage src={mentor.avatar} alt={mentor.name} />
-										<AvatarFallback className="bg-primary/10 font-semibold text-primary text-lg">
+										<AvatarFallback className="bg-primary/10 font-semibold text-lg text-primary">
 											{getInitials(mentor.name)}
 										</AvatarFallback>
 									</Avatar>
 									<div
-										className={`absolute bottom-0 right-0 h-4 w-4 rounded-full border-2 border-background ${getAvailabilityColor(
+										className={`absolute right-0 bottom-0 h-4 w-4 rounded-full border-2 border-background ${getAvailabilityColor(
 											mentor.availability,
 										)}`}
 									/>
 								</div>
-								<div className="flex-1 min-w-0">
+								<div className="min-w-0 flex-1">
 									<CardTitle className="line-clamp-1 text-base">
 										{mentor.name}
 									</CardTitle>
@@ -145,6 +146,7 @@ export function MentorsSection() {
 								}
 								size="sm"
 								disabled={mentor.availability === "offline"}
+								data-tour={index === 0 ? "resources-mentor-contact" : undefined}
 							>
 								{getContactIcon(mentor.contactMethod)}
 								{getContactLabel(mentor.contactMethod)}
@@ -155,7 +157,10 @@ export function MentorsSection() {
 			</div>
 
 			{/* Mentorship Info */}
-			<Card className="border-primary/20 bg-primary/5">
+			<Card
+				className="border-primary/20 bg-primary/5"
+				data-tour="resources-mentorship-info"
+			>
 				<CardContent className="flex flex-col items-center gap-4 p-6 text-center md:flex-row md:text-left">
 					<div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-full bg-primary/10">
 						<Users className="h-8 w-8 text-primary" />

@@ -1,4 +1,5 @@
 "use client";
+import { Button } from "@/components/ui/button";
 import {
 	Dialog,
 	DialogContent,
@@ -6,21 +7,20 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
+import { useUserStore } from "@/lib/stores/userStore";
+import { RotateCcw, Sparkles } from "lucide-react";
 import type { KanbanTask } from "../utils/types";
 import { AssignmentTypeDropdown } from "./new-task-dialog/AssignmentTypeDropdown";
 import { LeadDropdown } from "./new-task-dialog/LeadDropdown";
 import { LeadListDropdown } from "./new-task-dialog/LeadListDropdown";
-import { TeamMemberDropdown } from "./new-task-dialog/TeamMemberDropdown";
 import { TaskFormFields } from "./new-task-dialog/TaskFormFields";
+import { TeamMemberDropdown } from "./new-task-dialog/TeamMemberDropdown";
 import { AiControls } from "./task-dialog/components/AiControls";
-import { RotateCcw, Sparkles } from "lucide-react";
 import { AiPreviewEditor } from "./task-dialog/components/AiPreviewEditor";
 import { useEditTaskDialog } from "./task-dialog/hooks/useEditTaskDialog";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { useUserStore } from "@/lib/stores/userStore";
 
 interface EditTaskDialogProps {
 	task?: KanbanTask; // optional: when absent, dialog creates a new task
@@ -107,7 +107,10 @@ export default function EditTaskDialog({
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent className="flex h-[90vh] w-[95vw] max-w-2xl flex-col overflow-hidden bg-card p-0 text-card-foreground md:h-[85vh] md:max-w-3xl">
+			<DialogContent
+				className="flex h-[90vh] w-[95vw] max-w-2xl flex-col overflow-hidden bg-card p-0 text-card-foreground md:h-[85vh] md:max-w-3xl"
+				data-tour="kanban-task-modal"
+			>
 				<DialogHeader className="border-b px-6 pt-6 pb-3">
 					<DialogTitle>
 						{effectiveMode === "edit" ? "Edit Task" : "Create Task"}
@@ -124,16 +127,18 @@ export default function EditTaskDialog({
 							value={activeTab}
 							onValueChange={(v) => setActiveTab(v as "manual" | "ai")}
 						>
-							<TabsList>
+							<TabsList data-tour="kanban-task-type">
 								<TabsTrigger value="manual">Manual</TabsTrigger>
 								<TabsTrigger value="ai">AI</TabsTrigger>
 							</TabsList>
 
 							{/* Shared controls for both tabs */}
-							<AssignmentTypeDropdown
-								assignType={assignType}
-								setAssignType={setAssignType}
-							/>
+							<div data-tour="kanban-task-assignment">
+								<AssignmentTypeDropdown
+									assignType={assignType}
+									setAssignType={setAssignType}
+								/>
+							</div>
 
 							{assignType === "lead" && (
 								<LeadDropdown
@@ -157,7 +162,11 @@ export default function EditTaskDialog({
 							/>
 
 							{/* Manual Tab Content */}
-							<TabsContent value="manual" className="mt-2">
+							<TabsContent
+								value="manual"
+								className="mt-2"
+								data-tour="kanban-manual-task-form"
+							>
 								<TaskFormFields
 									assignType={assignType}
 									initialValues={initialValues}
@@ -165,7 +174,11 @@ export default function EditTaskDialog({
 							</TabsContent>
 
 							{/* AI Tab Content */}
-							<TabsContent value="ai" className="mt-2 grid gap-3">
+							<TabsContent
+								value="ai"
+								className="mt-2 grid gap-3"
+								data-tour="kanban-ai-task-form"
+							>
 								<AiControls
 									agentType={agentType}
 									setAgentType={setAgentType}
@@ -184,23 +197,25 @@ export default function EditTaskDialog({
 								{/* Scheduled Date & Time is provided above in TaskFormFields */}
 
 								{/* AI Preview */}
-								<AiPreviewEditor
-									aiPreviewText={aiPreviewText}
-									setAiPreviewText={setAiPreviewText}
-									aiPlanInput={aiPlanInput}
-									aiPlanOutput={aiPlanOutput}
-									setAiPlanOutput={setAiPlanOutput}
-									aiNeeds={aiNeeds}
-									aiMcp={aiMcp}
-									setAiMcp={setAiMcp}
-									previewRef={previewRef}
-									mcpToolsOrdered={mcpToolsOrdered}
-									needsChips={needsChips}
-									onRemoveTool={removeTool}
-									onRemoveNeed={removeNeed}
-									toolNeedMap={toolNeedMap}
-									needToolMap={needToolMap}
-								/>
+								<div data-tour="kanban-ai-preview">
+									<AiPreviewEditor
+										aiPreviewText={aiPreviewText}
+										setAiPreviewText={setAiPreviewText}
+										aiPlanInput={aiPlanInput}
+										aiPlanOutput={aiPlanOutput}
+										setAiPlanOutput={setAiPlanOutput}
+										aiNeeds={aiNeeds}
+										aiMcp={aiMcp}
+										setAiMcp={setAiMcp}
+										previewRef={previewRef}
+										mcpToolsOrdered={mcpToolsOrdered}
+										needsChips={needsChips}
+										onRemoveTool={removeTool}
+										onRemoveNeed={removeNeed}
+										toolNeedMap={toolNeedMap}
+										needToolMap={needToolMap}
+									/>
+								</div>
 
 								{/* AI Credits banner */}
 								<div className="rounded-md border bg-muted/40 px-3 py-2 text-muted-foreground text-xs">
@@ -230,6 +245,7 @@ export default function EditTaskDialog({
 									variant="secondary"
 									disabled={!selectedAgentId}
 									onClick={generatePreview}
+									data-tour="kanban-ai-generate-preview"
 								>
 									{hasPreview ? (
 										<span className="inline-flex items-center gap-2">
@@ -249,6 +265,7 @@ export default function EditTaskDialog({
 						type="submit"
 						form="edit-task-form"
 						disabled={!formValid || (activeTab === "ai" && aiInsufficient)}
+						data-tour="kanban-task-save"
 						title={
 							activeTab === "ai" && aiInsufficient
 								? "Not enough AI credits"

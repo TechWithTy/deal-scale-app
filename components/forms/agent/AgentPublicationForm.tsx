@@ -40,7 +40,7 @@ export function AgentPublicationForm({ form }: AgentPublicationFormProps) {
 	const estimated = (priceMultiplier ?? 1) * baseRate;
 
 	return (
-		<div className="space-y-4">
+		<div className="space-y-4" data-tour="agent-manager-publishing">
 			<FormField
 				control={form.control}
 				name="isPublic"

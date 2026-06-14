@@ -1,7 +1,5 @@
 "use client";
 
-import { simulations } from "@/constants/resourcesData";
-import type { Simulation } from "@/types/_dashboard/resources";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,6 +9,8 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
+import { simulations } from "@/constants/resourcesData";
+import type { Simulation } from "@/types/_dashboard/resources";
 import { BarChart3, MessageCircle, TrendingUp } from "lucide-react";
 
 export function SimulationsSection() {
@@ -46,7 +46,7 @@ export function SimulationsSection() {
 	};
 
 	return (
-		<div className="space-y-6">
+		<div className="space-y-6" data-tour="resources-simulations">
 			{/* Section Header */}
 			<div className="flex items-center gap-3">
 				<div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
@@ -62,10 +62,11 @@ export function SimulationsSection() {
 
 			{/* Simulations Grid */}
 			<div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-				{simulations.map((simulation) => (
+				{simulations.map((simulation, index) => (
 					<Card
 						key={simulation.id}
 						className="group transition-all hover:shadow-lg"
+						data-tour={index === 0 ? "resources-simulation-card" : undefined}
 					>
 						<CardHeader className="p-4">
 							<div className="mb-3 flex items-start justify-between">
@@ -102,6 +103,9 @@ export function SimulationsSection() {
 								className="w-full"
 								variant="outline"
 								size="sm"
+								data-tour={
+									index === 0 ? "resources-simulation-discord" : undefined
+								}
 							>
 								<MessageCircle className="mr-2 h-4 w-4" />
 								View in Discord
@@ -112,7 +116,10 @@ export function SimulationsSection() {
 			</div>
 
 			{/* Discord CTA */}
-			<Card className="border-primary/20 bg-primary/5">
+			<Card
+				className="border-primary/20 bg-primary/5"
+				data-tour="resources-discord-cta"
+			>
 				<CardContent className="flex flex-col items-center gap-4 p-6 text-center md:flex-row md:text-left">
 					<div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-full bg-primary/10">
 						<MessageCircle className="h-8 w-8 text-primary" />

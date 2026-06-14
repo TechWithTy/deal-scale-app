@@ -31,7 +31,10 @@ export function KanbanWorkspace({ className }: KanbanWorkspaceProps) {
 	}, [runAi, tasks]);
 
 	return (
-		<div className={className ?? "container relative mx-auto space-y-6 py-6"}>
+		<div
+			className={className ?? "container relative mx-auto space-y-6 py-6"}
+			data-tour="kanban-page"
+		>
 			<div className="absolute top-0 right-0 z-50">
 				<button
 					type="button"
@@ -42,11 +45,18 @@ export function KanbanWorkspace({ className }: KanbanWorkspaceProps) {
 				</button>
 			</div>
 
-			<div className="flex items-center justify-between">
+			<div
+				className="flex items-center justify-between"
+				data-tour="kanban-header"
+			>
 				<h1 className="font-bold text-2xl">Actions Kanban</h1>
-				<NewTaskDialog />
+				<div data-tour="kanban-new-task">
+					<NewTaskDialog />
+				</div>
 			</div>
-			<KanbanBoard />
+			<div data-tour="kanban-board-page">
+				<KanbanBoard />
+			</div>
 
 			<WalkThroughModal
 				isOpen={showWalkthrough}

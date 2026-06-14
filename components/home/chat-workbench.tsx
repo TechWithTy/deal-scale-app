@@ -1,7 +1,7 @@
 "use client";
 
-import React from "react";
 import dynamic from "next/dynamic";
+import React from "react";
 import { useState } from "react";
 
 import { SubmoduleChatShell } from "@/components/home/submodule-chat-shell";
@@ -39,7 +39,7 @@ export function ChatWorkbench({ embedded = false }: ChatWorkbenchProps) {
 	const chatHeightClassName = embedded ? "min-h-[68vh]" : "min-h-[72vh]";
 
 	return (
-		<div className={shellClassName}>
+		<div className={shellClassName} data-tour="chat-experience-page">
 			<div className={contentClassName}>
 				<header className="flex flex-col gap-3 rounded-3xl border border-white/10 bg-white/5 p-5 shadow-2xl shadow-black/20 backdrop-blur">
 					<div className="flex flex-wrap items-center gap-2">

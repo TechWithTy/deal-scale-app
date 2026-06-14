@@ -13,7 +13,6 @@ import SubmoduleSidebar from "@/external/interactive-avatar-nextjs-demo/componen
 import { defaultGraphData } from "@/external/interactive-avatar-nextjs-demo/components/data-viewer";
 import { ApiServiceProvider } from "@/external/interactive-avatar-nextjs-demo/components/logic/ApiServiceContext";
 import { AvatarQueryProvider } from "@/external/interactive-avatar-nextjs-demo/components/logic/QueryProvider";
-import { AppTourProvider } from "@/external/interactive-avatar-nextjs-demo/components/tour/AppTourProvider";
 import { ToastProvider } from "@/external/interactive-avatar-nextjs-demo/components/ui/toaster";
 import {
 	useAvatarOptionsQuery,
@@ -128,7 +127,7 @@ function EmbeddedShellControls({
 			{chatMinimized ? (
 				<button
 					aria-label="Restore chat"
-					className="pointer-events-auto absolute bottom-2 left-1/2 flex -translate-x-1/2 items-center gap-2 rounded-md border border-primary bg-background px-3 py-2 text-foreground shadow-lg shadow-black/30 hover:bg-muted"
+					className="pointer-events-auto fixed bottom-4 left-1/2 z-[230] flex -translate-x-1/2 items-center gap-2 rounded-md border border-primary bg-background px-3 py-2 text-foreground shadow-lg shadow-black/30 hover:bg-muted"
 					data-tour="bottom-chat-panel-toggle"
 					type="button"
 					onClick={onRestoreChat}
@@ -759,11 +758,9 @@ export function SubmoduleChatShell() {
 		<AvatarQueryProvider>
 			<ApiServiceProvider service={apiService} setApiService={setApiService}>
 				<ToastProvider>
-					<AppTourProvider>
-						<StreamingAvatarProvider>
-							<SubmoduleChatPanel />
-						</StreamingAvatarProvider>
-					</AppTourProvider>
+					<StreamingAvatarProvider>
+						<SubmoduleChatPanel />
+					</StreamingAvatarProvider>
 				</ToastProvider>
 			</ApiServiceProvider>
 		</AvatarQueryProvider>

@@ -3,7 +3,6 @@
 import {
 	Tooltip,
 	TooltipContent,
-	TooltipProvider,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
 import type { FeatureQuotaKey } from "@/constants/features";
@@ -199,29 +198,27 @@ export function FeatureGuard({
 								onKeyDown={(event) => event.stopPropagation()}
 							>
 								{allowPopover ? (
-									<TooltipProvider>
-										<Tooltip delayDuration={popoverDelay}>
-											<TooltipTrigger asChild>
-												<button
-													type="button"
-													className="pointer-events-auto flex size-8 items-center justify-center rounded-full border border-orange-300/60 bg-orange-100/80 text-orange-900 text-xs shadow-sm hover:bg-orange-200/80 focus:outline-none focus:ring-2 focus:ring-orange-300"
-													onClick={handleBlockedClick}
-													aria-label={blockedPrimaryMessage}
-												>
-													🔒
-												</button>
-											</TooltipTrigger>
-											<TooltipContent
-												side="right"
-												className="max-w-[220px] p-2 text-sm"
+									<Tooltip delayDuration={popoverDelay}>
+										<TooltipTrigger asChild>
+											<button
+												type="button"
+												className="pointer-events-auto flex size-8 items-center justify-center rounded-full border border-orange-300/60 bg-orange-100/80 text-orange-900 text-xs shadow-sm hover:bg-orange-200/80 focus:outline-none focus:ring-2 focus:ring-orange-300"
+												onClick={handleBlockedClick}
+												aria-label={blockedPrimaryMessage}
 											>
-												<p className="font-semibold">{blockedPrimaryMessage}</p>
-												<p className="text-muted-foreground text-xs">
-													{blockedSecondaryMessage}
-												</p>
-											</TooltipContent>
-										</Tooltip>
-									</TooltipProvider>
+												🔒
+											</button>
+										</TooltipTrigger>
+										<TooltipContent
+											side="right"
+											className="max-w-[220px] p-2 text-sm"
+										>
+											<p className="font-semibold">{blockedPrimaryMessage}</p>
+											<p className="text-muted-foreground text-xs">
+												{blockedSecondaryMessage}
+											</p>
+										</TooltipContent>
+									</Tooltip>
 								) : (
 									<span className="pointer-events-none text-xs">🔒</span>
 								)}
@@ -248,30 +245,28 @@ export function FeatureGuard({
 							onKeyDown={(event) => event.stopPropagation()}
 						>
 							{allowPopover ? (
-								<TooltipProvider>
-									<Tooltip delayDuration={popoverDelay}>
-										<TooltipTrigger asChild>
-											<button
-												type="button"
-												className="pointer-events-auto flex size-8 items-center justify-center rounded-full border border-orange-300/60 bg-orange-100/80 text-orange-900 text-xs shadow-sm hover:bg-orange-200/80 focus:outline-none focus:ring-2 focus:ring-orange-300"
-												onClick={handleBlockedClick}
-												aria-label={blockedPrimaryMessage}
-											>
-												🔒
-											</button>
-										</TooltipTrigger>
-										<TooltipContent
-											side="top"
-											align="center"
-											className="max-w-[240px] p-2 text-sm"
+								<Tooltip delayDuration={popoverDelay}>
+									<TooltipTrigger asChild>
+										<button
+											type="button"
+											className="pointer-events-auto flex size-8 items-center justify-center rounded-full border border-orange-300/60 bg-orange-100/80 text-orange-900 text-xs shadow-sm hover:bg-orange-200/80 focus:outline-none focus:ring-2 focus:ring-orange-300"
+											onClick={handleBlockedClick}
+											aria-label={blockedPrimaryMessage}
 										>
-											<p className="font-semibold">{blockedPrimaryMessage}</p>
-											<p className="text-muted-foreground text-xs">
-												{blockedSecondaryMessage}
-											</p>
-										</TooltipContent>
-									</Tooltip>
-								</TooltipProvider>
+											🔒
+										</button>
+									</TooltipTrigger>
+									<TooltipContent
+										side="top"
+										align="center"
+										className="max-w-[240px] p-2 text-sm"
+									>
+										<p className="font-semibold">{blockedPrimaryMessage}</p>
+										<p className="text-muted-foreground text-xs">
+											{blockedSecondaryMessage}
+										</p>
+									</TooltipContent>
+								</Tooltip>
 							) : (
 								<button
 									type="button"
@@ -338,29 +333,27 @@ export function FeatureGuard({
 								onKeyDown={(event) => event.stopPropagation()}
 							>
 								{allowPopover ? (
-									<TooltipProvider>
-										<Tooltip delayDuration={popoverDelay}>
-											<TooltipTrigger asChild>
-												<button
-													type="button"
-													className="pointer-events-auto flex size-8 items-center justify-center rounded-full border border-orange-300/60 bg-orange-100/85 text-orange-900 text-xs shadow-sm hover:bg-orange-200/85 focus:outline-none focus:ring-2 focus:ring-orange-300"
-													onClick={handleBlockedClick}
-													aria-label={blockedPrimaryMessage}
-												>
-													🔒
-												</button>
-											</TooltipTrigger>
-											<TooltipContent
-												side="right"
-												className="max-w-[220px] p-2 text-sm"
+									<Tooltip delayDuration={popoverDelay}>
+										<TooltipTrigger asChild>
+											<button
+												type="button"
+												className="pointer-events-auto flex size-8 items-center justify-center rounded-full border border-orange-300/60 bg-orange-100/85 text-orange-900 text-xs shadow-sm hover:bg-orange-200/85 focus:outline-none focus:ring-2 focus:ring-orange-300"
+												onClick={handleBlockedClick}
+												aria-label={blockedPrimaryMessage}
 											>
-												<p className="font-semibold">{blockedPrimaryMessage}</p>
-												<p className="text-muted-foreground text-xs">
-													{blockedSecondaryMessage}
-												</p>
-											</TooltipContent>
-										</Tooltip>
-									</TooltipProvider>
+												🔒
+											</button>
+										</TooltipTrigger>
+										<TooltipContent
+											side="right"
+											className="max-w-[220px] p-2 text-sm"
+										>
+											<p className="font-semibold">{blockedPrimaryMessage}</p>
+											<p className="text-muted-foreground text-xs">
+												{blockedSecondaryMessage}
+											</p>
+										</TooltipContent>
+									</Tooltip>
 								) : (
 									<span className="pointer-events-none text-xs">🔒</span>
 								)}
@@ -389,30 +382,28 @@ export function FeatureGuard({
 							onKeyDown={(event) => event.stopPropagation()}
 						>
 							{allowPopover ? (
-								<TooltipProvider>
-									<Tooltip delayDuration={popoverDelay}>
-										<TooltipTrigger asChild>
-											<button
-												type="button"
-												className="pointer-events-auto flex size-8 items-center justify-center rounded-full border border-orange-300/60 bg-orange-100/85 text-orange-900 text-xs shadow-sm hover:bg-orange-200/85 focus:outline-none focus:ring-2 focus:ring-orange-300"
-												onClick={handleBlockedClick}
-												aria-label={blockedPrimaryMessage}
-											>
-												🔒
-											</button>
-										</TooltipTrigger>
-										<TooltipContent
-											side="top"
-											align="center"
-											className="max-w-[240px] p-2 text-sm"
+								<Tooltip delayDuration={popoverDelay}>
+									<TooltipTrigger asChild>
+										<button
+											type="button"
+											className="pointer-events-auto flex size-8 items-center justify-center rounded-full border border-orange-300/60 bg-orange-100/85 text-orange-900 text-xs shadow-sm hover:bg-orange-200/85 focus:outline-none focus:ring-2 focus:ring-orange-300"
+											onClick={handleBlockedClick}
+											aria-label={blockedPrimaryMessage}
 										>
-											<p className="font-semibold">{blockedPrimaryMessage}</p>
-											<p className="text-muted-foreground text-xs">
-												{blockedSecondaryMessage}
-											</p>
-										</TooltipContent>
-									</Tooltip>
-								</TooltipProvider>
+											🔒
+										</button>
+									</TooltipTrigger>
+									<TooltipContent
+										side="top"
+										align="center"
+										className="max-w-[240px] p-2 text-sm"
+									>
+										<p className="font-semibold">{blockedPrimaryMessage}</p>
+										<p className="text-muted-foreground text-xs">
+											{blockedSecondaryMessage}
+										</p>
+									</TooltipContent>
+								</Tooltip>
 							) : (
 								<div className="pointer-events-none rounded-full border border-orange-200 bg-background/95 p-1 shadow-sm">
 									<span className="text-xs">🔒</span>
@@ -456,120 +447,118 @@ export function FeatureGuard({
 								>
 									{/* Horizontal lock icon with hover tooltip */}
 									{allowPopover && (
-										<TooltipProvider>
-											<Tooltip>
-												<TooltipTrigger asChild>
-													<button
-														type="button"
-														className={`flex cursor-pointer items-center justify-center rounded-full border border-orange-300/60 bg-orange-100/80 transition-all hover:scale-105 hover:bg-orange-200/80 focus:outline-none focus:ring-2 focus:ring-orange-300 ${
-															isSmallScreen ? "h-8 w-8" : "h-10 w-10"
-														}`}
-														onClick={handleBlockedClick}
-														aria-label={`Access blocked: ${blockedPrimaryMessage}`}
-													>
-														<span
-															className={isSmallScreen ? "text-xs" : "text-sm"}
-														>
-															🔒
-														</span>
-													</button>
-												</TooltipTrigger>
-												<TooltipContent
-													side="top"
-													className={`p-3 ${
-														isSmallScreen ? "max-w-[200px] p-2" : "max-w-xs p-3"
+										<Tooltip>
+											<TooltipTrigger asChild>
+												<button
+													type="button"
+													className={`flex cursor-pointer items-center justify-center rounded-full border border-orange-300/60 bg-orange-100/80 transition-all hover:scale-105 hover:bg-orange-200/80 focus:outline-none focus:ring-2 focus:ring-orange-300 ${
+														isSmallScreen ? "h-8 w-8" : "h-10 w-10"
 													}`}
-													sideOffset={isSmallScreen ? 6 : 8}
+													onClick={handleBlockedClick}
+													aria-label={`Access blocked: ${blockedPrimaryMessage}`}
 												>
-													<div className="space-y-1 text-center">
-														{denialReason === "tier" ? (
-															<>
-																<p
-																	className={`font-semibold ${
-																		isSmallScreen ? "text-xs" : "text-sm"
-																	}`}
-																>
-																	Upgrade Required
-																</p>
-																<p
-																	className={`text-muted-foreground ${
-																		isSmallScreen ? "text-xs" : "text-xs"
-																	}`}
-																>
-																	{isSmallScreen
-																		? "Tier needed"
-																		: `${guard.requiredTier} tier needed`}
-																</p>
-																<p
-																	className={`text-muted-foreground ${
-																		isSmallScreen ? "text-xs" : "text-xs"
-																	}`}
-																>
-																	Current: {guard.userTier}
-																</p>
-															</>
-														) : denialReason === "permission" ? (
-															<>
-																<p
-																	className={`font-semibold ${
-																		isSmallScreen ? "text-xs" : "text-sm"
-																	}`}
-																>
-																	Permission Required
-																</p>
-																<p
-																	className={`text-muted-foreground ${
-																		isSmallScreen ? "text-xs" : "text-xs"
-																	}`}
-																>
-																	{isSmallScreen
-																		? "Contact admin"
-																		: "Contact your administrator"}
-																</p>
-															</>
-														) : denialReason === "quota" ? (
-															<>
-																<p
-																	className={`font-semibold ${
-																		isSmallScreen ? "text-xs" : "text-sm"
-																	}`}
-																>
-																	Quota Exceeded
-																</p>
-																<p
-																	className={`text-muted-foreground ${
-																		isSmallScreen ? "text-xs" : "text-xs"
-																	}`}
-																>
-																	{isSmallScreen
-																		? "Limit reached"
-																		: "Usage limit reached"}
-																</p>
-															</>
-														) : (
-															<>
-																<p
-																	className={`font-semibold ${
-																		isSmallScreen ? "text-xs" : "text-sm"
-																	}`}
-																>
-																	Feature Unavailable
-																</p>
-																<p
-																	className={`text-muted-foreground ${
-																		isSmallScreen ? "text-xs" : "text-xs"
-																	}`}
-																>
-																	{isSmallScreen
-																		? "Not available"
-																		: "This feature is not available"}
-																</p>
-															</>
-														)}
-													</div>
-												</TooltipContent>
-											</Tooltip>
-										</TooltipProvider>
+													<span
+														className={isSmallScreen ? "text-xs" : "text-sm"}
+													>
+														🔒
+													</span>
+												</button>
+											</TooltipTrigger>
+											<TooltipContent
+												side="top"
+												className={`p-3 ${
+													isSmallScreen ? "max-w-[200px] p-2" : "max-w-xs p-3"
+												}`}
+												sideOffset={isSmallScreen ? 6 : 8}
+											>
+												<div className="space-y-1 text-center">
+													{denialReason === "tier" ? (
+														<>
+															<p
+																className={`font-semibold ${
+																	isSmallScreen ? "text-xs" : "text-sm"
+																}`}
+															>
+																Upgrade Required
+															</p>
+															<p
+																className={`text-muted-foreground ${
+																	isSmallScreen ? "text-xs" : "text-xs"
+																}`}
+															>
+																{isSmallScreen
+																	? "Tier needed"
+																	: `${guard.requiredTier} tier needed`}
+															</p>
+															<p
+																className={`text-muted-foreground ${
+																	isSmallScreen ? "text-xs" : "text-xs"
+																}`}
+															>
+																Current: {guard.userTier}
+															</p>
+														</>
+													) : denialReason === "permission" ? (
+														<>
+															<p
+																className={`font-semibold ${
+																	isSmallScreen ? "text-xs" : "text-sm"
+																}`}
+															>
+																Permission Required
+															</p>
+															<p
+																className={`text-muted-foreground ${
+																	isSmallScreen ? "text-xs" : "text-xs"
+																}`}
+															>
+																{isSmallScreen
+																	? "Contact admin"
+																	: "Contact your administrator"}
+															</p>
+														</>
+													) : denialReason === "quota" ? (
+														<>
+															<p
+																className={`font-semibold ${
+																	isSmallScreen ? "text-xs" : "text-sm"
+																}`}
+															>
+																Quota Exceeded
+															</p>
+															<p
+																className={`text-muted-foreground ${
+																	isSmallScreen ? "text-xs" : "text-xs"
+																}`}
+															>
+																{isSmallScreen
+																	? "Limit reached"
+																	: "Usage limit reached"}
+															</p>
+														</>
+													) : (
+														<>
+															<p
+																className={`font-semibold ${
+																	isSmallScreen ? "text-xs" : "text-sm"
+																}`}
+															>
+																Feature Unavailable
+															</p>
+															<p
+																className={`text-muted-foreground ${
+																	isSmallScreen ? "text-xs" : "text-xs"
+																}`}
+															>
+																{isSmallScreen
+																	? "Not available"
+																	: "This feature is not available"}
+															</p>
+														</>
+													)}
+												</div>
+											</TooltipContent>
+										</Tooltip>
 									)}
 
 									{/* Horizontal teaser text - hidden in iconOnly mode */}
@@ -609,120 +598,118 @@ export function FeatureGuard({
 								>
 									{/* Vertical lock icon with hover tooltip for explanation */}
 									{allowPopover && (
-										<TooltipProvider>
-											<Tooltip>
-												<TooltipTrigger asChild>
-													<button
-														type="button"
-														className={`flex cursor-pointer items-center justify-center rounded-full border border-orange-300/60 bg-orange-100/80 transition-all hover:scale-105 hover:bg-orange-200/80 focus:outline-none focus:ring-2 focus:ring-orange-300 ${
-															isSmallScreen ? "h-8 w-8" : "h-10 w-10"
-														}`}
-														onClick={handleBlockedClick}
-														aria-label={`Access blocked: ${blockedPrimaryMessage}`}
-													>
-														<span
-															className={isSmallScreen ? "text-xs" : "text-sm"}
-														>
-															🔒
-														</span>
-													</button>
-												</TooltipTrigger>
-												<TooltipContent
-													side="top"
-													className={`p-3 ${
-														isSmallScreen ? "max-w-[200px] p-2" : "max-w-xs p-3"
+										<Tooltip>
+											<TooltipTrigger asChild>
+												<button
+													type="button"
+													className={`flex cursor-pointer items-center justify-center rounded-full border border-orange-300/60 bg-orange-100/80 transition-all hover:scale-105 hover:bg-orange-200/80 focus:outline-none focus:ring-2 focus:ring-orange-300 ${
+														isSmallScreen ? "h-8 w-8" : "h-10 w-10"
 													}`}
-													sideOffset={isSmallScreen ? 6 : 8}
+													onClick={handleBlockedClick}
+													aria-label={`Access blocked: ${blockedPrimaryMessage}`}
 												>
-													<div className="space-y-1 text-center">
-														{denialReason === "tier" ? (
-															<>
-																<p
-																	className={`font-semibold ${
-																		isSmallScreen ? "text-xs" : "text-sm"
-																	}`}
-																>
-																	Upgrade Required
-																</p>
-																<p
-																	className={`text-muted-foreground ${
-																		isSmallScreen ? "text-xs" : "text-xs"
-																	}`}
-																>
-																	{isSmallScreen
-																		? "Tier needed"
-																		: `${guard.requiredTier} tier needed`}
-																</p>
-																<p
-																	className={`text-muted-foreground ${
-																		isSmallScreen ? "text-xs" : "text-xs"
-																	}`}
-																>
-																	Current: {guard.userTier}
-																</p>
-															</>
-														) : denialReason === "permission" ? (
-															<>
-																<p
-																	className={`font-semibold ${
-																		isSmallScreen ? "text-xs" : "text-sm"
-																	}`}
-																>
-																	Permission Required
-																</p>
-																<p
-																	className={`text-muted-foreground ${
-																		isSmallScreen ? "text-xs" : "text-xs"
-																	}`}
-																>
-																	{isSmallScreen
-																		? "Contact admin"
-																		: "Contact your administrator"}
-																</p>
-															</>
-														) : denialReason === "quota" ? (
-															<>
-																<p
-																	className={`font-semibold ${
-																		isSmallScreen ? "text-xs" : "text-sm"
-																	}`}
-																>
-																	Quota Exceeded
-																</p>
-																<p
-																	className={`text-muted-foreground ${
-																		isSmallScreen ? "text-xs" : "text-xs"
-																	}`}
-																>
-																	{isSmallScreen
-																		? "Limit reached"
-																		: "Usage limit reached"}
-																</p>
-															</>
-														) : (
-															<>
-																<p
-																	className={`font-semibold ${
-																		isSmallScreen ? "text-xs" : "text-sm"
-																	}`}
-																>
-																	Feature Unavailable
-																</p>
-																<p
-																	className={`text-muted-foreground ${
-																		isSmallScreen ? "text-xs" : "text-xs"
-																	}`}
-																>
-																	{isSmallScreen
-																		? "Not available"
-																		: "This feature is not available"}
-																</p>
-															</>
-														)}
-													</div>
-												</TooltipContent>
-											</Tooltip>
-										</TooltipProvider>
+													<span
+														className={isSmallScreen ? "text-xs" : "text-sm"}
+													>
+														🔒
+													</span>
+												</button>
+											</TooltipTrigger>
+											<TooltipContent
+												side="top"
+												className={`p-3 ${
+													isSmallScreen ? "max-w-[200px] p-2" : "max-w-xs p-3"
+												}`}
+												sideOffset={isSmallScreen ? 6 : 8}
+											>
+												<div className="space-y-1 text-center">
+													{denialReason === "tier" ? (
+														<>
+															<p
+																className={`font-semibold ${
+																	isSmallScreen ? "text-xs" : "text-sm"
+																}`}
+															>
+																Upgrade Required
+															</p>
+															<p
+																className={`text-muted-foreground ${
+																	isSmallScreen ? "text-xs" : "text-xs"
+																}`}
+															>
+																{isSmallScreen
+																	? "Tier needed"
+																	: `${guard.requiredTier} tier needed`}
+															</p>
+															<p
+																className={`text-muted-foreground ${
+																	isSmallScreen ? "text-xs" : "text-xs"
+																}`}
+															>
+																Current: {guard.userTier}
+															</p>
+														</>
+													) : denialReason === "permission" ? (
+														<>
+															<p
+																className={`font-semibold ${
+																	isSmallScreen ? "text-xs" : "text-sm"
+																}`}
+															>
+																Permission Required
+															</p>
+															<p
+																className={`text-muted-foreground ${
+																	isSmallScreen ? "text-xs" : "text-xs"
+																}`}
+															>
+																{isSmallScreen
+																	? "Contact admin"
+																	: "Contact your administrator"}
+															</p>
+														</>
+													) : denialReason === "quota" ? (
+														<>
+															<p
+																className={`font-semibold ${
+																	isSmallScreen ? "text-xs" : "text-sm"
+																}`}
+															>
+																Quota Exceeded
+															</p>
+															<p
+																className={`text-muted-foreground ${
+																	isSmallScreen ? "text-xs" : "text-xs"
+																}`}
+															>
+																{isSmallScreen
+																	? "Limit reached"
+																	: "Usage limit reached"}
+															</p>
+														</>
+													) : (
+														<>
+															<p
+																className={`font-semibold ${
+																	isSmallScreen ? "text-xs" : "text-sm"
+																}`}
+															>
+																Feature Unavailable
+															</p>
+															<p
+																className={`text-muted-foreground ${
+																	isSmallScreen ? "text-xs" : "text-xs"
+																}`}
+															>
+																{isSmallScreen
+																	? "Not available"
+																	: "This feature is not available"}
+															</p>
+														</>
+													)}
+												</div>
+											</TooltipContent>
+										</Tooltip>
 									)}
 
 									{/* Vertical teaser text - hidden in iconOnly mode */}

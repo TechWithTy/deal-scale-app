@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import path from "node:path";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import React from "react";
 import { renderToString } from "react-dom/server";
@@ -38,6 +40,25 @@ beforeAll(() => {
 });
 
 describe("AppTourProvider", () => {
+	it("uses the app-owned floating UI root for tour portals", () => {
+		const source = readFileSync(
+			path.join(
+				process.cwd(),
+				"external",
+				"interactive-avatar-nextjs-demo",
+				"components",
+				"tour",
+				"AppTourProvider.tsx",
+			),
+			"utf8",
+		);
+
+		expect(source).toContain('document.getElementById("floating-ui-root")');
+		expect(source).toContain('root.id = "floating-ui-root"');
+		expect(source).toContain("createPortal(");
+		expect(source).toContain("portalElement,");
+	});
+
 	it("renders without passing the Joyride module object to React", () => {
 		render(
 			<AppTourProvider>

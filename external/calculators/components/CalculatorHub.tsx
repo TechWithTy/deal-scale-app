@@ -1,7 +1,7 @@
 "use client";
 
-import React, { Fragment, useEffect, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
+import React, { Fragment, useEffect, useMemo } from "react";
 
 import { groupCalculatorsByCategory } from "../registry";
 import type { CalculatorComponentProps, CalculatorDefinition } from "../types";
@@ -56,6 +56,7 @@ export function CalculatorHub({ calculators }: CalculatorHubProps) {
 			<nav
 				aria-label="Calculator navigation"
 				className="flex w-full flex-col gap-4 overflow-x-auto rounded-xl border border-border bg-card/40 p-4 shadow-sm md:flex-row md:flex-wrap md:overflow-x-visible"
+				data-tour="calculations-nav"
 			>
 				{grouped.map(({ category, items }) => (
 					<section
@@ -81,7 +82,7 @@ export function CalculatorHub({ calculators }: CalculatorHubProps) {
 				))}
 			</nav>
 
-			<div className="space-y-8">
+			<div className="space-y-8" data-tour="calculations-grid">
 				{grouped.map(({ category, items }) => (
 					<Fragment key={category}>
 						<h2 className="text-muted-foreground text-sm font-semibold uppercase tracking-wide">

@@ -1,8 +1,8 @@
 "use client";
 
 import { Breadcrumbs } from "@/components/breadcrumbs";
-import PageContainer from "@/components/layout/page-container";
 import { CreateDealModal } from "@/components/deal-room/CreateDealModal";
+import PageContainer from "@/components/layout/page-container";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -19,16 +19,16 @@ import { useDealRoomStore } from "@/lib/stores/dealRoom";
 import type { Deal, DealStatus } from "@/types/_dashboard/dealRoom";
 import {
 	Briefcase,
+	CheckCircle2,
+	Clock,
+	DollarSign,
+	Home,
 	Plus,
 	Search,
 	TrendingUp,
-	Clock,
-	CheckCircle2,
-	DollarSign,
-	Home,
 } from "lucide-react";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 const breadcrumbItems = [
 	{ title: "Dashboard", link: "/dashboard" },
@@ -67,6 +67,18 @@ export default function DealRoomPage() {
 	const [searchQuery, setSearchQuery] = useState("");
 	const [statusFilter, setStatusFilter] = useState<DealStatus | "all">("all");
 	const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+
+	useEffect(() => {
+		const openCreateModal = () => setIsCreateModalOpen(true);
+
+		window.addEventListener("tour-open-deal-create-modal", openCreateModal);
+		return () => {
+			window.removeEventListener(
+				"tour-open-deal-create-modal",
+				openCreateModal,
+			);
+		};
+	}, []);
 
 	// Combine sample deals with store deals for demo
 	const allDeals = useMemo(() => [...sampleDeals, ...storeDeals], [storeDeals]);
@@ -124,12 +136,15 @@ export default function DealRoomPage() {
 				isOpen={isCreateModalOpen}
 				onClose={() => setIsCreateModalOpen(false)}
 			/>
-			<div className="space-y-6">
+			<div className="space-y-6" data-tour="deal-room-page">
 				{/* Breadcrumbs */}
 				<Breadcrumbs items={breadcrumbItems} />
 
 				{/* Page Header */}
-				<div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+				<div
+					className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
+					data-tour="deal-room-header"
+				>
 					<div className="space-y-1">
 						<h1 className="font-bold text-3xl tracking-tight">Deal Room</h1>
 						<p className="text-muted-foreground">
@@ -140,6 +155,7 @@ export default function DealRoomPage() {
 						size="lg"
 						className="gap-2"
 						onClick={() => setIsCreateModalOpen(true)}
+						data-tour="deal-room-create"
 					>
 						<Plus className="h-5 w-5" />
 						New Deal
@@ -147,7 +163,10 @@ export default function DealRoomPage() {
 				</div>
 
 				{/* Quick Stats */}
-				<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+				<div
+					className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4"
+					data-tour="deal-room-stats"
+				>
 					<Card>
 						<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
 							<CardTitle className="font-medium text-sm">
@@ -210,7 +229,10 @@ export default function DealRoomPage() {
 				<Separator />
 
 				{/* Search and Filter */}
-				<div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+				<div
+					className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
+					data-tour="deal-room-filters"
+				>
 					<div className="relative flex-1 max-w-md">
 						<Search className="absolute top-3 left-3 h-4 w-4 text-muted-foreground" />
 						<input
@@ -257,7 +279,10 @@ export default function DealRoomPage() {
 				</div>
 
 				{/* Deals Grid */}
-				<div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+				<div
+					className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3"
+					data-tour="deal-room-grid"
+				>
 					{filteredDeals.map((deal) => (
 						<Link key={deal.id} href={`/dashboard/deal-room/${deal.id}`}>
 							<Card className="group h-full transition-all hover:shadow-lg">

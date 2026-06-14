@@ -40,6 +40,85 @@ const organizationJsonLd = {
 	},
 } as const;
 
+const developmentChunkRecoveryScript = `
+(() => {
+	const host = window.location.hostname;
+	const isLocalhost = host === "localhost" || host === "127.0.0.1" || host === "::1";
+	if (!isLocalhost) return;
+
+	const cleanupKey = "deal-scale.dev-cache-cleanup.v1";
+	const reloadKey = "deal-scale.chunk-reload-at";
+	const chunkFailurePattern = /ChunkLoadError|Loading chunk|_next\\/static\\/chunks|app\\/layout\\.js/i;
+
+	const patchKey = "__dealScaleSafeRemoveChild";
+	if (!Node.prototype[patchKey]) {
+		const removeChild = Node.prototype.removeChild;
+		const insertBefore = Node.prototype.insertBefore;
+		Object.defineProperty(Node.prototype, patchKey, { value: true });
+		Node.prototype.removeChild = function safeRemoveChild(child) {
+			if (child && child.parentNode !== this) return child;
+			return removeChild.call(this, child);
+		};
+		Node.prototype.insertBefore = function safeInsertBefore(child, before) {
+			if (before && before.parentNode !== this) {
+				return insertBefore.call(this, child, null);
+			}
+			return insertBefore.call(this, child, before);
+		};
+	}
+
+	const reloadOnce = () => {
+		const now = Date.now();
+		const lastReload = Number(sessionStorage.getItem(reloadKey) || "0");
+		if (now - lastReload < 15000) return;
+		sessionStorage.setItem(reloadKey, String(now));
+		window.location.reload();
+	};
+
+	const getMessage = (value) => {
+		if (!value) return "";
+		if (typeof value === "string") return value;
+		if (value.message) return String(value.message);
+		if (value.reason) return getMessage(value.reason);
+		return String(value);
+	};
+
+	const recoverFromChunkFailure = (value) => {
+		if (chunkFailurePattern.test(getMessage(value))) reloadOnce();
+	};
+
+	window.addEventListener("error", (event) => {
+		recoverFromChunkFailure(event.error || event.message || event.filename);
+	});
+
+	window.addEventListener("unhandledrejection", (event) => {
+		recoverFromChunkFailure(event.reason);
+	});
+
+	const clearDevCaches = async () => {
+		if (sessionStorage.getItem(cleanupKey) === "1") return;
+		sessionStorage.setItem(cleanupKey, "1");
+
+		let cleared = false;
+		if ("serviceWorker" in navigator) {
+			const registrations = await navigator.serviceWorker.getRegistrations();
+			cleared = registrations.length > 0 || cleared;
+			await Promise.all(registrations.map((registration) => registration.unregister()));
+		}
+
+		if ("caches" in window) {
+			const keys = await caches.keys();
+			cleared = keys.length > 0 || cleared;
+			await Promise.all(keys.map((key) => caches.delete(key)));
+		}
+
+		if (cleared) reloadOnce();
+	};
+
+	clearDevCaches().catch(() => {});
+})();
+`;
+
 export const metadata: Metadata = {
 	title: "Deal Scale | Real Estate Lead Generation & AI-Powered CRM",
 	description:
@@ -111,6 +190,8 @@ export default async function RootLayout({
 }): Promise<React.ReactElement> {
 	const session = await auth();
 	const isAuthenticated = Boolean(session);
+	const shouldLoadSupademo =
+		isAuthenticated && process.env.NODE_ENV === "production";
 	void React;
 
 	return (
@@ -139,7 +220,12 @@ export default async function RootLayout({
 				<Script id="organization-jsonld" type="application/ld+json">
 					{JSON.stringify(organizationJsonLd)}
 				</Script>
-				{isAuthenticated ? (
+				{process.env.NODE_ENV === "development" ? (
+					<Script id="dev-chunk-recovery" strategy="beforeInteractive">
+						{developmentChunkRecoveryScript}
+					</Script>
+				) : null}
+				{shouldLoadSupademo ? (
 					<Script
 						id="supademo-script"
 						src="/api/supademo/script"

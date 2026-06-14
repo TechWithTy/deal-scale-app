@@ -59,12 +59,16 @@ const StageCard = ({ stage, onOpen }: StageCardProps) => {
 					variant={config.buttonVariant}
 					onClick={() => onOpen(stage)}
 					className="w-full sm:w-auto"
+					data-tour="connections-configure"
 				>
 					{config.buttonLabel}
 				</Button>
 			</CardHeader>
 			<CardContent className="space-y-4 pt-6">
-				<div className="grid gap-4 md:grid-cols-2">
+				<div
+					className="grid gap-4 md:grid-cols-2"
+					data-tour="connections-highlights"
+				>
 					{connectionHighlights[stage].map((highlight) => (
 						<div
 							key={highlight.title}
@@ -145,12 +149,41 @@ const ConnectionsPage = () => {
 		openWebhookModal(stage, activeCategory);
 	};
 
+	useEffect(() => {
+		const openTourWebhookModal = (event: Event) => {
+			const stage =
+				(event as CustomEvent<{ stage?: WebhookStage }>).detail?.stage ??
+				"incoming";
+			setActiveStage(stage);
+			setWebhookStage(stage);
+			openWebhookModal(stage, "leads");
+		};
+
+		window.addEventListener(
+			"tour-open-connections-webhook-modal",
+			openTourWebhookModal,
+		);
+
+		return () => {
+			window.removeEventListener(
+				"tour-open-connections-webhook-modal",
+				openTourWebhookModal,
+			);
+		};
+	}, [openWebhookModal, setWebhookStage]);
+
 	const categories: WebhookCategory[] = ["leads", "campaigns", "skiptracing"];
 
 	return (
-		<div className="mx-auto max-w-7xl space-y-8 px-4 py-6 sm:px-6 lg:px-8">
+		<div
+			className="mx-auto max-w-7xl space-y-8 px-4 py-6 sm:px-6 lg:px-8"
+			data-tour="connections-page"
+		>
 			{/* Header */}
-			<div className="flex flex-col items-center gap-5 text-center">
+			<div
+				className="flex flex-col items-center gap-5 text-center"
+				data-tour="connections-header"
+			>
 				<div className="space-y-2.5">
 					<h1 className="font-bold text-3xl text-foreground tracking-tight sm:text-4xl">
 						Connections Hub
@@ -182,7 +215,7 @@ const ConnectionsPage = () => {
 				}
 				className="w-full space-y-6"
 			>
-				<div className="flex justify-center">
+				<div className="flex justify-center" data-tour="connections-categories">
 					<TabsList className="inline-flex h-11 items-center justify-center rounded-lg bg-muted p-1.5">
 						{categories.map((category) => (
 							<TabsTrigger
@@ -210,7 +243,10 @@ const ConnectionsPage = () => {
 							}
 							className="w-full space-y-6"
 						>
-							<div className="flex justify-center">
+							<div
+								className="flex justify-center"
+								data-tour="connections-stages"
+							>
 								<TabsList className="inline-flex h-11 items-center justify-center rounded-lg bg-muted p-1.5">
 									<TabsTrigger
 										value="incoming"
@@ -233,7 +269,11 @@ const ConnectionsPage = () => {
 								</TabsList>
 							</div>
 
-							<TabsContent value="incoming" className="mt-6">
+							<TabsContent
+								value="incoming"
+								className="mt-6"
+								data-tour="connections-stage-card"
+							>
 								<StageCard stage="incoming" onOpen={handleOpenModal} />
 							</TabsContent>
 							<TabsContent value="outgoing" className="mt-6">
@@ -247,7 +287,7 @@ const ConnectionsPage = () => {
 				))}
 			</Tabs>
 
-			<Card className="border shadow-sm">
+			<Card className="border shadow-sm" data-tour="connections-history">
 				<CardHeader className="flex flex-col gap-4 border-b bg-muted/30 px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
 					<div className="space-y-1.5">
 						<CardTitle className="font-semibold text-xl">

@@ -1,13 +1,23 @@
+import { zodResolver } from "@hookform/resolvers/zod";
 import type { FC } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useFieldArray, useForm, type UseFormReturn } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { type UseFormReturn, useFieldArray, useForm } from "react-hook-form";
 import * as z from "zod";
 
 import {
 	type Agent,
 	useCampaignCreationStore,
 } from "@/lib/stores/campaignCreation";
+import { ChevronDown, Pause, Play } from "lucide-react";
+import AllRecipientDropdown from "../../../../../../ai-avatar-dropdown/AllRecipientDropdown";
+import { Button } from "../../../../components/ui/button";
+import { Checkbox } from "../../../../components/ui/checkbox";
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuTrigger,
+} from "../../../../components/ui/dropdown-menu";
 import {
 	Form,
 	FormControl,
@@ -16,11 +26,8 @@ import {
 	FormLabel,
 	FormMessage,
 } from "../../../../components/ui/form";
+import { Input } from "../../../../components/ui/input";
 import { Label } from "../../../../components/ui/label";
-import PhoneNumberInput from "./channelCustomization/PhoneNumberInput";
-import AreaModeSelector from "./channelCustomization/AreaModeSelector";
-import LeadListSelector from "./channelCustomization/LeadListSelector";
-import CampaignNavigation from "./channelCustomization/CampaignNavigation";
 import {
 	Select,
 	SelectContent,
@@ -28,18 +35,11 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "../../../../components/ui/select";
-import { Button } from "../../../../components/ui/button";
-import { Input } from "../../../../components/ui/input";
 import { Textarea } from "../../../../components/ui/textarea";
-import { Checkbox } from "../../../../components/ui/checkbox";
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuTrigger,
-} from "../../../../components/ui/dropdown-menu";
-import { ChevronDown, Pause, Play } from "lucide-react";
-import AllRecipientDropdown from "../../../../../../ai-avatar-dropdown/AllRecipientDropdown";
+import AreaModeSelector from "./channelCustomization/AreaModeSelector";
+import CampaignNavigation from "./channelCustomization/CampaignNavigation";
+import LeadListSelector from "./channelCustomization/LeadListSelector";
+import PhoneNumberInput from "./channelCustomization/PhoneNumberInput";
 
 // * Step 2: Channel Customization
 
@@ -548,7 +548,10 @@ const ChannelCustomizationStep: FC<ChannelCustomizationStepProps> = ({
 
 	return (
 		<Form {...form}>
-			<div className="flex h-full flex-col">
+			<div
+				className="flex h-full flex-col"
+				data-tour="campaign-customization-step"
+			>
 				<div className="min-h-0 flex-1 space-y-6 overflow-y-auto pr-1">
 					<h2 className="font-semibold text-lg">Channel Customization</h2>
 					<p className="text-gray-500 text-sm">

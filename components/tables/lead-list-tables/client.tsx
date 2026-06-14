@@ -68,7 +68,10 @@ export const LeadListClient: React.FC = () => {
 		<>
 			<div className="flex w-full flex-col space-y-4 lg:items-center lg:space-y-0">
 				{/* Heading Component */}
-				<div className="my-5 flex w-full flex-col items-center text-center">
+				<div
+					className="my-5 flex w-full flex-col items-center text-center"
+					data-tour="lead-list-header"
+				>
 					<Heading
 						title={`Lead List Manager (${filteredLeadLists.length})`}
 						description="See a list of existing lead lists or upload a new list."
@@ -88,7 +91,10 @@ export const LeadListClient: React.FC = () => {
 				</div>
 
 				{/* Action Buttons (Import List, Export, Filter Dropdown) */}
-				<div className="flex w-full flex-col space-y-4 lg:flex-row lg:justify-center lg:space-x-4 lg:space-y-0">
+				<div
+					className="flex w-full flex-col space-y-4 lg:flex-row lg:justify-center lg:space-x-4 lg:space-y-0"
+					data-tour="lead-list-actions"
+				>
 					{/* Import List and Export Filtered Lead Lists Buttons */}
 					<div className="flex w-full flex-col space-y-4 lg:w-auto lg:flex-row lg:space-x-4 lg:space-y-0">
 						<Button
@@ -109,7 +115,10 @@ export const LeadListClient: React.FC = () => {
 					</div>
 
 					{/* Filter Dropdown */}
-					<div className="flex w-full justify-center lg:w-auto">
+					<div
+						className="flex w-full justify-center lg:w-auto"
+						data-tour="lead-list-filters"
+					>
 						<div className="flex w-full justify-center sm:w-auto">
 							<LeadListFilterDropdown
 								selectedRecordsRange={selectedRecordRange}
@@ -128,12 +137,14 @@ export const LeadListClient: React.FC = () => {
 
 			{/* Lead Data Table */}
 			{filteredLeadLists.length > 0 ? (
-				<LeadListDataTable
-					pageCount={10}
-					searchKey={searchKey}
-					columns={columns}
-					data={filteredLeadLists} // Use filtered data from the store
-				/>
+				<div data-tour="lead-list-data-table">
+					<LeadListDataTable
+						pageCount={10}
+						searchKey={searchKey}
+						columns={columns}
+						data={filteredLeadLists} // Use filtered data from the store
+					/>
+				</div>
 			) : (
 				<div className="flex h-[60vh] flex-col items-center justify-center">
 					<Lottie animationData={searchAnimation} loop autoplay />

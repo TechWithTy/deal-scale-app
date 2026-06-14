@@ -16,7 +16,7 @@ const breadcrumbItems = [
 export default function ResourcesPage() {
 	return (
 		<PageContainer>
-			<div className="space-y-6">
+			<div className="space-y-6" data-tour="resources-page">
 				{/* Breadcrumbs */}
 				<Breadcrumbs items={breadcrumbItems} />
 

@@ -5,7 +5,6 @@ import {
 	PopoverContent,
 	PopoverTrigger,
 } from "@/components/ui/popover";
-import { Textarea } from "@/components/ui/textarea";
 import {
 	Select,
 	SelectContent,
@@ -13,6 +12,23 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { useCampaignCreationStore } from "@/lib/stores/campaignCreation";
+import {
+	type FinalizeCampaignForm,
+	finalizeCampaignSchema,
+} from "@/types/zod/campaign-finalize-schema";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { InfoCircledIcon } from "@radix-ui/react-icons";
+import type { FC } from "react";
+import { useState } from "react";
+import { FormProvider, type UseFormReturn, useForm } from "react-hook-form";
 import {
 	FormControl,
 	FormField,
@@ -20,22 +36,6 @@ import {
 	FormLabel,
 	FormMessage,
 } from "../../../../components/ui/form";
-import { InfoCircledIcon } from "@radix-ui/react-icons";
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipProvider,
-	TooltipTrigger,
-} from "@/components/ui/tooltip";
-import type { FC } from "react";
-import { useState } from "react";
-import { FormProvider, useForm, type UseFormReturn } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useCampaignCreationStore } from "@/lib/stores/campaignCreation";
-import {
-	finalizeCampaignSchema,
-	type FinalizeCampaignForm,
-} from "@/types/zod/campaign-finalize-schema";
 
 interface FinalizeCampaignStepProps {
 	estimatedCredits: number;
@@ -99,6 +99,7 @@ const FinalizeCampaignStep: FC<FinalizeCampaignStepProps> = ({
 			<form
 				onSubmit={form.handleSubmit(handleLaunch)}
 				className="mx-auto max-w-lg space-y-6"
+				data-tour="campaign-finalize-step"
 			>
 				<h2 className="font-semibold text-lg dark:text-white">
 					Finalize your campaign
@@ -108,7 +109,7 @@ const FinalizeCampaignStep: FC<FinalizeCampaignStepProps> = ({
 					control={form.control}
 					name="campaignName"
 					render={({ field }) => (
-						<FormItem>
+						<FormItem data-tour="campaign-finalize-name">
 							<FormLabel>Campaign Name</FormLabel>
 							<FormControl>
 								<Input placeholder="Enter campaign name" {...field} />
@@ -122,7 +123,7 @@ const FinalizeCampaignStep: FC<FinalizeCampaignStepProps> = ({
 					control={form.control}
 					name="selectedAgentId"
 					render={({ field }) => (
-						<FormItem>
+						<FormItem data-tour="campaign-finalize-agent">
 							<FormLabel className="flex items-center gap-2">
 								Assign AI Agent
 								<TooltipProvider>
@@ -171,7 +172,7 @@ const FinalizeCampaignStep: FC<FinalizeCampaignStepProps> = ({
 					control={form.control}
 					name="selectedWorkflowId"
 					render={({ field }) => (
-						<FormItem>
+						<FormItem data-tour="campaign-finalize-workflow">
 							<FormLabel className="flex items-center gap-2">
 								Workflow
 							</FormLabel>
@@ -198,7 +199,7 @@ const FinalizeCampaignStep: FC<FinalizeCampaignStepProps> = ({
 					control={form.control}
 					name="selectedSalesScriptId"
 					render={({ field }) => (
-						<FormItem>
+						<FormItem data-tour="campaign-finalize-script">
 							<FormLabel className="flex items-center gap-2">
 								Sales Script
 							</FormLabel>
@@ -225,7 +226,7 @@ const FinalizeCampaignStep: FC<FinalizeCampaignStepProps> = ({
 					control={form.control}
 					name="campaignGoal"
 					render={({ field }) => (
-						<FormItem>
+						<FormItem data-tour="campaign-finalize-goal">
 							<FormLabel>Campaign Goal</FormLabel>
 							<FormControl>
 								<Textarea
@@ -238,7 +239,7 @@ const FinalizeCampaignStep: FC<FinalizeCampaignStepProps> = ({
 					)}
 				/>
 
-				<div className="space-y-4 pt-4">
+				<div className="space-y-4 pt-4" data-tour="campaign-launch-actions">
 					<p className="text-gray-500 text-sm dark:text-gray-400">
 						This campaign will cost {estimatedCredits} credits.
 					</p>

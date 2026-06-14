@@ -57,11 +57,14 @@ export default function InviteEmployeeModal({
 			<DialogContent
 				className="max-h-[80vh] max-w-3xl overflow-y-auto"
 				style={{ touchAction: "pan-y" }}
+				data-tour="employee-invite-modal"
 			>
 				<DialogHeader>
 					<DialogTitle>Invite Team Member</DialogTitle>
 				</DialogHeader>
-				<MainEmployeeForm mode="invite" initialData={defaultInviteValues} />
+				<div data-tour="employee-invite-form">
+					<MainEmployeeForm mode="invite" initialData={defaultInviteValues} />
+				</div>
 			</DialogContent>
 		</Dialog>
 	);

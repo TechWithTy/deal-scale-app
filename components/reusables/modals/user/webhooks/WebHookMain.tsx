@@ -165,7 +165,10 @@ const Modal = ({
 		<div className="fixed inset-0 z-50 overflow-y-auto bg-background/80 backdrop-blur-sm">
 			<div className="flex min-h-full w-full items-center justify-center p-4">
 				<div className="relative w-full max-w-3xl">
-					<div className="relative flex max-h-[calc(100vh-4rem)] flex-col overflow-hidden rounded-lg bg-card text-card-foreground shadow-lg">
+					<div
+						className="relative flex max-h-[calc(100vh-4rem)] flex-col overflow-hidden rounded-lg bg-card text-card-foreground shadow-lg"
+						data-tour="connections-webhook-modal"
+					>
 						<button
 							onClick={onClose}
 							type="button"
@@ -422,7 +425,7 @@ export const WebhookModal: React.FC = () => {
 		<>
 			<Modal isOpen={isWebhookModalOpen} onClose={handleWebhookModalClose}>
 				<>
-					<div className="space-y-3">
+					<div className="space-y-3" data-tour="connections-webhook-header">
 						<h3 className="font-semibold text-foreground text-xl tracking-tight">
 							Webhook &amp; Feed Integrations
 						</h3>
@@ -433,7 +436,7 @@ export const WebhookModal: React.FC = () => {
 					</div>
 
 					{/* Category Tabs */}
-					<div className="mt-6">
+					<div className="mt-6" data-tour="connections-webhook-categories">
 						<Tabs
 							value={webhookCategory}
 							onValueChange={(value) =>
@@ -453,7 +456,10 @@ export const WebhookModal: React.FC = () => {
 					</div>
 
 					{/* CRM Integration Buttons Section */}
-					<div className="mt-6 space-y-3 border-border border-b pb-4">
+					<div
+						className="mt-6 space-y-3 border-border border-b pb-4"
+						data-tour="connections-crm-guides"
+					>
 						<div className="space-y-2">
 							<h4 className="font-medium text-foreground text-sm">
 								CRM Integration Guides
@@ -484,7 +490,10 @@ export const WebhookModal: React.FC = () => {
 						onValueChange={(value) => setWebhookStage(value as WebhookStage)}
 						className="mt-6"
 					>
-						<TabsList className="grid w-full grid-cols-3">
+						<TabsList
+							className="grid w-full grid-cols-3"
+							data-tour="connections-webhook-stages"
+						>
 							<TabsTrigger value="incoming">Incoming</TabsTrigger>
 							<TabsTrigger value="outgoing">Outgoing</TabsTrigger>
 							<TabsTrigger value="feeds">Feeds</TabsTrigger>
@@ -492,21 +501,25 @@ export const WebhookModal: React.FC = () => {
 
 						{/* Incoming */}
 						<TabsContent value="incoming" className="mt-6 space-y-4">
-							<WebhookUrlInput
-								label="Incoming endpoint"
-								description="Share this read-only endpoint with your CRM or form provider to push events into DealScale."
-								webhookUrl={incomingWebhookUrl}
-								setWebhookUrl={setIncomingWebhookUrl}
-								placeholder={getDefaultIncomingEndpoint()}
-								readOnly
-								showCopyButton
-							/>
-							<WebhookPayloadSection
-								label="Sample CRM payload"
-								description="Validate that incoming requests include the required fields before going live."
-								webhookPayload={payloadTemplates.incoming}
-								onCopy={() => void copyPayloadFor("incoming")}
-							/>
+							<div data-tour="connections-webhook-url">
+								<WebhookUrlInput
+									label="Incoming endpoint"
+									description="Share this read-only endpoint with your CRM or form provider to push events into DealScale."
+									webhookUrl={incomingWebhookUrl}
+									setWebhookUrl={setIncomingWebhookUrl}
+									placeholder={getDefaultIncomingEndpoint()}
+									readOnly
+									showCopyButton
+								/>
+							</div>
+							<div data-tour="connections-webhook-payload">
+								<WebhookPayloadSection
+									label="Sample CRM payload"
+									description="Validate that incoming requests include the required fields before going live."
+									webhookPayload={payloadTemplates.incoming}
+									onCopy={() => void copyPayloadFor("incoming")}
+								/>
+							</div>
 							<div className="mt-4 rounded-md border border-dashed bg-muted/40 p-4 text-sm">
 								<div className="flex items-start justify-between gap-2">
 									<div>
@@ -645,16 +658,20 @@ export const WebhookModal: React.FC = () => {
 						</TabsContent>
 					</Tabs>
 
-					<WebhookHistory
-						activeStage={webhookStage}
-						historyByStage={getWebhookHistory(webhookCategory)}
-					/>
+					<div data-tour="connections-webhook-history">
+						<WebhookHistory
+							activeStage={webhookStage}
+							historyByStage={getWebhookHistory(webhookCategory)}
+						/>
+					</div>
 
-					<WebhookModalActions
-						onCancel={handleWebhookModalClose}
-						onTest={handleTestWebhook}
-						onSave={handleSaveWebhook}
-					/>
+					<div data-tour="connections-webhook-actions">
+						<WebhookModalActions
+							onCancel={handleWebhookModalClose}
+							onTest={handleTestWebhook}
+							onSave={handleSaveWebhook}
+						/>
+					</div>
 				</>
 			</Modal>
 

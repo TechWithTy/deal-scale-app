@@ -9,8 +9,10 @@ const breadcrumbItems = [
 export default function page() {
 	return (
 		<PageContainer>
-			<div className="space-y-2">
-				<Breadcrumbs items={breadcrumbItems} />
+			<div className="space-y-2" data-tour="lead-list-page">
+				<div data-tour="lead-list-header">
+					<Breadcrumbs items={breadcrumbItems} />
+				</div>
 				<LeadListTableWithModals />
 			</div>
 		</PageContainer>

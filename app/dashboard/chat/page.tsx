@@ -59,12 +59,23 @@ export default function ChatPage() {
 	};
 
 	return (
-		<div className="mx-auto w-full rounded-lg border border-border bg-card p-4 text-card-foreground">
-			<h1 className="mb-3 font-semibold text-lg">Chat</h1>
+		<div
+			className="mx-auto w-full rounded-lg border border-border bg-card p-4 text-card-foreground"
+			data-tour="chat-page"
+		>
+			<h1 className="mb-3 font-semibold text-lg" data-tour="chat-header">
+				Chat
+			</h1>
 
-			<div className="mb-3 h-72 overflow-y-auto rounded-md border border-border bg-background p-3">
+			<div
+				className="mb-3 h-72 overflow-y-auto rounded-md border border-border bg-background p-3"
+				data-tour="chat-thread"
+			>
 				{messages.length === 0 && (
-					<div className="text-center text-muted-foreground text-sm">
+					<div
+						className="text-center text-muted-foreground text-sm"
+						data-tour="chat-empty-state"
+					>
 						Start chatting with the AI!
 					</div>
 				)}
@@ -88,17 +99,23 @@ export default function ChatPage() {
 				<div ref={chatEndRef} />
 			</div>
 
-			<form onSubmit={sendMessage} className="flex items-center gap-2">
+			<form
+				onSubmit={sendMessage}
+				className="flex items-center gap-2"
+				data-tour="chat-composer"
+			>
 				<input
 					value={input}
 					onChange={(e) => setInput(e.target.value)}
 					placeholder="Type your message..."
 					className="flex-1 rounded-md border border-border bg-background px-3 py-2 text-foreground outline-none focus:ring-2 focus:ring-ring"
+					data-tour="chat-input"
 				/>
 				<button
 					type="submit"
 					disabled={loading || input.trim().length === 0}
 					className="rounded-md bg-primary px-4 py-2 text-primary-foreground disabled:opacity-50"
+					data-tour="chat-send"
 				>
 					{loading ? "Sending..." : "Send"}
 				</button>

@@ -1,14 +1,8 @@
 "use client";
 
-import { FeatureGuard } from "@/components/access/FeatureGuard";
 import LeadMainModal from "@/components/reusables/modals/user/lead/LeadModalMain";
 import SkipTraceModalMain from "@/components/reusables/modals/user/skipTrace/SkipTraceModalMain";
 import { Button } from "@/components/ui/button";
-import {
-	Popover,
-	PopoverContent,
-	PopoverTrigger,
-} from "@/components/ui/popover";
 import { useCampaignStore } from "@/lib/stores/campaigns";
 import type { CallCampaign } from "@/types/_dashboard/campaign";
 import type { DirectMailCampaign } from "external/shadcn-table/src/examples/DirectMail/utils/mock";
@@ -20,6 +14,7 @@ import CampaignModalMain from "../../../external/shadcn-table/src/examples/campa
 import DirectMailCampaignsDemoTable from "../../../external/shadcn-table/src/examples/direct-mail-campaigns-demo-table";
 import SocialCampaignsDemoTable from "../../../external/shadcn-table/src/examples/social-campaigns-demo-table";
 import TextCampaignsDemoTable from "../../../external/shadcn-table/src/examples/text-campaigns-demo-table";
+import { useCampaignTourModal } from "./useCampaignTourModal";
 
 export default function CampaignCallTablePage({
 	urlParams,
@@ -93,7 +88,7 @@ export default function CampaignCallTablePage({
 			setTab(next);
 			pushParams(next, null);
 		},
-		[pushParams, tab],
+		[pushParams],
 	);
 
 	const handleCampaignSelect = React.useCallback(
@@ -153,38 +148,32 @@ export default function CampaignCallTablePage({
 		{ type: "list"; file?: File } | { type: "single" } | undefined
 	>(undefined);
 
-	const handleBlockedClick = (reason: "tier" | "permission" | "quota") => {
-		console.log(`Tab blocked due to: ${reason}`);
-		// The FeatureGuard component will handle the actual actions (opening URLs, etc.)
-	};
-
-	// Tab configuration with feature blocking info
 	const tabs = [
-		{ key: "calls" as ParentTab, label: "Calls", featureKey: null },
-		{ key: "text" as ParentTab, label: "Text", featureKey: null },
-		{
-			key: "social" as ParentTab,
-			label: "Social",
-			featureKey: "campaigns.table.socialMedia",
-		},
-		{
-			key: "directMail" as ParentTab,
-			label: "Direct Mail",
-			featureKey: "campaigns.table.directMail",
-		},
+		{ key: "calls" as ParentTab, label: "Calls" },
+		{ key: "text" as ParentTab, label: "Text" },
+		{ key: "social" as ParentTab, label: "Social" },
+		{ key: "directMail" as ParentTab, label: "Direct Mail" },
 	];
+
+	const openCampaignModal = React.useCallback(() => {
+		setIsCampaignModalOpen(true);
+	}, []);
+
+	useCampaignTourModal(openCampaignModal);
 
 	return (
 		// ! Use full width with min-w-0 to prevent forcing layout wider than sidebar
-		<div className="w-full min-w-0 p-4">
-			{/* Enhanced Tab Navigation with Feature Blocking */}
-			<div className="mb-4 flex items-center justify-between gap-4 rounded-lg bg-muted p-1">
+		<div className="w-full min-w-0 p-4" data-tour="campaigns-table-section">
+			{/* Enhanced Tab Navigation */}
+			<div
+				className="mb-4 flex items-center justify-between gap-4 rounded-lg bg-muted p-1"
+				data-tour="campaigns-tabs"
+			>
 				<div className="flex items-center gap-2">
-					{tabs.map(({ key, label, featureKey }) => {
+					{tabs.map(({ key, label }) => {
 						const isActive = tab === key;
 
-						// Create tab button content
-						const tabButton = (
+						return (
 							<Button
 								key={key}
 								type="button"
@@ -196,25 +185,6 @@ export default function CampaignCallTablePage({
 								{label}
 							</Button>
 						);
-
-						// Wrap with FeatureGuard if needed, but only show visual indicators
-						if (featureKey) {
-							return (
-								<FeatureGuard
-									key={key}
-									featureKey={featureKey}
-									modeOverride="overlay"
-									wrapperClassName="inline-block"
-									orientation="horizontal"
-									iconOnly={true}
-									onBlockedClick={handleBlockedClick}
-								>
-									{tabButton}
-								</FeatureGuard>
-							);
-						}
-
-						return <div key={key}>{tabButton}</div>;
 					})}
 				</div>
 
@@ -222,8 +192,9 @@ export default function CampaignCallTablePage({
 				<Button
 					type="button"
 					size="sm"
-					onClick={() => setIsCampaignModalOpen(true)}
+					onClick={openCampaignModal}
 					className="bg-primary hover:bg-primary/90"
+					data-tour="campaigns-create"
 				>
 					Create Campaign
 				</Button>
@@ -249,32 +220,22 @@ export default function CampaignCallTablePage({
 				/>
 			)}
 			{tab === "social" && (
-				<FeatureGuard
-					featureKey="campaigns.table.socialMedia"
-					onBlockedClick={handleBlockedClick}
-				>
-					<SocialCampaignsDemoTable
-						key="social"
-						onNavigate={handleTabChange}
-						campaignId={currentCampaignIdParam}
-						onCampaignSelect={handleCampaignSelect}
-						initialCampaigns={memoizedSocialCampaigns}
-					/>
-				</FeatureGuard>
+				<SocialCampaignsDemoTable
+					key="social"
+					onNavigate={handleTabChange}
+					campaignId={currentCampaignIdParam}
+					onCampaignSelect={handleCampaignSelect}
+					initialCampaigns={memoizedSocialCampaigns}
+				/>
 			)}
 			{tab === "directMail" && (
-				<FeatureGuard
-					featureKey="campaigns.table.directMail"
-					onBlockedClick={handleBlockedClick}
-				>
-					<DirectMailCampaignsDemoTable
-						key="directMail"
-						onNavigate={handleTabChange}
-						campaignId={currentCampaignIdParam}
-						onCampaignSelect={handleCampaignSelect}
-						initialCampaigns={memoizedDirectMailCampaigns}
-					/>
-				</FeatureGuard>
+				<DirectMailCampaignsDemoTable
+					key="directMail"
+					onNavigate={handleTabChange}
+					campaignId={currentCampaignIdParam}
+					onCampaignSelect={handleCampaignSelect}
+					initialCampaigns={memoizedDirectMailCampaigns}
+				/>
 			)}
 			{/* Modals */}
 			<LeadMainModal

@@ -48,11 +48,12 @@ const ChannelSelectionStep: FC<ChannelSelectionStepProps> = ({
 	};
 
 	return (
-		<div className="mx-auto w-full max-w-md">
-			<h2 className="mb-6 font-semibold text-xl">
-				Select Primary Channel
-			</h2>
-			<div className="mb-6 flex flex-col gap-3">
+		<div className="mx-auto w-full max-w-md" data-tour="campaign-channel-step">
+			<h2 className="mb-6 font-semibold text-xl">Select Primary Channel</h2>
+			<div
+				className="mb-6 flex flex-col gap-3"
+				data-tour="campaign-channel-options"
+			>
 				{allChannels.map((channel) => {
 					// Normalize store channel (which uses 'email' for direct mail) to UI channel label
 					type StoreChannel = "email" | "call" | "text" | "social";
@@ -139,18 +140,14 @@ const ChannelSelectionStep: FC<ChannelSelectionStepProps> = ({
 					);
 				})}
 			</div>
-			<div className="mt-8 flex justify-end gap-3">
-				<Button
-					onClick={onClose}
-					variant="ghost"
-					type="button"
-				>
+			<div
+				className="mt-8 flex justify-end gap-3"
+				data-tour="campaign-channel-next"
+			>
+				<Button onClick={onClose} variant="ghost" type="button">
 					Cancel
 				</Button>
-				<Button
-					onClick={handleNextStep}
-					type="button"
-				>
+				<Button onClick={handleNextStep} type="button">
 					Next
 				</Button>
 			</div>

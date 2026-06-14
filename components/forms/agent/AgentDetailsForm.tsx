@@ -24,6 +24,7 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useState } from "react";
 import type { UseFormReturn } from "react-hook-form";
 import type { Agent } from "./utils/schema";
 
@@ -40,13 +41,48 @@ export function AgentDetailsForm({
 }: AgentDetailsFormProps) {
 	const { name, type, description } = form.watch();
 	const isGenerationDisabled = !name || !type || !description;
+	const [salesScriptFileName, setSalesScriptFileName] = useState("");
+	const [salesScriptUploadError, setSalesScriptUploadError] = useState("");
+
+	const handleSalesScriptUpload = async (
+		event: React.ChangeEvent<HTMLInputElement>,
+		onChange: (value: string) => void,
+	) => {
+		const file = event.target.files?.[0];
+		if (!file) return;
+
+		const isTextFile =
+			file.type.startsWith("text/") ||
+			file.name.toLowerCase().endsWith(".txt") ||
+			file.name.toLowerCase().endsWith(".md");
+
+		if (!isTextFile) {
+			setSalesScriptFileName("");
+			setSalesScriptUploadError("Upload a .txt, .md, or text-based file.");
+			event.target.value = "";
+			return;
+		}
+
+		try {
+			const contents = await file.text();
+			onChange(contents);
+			setSalesScriptFileName(file.name);
+			setSalesScriptUploadError("");
+		} catch {
+			setSalesScriptFileName("");
+			setSalesScriptUploadError("Could not read that text file.");
+		} finally {
+			event.target.value = "";
+		}
+	};
+
 	return (
 		<>
 			<FormField
 				control={form.control}
 				name="image"
 				render={({ field }) => (
-					<FormItem>
+					<FormItem data-tour="agent-manager-image">
 						<FormLabel>Agent Image</FormLabel>
 						<div className="flex items-center space-x-4">
 							<AgentAvatar src={imagePreview} alt="Agent Preview" size={64} />
@@ -92,7 +128,7 @@ export function AgentDetailsForm({
 				control={form.control}
 				name="name"
 				render={({ field }) => (
-					<FormItem>
+					<FormItem data-tour="agent-manager-name">
 						<FormLabel>Name</FormLabel>
 						<FormControl>
 							<Input placeholder="e.g., Q4 Sales Agent" {...field} />
@@ -105,7 +141,7 @@ export function AgentDetailsForm({
 				control={form.control}
 				name="type"
 				render={({ field }) => (
-					<FormItem>
+					<FormItem data-tour="agent-manager-type">
 						<FormLabel>Agent Type</FormLabel>
 						<Select onValueChange={field.onChange} defaultValue={field.value}>
 							<FormControl>
@@ -127,7 +163,7 @@ export function AgentDetailsForm({
 				control={form.control}
 				name="description"
 				render={({ field }) => (
-					<FormItem>
+					<FormItem data-tour="agent-manager-description">
 						<FormLabel>Description</FormLabel>
 						<FormControl>
 							<Textarea
@@ -143,7 +179,7 @@ export function AgentDetailsForm({
 				control={form.control}
 				name="campaignGoal"
 				render={({ field }) => (
-					<FormItem>
+					<FormItem data-tour="agent-manager-goal">
 						<FormLabel>Campaign Goal</FormLabel>
 						<FormControl>
 							<Textarea
@@ -159,7 +195,7 @@ export function AgentDetailsForm({
 				control={form.control}
 				name="persona"
 				render={({ field }) => (
-					<FormItem>
+					<FormItem data-tour="agent-manager-persona">
 						<FormLabel>Persona</FormLabel>
 						<FormControl>
 							<Input placeholder="e.g., Friendly & Helpful" {...field} />
@@ -172,14 +208,45 @@ export function AgentDetailsForm({
 				control={form.control}
 				name="salesScript"
 				render={({ field }) => (
-					<FormItem>
+					<FormItem data-tour="agent-manager-script">
 						<FormLabel>Sales Script</FormLabel>
-						<FormControl>
-							<Textarea
-								placeholder="e.g., Hi [Name], I'm calling from..."
-								{...field}
-							/>
-						</FormControl>
+						<div className="space-y-3">
+							<FormControl>
+								<Textarea
+									placeholder="e.g., Hi [Name], I'm calling from..."
+									{...field}
+								/>
+							</FormControl>
+							<div
+								className="rounded-md border border-dashed border-border bg-muted/30 p-3"
+								data-tour="agent-manager-script-upload"
+							>
+								<FormLabel
+									htmlFor="sales-script-upload"
+									className="mb-2 block text-muted-foreground text-xs"
+								>
+									Upload text file
+								</FormLabel>
+								<Input
+									id="sales-script-upload"
+									type="file"
+									accept=".txt,.md,text/plain,text/markdown"
+									onChange={(event) =>
+										handleSalesScriptUpload(event, field.onChange)
+									}
+								/>
+								{salesScriptFileName && (
+									<p className="mt-2 text-muted-foreground text-xs">
+										Loaded {salesScriptFileName}
+									</p>
+								)}
+								{salesScriptUploadError && (
+									<p className="mt-2 text-destructive text-xs">
+										{salesScriptUploadError}
+									</p>
+								)}
+							</div>
+						</div>
 						<FormMessage />
 					</FormItem>
 				)}

@@ -1,7 +1,5 @@
 "use client";
 
-import { customGPTs } from "@/constants/resourcesData";
-import type { CustomGPT } from "@/types/_dashboard/resources";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,6 +9,8 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
+import { customGPTs } from "@/constants/resourcesData";
+import type { CustomGPT } from "@/types/_dashboard/resources";
 import { Bot, ExternalLink, Sparkles } from "lucide-react";
 
 export function CustomGPTsSection() {
@@ -34,7 +34,7 @@ export function CustomGPTsSection() {
 	};
 
 	return (
-		<div className="space-y-6">
+		<div className="space-y-6" data-tour="resources-gpts">
 			{/* Section Header */}
 			<div className="flex items-center gap-3">
 				<div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
@@ -50,8 +50,12 @@ export function CustomGPTsSection() {
 
 			{/* GPTs Grid */}
 			<div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-				{customGPTs.map((gpt) => (
-					<Card key={gpt.id} className="group transition-all hover:shadow-lg">
+				{customGPTs.map((gpt, index) => (
+					<Card
+						key={gpt.id}
+						className="group transition-all hover:shadow-lg"
+						data-tour={index === 0 ? "resources-gpt-card" : undefined}
+					>
 						<CardHeader className="p-4">
 							<div className="mb-3 flex items-start justify-between">
 								<div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br from-primary/20 to-primary/10 text-2xl">
@@ -88,6 +92,7 @@ export function CustomGPTsSection() {
 								className="w-full"
 								variant="outline"
 								size="sm"
+								data-tour={index === 0 ? "resources-gpt-open" : undefined}
 							>
 								<ExternalLink className="mr-2 h-4 w-4" />
 								Open Tool

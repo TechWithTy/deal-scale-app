@@ -16,6 +16,12 @@ const rootProvidersPath = path.join(
 	"layout",
 	"providers.tsx",
 );
+const authenticatedShellPath = path.join(
+	root,
+	"components",
+	"layout",
+	"AuthenticatedAppShell.tsx",
+);
 const themeBridgePath = path.join(
 	root,
 	"external",
@@ -240,14 +246,19 @@ const externalTooltipPath = path.join(
 );
 
 describe("SubmoduleChatShell tours", () => {
-	it("mounts the embedded chat inside the app tour provider", () => {
+	it("mounts the app tour provider around the authenticated app shell", () => {
 		const source = readFileSync(shellPath, "utf8");
+		const authenticatedShellSource = readFileSync(authenticatedShellPath, "utf8");
 
-		expect(source).toContain(
-			'import { AppTourProvider } from "@/external/interactive-avatar-nextjs-demo/components/tour/AppTourProvider";',
+		expect(authenticatedShellSource).toContain(
+			'import { AppTourProvider } from "@/components/tour/AppTourProvider";',
 		);
+		expect(authenticatedShellSource).toMatch(
+			/<AppTourProvider>\s*<OfflineBanner \/>/,
+		);
+		expect(source).not.toContain("<AppTourProvider>");
 		expect(source).toMatch(
-			/<AppTourProvider>\s*<StreamingAvatarProvider>\s*<SubmoduleChatPanel \/>/,
+			/<StreamingAvatarProvider>\s*<SubmoduleChatPanel \/>/,
 		);
 	});
 
@@ -338,9 +349,10 @@ describe("SubmoduleChatShell tours", () => {
 		expect(source.match(/data-tour="bottom-chat-panel-toggle"/g)).toHaveLength(
 			1,
 		);
-		expect(source).toContain("absolute bottom-2 left-1/2");
+		expect(source).toContain("fixed bottom-4 left-1/2");
+		expect(source).toContain("z-[230]");
 		expect(source).toContain("rounded-md border border-primary");
-		expect(source).not.toContain("fixed bottom-6 left-1/2");
+		expect(source).not.toContain("absolute bottom-2 left-1/2");
 		expect(source).not.toContain("shadow-2xl shadow-black/60");
 	});
 

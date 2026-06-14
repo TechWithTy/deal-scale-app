@@ -4,7 +4,7 @@ import { AiAgentsManager } from "@/components/aiAgents";
 // ? It wraps the AiAgentsManager component in a standard page layout.
 export default function AgentsPage() {
 	return (
-		<div className="container mx-auto py-10">
+		<div className="container mx-auto py-10" data-tour="agents-page">
 			<AiAgentsManager />
 		</div>
 	);

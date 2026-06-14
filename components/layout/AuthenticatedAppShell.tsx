@@ -2,10 +2,11 @@
 
 import "@uploadthing/react/styles.css";
 import SessionSync from "@/components/auth/SessionSync";
+import CommandPaletteAppCommands from "@/components/layout/CommandPaletteAppCommands";
 import { OfflineBanner } from "@/components/layout/OfflineBanner";
 import Providers from "@/components/layout/providers";
 import { QuickStartDebug } from "@/components/quickstart/QuickStartDebug";
-import CommandPaletteAppCommands from "@/components/layout/CommandPaletteAppCommands";
+import { AppTourProvider } from "@/components/tour/AppTourProvider";
 import FloatingHelpSupademo from "@/components/ui/FloatingHelpSupademo";
 import FloatingMusicWidget from "@/components/ui/FloatingMusicWidget";
 import { CommandPaletteProvider } from "external/action-bar";
@@ -39,20 +40,25 @@ export function AuthenticatedAppShell({
 	session,
 	children,
 }: AuthenticatedAppShellProps): React.ReactElement {
+	const shouldLoadSupademo = process.env.NODE_ENV === "production";
 	void React;
 	return (
 		<CommandPaletteProvider>
 			<CommandPaletteAppCommands />
 			<NuqsAdapter>
 				<Providers session={session}>
-					<OfflineBanner />
-					<SupademoClient />
-					<FloatingMusicWidget />
-					{children}
-					<SessionSync />
-					<QuickStartDebug />
-					{/* Hidden by default; shown when Quick Start help icon dispatches show event */}
-					<FloatingHelpSupademo defaultVisible={false} />
+					<AppTourProvider>
+						<OfflineBanner />
+						{shouldLoadSupademo ? <SupademoClient /> : null}
+						<FloatingMusicWidget />
+						{children}
+						<SessionSync />
+						<QuickStartDebug />
+						{/* Hidden by default; shown when Quick Start help icon dispatches show event */}
+						{shouldLoadSupademo ? (
+							<FloatingHelpSupademo defaultVisible={false} />
+						) : null}
+					</AppTourProvider>
 				</Providers>
 				<ActionBarRoot />
 			</NuqsAdapter>

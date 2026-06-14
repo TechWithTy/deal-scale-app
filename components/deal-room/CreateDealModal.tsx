@@ -21,9 +21,9 @@ import {
 import { dealTemplates } from "@/constants/dealRoomData";
 import { useDealRoomStore } from "@/lib/stores/dealRoom";
 import type { DealType } from "@/types/_dashboard/dealRoom";
-import { useState } from "react";
-import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 interface CreateDealModalProps {
 	isOpen: boolean;
@@ -44,6 +44,22 @@ export function CreateDealModal({ isOpen, onClose }: CreateDealModalProps) {
 		purchasePrice: "",
 		estimatedARV: "",
 	});
+
+	useEffect(() => {
+		if (!isOpen) return;
+
+		const handleTourStep = (event: Event) => {
+			const nextStep = (event as CustomEvent<{ step?: number }>).detail?.step;
+			if (typeof nextStep === "number") {
+				setStep(Math.max(1, Math.min(3, nextStep)));
+			}
+		};
+
+		window.addEventListener("tour-set-deal-create-step", handleTourStep);
+		return () => {
+			window.removeEventListener("tour-set-deal-create-step", handleTourStep);
+		};
+	}, [isOpen]);
 
 	const handleNext = () => {
 		if (step === 1) {
@@ -120,7 +136,7 @@ export function CreateDealModal({ isOpen, onClose }: CreateDealModalProps) {
 
 	return (
 		<Dialog open={isOpen} onOpenChange={onClose}>
-			<DialogContent className="sm:max-w-[600px]">
+			<DialogContent className="sm:max-w-[600px]" data-tour="deal-create-modal">
 				<DialogHeader>
 					<DialogTitle>Create New Deal</DialogTitle>
 					<DialogDescription>
@@ -135,7 +151,7 @@ export function CreateDealModal({ isOpen, onClose }: CreateDealModalProps) {
 
 				<div className="space-y-4 py-4">
 					{step === 1 && (
-						<>
+						<div data-tour="deal-create-property-step">
 							<div className="space-y-2">
 								<Label htmlFor="address">Property Address *</Label>
 								<Input
@@ -189,11 +205,11 @@ export function CreateDealModal({ isOpen, onClose }: CreateDealModalProps) {
 									placeholder="78701"
 								/>
 							</div>
-						</>
+						</div>
 					)}
 
 					{step === 2 && (
-						<>
+						<div data-tour="deal-create-financial-step">
 							<div className="space-y-2">
 								<Label htmlFor="dealType">Deal Type *</Label>
 								<Select
@@ -243,11 +259,11 @@ export function CreateDealModal({ isOpen, onClose }: CreateDealModalProps) {
 									/>
 								</div>
 							</div>
-						</>
+						</div>
 					)}
 
 					{step === 3 && (
-						<div className="space-y-4">
+						<div className="space-y-4" data-tour="deal-create-review-step">
 							<div className="rounded-lg border p-4">
 								<h3 className="mb-2 font-semibold">Deal Summary</h3>
 								<dl className="space-y-2 text-sm">
@@ -303,7 +319,7 @@ export function CreateDealModal({ isOpen, onClose }: CreateDealModalProps) {
 					)}
 				</div>
 
-				<DialogFooter>
+				<DialogFooter data-tour="deal-create-actions">
 					{step > 1 && (
 						<Button variant="outline" onClick={handleBack}>
 							Back

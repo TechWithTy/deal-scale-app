@@ -7,7 +7,7 @@ type FocusStatus = "idle" | "found" | "not-found";
 
 interface UseCampaignRowFocusProps<TData> {
 	campaignId?: string | null;
-	table: Pick<Table<TData>, "getRowModel" | "setRowSelection">;
+	table: Pick<Table<TData>, "getRowModel" | "getState" | "setRowSelection">;
 	resolveRowId: (row: Row<TData>) => string | null | undefined;
 	onRowFocused?: (row: Row<TData>) => void;
 }
@@ -23,23 +23,27 @@ export function useCampaignRowFocus<TData>(
 	const { campaignId, table, resolveRowId, onRowFocused } = props;
 	const [focusedRowId, setFocusedRowId] = React.useState<string | null>(null);
 	const [status, setStatus] = React.useState<FocusStatus>("idle");
+	const lastFocusedCampaignId = React.useRef<string | null>(null);
 
 	React.useEffect(() => {
-		const currentSelection = (table as any).getState?.().rowSelection as
+		const currentSelection = table.getState().rowSelection as
 			| Record<string, boolean>
 			| undefined;
 
 		if (!campaignId) {
-			try {
-				table.setRowSelection?.({});
-			} catch (error) {
-				console.warn(
-					"Failed to reset row selection for campaign focus",
-					error,
-				);
+			if (Object.keys(currentSelection ?? {}).length > 0) {
+				try {
+					table.setRowSelection?.({});
+				} catch (error) {
+					console.warn(
+						"Failed to reset row selection for campaign focus",
+						error,
+					);
+				}
 			}
-			setFocusedRowId(null);
-			setStatus("idle");
+			lastFocusedCampaignId.current = null;
+			setFocusedRowId((current) => (current === null ? current : null));
+			setStatus((current) => (current === "idle" ? current : "idle"));
 			return;
 		}
 
@@ -47,12 +51,15 @@ export function useCampaignRowFocus<TData>(
 		const targetRow = rows.find((row) => resolveRowId(row) === campaignId);
 
 		if (!targetRow) {
-			setFocusedRowId(null);
-			setStatus("not-found");
+			lastFocusedCampaignId.current = null;
+			setFocusedRowId((current) => (current === null ? current : null));
+			setStatus((current) => (current === "not-found" ? current : "not-found"));
 			return;
 		}
 
-		setFocusedRowId(campaignId);
+		setFocusedRowId((current) =>
+			current === campaignId ? current : campaignId,
+		);
 		const desiredSelection: Record<string, boolean> = {
 			[targetRow.id]: true,
 		};
@@ -74,8 +81,11 @@ export function useCampaignRowFocus<TData>(
 			}
 		}
 
-		onRowFocused?.(targetRow);
-		setStatus("found");
+		if (lastFocusedCampaignId.current !== campaignId) {
+			lastFocusedCampaignId.current = campaignId;
+			onRowFocused?.(targetRow);
+		}
+		setStatus((current) => (current === "found" ? current : "found"));
 	}, [campaignId, table, resolveRowId, onRowFocused]);
 
 	return { focusedRowId, status };

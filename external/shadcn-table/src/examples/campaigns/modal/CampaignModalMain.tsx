@@ -103,13 +103,12 @@ export default function CampaignModalMain({
 	const mutatedDays =
 		days > 0 ? Math.round(days * (reachOnWeekend ? 1.35 : 1)) : 0;
 
-    // Sync derived day count only when changed to avoid render loops
-    useEffect(() => {
-        if (daysSelected !== mutatedDays) {
-            setDaysSelected(mutatedDays);
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [mutatedDays, reachOnWeekend, daysSelected]);
+	// Sync derived day count only when changed to avoid render loops
+	useEffect(() => {
+		if (daysSelected !== mutatedDays) {
+			setDaysSelected(mutatedDays);
+		}
+	}, [mutatedDays, daysSelected, setDaysSelected]);
 
 	const estimatedCredits =
 		leadCount > 0 && mutatedDays > 0 ? Math.round(leadCount * mutatedDays) : 0;
@@ -123,6 +122,27 @@ export default function CampaignModalMain({
 	};
 
 	const [step, setStep] = useState(0);
+
+	useEffect(() => {
+		const handleSetCampaignStep = (event: Event) => {
+			const nextStep = (event as CustomEvent<{ step?: number }>).detail?.step;
+			if (typeof nextStep === "number") {
+				setStep(Math.max(0, Math.min(3, nextStep)));
+			}
+		};
+
+		window.addEventListener(
+			"tour-set-campaign-create-step",
+			handleSetCampaignStep,
+		);
+
+		return () => {
+			window.removeEventListener(
+				"tour-set-campaign-create-step",
+				handleSetCampaignStep,
+			);
+		};
+	}, []);
 
 	// Define customization form before any usage and align types with zod schema (use input type)
 	const customizationForm = useForm<z.input<typeof FormSchema>>({
@@ -184,15 +204,15 @@ export default function CampaignModalMain({
 
 		setStep(initialStep);
 
-        if (defaultChannel) {
-            const mapped: "email" | "call" | "text" | "social" =
-                defaultChannel === "directmail" ? "email" : defaultChannel;
-            if (primaryChannel !== mapped) {
-                (setPrimaryChannel as (c: "email" | "call" | "text" | "social") => void)(
-                    mapped,
-                );
-            }
-        }
+		if (defaultChannel) {
+			const mapped: "email" | "call" | "text" | "social" =
+				defaultChannel === "directmail" ? "email" : defaultChannel;
+			if (primaryChannel !== mapped) {
+				(
+					setPrimaryChannel as (c: "email" | "call" | "text" | "social") => void
+				)(mapped);
+			}
+		}
 
 		if (initialLeadListId) {
 			const {
@@ -220,6 +240,7 @@ export default function CampaignModalMain({
 		defaultChannel,
 		initialLeadListId,
 		initialLeadListName,
+		primaryChannel,
 		setPrimaryChannel,
 		setSelectedLeadListId,
 		setSelectedLeadListAId,
@@ -240,7 +261,10 @@ export default function CampaignModalMain({
 
 	return (
 		<Dialog open={open} onOpenChange={setOpen}>
-			<DialogContent className="-translate-x-1/2 -translate-y-1/2 fixed top-1/2 left-1/2 z-50 flex h-[85vh] max-h-[85vh] min-h-0 w-full max-w-xl flex-col gap-0 overflow-hidden rounded-xl border bg-background p-0 text-foreground shadow-lg outline-none">
+			<DialogContent
+				className="-translate-x-1/2 -translate-y-1/2 fixed top-1/2 left-1/2 z-50 flex h-[85vh] max-h-[85vh] min-h-0 w-full max-w-xl flex-col gap-0 overflow-hidden rounded-xl border bg-background p-0 text-foreground shadow-lg outline-none"
+				data-tour="campaign-create-modal"
+			>
 				<div className="relative p-6 pb-0">
 					{/* Optional header space for title/actions if needed */}
 				</div>

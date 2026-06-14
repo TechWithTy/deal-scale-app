@@ -28,6 +28,27 @@ export function AiAgentsManager() {
 		loadAgents();
 	}, []);
 
+	useEffect(() => {
+		const openCreate = () => {
+			setSelectedAgent(undefined);
+			setView("create");
+		};
+		const closeCreate = () => {
+			setSelectedAgent(undefined);
+			setView("list");
+		};
+
+		window.addEventListener("tour-open-agent-manager-create", openCreate);
+		window.addEventListener("tour-close-agent-manager-create", closeCreate);
+		return () => {
+			window.removeEventListener("tour-open-agent-manager-create", openCreate);
+			window.removeEventListener(
+				"tour-close-agent-manager-create",
+				closeCreate,
+			);
+		};
+	}, []);
+
 	const handleFormSubmit = async (data: Agent) => {
 		if (view === "edit" && typeof selectedAgent?.id === "string") {
 			await updateAgent(selectedAgent.id, data);
@@ -54,15 +75,22 @@ export function AiAgentsManager() {
 		<div className="space-y-4">
 			{view === "list" && (
 				<>
-					<div className="flex items-center justify-between">
+					<div
+						className="flex items-center justify-between"
+						data-tour="agents-header"
+					>
 						<h1 className="font-bold text-2xl">AI Sales Agents</h1>
-						<Button onClick={() => setView("create")}>Create Agent</Button>
+						<Button data-tour="agents-create" onClick={() => setView("create")}>
+							Create Agent
+						</Button>
 					</div>
-					<AgentList
-						onEdit={handleEdit}
-						agents={agents}
-						setAgents={setAgents}
-					/>
+					<div data-tour="agents-table">
+						<AgentList
+							onEdit={handleEdit}
+							agents={agents}
+							setAgents={setAgents}
+						/>
+					</div>
 				</>
 			)}
 

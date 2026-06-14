@@ -78,12 +78,24 @@ export default function EmployeePage({
 		loadEmployees();
 	}, [page, pageLimit]);
 
+	useEffect(() => {
+		const openInvite = () => setInviteOpen(true);
+
+		window.addEventListener("tour-open-employee-invite-modal", openInvite);
+		return () => {
+			window.removeEventListener("tour-open-employee-invite-modal", openInvite);
+		};
+	}, []);
+
 	return (
 		<PageContainer>
-			<div className="space-y-4">
+			<div className="space-y-4" data-tour="employee-page">
 				<Breadcrumbs items={breadcrumbItems} />
 
-				<div className="flex w-full flex-col items-center justify-between space-y-5 sm:flex-row sm:items-center sm:space-y-0">
+				<div
+					className="flex w-full flex-col items-center justify-between space-y-5 sm:flex-row sm:items-center sm:space-y-0"
+					data-tour="employee-header"
+				>
 					{/* Heading Component */}
 					<div className="w-full text-center sm:w-auto sm:text-left">
 						<Heading
@@ -117,6 +129,7 @@ export default function EmployeePage({
 								buttonVariants({ variant: "default" }),
 								"flex w-full items-center justify-center sm:w-auto",
 							)}
+							data-tour="employee-invite"
 						>
 							<Plus className="mr-2 h-4 w-4" /> Add New
 						</button>
@@ -132,61 +145,64 @@ export default function EmployeePage({
 
 				{/* Tabs: Employees (table) | Activity (line graph) */}
 				<Tabs defaultValue="employees">
-					<TabsList>
+					<TabsList data-tour="employee-tabs">
 						<TabsTrigger value="employees">Employees</TabsTrigger>
 						<TabsTrigger value="activity">Activity</TabsTrigger>
 					</TabsList>
 
 					<TabsContent value="employees">
-						<EmployeeKanbanTable
-							columns={columns}
-							data={employees}
-							pageCount={pageCount}
-							renderToolbar={({
-								table,
-								openAI,
-								disabled,
-								selectedCount,
-							}: {
-								table: TanstackTable<TeamMember>;
-								openAI: () => void;
-								disabled: boolean;
-								selectedCount: number;
-							}) => (
-								<div className="mb-3 flex w-full items-end justify-between gap-3">
-									<div className="grid gap-1">
-										<Label
-											htmlFor="employee-search"
-											className="text-muted-foreground text-xs"
-										>
-											Search first name…
-										</Label>
-										<Input
-											id="employee-search"
-											placeholder="Search first name…"
-											value={search}
-											onChange={(e) => {
-												setSearch(e.target.value);
-												table
-													.getColumn("firstName")
-													?.setFilterValue(e.target.value);
-											}}
-											className="h-8 w-[220px]"
-										/>
+						<div data-tour="employee-table">
+							<EmployeeKanbanTable
+								columns={columns}
+								data={employees}
+								pageCount={pageCount}
+								renderToolbar={({
+									table,
+									openAI,
+									disabled,
+									selectedCount,
+								}: {
+									table: TanstackTable<TeamMember>;
+									openAI: () => void;
+									disabled: boolean;
+									selectedCount: number;
+								}) => (
+									<div className="mb-3 flex w-full items-end justify-between gap-3">
+										<div className="grid gap-1">
+											<Label
+												htmlFor="employee-search"
+												className="text-muted-foreground text-xs"
+											>
+												Search first name…
+											</Label>
+											<Input
+												id="employee-search"
+												placeholder="Search first name…"
+												value={search}
+												onChange={(e) => {
+													setSearch(e.target.value);
+													table
+														.getColumn("firstName")
+														?.setFilterValue(e.target.value);
+												}}
+												className="h-8 w-[220px]"
+											/>
+										</div>
+										<div className="flex items-center gap-2">
+											<DataTableViewOptions table={table} />
+											<Button size="sm" onClick={openAI} disabled={disabled}>
+												AI Actions{" "}
+												{selectedCount > 0 ? `(${selectedCount})` : ""}
+											</Button>
+										</div>
 									</div>
-									<div className="flex items-center gap-2">
-										<DataTableViewOptions table={table} />
-										<Button size="sm" onClick={openAI} disabled={disabled}>
-											AI Actions {selectedCount > 0 ? `(${selectedCount})` : ""}
-										</Button>
-									</div>
-								</div>
-							)}
-						/>
+								)}
+							/>
+						</div>
 					</TabsContent>
 
 					<TabsContent value="activity">
-						<div className="mt-3">
+						<div className="mt-3" data-tour="employee-activity">
 							<TeamActivityFeed
 								permissions={{ ViewReports: true, ManageTeam: true }}
 							/>

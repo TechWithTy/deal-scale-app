@@ -1,10 +1,9 @@
 "use client";
 
-import type { ReactElement } from "react";
-import dynamic from "next/dynamic";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useNetworkQuality } from "@/hooks/useNetworkQuality";
 import {
 	BarChart,
 	BarChart3,
@@ -15,9 +14,10 @@ import {
 	TrendingUp,
 } from "lucide-react";
 import { RefreshCw } from "lucide-react";
+import dynamic from "next/dynamic";
+import type { ReactElement } from "react";
 import { KPICard } from "./components/KPICard";
 import { useAnalyticsData } from "./hooks/useAnalyticsData";
-import { useNetworkQuality } from "@/hooks/useNetworkQuality";
 
 const CampaignPerformanceChart = dynamic(
 	() =>
@@ -94,7 +94,7 @@ export default function ChartsPage() {
 
 	if (error) {
 		return (
-			<div className="container mx-auto space-y-6 py-6">
+			<div className="container mx-auto space-y-6 py-6" data-tour="charts-page">
 				<div className="flex min-h-[400px] items-center justify-center">
 					<div className="space-y-4 text-center">
 						<p className="text-destructive">Error loading analytics data</p>
@@ -120,9 +120,12 @@ export default function ChartsPage() {
 	} = data;
 
 	return (
-		<div className="container mx-auto space-y-6 py-6">
+		<div className="container mx-auto space-y-6 py-6" data-tour="charts-page">
 			<ChartsCommandPalette />
-			<div className="flex items-center justify-between">
+			<div
+				className="flex items-center justify-between"
+				data-tour="charts-header"
+			>
 				<div>
 					<h1 className="font-bold text-3xl">Analytics & Charts</h1>
 					<p className="mt-2 text-muted-foreground">
@@ -136,7 +139,7 @@ export default function ChartsPage() {
 			</div>
 
 			<Tabs defaultValue="overview" className="w-full">
-				<TabsList>
+				<TabsList data-tour="charts-tabs">
 					<TabsTrigger value="overview" className="flex items-center gap-2">
 						<BarChart className="h-4 w-4" />
 						Overview
@@ -152,7 +155,10 @@ export default function ChartsPage() {
 				</TabsList>
 
 				<TabsContent value="overview" className="mt-6 space-y-6">
-					<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+					<div
+						className="grid gap-4 md:grid-cols-2 lg:grid-cols-4"
+						data-tour="charts-kpis"
+					>
 						<KPICard
 							title="Total Leads"
 							value={analytics_summary.total_leads}
@@ -194,12 +200,19 @@ export default function ChartsPage() {
 						/>
 					) : (
 						<>
-							<div className="grid gap-4 md:grid-cols-2">
+							<div
+								className="grid gap-4 md:grid-cols-2"
+								data-tour="charts-grid"
+							>
 								<CampaignPerformanceChart data={campaign_performance} />
 								<LeadTrendsChart data={lead_trends} />
 							</div>
-							<SalesPipelineFunnel data={sales_pipeline} />
-							<ROICalculator />
+							<div data-tour="charts-pipeline">
+								<SalesPipelineFunnel data={sales_pipeline} />
+							</div>
+							<div data-tour="charts-roi-calculator">
+								<ROICalculator />
+							</div>
 						</>
 					)}
 				</TabsContent>
@@ -258,7 +271,7 @@ function ChartsLoadingState({
 	onRetry: () => void;
 }): JSX.Element {
 	return (
-		<div className="container mx-auto space-y-6 py-6">
+		<div className="container mx-auto space-y-6 py-6" data-tour="charts-page">
 			<div className="flex items-center justify-between">
 				<div>
 					<h1 className="font-bold text-3xl">Analytics & Charts</h1>

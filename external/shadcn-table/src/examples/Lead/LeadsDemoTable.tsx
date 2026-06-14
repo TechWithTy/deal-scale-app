@@ -2,19 +2,19 @@
 
 import * as React from "react";
 import { DataTable } from "../../components/data-table/data-table";
-import { DataTableToolbar } from "../../components/data-table/data-table-toolbar";
 import { DataTableRowModalCarousel } from "../../components/data-table/data-table-row-modal-carousel";
+import { DataTableToolbar } from "../../components/data-table/data-table-toolbar";
 import { Dialog } from "../../components/ui/dialog";
-import { useRowCarousel } from "../../hooks/use-row-carousel";
 import { useDataTable } from "../../hooks/use-data-table";
+import { useRowCarousel } from "../../hooks/use-row-carousel";
 
-import type { DemoRow } from "./types";
-import { leadColumns } from "./columns";
-import { makeData } from "./demoData";
 import { AIActionsPanel } from "./AIActionsPanel";
 import { LeadRowCarouselPanel } from "./LeadRowCarouselPanel";
+import { leadColumns } from "./columns";
 import { AIDropdown } from "./components/AIDropdown";
 import { TopActionsBar } from "./components/TopActionsBar";
+import { makeData } from "./demoData";
+import type { DemoRow } from "./types";
 import { summarizeRows } from "./utils/leadHelpers";
 import type { SkipTraceInit } from "./utils/leadHelpers";
 
@@ -100,14 +100,17 @@ export default function LeadsDemoTable({
 
 	return (
 		<main className="container mx-auto max-w-7xl space-y-6 p-6">
-			<header className="flex flex-col items-center gap-4 text-center sm:flex-row sm:items-start sm:justify-between sm:text-left">
+			<header
+				className="flex flex-col items-center gap-4 text-center sm:flex-row sm:items-start sm:justify-between sm:text-left"
+				data-tour="lead-list-workspace-header"
+			>
 				<div className="flex-1 space-y-2">
-					<h1 className="text-3xl font-bold tracking-tight text-foreground">
+					<h1 className="font-bold text-3xl text-foreground tracking-tight">
 						Lead Lists
 					</h1>
-					<p className="text-sm leading-relaxed text-muted-foreground">
-						Manage lead data, run A/B tests, download lists, and launch campaigns
-						with advanced sorting and search.
+					<p className="text-muted-foreground text-sm leading-relaxed">
+						Manage lead data, run A/B tests, download lists, and launch
+						campaigns with advanced sorting and search.
 					</p>
 				</div>
 				<button
@@ -138,46 +141,53 @@ export default function LeadsDemoTable({
 				</button>
 			</header>
 
-			<DataTable<DemoRow>
-				table={table}
-				className="mt-2"
-				onRowClick={(row) => {
-					setLeadIndex(0);
-					carousel.openAt(row);
-				}}
-			>
-				<DataTableToolbar
+			<div data-tour="lead-list-data-table">
+				<DataTable<DemoRow>
 					table={table}
-					className="mb-3 md:mb-4"
-					showFilters={false}
-					showViewOptions={true}
-					viewPosition="row1"
+					className="mt-2"
+					onRowClick={(row) => {
+						setLeadIndex(0);
+						carousel.openAt(row);
+					}}
 				>
-					<input
-						aria-label="Global search"
-						placeholder="Search all visible fields..."
-						value={query}
-						onChange={(e) => setQuery(e.target.value)}
-						className="h-8 w-64 rounded-md border bg-background px-3 text-sm outline-none placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-ring"
-					/>
-					<AIDropdown
+					<DataTableToolbar
 						table={table}
-						setAiOpen={setAiOpen}
-						setAiRows={setAiRows}
-						getSelectedRows={getSelectedRows}
-						getAllRows={getAllRows}
-					/>
-					<TopActionsBar
-						table={table}
-						onOpenLeadModal={onOpenLeadModal}
-						onOpenCreateList={onOpenCreateList}
-						onOpenSkipTrace={onOpenSkipTrace}
-						data={data}
-						getSelectedRows={getSelectedRows}
-						getAllRows={getAllRows}
-					/>
-				</DataTableToolbar>
-			</DataTable>
+						className="mb-3 md:mb-4"
+						showFilters={false}
+						showViewOptions={true}
+						viewPosition="row1"
+					>
+						<input
+							aria-label="Global search"
+							placeholder="Search all visible fields..."
+							value={query}
+							onChange={(e) => setQuery(e.target.value)}
+							className="h-8 w-64 rounded-md border bg-background px-3 text-sm outline-none placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-ring"
+							data-tour="lead-list-search"
+						/>
+						<div data-tour="lead-list-ai-actions">
+							<AIDropdown
+								table={table}
+								setAiOpen={setAiOpen}
+								setAiRows={setAiRows}
+								getSelectedRows={getSelectedRows}
+								getAllRows={getAllRows}
+							/>
+						</div>
+						<div data-tour="lead-list-actions">
+							<TopActionsBar
+								table={table}
+								onOpenLeadModal={onOpenLeadModal}
+								onOpenCreateList={onOpenCreateList}
+								onOpenSkipTrace={onOpenSkipTrace}
+								data={data}
+								getSelectedRows={getSelectedRows}
+								getAllRows={getAllRows}
+							/>
+						</div>
+					</DataTableToolbar>
+				</DataTable>
+			</div>
 
 			<Dialog open={aiOpen} onOpenChange={setAiOpen}>
 				<AIActionsPanel

@@ -4,10 +4,10 @@ import GlobalLoadProgress from "@/components/layout/GlobalLoadProgress";
 import { InstallPrompt } from "@/components/pwa/InstallPrompt";
 import { PushManager } from "@/components/pwa/PushManager";
 import { UpdatePrompt } from "@/components/pwa/UpdatePrompt";
+import ClientToaster from "@/components/ui/ClientToaster";
 import ThemeBridge from "@/external/interactive-avatar-nextjs-demo/components/ThemeBridge";
 import { QueryProvider } from "@/lib/providers/QueryProvider";
 import { SessionProvider, type SessionProviderProps } from "next-auth/react";
-import dynamic from "next/dynamic";
 import Script from "next/script";
 import React, { type ReactNode } from "react";
 import ThemeProvider from "./ThemeToggle/theme-provider";
@@ -18,11 +18,10 @@ export default function Providers({
 	session: SessionProviderProps["session"];
 	children: ReactNode;
 }) {
-	const enableClarity = process.env.NEXT_PUBLIC_ENABLE_CLARITY === "true";
+	const enableClarity =
+		process.env.NODE_ENV === "production" &&
+		process.env.NEXT_PUBLIC_ENABLE_CLARITY === "true";
 	const CLARITY_ID = process.env.NEXT_PUBLIC_CLARITY_ID;
-	const ClientToaster = dynamic(() => import("@/components/ui/ClientToaster"), {
-		ssr: false,
-	});
 	return (
 		<ThemeProvider attribute="class" defaultTheme="system" enableSystem>
 			<SessionProvider session={session}>

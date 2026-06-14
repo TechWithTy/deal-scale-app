@@ -14,7 +14,7 @@ const CampaignPage: React.FC<CampaignPageProps> = ({ urlParams }) => {
 	return (
 		<div className="w-full dark:bg-gray-900">
 			{/* ! Ensure the content area doesn't force the layout wider than the sidebar container */}
-			<div className="w-full min-w-0">
+			<div className="w-full min-w-0" data-tour="campaigns-content">
 				{/* Campaign Header with help button */}
 				<CampaignHeader />
 
