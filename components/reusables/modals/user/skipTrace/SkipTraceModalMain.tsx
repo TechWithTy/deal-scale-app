@@ -9,29 +9,38 @@ import SingleTraceFlow from "./flows/SingleTraceFlow";
 // * Define the type for the flows available
 type Flow = "list" | "single" | null;
 
+type ListInitialData = {
+	type: "list";
+	file?: File;
+	availableListNames?: string[];
+	availableFields?: string[];
+	availableLeadCount?: number;
+	availableLists?: { name: string; count: number }[];
+	listCounts?: Record<string, number>;
+};
+
+type SingleInitialData = { type: "single" } & Partial<
+	Record<
+		| "firstName"
+		| "lastName"
+		| "address"
+		| "email"
+		| "phone"
+		| "socialMedia"
+		| "domain"
+		| "listName",
+		string
+	>
+> & {
+		availableLeadCount?: number;
+		availableListNames?: string[];
+		availableLists?: { name: string; count: number }[];
+	};
+
 interface SkipTraceModalMainProps {
 	isOpen: boolean;
 	onClose: () => void;
-	initialData?:
-		| {
-				type: "list";
-				file?: File;
-				availableListNames?: string[];
-				availableFields?: string[];
-		  }
-		| ({ type: "single" } & Partial<
-				Record<
-					| "firstName"
-					| "lastName"
-					| "address"
-					| "email"
-					| "phone"
-					| "socialMedia"
-					| "domain"
-					| "listName",
-					string
-				>
-		  > & { availableListNames?: string[] });
+	initialData?: ListInitialData | SingleInitialData;
 }
 
 const SkipTraceModalMain: React.FC<SkipTraceModalMainProps> = ({

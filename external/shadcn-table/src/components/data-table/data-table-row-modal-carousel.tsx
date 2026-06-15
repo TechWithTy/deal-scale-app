@@ -1,25 +1,38 @@
 "use client";
 
-import * as React from "react";
-import { useState, useMemo } from "react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@radix-ui/react-tabs";
 import type { Row, Table } from "@tanstack/react-table";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { Button } from "../ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
+import * as React from "react";
+import { useMemo, useState } from "react";
 import { ActivityLineGraphContainer } from "../../../../activity-graph/components";
 import type {
-        ChartConfigLocal,
-        ActivityDataPoint,
+	ActivityDataPoint,
+	ChartConfigLocal,
 } from "../../../../activity-graph/types";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@radix-ui/react-tabs";
-import { CampaignActivitySummary } from "./campaign-activity-summary";
+import { Button } from "../ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
 import { buildChannelActivityData } from "./activity";
+import { CampaignActivitySummary } from "./campaign-activity-summary";
 
 // Define interface for comparison lead
 interface ComparisonLead {
 	id: string;
 	name: string;
 	contactInfo?: { firstName?: string };
+}
+
+interface ModalIntentLead {
+	id?: string;
+	name?: string;
+	contactInfo?: { firstName?: string };
+	intentSignals?: unknown[];
+	intentScore?: unknown;
+	_needsIntentEnrichment?: boolean;
+}
+
+interface ModalIntentRow extends ModalIntentLead {
+	leads?: ModalIntentLead[];
 }
 
 // Generate activity data for multiple leads with different interaction types
@@ -101,8 +114,10 @@ export interface DataTableRowModalCarouselProps<TData> {
 	render: (row: Row<TData>, index: number) => React.ReactNode;
 	actions?: (row: Row<TData>, index: number) => React.ReactNode;
 	counter?: (row: Row<TData>, index: number) => React.ReactNode;
+	headerContent?: (row: Row<TData>, index: number) => React.ReactNode;
 	activityRender?: (row: Row<TData>, index: number) => React.ReactNode;
 	comparisonLeads?: ComparisonLead[]; // Optional comparison leads for better customization
+	showContentTabs?: boolean;
 }
 
 export function DataTableRowModalCarousel<TData>(
@@ -120,8 +135,10 @@ export function DataTableRowModalCarousel<TData>(
 		render,
 		actions,
 		counter,
+		headerContent,
 		activityRender,
 		comparisonLeads: propComparisonLeads,
+		showContentTabs = true,
 	} = props;
 
 	// Sample comparison leads (could come from API or user input)
@@ -138,7 +155,15 @@ export function DataTableRowModalCarousel<TData>(
 	// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
 	const allLeadsForData = useMemo(() => {
 		if (!row?.original) return [];
-		const rowLeads = (row.original as { leads?: { id: string; name?: string; contactInfo?: { firstName?: string } }[] })?.leads;
+		const rowLeads = (
+			row.original as {
+				leads?: {
+					id: string;
+					name?: string;
+					contactInfo?: { firstName?: string };
+				}[];
+			}
+		)?.leads;
 		const safeRowLeads = Array.isArray(rowLeads) ? rowLeads : [];
 		// Convert leads to the expected format for generateActivityDataForLeads
 		const convertedLeads = safeRowLeads.map((lead) => ({
@@ -190,7 +215,15 @@ export function DataTableRowModalCarousel<TData>(
 		const config: ChartConfigLocal = {};
 
 		allChartLeads.forEach((leadId, index) => {
-			const leads = (row.original as { leads?: { id: string; name?: string; contactInfo?: { firstName?: string } }[] })?.leads;
+			const leads = (
+				row.original as {
+					leads?: {
+						id: string;
+						name?: string;
+						contactInfo?: { firstName?: string };
+					}[];
+				}
+			)?.leads;
 			const safeLeads = Array.isArray(leads) ? leads : [];
 			const comparisonLead = sampleComparisonLeads.find((l) => l.id === leadId);
 			const lead =
@@ -229,151 +262,158 @@ export function DataTableRowModalCarousel<TData>(
 		]);
 	}, [allChartLeads]);
 
-        React.useEffect(() => {
-                if (!open) return;
-                const onKeyDown = (e: KeyboardEvent) => {
-                        if (e.key === "ArrowRight") onNext();
-                        if (e.key === "ArrowLeft") onPrev();
-                };
-                window.addEventListener("keydown", onKeyDown);
-                return () => window.removeEventListener("keydown", onKeyDown);
-        }, [open, onNext, onPrev]);
+	React.useEffect(() => {
+		if (!open) return;
+		const onKeyDown = (e: KeyboardEvent) => {
+			if (e.key === "ArrowRight") onNext();
+			if (e.key === "ArrowLeft") onPrev();
+		};
+		window.addEventListener("keydown", onKeyDown);
+		return () => window.removeEventListener("keydown", onKeyDown);
+	}, [open, onNext, onPrev]);
 
-        const defaultLeadActivity = (
-                <div className="space-y-4">
-                        <div className="text-center">
-                                <h3 className="font-semibold text-lg">Activity Overview</h3>
-                                <p className="text-muted-foreground text-sm">
-                                        Select leads to view their activity timeline
-                                </p>
-                        </div>
+	const defaultLeadActivity = (
+		<div className="space-y-4">
+			<div className="text-center">
+				<h3 className="font-semibold text-lg">Activity Overview</h3>
+				<p className="text-muted-foreground text-sm">
+					Select leads to view their activity timeline
+				</p>
+			</div>
 
-                        <div className="space-y-3">
-                                <h4 className="font-medium text-muted-foreground text-sm">Compare With</h4>
-                                <div className="flex flex-wrap gap-2">
-                                        {sampleComparisonLeads.map((lead) => (
-                                                <button
-                                                        key={lead.id}
-                                                        type="button"
-                                                        onClick={() => {
-                                                                if (comparisonLeads.includes(lead.id)) {
-                                                                        setComparisonLeads((prev) =>
-                                                                                prev.filter((id) => id !== lead.id),
-                                                                        );
-                                                                } else {
-                                                                        setComparisonLeads((prev) => [
-                                                                                ...prev,
-                                                                                lead.id,
-                                                                        ]);
-                                                                }
-                                                        }}
-                                                        className={`inline-flex items-center rounded-full border px-3 py-1 font-medium text-xs transition-colors ${
-                                                                comparisonLeads.includes(lead.id)
-                                                                        ? "border-secondary bg-secondary text-secondary-foreground"
-                                                                        : "border-border bg-muted/50 text-muted-foreground hover:bg-muted/80"
-                                                        }`}
-                                                >
-                                                        {lead.name}
-                                                </button>
-                                        ))}
-                                </div>
-                        </div>
+			<div className="space-y-3">
+				<h4 className="font-medium text-muted-foreground text-sm">
+					Compare With
+				</h4>
+				<div className="flex flex-wrap gap-2">
+					{sampleComparisonLeads.map((lead) => (
+						<button
+							key={lead.id}
+							type="button"
+							onClick={() => {
+								if (comparisonLeads.includes(lead.id)) {
+									setComparisonLeads((prev) =>
+										prev.filter((id) => id !== lead.id),
+									);
+								} else {
+									setComparisonLeads((prev) => [...prev, lead.id]);
+								}
+							}}
+							className={`inline-flex items-center rounded-full border px-3 py-1 font-medium text-xs transition-colors ${
+								comparisonLeads.includes(lead.id)
+									? "border-secondary bg-secondary text-secondary-foreground"
+									: "border-border bg-muted/50 text-muted-foreground hover:bg-muted/80"
+							}`}
+						>
+							{lead.name}
+						</button>
+					))}
+				</div>
+			</div>
 
-                        {allChartLeads.length > 0 ? (
-                                <ActivityLineGraphContainer
-                                        data={filteredActivityData}
-                                        config={dynamicActivityConfig}
-                                        defaultLines={availableLines.slice(0, 12)}
-                                        defaultRange="30d"
-                                        title="Lead Activity Trends"
-                                        description={`Showing activity for ${allChartLeads.length} lead${
-                                                allChartLeads.length > 1 ? "s" : ""
-                                        } (${comparisonLeads.length} comparison)`}
-                                />
-                        ) : (
-                                <div className="py-8 text-center text-muted-foreground">
-                                        <div className="mb-2 text-4xl">📊</div>
-                                        <p>Select one or more leads to view their activity timeline</p>
-                                </div>
-                        )}
-                </div>
-        );
+			{allChartLeads.length > 0 ? (
+				<ActivityLineGraphContainer
+					data={filteredActivityData}
+					config={dynamicActivityConfig}
+					defaultLines={availableLines.slice(0, 12)}
+					defaultRange="30d"
+					title="Lead Activity Trends"
+					description={`Showing activity for ${allChartLeads.length} lead${
+						allChartLeads.length > 1 ? "s" : ""
+					} (${comparisonLeads.length} comparison)`}
+				/>
+			) : (
+				<div className="py-8 text-center text-muted-foreground">
+					<div className="mb-2 text-4xl">📊</div>
+					<p>Select one or more leads to view their activity timeline</p>
+				</div>
+			)}
+		</div>
+	);
 
-        const customActivityContent =
-                row && activityRender ? activityRender(row, index) : undefined;
+	const customActivityContent =
+		row && activityRender ? activityRender(row, index) : undefined;
 
-        let fallbackActivityContent: React.ReactNode = null;
-        if (row && customActivityContent === undefined) {
-                const channelActivity = buildChannelActivityData(row.original);
-                fallbackActivityContent = channelActivity ? (
-                        <CampaignActivitySummary activity={channelActivity} />
-                ) : (
-                        defaultLeadActivity
-                );
-        }
+	let fallbackActivityContent: React.ReactNode = null;
+	if (row && customActivityContent === undefined) {
+		const channelActivity = buildChannelActivityData(row.original);
+		fallbackActivityContent = channelActivity ? (
+			<CampaignActivitySummary activity={channelActivity} />
+		) : (
+			defaultLeadActivity
+		);
+	}
 
-        const resolvedActivityContent =
-                customActivityContent !== undefined
-                        ? customActivityContent
-                        : fallbackActivityContent;
+	const resolvedActivityContent =
+		customActivityContent !== undefined
+			? customActivityContent
+			: fallbackActivityContent;
 
-        const showActivityTab = Boolean(resolvedActivityContent);
-        
-        // Check if lead has intent signals (for IntentSignalsTab)
-        // IMPORTANT: row.original might be a DemoRow (with leads array) or a direct Lead object
-        const rowData = row?.original as any;
-        
-        // Check if this is a DemoRow (has leads array) or a direct Lead
-        const isDemoRow = rowData && Array.isArray(rowData.leads);
-        let leadData = rowData;
-        
-        // If it's a DemoRow, extract the current lead from the leads array
-        // The lead index should be in the modal state or we default to first lead
-        if (isDemoRow && rowData.leads && rowData.leads.length > 0) {
-            // Try to get leadIndex from custom counter prop or use first lead
-            leadData = rowData.leads[0]; // Default to first lead in the row
-        }
-        
-        // Lazy enrich if needed (performance optimization)
-        if (leadData?._needsIntentEnrichment && typeof window !== 'undefined') {
-            try {
-                const { lazyEnrichLead } = require("@/lib/helpers/lazyEnrichIntentSignals");
-                leadData = lazyEnrichLead(leadData);
-            } catch (err) {
-                // Fallback if enrichment fails
-                console.warn("Failed to lazy enrich lead:", err);
-            }
-        }
-        
-        const hasIntentSignals = Boolean(
-            leadData?.intentSignals && 
-            Array.isArray(leadData.intentSignals) && 
-            leadData.intentSignals.length > 0
-        );
-        const showIntentSignalsTab = hasIntentSignals && leadData?.intentScore;
-        
-        // Debug logging
-        if (row && typeof window !== 'undefined') {
-            console.log("🔍 Modal Debug:", {
-                isDemoRow,
-                rowId: rowData?.id,
-                hasLeadsArray: isDemoRow,
-                leadsArrayLength: isDemoRow ? rowData?.leads?.length : "N/A",
-                extractedLeadName: leadData?.name || leadData?.contactInfo?.firstName,
-                hasIntentSignals,
-                signalCount: leadData?.intentSignals?.length || 0,
-                hasIntentScore: !!leadData?.intentScore,
-                scoreTotal: leadData?.intentScore?.total,
-                showIntentSignalsTab,
-            });
-        }
-        
-        // Calculate grid columns based on visible tabs
-        const tabCount = 1 + (showActivityTab ? 1 : 0) + (showIntentSignalsTab ? 1 : 0);
-        const gridCols = tabCount === 3 ? "grid-cols-3" : tabCount === 2 ? "grid-cols-2" : "grid-cols-1";
+	const showActivityTab = Boolean(resolvedActivityContent);
 
-        return (
-                <Dialog open={open} onOpenChange={onOpenChange}>
+	// Check if lead has intent signals (for IntentSignalsTab)
+	// IMPORTANT: row.original might be a DemoRow (with leads array) or a direct Lead object
+	const rowData = row?.original as ModalIntentRow | undefined;
+
+	// Check if this is a DemoRow (has leads array) or a direct Lead
+	const isDemoRow = rowData && Array.isArray(rowData.leads);
+	let leadData = rowData;
+
+	// If it's a DemoRow, extract the current lead from the leads array
+	// The lead index should be in the modal state or we default to first lead
+	if (isDemoRow && rowData.leads && rowData.leads.length > 0) {
+		// Try to get leadIndex from custom counter prop or use first lead
+		leadData = rowData.leads[0]; // Default to first lead in the row
+	}
+
+	// Lazy enrich if needed (performance optimization)
+	if (leadData?._needsIntentEnrichment && typeof window !== "undefined") {
+		try {
+			const {
+				lazyEnrichLead,
+			} = require("@/lib/helpers/lazyEnrichIntentSignals");
+			leadData = lazyEnrichLead(leadData);
+		} catch (err) {
+			// Fallback if enrichment fails
+			console.warn("Failed to lazy enrich lead:", err);
+		}
+	}
+
+	const hasIntentSignals = Boolean(
+		leadData?.intentSignals &&
+			Array.isArray(leadData.intentSignals) &&
+			leadData.intentSignals.length > 0,
+	);
+	const showIntentSignalsTab = hasIntentSignals && leadData?.intentScore;
+
+	// Debug logging
+	if (row && typeof window !== "undefined") {
+		console.log("🔍 Modal Debug:", {
+			isDemoRow,
+			rowId: rowData?.id,
+			hasLeadsArray: isDemoRow,
+			leadsArrayLength: isDemoRow ? rowData?.leads?.length : "N/A",
+			extractedLeadName: leadData?.name || leadData?.contactInfo?.firstName,
+			hasIntentSignals,
+			signalCount: leadData?.intentSignals?.length || 0,
+			hasIntentScore: !!leadData?.intentScore,
+			scoreTotal: leadData?.intentScore?.total,
+			showIntentSignalsTab,
+		});
+	}
+
+	// Calculate grid columns based on visible tabs
+	const tabCount =
+		1 + (showActivityTab ? 1 : 0) + (showIntentSignalsTab ? 1 : 0);
+	const gridCols =
+		tabCount === 3
+			? "grid-cols-3"
+			: tabCount === 2
+				? "grid-cols-2"
+				: "grid-cols-1";
+
+	return (
+		<Dialog open={open} onOpenChange={onOpenChange}>
 			<DialogContent className="flex max-h-[85vh] w-full max-w-4xl flex-col overflow-hidden border border-border bg-card text-foreground shadow-xl">
 				<DialogHeader className="border-border border-b pt-6 pr-6 pb-4 pl-6">
 					<DialogTitle className="flex items-center gap-2 font-semibold text-xl">
@@ -384,54 +424,72 @@ export function DataTableRowModalCarousel<TData>(
 							</span>
 						)}
 					</DialogTitle>
+					{row && headerContent ? (
+						<div className="pt-3">{headerContent(row, index)}</div>
+					) : null}
 				</DialogHeader>
 				<div className="flex-1 overflow-y-auto px-6 py-4">
-                                        <Tabs defaultValue="details" className="h-full">
-                                                <TabsList className={`grid w-full ${gridCols}`}>
-                                                        <TabsTrigger value="details">Lead Details</TabsTrigger>
-                                                        {showActivityTab ? (
-                                                                <TabsTrigger value="activity">Activity</TabsTrigger>
-                                                        ) : null}
-                                                        {showIntentSignalsTab ? (
-                                                                <TabsTrigger value="intent-signals">Intent Signals</TabsTrigger>
-                                                        ) : null}
-                                                </TabsList>
-
-						<TabsContent value="details" className="mt-4 space-y-4">
-							{row ? (
-								render(row, index)
-							) : (
-								<div className="flex h-32 items-center justify-center">
-									<div className="text-center text-muted-foreground">
-										<div className="mb-2 text-4xl">📋</div>
-										<p>No lead data available</p>
-									</div>
+					{!showContentTabs ? (
+						row ? (
+							render(row, index)
+						) : (
+							<div className="flex h-32 items-center justify-center">
+								<div className="text-center text-muted-foreground">
+									<div className="mb-2 font-medium text-sm">No data</div>
+									<p>No lead data available</p>
 								</div>
-							)}
-						</TabsContent>
+							</div>
+						)
+					) : (
+						<Tabs defaultValue="details" className="h-full">
+							<TabsList className={`grid w-full ${gridCols}`}>
+								<TabsTrigger value="details">Lead Details</TabsTrigger>
+								{showActivityTab ? (
+									<TabsTrigger value="activity">Activity</TabsTrigger>
+								) : null}
+								{showIntentSignalsTab ? (
+									<TabsTrigger value="intent-signals">
+										Intent Signals
+									</TabsTrigger>
+								) : null}
+							</TabsList>
 
-					
-                                                {showActivityTab ? (
-                                                        <TabsContent value="activity" className="mt-4">
-                                                                {resolvedActivityContent}
-                                                        </TabsContent>
-                                                ) : null}
-                                                
-                                                {showIntentSignalsTab ? (
-                                                        <TabsContent value="intent-signals" className="mt-4">
-                                                                {(() => {
-                                                                    // Dynamically import and render IntentSignalsTab
-                                                                    const IntentSignalsTab = require("@/components/tables/lead-tables/tabs/IntentSignalsTab").IntentSignalsTab;
-                                                                    return (
-                                                                        <IntentSignalsTab 
-                                                                            signals={leadData.intentSignals} 
-                                                                            score={leadData.intentScore}
-                                                                        />
-                                                                    );
-                                                                })()}
-                                                        </TabsContent>
-                                                ) : null}
-					</Tabs>
+							<TabsContent value="details" className="mt-4 space-y-4">
+								{row ? (
+									render(row, index)
+								) : (
+									<div className="flex h-32 items-center justify-center">
+										<div className="text-center text-muted-foreground">
+											<div className="mb-2 font-medium text-sm">No data</div>
+											<p>No lead data available</p>
+										</div>
+									</div>
+								)}
+							</TabsContent>
+
+							{showActivityTab ? (
+								<TabsContent value="activity" className="mt-4">
+									{resolvedActivityContent}
+								</TabsContent>
+							) : null}
+
+							{showIntentSignalsTab ? (
+								<TabsContent value="intent-signals" className="mt-4">
+									{(() => {
+										// Dynamically import and render IntentSignalsTab
+										const IntentSignalsTab =
+											require("@/components/tables/lead-tables/tabs/IntentSignalsTab").IntentSignalsTab;
+										return (
+											<IntentSignalsTab
+												signals={leadData.intentSignals}
+												score={leadData.intentScore}
+											/>
+										);
+									})()}
+								</TabsContent>
+							) : null}
+						</Tabs>
+					)}
 				</div>
 				<div className="border-border border-t bg-muted/30 px-6 py-4">
 					<div className="flex items-center justify-between">

@@ -1,10 +1,17 @@
 import type { LeadTypeGlobal } from "../../../../../types/_dashboard/leads";
 
-export type SocialLink = { label: string; url: string };
+export type SocialLink = { label: string; url: string; verified?: boolean };
 export type SocialHandle = { platform: string; username: string; url?: string };
 export type ActivityEvent = {
 	ts: string; // ISO timestamp
-	kind: "call" | "email" | "social" | "note";
+	kind:
+		| "call"
+		| "text"
+		| "email"
+		| "social"
+		| "outreach"
+		| "voicemail"
+		| "note";
 	summary: string;
 };
 

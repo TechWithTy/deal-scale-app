@@ -12,6 +12,8 @@ export type InputFieldLocal =
 export type SingleSkipTraceInit = {
 	type: "single";
 	availableListNames?: string[];
+	availableLeadCount?: number;
+	availableLists?: { name: string; count: number }[];
 	listName?: string;
 } & Partial<
 	Record<

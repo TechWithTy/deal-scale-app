@@ -30,4 +30,29 @@ describe("lead list demo data", () => {
 			expect(row.records).toBe(row.leads.length);
 		}
 	});
+
+	it("generates enough per-contact activity and intent signals to verify pagination", () => {
+		const row = makeRow(0);
+		const [lead] = row.leads;
+
+		expect(lead).toBeDefined();
+		expect(lead?.activity?.length).toBeGreaterThan(10);
+		expect(lead?.intentSignals?.length).toBeGreaterThan(10);
+		expect(
+			new Set((lead?.activity ?? []).map((event) => event.summary)).size,
+		).toBeGreaterThan(10);
+		expect(
+			Array.from(new Set((lead?.activity ?? []).map((event) => event.kind))),
+		).toEqual(
+			expect.arrayContaining([
+				"call",
+				"text",
+				"email",
+				"social",
+				"outreach",
+				"voicemail",
+				"note",
+			]),
+		);
+	});
 });

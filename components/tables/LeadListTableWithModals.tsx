@@ -15,8 +15,32 @@ import * as React from "react";
 
 /** Minimal init payload kept local so external module stays decoupled */
 type SkipTraceInit =
-	| { type: "list"; file?: File }
-	| { type: "single" }
+	| {
+			type: "list";
+			file?: File;
+			availableLeadCount?: number;
+			availableListNames?: string[];
+			availableLists?: { name: string; count: number }[];
+			listCounts?: Record<string, number>;
+	  }
+	| ({
+			type: "single";
+			availableLeadCount?: number;
+			availableListNames?: string[];
+			availableLists?: { name: string; count: number }[];
+	  } & Partial<
+			Record<
+				| "firstName"
+				| "lastName"
+				| "address"
+				| "email"
+				| "phone"
+				| "socialMedia"
+				| "domain"
+				| "listName",
+				string
+			>
+	  >)
 	| undefined;
 
 export default function LeadListTableWithModals(

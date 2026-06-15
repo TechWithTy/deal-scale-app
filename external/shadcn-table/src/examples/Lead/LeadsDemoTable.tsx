@@ -9,16 +9,30 @@ import { useDataTable } from "../../hooks/use-data-table";
 import { useRowCarousel } from "../../hooks/use-row-carousel";
 
 import { AIActionsPanel } from "./AIActionsPanel";
+import { LeadFilterControls, type LeadPageSize } from "./LeadPanelControls";
 import { LeadRowCarouselPanel } from "./LeadRowCarouselPanel";
 import { leadColumns } from "./columns";
 import { AIDropdown } from "./components/AIDropdown";
 import { TopActionsBar } from "./components/TopActionsBar";
 import { makeData } from "./demoData";
 import type { DemoRow } from "./types";
-import { summarizeRows } from "./utils/leadHelpers";
+import {
+	computeAvailableFields,
+	getRowLeadCount,
+	summarizeRows,
+} from "./utils/leadHelpers";
 import type { SkipTraceInit } from "./utils/leadHelpers";
+import {
+	type LeadListFilterState,
+	filterLeadList,
+} from "./utils/leadListFilters";
 
 const DEFAULT_LEAD_LIST_PAGE_SIZE = 10;
+const EMPTY_LEAD_LIST_FILTERS: LeadListFilterState = {
+	query: "",
+	status: "all",
+	verification: "all",
+};
 
 export interface LeadsDemoTableProps {
 	/** Called when user wants to add a lead */
@@ -43,7 +57,11 @@ export default function LeadsDemoTable({
 	const [aiOutput, setAiOutput] = React.useState<string>("");
 	const [aiRows, setAiRows] = React.useState<DemoRow[]>([]);
 	const [leadIndex, setLeadIndex] = React.useState(0);
-	const [showAllLeads, setShowAllLeads] = React.useState(false);
+	const [leadPageSize, setLeadPageSize] = React.useState<LeadPageSize>(
+		DEFAULT_LEAD_LIST_PAGE_SIZE,
+	);
+	const [leadListFilters, setLeadListFilters] =
+		React.useState<LeadListFilterState>(EMPTY_LEAD_LIST_FILTERS);
 
 	React.useEffect(() => {
 		setData(makeData(100));
@@ -95,13 +113,51 @@ export default function LeadsDemoTable({
 
 	const carousel = useRowCarousel(table, { loop: true });
 	React.useEffect(() => {
-		if (carousel.open) setLeadIndex(0);
+		if (carousel.open) {
+			setLeadIndex(0);
+			setLeadListFilters(EMPTY_LEAD_LIST_FILTERS);
+		}
 	}, [carousel.open]);
 
 	const getSelectedRows = (): DemoRow[] =>
 		table.getFilteredSelectedRowModel().rows.map((r) => r.original as DemoRow);
 	const getAllRows = (): DemoRow[] =>
 		table.getFilteredRowModel().rows.map((r) => r.original as DemoRow);
+	const getActiveFilterCount = (filters: LeadListFilterState) =>
+		(filters.query.trim() ? 1 : 0) +
+		(filters.status !== "all" ? 1 : 0) +
+		(filters.verification !== "all" ? 1 : 0);
+	const activeLeadListFilterCount = getActiveFilterCount(leadListFilters);
+	const updateLeadListFilters = (next: Partial<LeadListFilterState>) => {
+		setLeadListFilters((current) => ({ ...current, ...next }));
+	};
+	const resetLeadListFilters = () => {
+		setLeadListFilters(EMPTY_LEAD_LIST_FILTERS);
+	};
+	const getVisibleLeadCount = (row: DemoRow) => {
+		const filteredLeads = filterLeadList(row.leads, leadListFilters);
+		return leadPageSize === "all"
+			? filteredLeads.length
+			: Math.min(Number(leadPageSize), filteredLeads.length);
+	};
+	const openSkipTraceFromModal = (row: DemoRow, init?: SkipTraceInit) => {
+		setLeadPageSize(DEFAULT_LEAD_LIST_PAGE_SIZE);
+		setLeadListFilters(EMPTY_LEAD_LIST_FILTERS);
+		setLeadIndex(0);
+		carousel.setOpen(false);
+		setTimeout(() => {
+			const payload =
+				init?.type === "single"
+					? {
+							...init,
+							availableLeadCount: 1,
+							availableLists: [{ name: row.list, count: 1 }],
+							listName: row.list,
+						}
+					: init;
+			onOpenSkipTrace?.(payload);
+		}, 0);
+	};
 
 	return (
 		<main className="container mx-auto max-w-7xl space-y-6 p-6">
@@ -213,6 +269,7 @@ export default function LeadsDemoTable({
 				index={carousel.index}
 				setIndex={carousel.setIndex}
 				rows={carousel.rows}
+				showContentTabs={false}
 				onPrev={() => {
 					const current = carousel.rows[carousel.index]?.original as
 						| DemoRow
@@ -234,36 +291,64 @@ export default function LeadsDemoTable({
 					`Uploaded: ${new Date(row.original.uploadDate).toLocaleDateString()}`
 				}
 				counter={(row) =>
-					showAllLeads
+					leadPageSize === "all"
 						? `All (${row.original.leads.length})`
-						: `${leadIndex + 1} / ${row.original.leads.length}`
+						: `${Math.min(Number(leadPageSize), row.original.leads.length)} / ${row.original.leads.length}`
 				}
+				headerContent={(row) => {
+					const filteredLeads = filterLeadList(
+						row.original.leads,
+						leadListFilters,
+					);
+					const visibleLeadCount = getVisibleLeadCount(row.original);
+					const hasActiveFilters = activeLeadListFilterCount > 0;
+					const availableLeadCount = getRowLeadCount(row.original);
+
+					return (
+						<div className="space-y-3">
+							<p className="text-muted-foreground text-xs">
+								Showing {visibleLeadCount} of {filteredLeads.length} matching
+								leads ({row.original.leads.length} total)
+								{hasActiveFilters
+									? ` (${activeLeadListFilterCount} active)`
+									: ""}
+							</p>
+							<LeadFilterControls
+								filters={leadListFilters}
+								activeFilterCount={activeLeadListFilterCount}
+								leadPageSize={leadPageSize}
+								setLeadPageSize={setLeadPageSize}
+								onChange={updateLeadListFilters}
+								onReset={resetLeadListFilters}
+								onSkipTraceList={() =>
+									openSkipTraceFromModal(row.original, {
+										type: "list",
+										availableListNames: [row.original.list],
+										availableFields: computeAvailableFields([row.original]),
+										availableLeadCount,
+										listCounts: {
+											[row.original.list]: availableLeadCount,
+										},
+										availableLists: [
+											{
+												name: row.original.list,
+												count: availableLeadCount,
+											},
+										],
+									})
+								}
+							/>
+						</div>
+					);
+				}}
 				render={(row) => (
 					<LeadRowCarouselPanel
 						row={row.original}
-						leadIndex={leadIndex}
-						setLeadIndex={setLeadIndex}
-						showAllLeads={showAllLeads}
-						setShowAllLeads={setShowAllLeads}
-						onOpenSkipTrace={(init) => {
-							// Close the carousel first to avoid overlay interaction issues
-							carousel.setOpen(false);
-							// Defer opening Skip Trace so the Dialog unmounts cleanly first
-							setTimeout(() => {
-								const allLists = Array.from(
-									new Set(getAllRows().map((r) => r.list)),
-								);
-								const payload =
-									init?.type === "single"
-										? {
-												...init,
-												availableListNames: allLists,
-												listName: row.original.list,
-											}
-										: init;
-								onOpenSkipTrace?.(payload);
-							}, 0);
-						}}
+						leadPageSize={leadPageSize}
+						filters={leadListFilters}
+						onOpenSkipTrace={(init) =>
+							openSkipTraceFromModal(row.original, init)
+						}
 						setData={setData}
 					/>
 				)}

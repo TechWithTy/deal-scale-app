@@ -60,11 +60,13 @@ const SingleTraceFlow: React.FC<SingleTraceFlowProps> = ({
 	const [bestContactTime, setBestContactTime] = useState<
 		"morning" | "afternoon" | "evening" | "any"
 	>("any");
+	const [skipExistingContacts, setSkipExistingContacts] = useState(true);
 
 	const { userProfile } = useUserProfileStore();
-	const { setUserInput } = useSkipTraceStore();
+	const { reset, setUserInput } = useSkipTraceStore();
 
 	useEffect(() => {
+		reset();
 		if (initialData.firstName) setFirstName(initialData.firstName);
 		if (initialData.lastName) setLastName(initialData.lastName);
 		if (initialData.address) setAddress(initialData.address);
@@ -75,8 +77,22 @@ const SingleTraceFlow: React.FC<SingleTraceFlowProps> = ({
 		if (!initialData.socialTag && initialData.socialMedia)
 			setSocialTag(initialData.socialMedia);
 		if (initialData.domain) setDomain(initialData.domain);
-		// Preselect lists by names if provided
-		const names = availableListNames ?? [];
+		const hasPrefilledContact = Boolean(
+			initialData.firstName ||
+				initialData.lastName ||
+				initialData.address ||
+				initialData.email ||
+				initialData.phone ||
+				initialData.socialTag ||
+				initialData.socialMedia ||
+				initialData.domain,
+		);
+		if (hasPrefilledContact && initialData.listName) {
+			setSelectedListIds([initialData.listName]);
+			setListMode("select");
+		}
+		// Preselect lists by names only for launchers that did not provide a contact.
+		const names = hasPrefilledContact ? [] : (availableListNames ?? []);
 		if (names.length > 0) {
 			// Build ID mapping from availableLists or fallback to name index
 			const source =
@@ -91,7 +107,7 @@ const SingleTraceFlow: React.FC<SingleTraceFlowProps> = ({
 			setListMode("select");
 			setStep(1);
 		}
-	}, [initialData, availableListNames, availableLists]);
+	}, [initialData, availableListNames, availableLists, reset]);
 
 	const availableCredits = userProfile?.subscription?.aiCredits
 		? userProfile.subscription.aiCredits.allotted -
@@ -145,6 +161,7 @@ const SingleTraceFlow: React.FC<SingleTraceFlowProps> = ({
 			setError("Please select one or more lists");
 			return;
 		}
+		setSelectedListIds((ids) => Array.from(new Set(ids)));
 		setError("");
 		nextStep();
 	};
@@ -157,10 +174,11 @@ const SingleTraceFlow: React.FC<SingleTraceFlowProps> = ({
 	const handleFinalSubmit = () => {
 		setSubmitting(true);
 		// ! todo: Add submission logic and credit deduction
+		const uniqueSelectedListIds = Array.from(new Set(selectedListIds));
 		const targetList =
 			listMode === "create"
 				? { mode: "create" as const, name: newListName.trim() }
-				: { mode: "select" as const, id: selectedListIds };
+				: { mode: "select" as const, id: uniqueSelectedListIds };
 		console.log("Submitting single trace:", {
 			list: targetList,
 			firstName,
@@ -173,6 +191,8 @@ const SingleTraceFlow: React.FC<SingleTraceFlowProps> = ({
 			enrichments: selectedEnrichmentOptions,
 			bestContactTime,
 			contactNotes,
+			skipExistingContacts,
+			duplicateMatchFields: ["email", "phone", "address", "socialTag"],
 		});
 		setTimeout(() => {
 			setSubmitting(false);
@@ -181,7 +201,22 @@ const SingleTraceFlow: React.FC<SingleTraceFlowProps> = ({
 	};
 
 	const renderStep = () => {
-		if (availableListNames && availableListNames.length > 0) {
+		const hasPrefilledContact = Boolean(
+			initialData.firstName ||
+				initialData.lastName ||
+				initialData.address ||
+				initialData.email ||
+				initialData.phone ||
+				initialData.socialTag ||
+				initialData.socialMedia ||
+				initialData.domain,
+		);
+		const shouldUseIncomingLists =
+			!hasPrefilledContact &&
+			availableListNames &&
+			availableListNames.length > 0;
+
+		if (shouldUseIncomingLists) {
 			if (step === 0) {
 				return (
 					<div className="space-y-4 p-4">
@@ -238,7 +273,7 @@ const SingleTraceFlow: React.FC<SingleTraceFlowProps> = ({
 				<EnrichmentStep
 					onNext={handleEnrichmentNext}
 					onBack={prevStep}
-					leadCountOverride={selectedListIds.length}
+					leadCountOverride={1}
 				/>
 			);
 		}
@@ -362,7 +397,7 @@ const SingleTraceFlow: React.FC<SingleTraceFlowProps> = ({
 									(name, i) => ({ name, count: 0, id: String(i) }),
 								)
 							).map((l: ListItem, idx) => {
-								const id = l.id ?? String(idx);
+								const id = l.id ?? l.name ?? String(idx);
 								const count = l.count ?? 0;
 								const name = l.name as string;
 								return (
@@ -390,13 +425,32 @@ const SingleTraceFlow: React.FC<SingleTraceFlowProps> = ({
 							})}
 						</div>
 					)}
+					<label className="flex items-start gap-3 rounded-md border border-border bg-muted/30 p-3 text-sm">
+						<input
+							type="checkbox"
+							checked={skipExistingContacts}
+							onChange={(event) =>
+								setSkipExistingContacts(event.target.checked)
+							}
+							className="mt-1"
+						/>
+						<span>
+							<span className="block font-medium">
+								Do not reprocess duplicate contacts
+							</span>
+							<span className="text-muted-foreground text-xs">
+								If this lead already exists in the selected list, skip the
+								duplicate instead of running Skip Trace again.
+							</span>
+						</span>
+					</label>
 					<div className="pt-2 text-right text-muted-foreground text-xs">
 						Total selected leads:{" "}
 						<span className="font-medium text-foreground">
 							{(listMode === "select"
 								? (availableLists ?? [])
 										.filter((l: ListItem, idx: number) =>
-											selectedListIds.includes(l.id ?? String(idx)),
+											selectedListIds.includes(l.id ?? l.name ?? String(idx)),
 										)
 										.reduce((sum, l: ListItem) => sum + (l.count ?? 0), 0)
 								: 0
@@ -418,14 +472,7 @@ const SingleTraceFlow: React.FC<SingleTraceFlowProps> = ({
 				<EnrichmentStep
 					onNext={handleEnrichmentNext}
 					onBack={prevStep}
-					leadCountOverride={(availableLists ?? []).reduce(
-						(sum, l: ListItem, idx: number) => {
-							const id = l.id ?? String(idx);
-							if (selectedListIds.includes(id)) return sum + (l.count ?? 0);
-							return sum;
-						},
-						0,
-					)}
+					leadCountOverride={1}
 				/>
 			);
 		}
@@ -440,6 +487,7 @@ const SingleTraceFlow: React.FC<SingleTraceFlowProps> = ({
 					onBestContactTimeChange={(v) => setBestContactTime(v)}
 					contactNotes={contactNotes}
 					onContactNotesChange={setContactNotes}
+					skipExistingContacts={skipExistingContacts}
 				/>
 			);
 		}

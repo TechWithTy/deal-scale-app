@@ -1,4 +1,7 @@
-import { generateIntentSignalProfile } from "../../../../../constants/_faker/intentSignals";
+import {
+	generateIntentSignalProfile,
+	generateMockIntentSignals,
+} from "../../../../../constants/_faker/intentSignals";
 import { calculateIntentScore } from "../../../../../lib/scoring/intentScoring";
 import type { LeadStatus } from "../../../../../types/_dashboard/leads";
 import type { ActivityEvent, DemoLead, DemoRow } from "./types";
@@ -39,7 +42,91 @@ const STREETS = [
 	"King St",
 	"2nd Ave",
 ] as const;
-const KINDS: ActivityEvent["kind"][] = ["call", "email", "social", "note"];
+const ACTIVITY_SEQUENCE: Array<{
+	kind: ActivityEvent["kind"];
+	summary: (ctx: {
+		first: string;
+		address: string;
+		listName: string;
+	}) => string;
+}> = [
+	{
+		kind: "call",
+		summary: ({ first, address }) =>
+			`Phone call connected with ${first} about ${address}`,
+	},
+	{
+		kind: "text",
+		summary: ({ first }) => `Text message sent to ${first} with offer details`,
+	},
+	{
+		kind: "email",
+		summary: ({ first }) => `Email sent to ${first} with valuation worksheet`,
+	},
+	{
+		kind: "social",
+		summary: ({ first }) =>
+			`Viewed ${first}'s LinkedIn profile and recent posts`,
+	},
+	{
+		kind: "outreach",
+		summary: ({ first, listName }) =>
+			`Added ${first} to ${listName} outreach sequence`,
+	},
+	{
+		kind: "voicemail",
+		summary: ({ first }) => `Left voicemail for ${first} after missed call`,
+	},
+	{
+		kind: "note",
+		summary: ({ first }) =>
+			`Added note: ${first} asked for follow-up next week`,
+	},
+	{
+		kind: "call",
+		summary: ({ first }) => `Phone call attempted for ${first} - no answer`,
+	},
+	{
+		kind: "text",
+		summary: ({ first }) => `${first} replied to SMS asking for property comps`,
+	},
+	{
+		kind: "email",
+		summary: ({ first }) => `${first} opened investment criteria email`,
+	},
+	{
+		kind: "social",
+		summary: ({ first }) => `${first} followed Facebook property update`,
+	},
+	{
+		kind: "outreach",
+		summary: ({ first }) => `Scheduled direct mail follow-up for ${first}`,
+	},
+	{
+		kind: "call",
+		summary: ({ first }) => `Phone call completed with ${first} for 4 minutes`,
+	},
+	{
+		kind: "email",
+		summary: ({ first }) => `Follow-up email queued for ${first}`,
+	},
+	{
+		kind: "text",
+		summary: ({ first }) => `SMS reminder sent to ${first}`,
+	},
+	{
+		kind: "social",
+		summary: ({ first }) => `Checked Instagram activity for ${first}`,
+	},
+	{
+		kind: "outreach",
+		summary: ({ first }) => `Marked ${first} as active outreach prospect`,
+	},
+	{
+		kind: "note",
+		summary: ({ first }) => `Updated buying timeline note for ${first}`,
+	},
+];
 
 export function pick<T>(arr: readonly T[]): T {
 	const i = Math.floor(Math.random() * arr.length);
@@ -56,6 +143,39 @@ export const randPhone = (): string => {
 	return `${a}-${b}-${c}`;
 };
 
+function makeActivityEvents(
+	name: string,
+	address: string,
+	leadIndex: number,
+	listName: string,
+): ActivityEvent[] {
+	const first = name.split(" ")[0] ?? "Lead";
+	const now = Date.now();
+	const eventCount = 18 + (leadIndex % 5);
+
+	return Array.from({ length: eventCount }, (_, eventIndex) => {
+		const sequence =
+			ACTIVITY_SEQUENCE[(eventIndex + leadIndex) % ACTIVITY_SEQUENCE.length] ??
+			ACTIVITY_SEQUENCE[0];
+		const kind = sequence?.kind ?? "note";
+		const daysAgo = eventIndex + Math.floor(eventIndex / 3) + (leadIndex % 4);
+		const timestamp = new Date(now - daysAgo * 86_400_000);
+		timestamp.setHours(9 + (eventIndex % 8), (eventIndex * 7) % 60, 0, 0);
+		const summary =
+			sequence?.summary({ first, address, listName }) ??
+			`Updated ${listName} activity for ${first}`;
+
+		return {
+			ts: timestamp.toISOString(),
+			kind,
+			summary:
+				eventIndex % 6 === 0
+					? `${summary} from ${listName} workflow (#${eventIndex + 1})`
+					: `${summary} (#${eventIndex + 1})`,
+		};
+	}).sort((a, b) => b.ts.localeCompare(a.ts));
+}
+
 // Cache for demo leads to avoid regenerating
 const _leadCache = new Map<string, DemoLead[]>();
 
@@ -68,8 +188,17 @@ export function makeLeads(n: number, listName: string): DemoLead[] {
 	// Check cache first
 	const cacheKey = `${listName}-${n}`;
 	const cached = _leadCache.get(cacheKey);
-	if (cached && cached.length > 0 && cached[0]?.intentSignals) {
-		// Only use cache if it has valid data with intent signals
+	const cachedKinds = new Set(
+		cached?.[0]?.activity?.map((event) => event.kind),
+	);
+	if (
+		cached &&
+		cached.length > 0 &&
+		cached[0]?.intentSignals &&
+		cachedKinds.has("text") &&
+		cachedKinds.has("outreach")
+	) {
+		// Only use cache if it has valid data with intent signals and rich activity.
 		return cached;
 	}
 
@@ -78,26 +207,7 @@ export function makeLeads(n: number, listName: string): DemoLead[] {
 		const address = `${Math.floor(10 + Math.random() * 9900)} ${pick(STREETS)}`;
 		const email = `${name.replace(/\s+/g, "_")}${i}@example.com`;
 		const baseHandle = name.replace(/\s+/g, "").toLowerCase();
-		const now = Date.now();
-		const activity: ActivityEvent[] = Array.from(
-			{ length: Math.floor(Math.random() * 7) + 5 },
-			() => {
-				const daysAgo = Math.floor(Math.random() * 90);
-				const ts = new Date(now - daysAgo * 86_400_000).toISOString();
-				const kind = pick(KINDS);
-				const summaryBase = {
-					call: "Phone call",
-					email: "Email",
-					social: "Social touch",
-					note: "Note",
-				}[kind];
-				return {
-					ts,
-					kind,
-					summary: `${summaryBase} with ${name.split(" ")[0]}`,
-				};
-			},
-		).sort((a, b) => a.ts.localeCompare(b.ts));
+		const activity = makeActivityEvents(name, address, i, listName);
 
 		const [firstName, lastName] = name.split(" ");
 		const status = pick([
@@ -111,7 +221,17 @@ export function makeLeads(n: number, listName: string): DemoLead[] {
 		// Generate intent signals based on status
 		const intentProfile =
 			status === "Closed" ? "high" : status === "Contacted" ? "medium" : "low";
-		const intentSignals = generateIntentSignalProfile(intentProfile);
+		const baseIntentSignals = generateIntentSignalProfile(intentProfile);
+		const intentSignals =
+			baseIntentSignals.length >= 14
+				? baseIntentSignals
+				: [
+						...baseIntentSignals,
+						...generateMockIntentSignals(14 - baseIntentSignals.length, 21),
+					].sort(
+						(a, b) =>
+							new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
+					);
 		const intentScore = calculateIntentScore(intentSignals);
 		const lastIntentActivity =
 			intentSignals.length > 0 ? intentSignals[0]?.timestamp : undefined;
@@ -137,14 +257,17 @@ export function makeLeads(n: number, listName: string): DemoLead[] {
 				{
 					label: "Facebook",
 					url: `https://facebook.com/${baseHandle}`,
+					verified: Math.random() < 0.5,
 				},
 				{
 					label: "LinkedIn",
 					url: `https://linkedin.com/in/${baseHandle}`,
+					verified: Math.random() < 0.6,
 				},
 				{
 					label: "Instagram",
 					url: `https://instagram.com/${(name?.split?.(" ")[0] ?? "").toLowerCase()}`,
+					verified: Math.random() < 0.4,
 				},
 			],
 			address1: {
