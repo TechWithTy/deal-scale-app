@@ -1,38 +1,26 @@
 "use client";
 
 import { HelpCircle } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import { campaignSteps } from "@/_tests/tours/campaignTour";
 import WalkThroughModal from "@/components/leadsSearch/search/WalkthroughModal";
-import { KanbanBoard } from "@/external/kanban/KanbanBoard";
-import { useTaskStore } from "@/lib/stores/taskActions";
-import NewTaskDialog from "external/new-task-dialog";
+import { ActionsKanbanPanel } from "./actions-kanban-panel";
 
 interface KanbanWorkspaceProps {
 	className?: string;
 }
 
 export function KanbanWorkspace({ className }: KanbanWorkspaceProps) {
-	const { tasks, runAi } = useTaskStore();
 	const [showWalkthrough, setShowWalkthrough] = useState(false);
 	const [isTourOpen, setIsTourOpen] = useState(false);
 
-	useEffect(() => {
-		for (const task of tasks) {
-			if (
-				task.status === "IN_PROGRESS" &&
-				task.mcpWorkflow &&
-				task.aiState !== "running"
-			) {
-				runAi(String(task.id));
-			}
-		}
-	}, [runAi, tasks]);
-
 	return (
 		<div
-			className={className ?? "container relative mx-auto space-y-6 py-6"}
+			className={
+				className ??
+				"container relative mx-auto flex h-[calc(100vh-8rem)] flex-col py-6"
+			}
 			data-tour="kanban-page"
 		>
 			<div className="absolute top-0 right-0 z-50">
@@ -45,17 +33,8 @@ export function KanbanWorkspace({ className }: KanbanWorkspaceProps) {
 				</button>
 			</div>
 
-			<div
-				className="flex items-center justify-between"
-				data-tour="kanban-header"
-			>
-				<h1 className="font-bold text-2xl">Actions Kanban</h1>
-				<div data-tour="kanban-new-task">
-					<NewTaskDialog />
-				</div>
-			</div>
-			<div data-tour="kanban-board-page">
-				<KanbanBoard />
+			<div className="min-h-0 flex-1" data-tour="kanban-board-page">
+				<ActionsKanbanPanel className="rounded-lg border border-border" />
 			</div>
 
 			<WalkThroughModal

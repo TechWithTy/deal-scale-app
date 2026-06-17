@@ -45,7 +45,7 @@ export const connectionActivity: ActivityRow[] = [
 	{
 		id: "outgoing-1",
 		stage: "outgoing",
-		event: "message.sent",
+		event: "lead.updated",
 		endpoint: "https://crm.example.com/hooks/dealscale",
 		status: 200,
 		latency: "391 ms",
@@ -55,7 +55,7 @@ export const connectionActivity: ActivityRow[] = [
 	{
 		id: "outgoing-2",
 		stage: "outgoing",
-		event: "lead.status.changed",
+		event: "lead.status.updated",
 		endpoint: "https://crm.example.com/hooks/dealscale",
 		status: 500,
 		latency: "640 ms",

@@ -39,6 +39,10 @@ export type SidebarNavItem = NavItemWithChildren;
 
 // Re-export all lead-related types from the centralized location
 export type {
+	CashBuyerPersona,
+	CashBuyerProfile,
+	BuyBox,
+	LeadCategory,
 	LeadTypeGlobal,
 	LeadStatus,
 	SocialLinks,

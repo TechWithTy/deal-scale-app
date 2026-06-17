@@ -5,6 +5,7 @@ import {
 	AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Separator } from "@/components/ui/separator";
+import type { WebhookStage } from "@/lib/stores/dashboard";
 import { FileText } from "lucide-react";
 import type React from "react";
 
@@ -19,13 +20,26 @@ export interface FeedItemType {
 
 interface WebhookFeedPreviewProps {
 	feedItems: FeedItemType[];
+	stage: WebhookStage;
 }
+
+const stageLabel: Record<WebhookStage, string> = {
+	incoming: "Incoming",
+	outgoing: "Outgoing",
+	feeds: "Feeds",
+};
 
 const WebhookFeedPreview: React.FC<WebhookFeedPreviewProps> = ({
 	feedItems,
+	stage,
 }) => (
 	<div className="mt-6">
-		<h4 className="font-medium text-foreground text-lg">Current RSS feed</h4>
+		<div className="flex items-center justify-between gap-3">
+			<h4 className="font-medium text-foreground text-lg">Current RSS feed</h4>
+			<div className="rounded-full border border-border bg-muted/60 px-2.5 py-1 font-medium text-[11px] text-muted-foreground uppercase tracking-wide">
+				Viewing {stageLabel[stage]}
+			</div>
+		</div>
 		<Separator className="my-2" />
 		{feedItems.length === 0 ? (
 			<div className="flex items-center gap-3 rounded-md border border-dashed bg-muted/40 p-4 text-muted-foreground text-sm">
@@ -47,9 +61,9 @@ const WebhookFeedPreview: React.FC<WebhookFeedPreviewProps> = ({
 						className="overflow-hidden rounded-lg border bg-card text-card-foreground"
 					>
 						<AccordionTrigger className="px-4 text-left">
-							<div className="flex flex-col text-left">
+							<div className="flex min-w-0 flex-col text-left">
 								<span className="font-medium text-sm">{item.title}</span>
-								<span className="text-muted-foreground text-xs">
+								<span className="truncate text-muted-foreground text-xs">
 									{item.author ? `${item.author} • ` : ""}
 									{item.publishedAt}
 								</span>

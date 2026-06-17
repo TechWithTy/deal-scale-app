@@ -1,5 +1,43 @@
 export type LeadStatus = "New Lead" | "Contacted" | "Closed" | "Lost";
 
+export type LeadCategory =
+	| "off-market-leads"
+	| "motivated-sellers"
+	| "cash-buyers";
+
+export type CashBuyerPersona =
+	| "investor"
+	| "wholesaler"
+	| "landlord"
+	| "flipper"
+	| "owner-occupant";
+
+export type BuyBox = {
+	zipCodes?: string[];
+	states?: string[];
+	counties?: string[];
+	cities?: string[];
+	propertyTypes?: string[];
+	occupancy?: "vacant" | "occupied" | "any";
+	priceMin?: number;
+	priceMax?: number;
+	bedroomsMin?: number;
+	bedroomsMax?: number;
+	bathroomsMin?: number;
+	bathroomsMax?: number;
+	sqftMin?: number;
+	sqftMax?: number;
+	notes?: string;
+};
+
+export type CashBuyerProfile = {
+	buyerPersonas?: CashBuyerPersona[];
+	buyBox?: BuyBox;
+	budgetMin?: number;
+	budgetMax?: number;
+	strategies?: string[];
+};
+
 export type SocialLinks = {
 	facebook: string;
 	linkedin: string;
@@ -50,6 +88,7 @@ export type LeadTypeGlobal = {
 	bath: number; // Number of bathrooms in the property
 	sqft: number; // Square footage of the property
 	status: LeadStatus; // Lead status (e.g., "New Lead", "Contacted", "Closed", "Lost")
+	leadCategory?: LeadCategory;
 	followUp: string | null; // Follow-up date (can be null if none is set)
 	lastUpdate: string; // Last update timestamp
 	address1: Address; // Address of the lead (optional)
@@ -60,6 +99,7 @@ export type LeadTypeGlobal = {
 	// Additional social data
 	socialHandle?: string; // e.g., @username
 	socialSummary?: string; // short blurb/notes about social presence
+	cashBuyerProfile?: CashBuyerProfile;
 	// Device/phone details
 	isIphone?: boolean;
 	// Preferred channels, e.g. ["sms", "email", "call"]

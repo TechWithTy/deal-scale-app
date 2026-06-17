@@ -4,8 +4,16 @@ import { categoryConfig } from "@/app/dashboard/connections/config";
 import WalkThroughModal from "@/components/leadsSearch/search/WalkthroughModal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { mockUserProfile } from "@/constants/_faker/profile/userProfile";
+import { enrichmentOptions } from "@/constants/skip-trace/enrichmentOptions";
 import {
 	type WebhookCategory,
 	type WebhookStage,
@@ -27,21 +35,246 @@ type WebhookHistoryByStage = Record<
 	WebhookEntryType[]
 >;
 
+type WebhookSetupOption = {
+	value: string;
+	label: string;
+	description: string;
+	eventPrefix: string;
+	pathSegment: string;
+	isFree?: boolean;
+	cost?: number;
+};
+
+type LeadHandlingMode = "add" | "sync";
+
+const webhookSetupOptions: Record<WebhookCategory, WebhookSetupOption[]> = {
+	leads: [
+		{
+			value: "off-market-motivated-sellers",
+			label: "Off-market leads",
+			description:
+				"Capture off-market leads from forms, CRM pushes, and imports.",
+			eventPrefix: "off_market_lead",
+			pathSegment: "off-market-leads",
+		},
+		{
+			value: "motivated-sellers",
+			label: "Motivated sellers",
+			description: "Capture motivated seller leads from direct webhook intake.",
+			eventPrefix: "motivated_seller",
+			pathSegment: "motivated-sellers",
+		},
+		{
+			value: "cash-buyers",
+			label: "Cash buyers",
+			description: "Create or sync cash buyer leads from buyer criteria.",
+			eventPrefix: "cash_buyer",
+			pathSegment: "cash-buyers",
+		},
+	],
+	campaigns: [
+		{
+			value: "call-campaigns",
+			label: "Call campaigns",
+			description: "Send dialer outcomes, call attempts, and follow-up tasks.",
+			eventPrefix: "call_campaign",
+			pathSegment: "call-campaigns",
+		},
+		{
+			value: "text-campaigns",
+			label: "Text campaigns",
+			description: "Sync SMS replies, opt-outs, and message delivery status.",
+			eventPrefix: "text_campaign",
+			pathSegment: "text-campaigns",
+		},
+		{
+			value: "facebook-campaigns",
+			label: "Facebook campaigns",
+			description:
+				"Route Facebook lead ads and engagement events into DealScale.",
+			eventPrefix: "facebook_campaign",
+			pathSegment: "facebook-campaigns",
+		},
+		{
+			value: "linkedin-campaigns",
+			label: "LinkedIn campaigns",
+			description: "Track LinkedIn outreach, replies, and prospect handoffs.",
+			eventPrefix: "linkedin_campaign",
+			pathSegment: "linkedin-campaigns",
+		},
+		{
+			value: "direct-mail",
+			label: "Direct mail",
+			description:
+				"Trigger mailer sends, delivery updates, and response events.",
+			eventPrefix: "direct_mail",
+			pathSegment: "direct-mail",
+		},
+	],
+	skiptracing: [
+		...enrichmentOptions.map((option) => ({
+			value: option.id,
+			label: option.title,
+			description: option.isFree
+				? `${option.description} Free option.`
+				: `${option.description} ${option.cost} credit per use.`,
+			eventPrefix: option.id,
+			pathSegment: option.id,
+			isFree: option.isFree,
+			cost: option.cost,
+		})),
+	],
+};
+
+const webhookFeedOptions: Record<WebhookCategory, WebhookSetupOption[]> = {
+	leads: [
+		{
+			value: "lead-rss-feed",
+			label: "Lead RSS feed",
+			description: "Publish lead changes as an RSS activity stream.",
+			eventPrefix: "lead_feed",
+			pathSegment: "rss",
+		},
+		{
+			value: "lead-json-feed",
+			label: "Lead JSON feed",
+			description: "Expose lead activity as structured JSON for dashboards.",
+			eventPrefix: "lead_feed",
+			pathSegment: "json",
+		},
+		{
+			value: "lead-activity-feed",
+			label: "Lead activity feed",
+			description: "Mirror lead updates into a real-time activity feed.",
+			eventPrefix: "lead_activity",
+			pathSegment: "activity",
+		},
+	],
+	campaigns: [
+		{
+			value: "campaign-rss-feed",
+			label: "Campaign RSS feed",
+			description: "Publish campaign activity as an RSS stream.",
+			eventPrefix: "campaign_feed",
+			pathSegment: "rss",
+		},
+		{
+			value: "campaign-json-feed",
+			label: "Campaign JSON feed",
+			description: "Expose campaign status updates as JSON.",
+			eventPrefix: "campaign_feed",
+			pathSegment: "json",
+		},
+		{
+			value: "campaign-report-feed",
+			label: "Campaign report feed",
+			description: "Mirror campaign delivery and response data into feeds.",
+			eventPrefix: "campaign_report",
+			pathSegment: "report",
+		},
+	],
+	skiptracing: [
+		{
+			value: "skiptrace-rss-feed",
+			label: "Skip trace RSS feed",
+			description: "Publish skip trace outcomes as RSS updates.",
+			eventPrefix: "skiptrace_feed",
+			pathSegment: "rss",
+		},
+		{
+			value: "skiptrace-json-feed",
+			label: "Skip trace JSON feed",
+			description: "Expose enrichment status as structured JSON.",
+			eventPrefix: "skiptrace_feed",
+			pathSegment: "json",
+		},
+		{
+			value: "skiptrace-report-feed",
+			label: "Skip trace report feed",
+			description: "Mirror completion and error events into feed reports.",
+			eventPrefix: "skiptrace_report",
+			pathSegment: "report",
+		},
+	],
+};
+
+const getDefaultSetupOption = (category: WebhookCategory) =>
+	webhookSetupOptions[category][0];
+
+const getDefaultFeedSetupOption = (category: WebhookCategory) =>
+	webhookFeedOptions[category][0];
+
+const leadHandlingLabels: Record<LeadHandlingMode, string> = {
+	add: "Add new leads",
+	sync: "Sync existing leads",
+};
+
+const stageDisplayLabels: Record<WebhookStage, string> = {
+	incoming: "Incoming",
+	outgoing: "Outgoing",
+	feeds: "Feeds",
+};
+
+const getPricingLabel = (option: WebhookSetupOption) =>
+	option.isFree
+		? "Free"
+		: `${option.cost ?? 0} credit${option.cost === 1 ? "" : "s"}`;
+
+const getSkipTracePayloadTitle = (setupValue: string) => {
+	if (setupValue === "skip-trace-bulk") return "Bulk skip trace request";
+	if (setupValue === "skip-trace-verification")
+		return "Skip trace verification request";
+	return "Skip trace enrichment request";
+};
+
+const StageBanner = ({
+	stage,
+	category,
+	setupLabel,
+	feedLabel,
+	leadHandling,
+}: {
+	stage: WebhookStage;
+	category: WebhookCategory;
+	setupLabel: string;
+	feedLabel: string;
+	leadHandling: LeadHandlingMode;
+}) => {
+	const contextText =
+		stage === "incoming"
+			? category === "leads"
+				? leadHandling === "add"
+					? `${setupLabel} is configured for lead generation requests.`
+					: `${setupLabel} is configured for 1:1 lead syncs.`
+				: `${setupLabel} is configured for incoming webhook events.`
+			: stage === "outgoing"
+				? category === "leads"
+					? "Outgoing updates mirror lead changes and delivery responses."
+					: "Outgoing updates mirror campaign delivery and workflow responses."
+				: `${feedLabel} is configured as the feed view for this connection.`;
+
+	return (
+		<div className="mb-4 rounded-md border bg-muted/30 px-4 py-3">
+			<div className="flex items-center justify-between gap-3">
+				<div>
+					<p className="font-medium text-foreground text-sm">
+						{stageDisplayLabels[stage]} tab
+					</p>
+					<p className="text-muted-foreground text-xs">{contextText}</p>
+				</div>
+				<div className="rounded-full border border-border bg-background px-2.5 py-1 font-medium text-[11px] text-muted-foreground uppercase tracking-wide">
+					{stageDisplayLabels[stage]}
+				</div>
+			</div>
+		</div>
+	);
+};
+
 const getWebhookHistory = (
 	category: WebhookCategory,
+	setup: WebhookSetupOption,
 ): WebhookHistoryByStage => {
-	const baseId =
-		category === "leads"
-			? "lead"
-			: category === "campaigns"
-				? "campaign"
-				: "skiptrace";
-	const basePath =
-		category === "leads"
-			? "leads"
-			: category === "campaigns"
-				? "campaigns"
-				: "skiptracing";
+	const baseId = setup.eventPrefix;
 
 	return {
 		incoming: [
@@ -78,7 +311,12 @@ const getWebhookHistory = (
 		outgoing: [
 			{
 				id: `${category}-outgoing-001`,
-				event: "message.sent",
+				event:
+					category === "leads"
+						? "lead.updated"
+						: category === "campaigns"
+							? "campaign.delivery.updated"
+							: "skiptrace.completed",
 				date: "Jan 06, 2025 9:42 AM",
 				status: "delivered",
 				responseCode: 200,
@@ -86,47 +324,52 @@ const getWebhookHistory = (
 					[`${baseId}_id`]: "out-22991",
 					recipient: "jordan@examplecrm.com",
 					channel: "email",
+					status: "updated",
 					subject: "Follow-up: Demo availability",
-					preview: "Just confirming our time later today.",
+					preview: "Lead status updated after external CRM sync.",
 				},
 			},
 			{
 				id: `${category}-outgoing-002`,
-				event: "task.created",
+				event:
+					category === "leads"
+						? "lead.status.updated"
+						: category === "campaigns"
+							? "campaign.status.updated"
+							: "skiptrace.status.updated",
 				date: "Jan 03, 2025 7:06 PM",
 				status: "pending",
 				responseCode: 102,
 				payload: {
 					[`${baseId}_id`]: "out-99310",
-					title: "Schedule walkthrough call",
+					title: "Status update queued",
 					due_date: "2025-01-07T15:00:00Z",
 					assigned_to: "deal-team@crm.io",
+					status: "pending",
 				},
 			},
 		],
 	};
 };
 
-const getWebhookFeedItems = (category: WebhookCategory): FeedItemType[] => {
+const getWebhookFeedItems = (
+	category: WebhookCategory,
+	setup: WebhookSetupOption,
+): FeedItemType[] => {
 	const basePath =
 		category === "leads"
 			? "leads"
 			: category === "campaigns"
 				? "campaigns"
 				: "skiptracing";
-	const itemType =
-		category === "leads"
-			? "Lead"
-			: category === "campaigns"
-				? "Campaign"
-				: "Skip Trace";
+	const itemType = setup.label;
 
 	return [
 		{
 			id: `feed-${category}-001`,
 			title: `message.sent — ${itemType} Jane Doe`,
 			publishedAt: "Wed, 08 Oct 2025 14:35:00 GMT",
-			link: `https://app.dealscale.io/dashboard/${basePath}/12345`,
+			link: `https://app.dealscale.io/dashboard/${basePath}/${setup.pathSegment}/12345`,
 			summary: `AI replied: "Hey Jane, confirming our walkthrough tomorrow at 3 PM."`,
 			author: "DealScale Automations",
 		},
@@ -134,7 +377,7 @@ const getWebhookFeedItems = (category: WebhookCategory): FeedItemType[] => {
 			id: `feed-${category}-002`,
 			title: `${category}.status.updated — ${itemType} Liam Patel`,
 			publishedAt: "Wed, 08 Oct 2025 14:20:00 GMT",
-			link: `https://app.dealscale.io/dashboard/${basePath}/56789`,
+			link: `https://app.dealscale.io/dashboard/${basePath}/${setup.pathSegment}/56789`,
 			summary: `${itemType} moved to Qualified after responding to SMS outreach.`,
 			author: "DealScale Automations",
 		},
@@ -162,8 +405,30 @@ const Modal = ({
 	}, [isOpen]);
 	if (!isOpen) return null;
 	return (
-		<div className="fixed inset-0 z-50 overflow-y-auto bg-background/80 backdrop-blur-sm">
-			<div className="flex min-h-full w-full items-center justify-center p-4">
+		<div
+			className="fixed inset-0 z-50 overflow-y-auto bg-background/80 backdrop-blur-sm"
+			onKeyDown={(event) => {
+				if (event.key === "Escape") {
+					onClose();
+				}
+			}}
+			role="presentation"
+		>
+			<div
+				className="flex min-h-full w-full items-center justify-center p-4"
+				onClick={(event) => {
+					if (event.target === event.currentTarget) {
+						onClose();
+					}
+				}}
+				onKeyDown={(event) => {
+					if (event.key === "Escape") {
+						onClose();
+					}
+				}}
+				tabIndex={-1}
+				role="presentation"
+			>
 				<div className="relative w-full max-w-3xl">
 					<div
 						className="relative flex max-h-[calc(100vh-4rem)] flex-col overflow-hidden rounded-lg bg-card text-card-foreground shadow-lg"
@@ -246,27 +511,55 @@ export const WebhookModal: React.FC = () => {
 
 	const orgId = mockUserProfile?.companyInfo?.GHLID?.locationId ?? "org-demo";
 	const compactOrgId = orgId.replace(/[^a-zA-Z0-9]/g, "");
+	const [webhookSetup, setWebhookSetup] = useState(
+		getDefaultSetupOption(webhookCategory).value,
+	);
+	const setupOptions = webhookSetupOptions[webhookCategory];
+	const activeSetup =
+		setupOptions.find((option) => option.value === webhookSetup) ??
+		getDefaultSetupOption(webhookCategory);
+	const isLeadRoutingFlow = webhookCategory === "leads";
+	const [leadHandling, setLeadHandling] = useState<LeadHandlingMode>("add");
+	const [feedSetup, setFeedSetup] = useState(
+		getDefaultFeedSetupOption(webhookCategory).value,
+	);
+	const feedOptions = webhookFeedOptions[webhookCategory];
+	const activeFeedSetup =
+		feedOptions.find((option) => option.value === feedSetup) ??
+		getDefaultFeedSetupOption(webhookCategory);
+	const leadFlowSegment = isLeadRoutingFlow
+		? `${activeSetup.pathSegment}/${leadHandling}`
+		: activeSetup.pathSegment;
 
-	const getDefaultIncomingEndpoint = () =>
-		`https://app.dealscale.io/api/webhooks/${orgId}/${webhookCategory}/incoming`;
-	const getDefaultOutgoingEndpoint = () =>
+	const defaultIncomingEndpoint = `https://app.dealscale.io/api/webhooks/${orgId}/${webhookCategory}/${leadFlowSegment}/incoming`;
+	const defaultOutgoingEndpoint =
 		mockUserProfile?.companyInfo.webhook ??
 		"https://crm.example.com/hooks/dealscale";
-	const getDefaultFeedEndpoint = () =>
-		`https://app.dealscale.io/api/webhooks/${orgId}/${webhookCategory}/feeds/activity.xml`;
+	const defaultFeedEndpoint = `https://app.dealscale.io/api/webhooks/${orgId}/${webhookCategory}/${leadFlowSegment}/${activeFeedSetup.pathSegment}/feeds/activity.xml`;
 
 	const [incomingWebhookUrl, setIncomingWebhookUrl] = useState(
-		getDefaultIncomingEndpoint(),
+		defaultIncomingEndpoint,
 	);
 	const [outgoingWebhookUrl, setOutgoingWebhookUrl] = useState(
-		getDefaultOutgoingEndpoint(),
+		defaultOutgoingEndpoint,
 	);
 
-	// Update URLs when category changes
 	useEffect(() => {
-		const newIncoming = `https://app.dealscale.io/api/webhooks/${orgId}/${webhookCategory}/incoming`;
-		setIncomingWebhookUrl(newIncoming);
-	}, [webhookCategory, orgId]);
+		if (!setupOptions.some((option) => option.value === webhookSetup)) {
+			setWebhookSetup(getDefaultSetupOption(webhookCategory).value);
+		}
+	}, [webhookCategory, setupOptions, webhookSetup]);
+
+	useEffect(() => {
+		if (!feedOptions.some((option) => option.value === feedSetup)) {
+			setFeedSetup(getDefaultFeedSetupOption(webhookCategory).value);
+		}
+	}, [webhookCategory, feedOptions, feedSetup]);
+
+	// Update URLs when category or setup changes
+	useEffect(() => {
+		setIncomingWebhookUrl(defaultIncomingEndpoint);
+	}, [defaultIncomingEndpoint]);
 
 	// State for CRM walkthrough modal
 	const [showCrmWalkthrough, setShowCrmWalkthrough] = useState(false);
@@ -307,41 +600,319 @@ export const WebhookModal: React.FC = () => {
 
 	const getPayloadTemplates = (
 		category: WebhookCategory,
+		setup: WebhookSetupOption,
+		feed: WebhookSetupOption,
+		leadMode: LeadHandlingMode,
 	): Record<WebhookStage, string> => {
-		const baseEvent =
+		const baseEvent = setup.eventPrefix;
+		const leadCategory =
+			setup.eventPrefix === "cash_buyer"
+				? "cash-buyers"
+				: setup.eventPrefix === "motivated_seller"
+					? "motivated-sellers"
+					: "off-market-leads";
+		const cashBuyerProfileBlock =
+			leadCategory === "cash-buyers"
+				? `
+    "cashBuyerProfile": {
+      "buyerPersonas": ["investor", "wholesaler"],
+      "buyBox": {
+        "zipCodes": ["78701", "78702"],
+        "states": ["TX"],
+        "cities": ["Austin", "Round Rock"],
+        "counties": ["Travis"],
+        "propertyTypes": ["single_family", "multi_family"],
+        "occupancy": "vacant",
+        "priceMin": 150000,
+        "priceMax": 750000,
+        "bedroomsMin": 3,
+        "bathroomsMin": 2,
+        "notes": "Targets cash buyers with zip code interest and light rehab preferences."
+      },
+      "budgetMin": 150000,
+      "budgetMax": 750000,
+      "strategies": ["buy-and-hold", "wholesale"]
+    },`
+				: "";
+		const outgoingPayload =
 			category === "leads"
-				? "lead"
-				: category === "campaigns"
-					? "campaign"
-					: "skiptrace";
-
-		return {
-			incoming: `{
-  "event": "${baseEvent}.status.updated",
-  "${baseEvent}_id": "12345",
-  "status": "Interested",
-  "first_name": "John",
-  "phone": "+15551234567",
-  "timestamp": "2025-10-08T14:32:00Z"
-}`,
-			outgoing: `{
-  "event": "message.sent",
-  "${baseEvent}_id": "12345",
-  "sender": "AI",
-  "message": "Hey John, is 3PM still a good time?",
+				? `{
+  "event": "lead.updated",
+  "lead_type": "${setup.eventPrefix}",
+  "lead_category": "${leadCategory}",
+  "source": "dealscale",
+  "lead": {
+    "id": "lead_12345",
+    "summary": "Lead published to an outgoing webhook.",
+    "status": "New Lead",
+    "leadCategory": "${leadCategory}",
+    "socials": {
+      "facebook": "https://facebook.com/johnsmith",
+      "linkedin": "https://www.linkedin.com/in/johnsmith",
+      "instagram": "https://instagram.com/johnsmith",
+      "twitter": "https://x.com/johnsmith",
+      "tiktok": "https://tiktok.com/@johnsmith",
+      "youtube": "https://youtube.com/@johnsmith"
+    },
+    "socialHandle": "@johnsmith",
+    "socialSummary": "Outgoing lead update delivered from DealScale.",
+${cashBuyerProfileBlock}
+    "contactInfo": {
+      "firstName": "John",
+      "lastName": "Smith",
+      "email": "john.smith@example.com",
+      "phone": "+15551234567",
+      "knownPhone": "+15559876543",
+      "address": "123 Main St, Austin, TX 78701",
+      "domain": "example.com",
+      "emailVerified": true,
+      "socialVerified": false,
+      "possiblePhones": "+15559876543",
+      "possibleEmails": "john.alt@example.com"
+    },
+    "address1": {
+      "fullStreetLine": "123 Main St",
+      "city": "Austin",
+      "state": "TX",
+      "zipCode": "78701"
+    },
+    "campaignID": "cmp_12345",
+    "leadSource": "Webhook Outgoing",
+    "notes": "Lead update emitted to external webhook.",
+    "tags": "webhook,outgoing,lead",
+    "intentSignals": [],
+    "intentScore": {
+      "total": 72,
+      "lastUpdated": "2025-10-08T14:32:00Z"
+    },
+    "lastIntentActivity": "2025-10-08T14:30:00Z"
+  },
   "timestamp": "2025-10-08T14:35:00Z"
-}`,
+}`
+				: category === "campaigns"
+					? `{
+  "event": "campaign.status.updated",
+  "campaign_type": "${setup.eventPrefix}",
+  "campaign_id": "cmp_12345",
+  "source": "dealscale",
+  "status": "sent",
+  "channel": "${setup.value.replace(/-campaigns$/, "")}",
+  "recipient": "jordan@examplecrm.com",
+  "message": "Campaign delivery status updated after provider response.",
+  "sent_at": "2025-10-08T14:35:00Z",
+  "timestamp": "2025-10-08T14:35:00Z"
+}`
+					: `{
+  "event": "skiptrace.completed",
+  "skiptrace_type": "${setup.value}",
+  "skiptrace_id": "st_12345",
+  "source": "dealscale",
+  "status": "completed",
+  "matches_found": 4,
+  "contact_summary": {
+    "phone": "+15551234567",
+    "email": "john.smith@example.com",
+    "linkedin": "https://www.linkedin.com/in/johnsmith"
+  },
+  "timestamp": "2025-10-08T14:35:00Z"
+}`;
+		const leadIncomingPayload =
+			category === "skiptracing"
+				? `{
+  "event": "skiptrace.requested",
+  "skiptrace_type": "${setup.value}",
+  "skiptrace_id": "st_12345",
+  "source": "webhook",
+  "criteria": {
+    "lead_ids": ["lead_12345"],
+    "zip_codes": ["78701", "78702"],
+    "contact_checks": ["phone", "email", "linkedin"],
+    "compliance_checks": ["dnc", "tcpa"]
+  },
+  "output": {
+    "limit": ${setup.value === "skip-trace-bulk" ? 25 : 1},
+    "list_name": "${setup.label}",
+    "assignment_rule": "round_robin",
+    "dedupe_existing": true
+  },
+  "timestamp": "2025-10-08T14:32:00Z"
+}`
+				: leadMode === "add"
+					? setup.eventPrefix === "cash_buyer"
+						? `{
+  "event": "lead.generation.requested",
+  "lead_type": "${setup.eventPrefix}",
+  "lead_category": "${leadCategory}",
+  "source": "webhook",
+  "criteria": {
+    "buyer_type": "cash",
+    "buy_box": {
+      "zip_codes": ["78701", "78702"],
+      "states": ["TX", "FL", "GA"],
+      "markets": ["Austin", "Dallas", "Houston"],
+      "property_types": ["single_family", "multi_family"],
+      "bedrooms_min": 3,
+      "bathrooms_min": 2,
+      "purchase_price_min": 150000,
+      "purchase_price_max": 750000,
+      "closing_timeline_days": 30,
+      "notes": "Preferred for turn-key or light rehab properties"
+    },
+    "buyer_personas": ["investor", "wholesaler"]
+  },
+  "output": {
+    "limit": 50,
+    "list_name": "${setup.label}",
+    "assignment_rule": "round_robin",
+    "dedupe_existing": true
+  },
+  "timestamp": "2025-10-08T14:32:00Z"
+}`
+						: setup.eventPrefix === "motivated_seller"
+							? `{
+  "event": "lead.generation.requested",
+  "lead_type": "${setup.eventPrefix}",
+  "lead_category": "${leadCategory}",
+  "source": "webhook",
+  "criteria": {
+    "seller_type": "on_market",
+    "motivation_signals": {
+      "days_on_market_min": 21,
+      "price_reduction_recent": true,
+      "stale_listing": true,
+      "motivated_reason": ["divorce", "inheritance", "relocation", "vacancy"]
+    },
+    "markets": ["Austin", "Round Rock"],
+    "mls_status": ["active", "pending"],
+    "price_min": 200000,
+    "price_max": 600000
+  },
+  "output": {
+    "limit": 25,
+    "list_name": "${setup.label}",
+    "assignment_rule": "round_robin",
+    "dedupe_existing": true
+  },
+  "timestamp": "2025-10-08T14:32:00Z"
+}`
+							: `{
+  "event": "lead.generation.requested",
+  "lead_type": "${setup.eventPrefix}",
+  "lead_category": "${leadCategory}",
+  "source": "webhook",
+  "criteria": {
+    "property_type": "single_family",
+    "state": "TX",
+    "county": "Travis",
+    "zip_codes": ["78701", "78702"],
+    "occupancy": "vacant",
+    "equity_min": "30%",
+    "price_max": 350000
+  },
+  "output": {
+    "limit": 25,
+    "list_name": "${setup.label}",
+    "assignment_rule": "round_robin",
+    "dedupe_existing": true
+  },
+  "timestamp": "2025-10-08T14:32:00Z"
+}`
+					: `{
+  "event": "lead.sync.requested",
+  "lead_type": "${setup.eventPrefix}",
+  "lead_category": "${leadCategory}",
+  "source": "webhook",
+  "lead": {
+    "id": "lead_12345",
+    "contactInfo": {
+      "firstName": "John",
+      "lastName": "Smith",
+      "email": "john.smith@example.com",
+      "phone": "+15551234567",
+      "knownPhone": "+15559876543",
+      "address": "123 Main St, Austin, TX 78701",
+      "domain": "example.com",
+      "emailVerified": true,
+      "socialVerified": false,
+      "possiblePhones": "+15559876543",
+      "possibleEmails": "john.alt@example.com"
+    },
+    "summary": "Existing lead synced from webhook.",
+    "bed": 3,
+    "bath": 2,
+    "sqft": 1840,
+    "status": "New Lead",
+    "leadCategory": "${leadCategory}",
+    "followUp": null,
+    "lastUpdate": "2025-10-08T14:32:00Z",
+    "address1": {
+      "fullStreetLine": "123 Main St",
+      "city": "Austin",
+      "state": "TX",
+      "zipCode": "78701"
+    },
+    "campaignID": "cmp_12345",
+    "dealId": "",
+    "socials": {
+      "facebook": "https://facebook.com/johnsmith",
+      "linkedin": "https://www.linkedin.com/in/johnsmith",
+      "instagram": "https://instagram.com/johnsmith",
+      "twitter": "https://x.com/johnsmith",
+      "tiktok": "https://tiktok.com/@johnsmith",
+      "youtube": "https://youtube.com/@johnsmith"
+    },
+    "socialHandle": "@johnsmith",
+    "socialSummary": "Active buyer profile with LinkedIn and Facebook presence.",
+${cashBuyerProfileBlock}
+    "isIphone": false,
+    "communicationPreferences": ["sms", "email", "call"],
+    "dncList": false,
+    "smsOptOut": false,
+    "emailOptOut": false,
+    "callOptOut": false,
+    "dmOptOut": false,
+    "tcpaOptedIn": true,
+    "tcpaConsentDate": "2025-10-08T14:31:00Z",
+    "tcpaSource": "Webhook Sync",
+    "propertyValue": 325000,
+    "yearBuilt": 1994,
+    "leadSource": "Webhook Sync",
+    "notes": "Existing lead updated from webhook sync.",
+    "tags": "webhook,sync,linkedin",
+    "priority": "High",
+    "company": "Smith Holdings",
+    "jobTitle": "Acquisitions Manager",
+    "domain": "example.com",
+    "birthday": "1986-07-18",
+    "anniversary": "2012-06-14",
+    "intentSignals": [],
+    "intentScore": {
+      "total": 72,
+      "lastUpdated": "2025-10-08T14:32:00Z"
+    },
+    "lastIntentActivity": "2025-10-08T14:30:00Z"
+  },
+  "timestamp": "2025-10-08T14:32:00Z"
+}`;
+		return {
+			incoming: leadIncomingPayload,
+			outgoing: outgoingPayload,
 			feeds: `<item>
-  <title>message.sent — Jane Doe</title>
-  <link>https://app.dealscale.io/dashboard/${category}/12345</link>
-  <guid isPermaLink="false">wh-${compactOrgId}-${category}-message-sent-12345</guid>
+  <title>${feed.label} — Jane Doe</title>
+  <link>https://app.dealscale.io/dashboard/${category}/${leadFlowSegment}/${feed.pathSegment}/12345</link>
+  <guid isPermaLink="false">wh-${compactOrgId}-${leadFlowSegment}-${feed.pathSegment}-message-sent-12345</guid>
   <pubDate>Wed, 08 Oct 2025 14:35:00 GMT</pubDate>
   <description><![CDATA[AI replied: "Hey John, is 3PM still a good time?"]]></description>
 </item>`,
 		};
 	};
 
-	const payloadTemplates = getPayloadTemplates(webhookCategory);
+	const payloadTemplates = getPayloadTemplates(
+		webhookCategory,
+		activeSetup,
+		activeFeedSetup,
+		leadHandling,
+	);
 
 	const getSigningSecrets = (
 		category: WebhookCategory,
@@ -390,7 +961,11 @@ export const WebhookModal: React.FC = () => {
 	const handleTestWebhook = () => {
 		const message =
 			webhookStage === "incoming"
-				? "Incoming test payload dispatched (mock)."
+				? webhookCategory === "leads"
+					? leadHandling === "add"
+						? "Lead generation request dispatched (mock)."
+						: "Lead sync webhook test dispatched (mock)."
+					: "Incoming test payload dispatched (mock)."
 				: webhookStage === "outgoing"
 					? "Outgoing webhook test dispatched (mock)."
 					: "Activity feed ping generated (mock).";
@@ -435,25 +1010,137 @@ export const WebhookModal: React.FC = () => {
 						</p>
 					</div>
 
-					{/* Category Tabs */}
-					<div className="mt-6" data-tour="connections-webhook-categories">
-						<Tabs
+					{/* Webhook Type Selector */}
+					<div
+						className="mt-6 space-y-2"
+						data-tour="connections-webhook-categories"
+					>
+						<div className="space-y-1">
+							<h4 className="font-medium text-foreground text-sm">
+								Choose webhook type
+							</h4>
+							<p className="text-muted-foreground text-xs">
+								{categoryConfig[webhookCategory].description}
+							</p>
+						</div>
+						<Select
 							value={webhookCategory}
 							onValueChange={(value) =>
 								setWebhookCategory(value as WebhookCategory)
 							}
 						>
-							<TabsList className="grid w-full grid-cols-3">
+							<SelectTrigger className="h-10 w-full sm:max-w-sm">
+								<SelectValue placeholder="Select webhook type" />
+							</SelectTrigger>
+							<SelectContent>
 								{(
 									["leads", "campaigns", "skiptracing"] as WebhookCategory[]
 								).map((category) => (
-									<TabsTrigger key={category} value={category}>
+									<SelectItem key={category} value={category}>
 										{categoryConfig[category].label}
-									</TabsTrigger>
+									</SelectItem>
 								))}
-							</TabsList>
-						</Tabs>
+							</SelectContent>
+						</Select>
 					</div>
+
+					<div className="mt-4 space-y-2" data-tour="connections-webhook-setup">
+						<div className="space-y-1">
+							<h4 className="font-medium text-foreground text-sm">
+								Configure {webhookStage} webhook for{" "}
+								{categoryConfig[webhookCategory].label.toLowerCase()}
+							</h4>
+							<p className="text-muted-foreground text-xs">
+								{activeSetup.description}
+							</p>
+						</div>
+						<Select
+							value={webhookSetup}
+							onValueChange={(value) => setWebhookSetup(value)}
+						>
+							<SelectTrigger className="h-10 w-full sm:max-w-sm">
+								<SelectValue placeholder="Select setup type" />
+							</SelectTrigger>
+							<SelectContent>
+								{setupOptions.map((option) => (
+									<SelectItem key={option.value} value={option.value}>
+										{option.label}
+										{webhookCategory === "skiptracing"
+											? ` • ${getPricingLabel(option)}`
+											: ""}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
+					</div>
+
+					{webhookCategory === "leads" ? (
+						<div className="mt-4 space-y-3">
+							<div className="space-y-1">
+								<h4 className="font-medium text-foreground text-sm">
+									Lead handling
+								</h4>
+								<p className="text-muted-foreground text-xs">
+									Choose whether seller and buyer webhooks add new leads or sync
+									existing ones.
+								</p>
+							</div>
+							<div className="flex flex-wrap gap-2">
+								{(["add", "sync"] as LeadHandlingMode[]).map((mode) => (
+									<Button
+										key={mode}
+										type="button"
+										variant={leadHandling === mode ? "default" : "outline"}
+										size="sm"
+										onClick={() => setLeadHandling(mode)}
+										className="h-9"
+									>
+										{leadHandlingLabels[mode]}
+									</Button>
+								))}
+							</div>
+							<div className="grid gap-3 sm:grid-cols-2">
+								<div
+									className={`rounded-md border p-4 text-sm ${
+										leadHandling === "add"
+											? "border-primary/30 bg-primary/5"
+											: "border-border bg-muted/30"
+									}`}
+								>
+									<p className="font-medium text-foreground">
+										{leadHandling === "add"
+											? activeSetup.value === "cash-buyers"
+												? "Generate cash buyers"
+												: "Generate off-market leads"
+											: "Sync leads"}
+									</p>
+									<p className="mt-1 text-muted-foreground text-xs">
+										{leadHandling === "add"
+											? activeSetup.value === "cash-buyers"
+												? "Incoming webhook events generate new cash buyer leads from criteria and parameters."
+												: activeSetup.value === "motivated-sellers"
+													? "Incoming webhook events generate on-market motivated seller leads from listing and distress signals."
+													: "Incoming webhook events generate new off-market leads from criteria and parameters."
+											: "Incoming webhook events mirror the full existing lead object, including LinkedIn URL and all lead properties."}
+									</p>
+								</div>
+								<div className="rounded-md border border-dashed bg-muted/20 p-4 text-sm">
+									<p className="font-medium text-foreground">
+										{leadHandling === "add" ? "Add path" : "Sync path"}
+									</p>
+									<p className="mt-1 text-muted-foreground text-xs">
+										{leadHandling === "add"
+											? activeSetup.value === "cash-buyers"
+												? "Use this when inbound events should create fresh cash buyer leads from criteria."
+												: activeSetup.value === "motivated-sellers"
+													? "Use this when inbound events should create motivated seller leads from on-market signals."
+													: "Use this when inbound events should create fresh off-market leads."
+											: "Use this when inbound events should mirror the existing lead record 1:1 instead of adding new ones."}
+									</p>
+								</div>
+							</div>
+						</div>
+					) : null}
 
 					{/* CRM Integration Buttons Section */}
 					<div
@@ -490,32 +1177,98 @@ export const WebhookModal: React.FC = () => {
 						onValueChange={(value) => setWebhookStage(value as WebhookStage)}
 						className="mt-6"
 					>
+						<StageBanner
+							stage={webhookStage}
+							category={webhookCategory}
+							setupLabel={activeSetup.label}
+							feedLabel={activeFeedSetup.label}
+							leadHandling={leadHandling}
+						/>
 						<TabsList
 							className="grid w-full grid-cols-3"
 							data-tour="connections-webhook-stages"
 						>
-							<TabsTrigger value="incoming">Incoming</TabsTrigger>
-							<TabsTrigger value="outgoing">Outgoing</TabsTrigger>
-							<TabsTrigger value="feeds">Feeds</TabsTrigger>
+							<TabsTrigger
+								value="incoming"
+								className="data-[state=active]:bg-background data-[state=active]:text-foreground"
+							>
+								Incoming
+							</TabsTrigger>
+							<TabsTrigger
+								value="outgoing"
+								className="data-[state=active]:bg-background data-[state=active]:text-foreground"
+							>
+								Outgoing
+							</TabsTrigger>
+							<TabsTrigger
+								value="feeds"
+								className="data-[state=active]:bg-background data-[state=active]:text-foreground"
+							>
+								Feeds
+							</TabsTrigger>
 						</TabsList>
 
 						{/* Incoming */}
 						<TabsContent value="incoming" className="mt-6 space-y-4">
+							<div className="rounded-md border bg-muted/20 p-4 text-sm">
+								<p className="font-medium text-foreground">
+									{webhookCategory === "leads"
+										? leadHandling === "add"
+											? activeSetup.value === "cash-buyers"
+												? "Cash buyer generation webhook"
+												: activeSetup.value === "motivated-sellers"
+													? "Motivated seller generation webhook"
+													: "Lead generation webhook"
+											: "Lead sync webhook"
+										: categoryConfig[webhookCategory].label}
+								</p>
+								<p className="mt-1 text-muted-foreground text-xs">
+									{webhookCategory === "leads"
+										? leadHandling === "add"
+											? activeSetup.value === "cash-buyers"
+												? "Creates new cash buyer leads from generation criteria and workflow parameters."
+												: activeSetup.value === "motivated-sellers"
+													? "Creates on-market motivated seller leads from listing and distress criteria."
+													: "Creates new off-market leads from generation criteria and workflow parameters."
+											: "Incoming webhook events mirror the full existing lead object, including LinkedIn URL and all lead properties."
+										: "Captures webhook events for the selected category."}
+								</p>
+							</div>
 							<div data-tour="connections-webhook-url">
 								<WebhookUrlInput
 									label="Incoming endpoint"
 									description="Share this read-only endpoint with your CRM or form provider to push events into DealScale."
 									webhookUrl={incomingWebhookUrl}
 									setWebhookUrl={setIncomingWebhookUrl}
-									placeholder={getDefaultIncomingEndpoint()}
+									placeholder={defaultIncomingEndpoint}
 									readOnly
 									showCopyButton
 								/>
 							</div>
 							<div data-tour="connections-webhook-payload">
 								<WebhookPayloadSection
-									label="Sample CRM payload"
-									description="Validate that incoming requests include the required fields before going live."
+									label={
+										webhookCategory === "skiptracing"
+											? getSkipTracePayloadTitle(activeSetup.value)
+											: webhookCategory === "leads" && leadHandling === "add"
+												? activeSetup.value === "cash-buyers"
+													? "Cash buyer generation request"
+													: activeSetup.value === "motivated-sellers"
+														? "Motivated seller generation request"
+														: "Lead generation request"
+												: "Sample CRM payload"
+									}
+									description={
+										webhookCategory === "skiptracing"
+											? "Validate skip trace requests with lead IDs, ZIP targets, contact checks, and compliance checks before going live."
+											: webhookCategory === "leads" && leadHandling === "add"
+												? activeSetup.value === "cash-buyers"
+													? "Validate that cash buyer requests include budgets, markets, and output settings before going live."
+													: activeSetup.value === "motivated-sellers"
+														? "Validate that motivated seller requests include market signals, MLS status, and output settings before going live."
+														: "Validate that generation requests include filters, criteria, and output settings before going live."
+												: "Validate that incoming requests mirror the full existing lead record, including LinkedIn URL and contact details."
+									}
 									webhookPayload={payloadTemplates.incoming}
 									onCopy={() => void copyPayloadFor("incoming")}
 								/>
@@ -565,7 +1318,7 @@ export const WebhookModal: React.FC = () => {
 								<Input
 									id="outgoingWebhookUrl"
 									type="url"
-									placeholder={getDefaultOutgoingEndpoint()}
+									placeholder={defaultOutgoingEndpoint}
 									value={outgoingWebhookUrl}
 									onChange={(event) =>
 										setOutgoingWebhookUrl(event.target.value)
@@ -612,10 +1365,38 @@ export const WebhookModal: React.FC = () => {
 
 						{/* Feeds */}
 						<TabsContent value="feeds" className="mt-6 space-y-4">
+							<div
+								className="space-y-2"
+								data-tour="connections-webhook-feed-setup"
+							>
+								<div className="space-y-1">
+									<h4 className="font-medium text-foreground text-sm">
+										Choose feed setup
+									</h4>
+									<p className="text-muted-foreground text-xs">
+										{activeFeedSetup.description}
+									</p>
+								</div>
+								<Select
+									value={feedSetup}
+									onValueChange={(value) => setFeedSetup(value)}
+								>
+									<SelectTrigger className="h-10 w-full sm:max-w-sm">
+										<SelectValue placeholder="Select feed type" />
+									</SelectTrigger>
+									<SelectContent>
+										{feedOptions.map((option) => (
+											<SelectItem key={option.value} value={option.value}>
+												{option.label}
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+							</div>
 							<WebhookUrlInput
 								label="Activity feed URL"
 								description="Share this read-only endpoint with stakeholders or BI tools to subscribe to webhook events as RSS/XML."
-								webhookUrl={getDefaultFeedEndpoint()}
+								webhookUrl={defaultFeedEndpoint}
 								readOnly
 								setWebhookUrl={() => undefined}
 								showCopyButton
@@ -627,7 +1408,11 @@ export const WebhookModal: React.FC = () => {
 								onCopy={() => void copyPayloadFor("feeds")}
 							/>
 							<WebhookFeedPreview
-								feedItems={getWebhookFeedItems(webhookCategory)}
+								feedItems={getWebhookFeedItems(
+									webhookCategory,
+									activeFeedSetup,
+								)}
+								stage={webhookStage}
 							/>
 							<div className="mt-4 rounded-md border border-dashed bg-muted/40 p-4 text-sm">
 								<div className="flex items-start justify-between gap-2">
@@ -661,7 +1446,7 @@ export const WebhookModal: React.FC = () => {
 					<div data-tour="connections-webhook-history">
 						<WebhookHistory
 							activeStage={webhookStage}
-							historyByStage={getWebhookHistory(webhookCategory)}
+							historyByStage={getWebhookHistory(webhookCategory, activeSetup)}
 						/>
 					</div>
 

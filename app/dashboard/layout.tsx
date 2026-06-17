@@ -1,5 +1,7 @@
 import ImpersonationBanner from "@/components/admin/ImpersonationBanner";
 // import { fetchUserProfileData, getUserProfile } from "@/actions/auth";
+import { DashboardPageHelpButton } from "@/components/dashboard/DashboardPageHelpButton";
+import { DemoRevealWrapper } from "@/components/demo/DemoRevealWrapper";
 import Header from "@/components/layout/header";
 import Sidebar from "@/components/layout/sidebar";
 import {
@@ -7,7 +9,6 @@ import {
 	mockUserProfile,
 } from "@/constants/_faker/profile/userProfile";
 import { useSessionStore } from "@/lib/stores/user/useSessionStore";
-import { DemoRevealWrapper } from "@/components/demo/DemoRevealWrapper";
 import type { Metadata } from "next";
 import dynamic from "next/dynamic";
 
@@ -99,9 +100,10 @@ export default async function DashboardLayout({
 			<div className="flex">
 				{/* Pass only a valid UserProfile or null to Sidebar */}
 				<Sidebar user={user} />
-				<main className="w-full flex-1 overflow-x-hidden overflow-y-auto">
+				<main className="w-full flex-1 overflow-y-auto overflow-x-hidden">
 					<ImpersonationBanner />
 					<Header />
+					<DashboardPageHelpButton />
 					{children}
 				</main>
 				<AiUsageModal />

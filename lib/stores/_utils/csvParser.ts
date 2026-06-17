@@ -1,5 +1,9 @@
 import type { SocialsCount } from "@/types/_dashboard/leadList";
-import type { LeadStatus, LeadTypeGlobal } from "@/types/_dashboard/leads";
+import type {
+	LeadCategory,
+	LeadStatus,
+	LeadTypeGlobal,
+} from "@/types/_dashboard/leads";
 import Papa from "papaparse";
 
 /**
@@ -110,6 +114,10 @@ function extractLeadFromRow(
 		const yearBuilt = extractFieldValue(row, fieldMappings.yearBuiltField);
 		const leadStatus = extractFieldValue(row, fieldMappings.leadStatusField);
 		const leadSource = extractFieldValue(row, fieldMappings.leadSourceField);
+		const leadCategory = extractFieldValue(
+			row,
+			fieldMappings.leadCategoryField,
+		);
 		const notes = extractFieldValue(row, fieldMappings.notesField);
 		const tags = extractFieldValue(row, fieldMappings.tagsField);
 		const priority = extractFieldValue(row, fieldMappings.priorityField);
@@ -227,6 +235,7 @@ function extractLeadFromRow(
 				? Number.parseInt(String(yearBuilt), 10) || undefined
 				: undefined,
 			leadSource: leadSource || undefined,
+			leadCategory: normalizeLeadCategory(leadCategory),
 			notes: notes || undefined,
 			tags: tags || undefined,
 			priority: priority || undefined,
@@ -242,6 +251,34 @@ function extractLeadFromRow(
 		console.error("Error extracting lead from row:", error);
 		return null;
 	}
+}
+
+function normalizeLeadCategory(value: string | null): LeadCategory | undefined {
+	if (!value) return undefined;
+	const normalized = value.trim().toLowerCase();
+	if (
+		normalized === "off-market-leads" ||
+		normalized === "off market leads" ||
+		normalized === "off-market"
+	) {
+		return "off-market-leads";
+	}
+	if (
+		normalized === "motivated-sellers" ||
+		normalized === "motivated sellers" ||
+		normalized === "motivated-seller"
+	) {
+		return "motivated-sellers";
+	}
+	if (
+		normalized === "cash-buyers" ||
+		normalized === "cash buyers" ||
+		normalized === "cashbuyer" ||
+		normalized === "cash buyers"
+	) {
+		return "cash-buyers";
+	}
+	return undefined;
 }
 
 /**
