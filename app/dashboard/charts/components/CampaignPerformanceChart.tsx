@@ -7,18 +7,16 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-import { ChartContainer, ChartTooltipContent } from "@/components/ui/chart";
+import {
+	ChartAxisTick,
+	ChartContainer,
+	ChartLegendContent,
+	ChartTooltipContent,
+	useChartTextColor,
+} from "@/components/ui/chart";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useState } from "react";
-import {
-	Bar,
-	BarChart,
-	CartesianGrid,
-	Legend,
-	Tooltip,
-	XAxis,
-	YAxis,
-} from "recharts";
+import { Bar, BarChart, CartesianGrid, Tooltip, XAxis, YAxis } from "recharts";
 import type { CampaignPerformance } from "../types/analytics";
 
 interface CampaignPerformanceChartProps {
@@ -31,6 +29,7 @@ export function CampaignPerformanceChart({
 	data,
 }: CampaignPerformanceChartProps) {
 	const [metric, setMetric] = useState<MetricType>("leads");
+	const chartTextColor = useChartTextColor();
 
 	const chartConfig = {
 		leads: { label: "Leads Generated", color: "hsl(var(--chart-1))" },
@@ -73,14 +72,16 @@ export function CampaignPerformanceChart({
 							axisLine={false}
 							tickMargin={8}
 							style={{ fontSize: "12px" }}
+							tick={<ChartAxisTick fill={chartTextColor} />}
 						/>
 						<YAxis
 							tickLine={false}
 							axisLine={false}
 							style={{ fontSize: "12px" }}
+							tick={<ChartAxisTick fill={chartTextColor} />}
 						/>
 						<Tooltip content={<ChartTooltipContent />} />
-						<Legend />
+						<ChartLegendContent />
 						<Bar
 							dataKey={metric}
 							fill={chartConfig[metric].color}

@@ -7,16 +7,20 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-import { ChartContainer, ChartTooltipContent } from "@/components/ui/chart";
+import {
+	ChartAxisTick,
+	ChartContainer,
+	ChartTooltipContent,
+	useChartTextColor,
+} from "@/components/ui/chart";
 import { cn } from "@/lib/_utils";
 import { addMonths, format } from "date-fns";
 import { DollarSign, Sparkles, TrendingUp } from "lucide-react";
 import {
 	Area,
-	AreaChart,
 	CartesianGrid,
+	ComposedChart,
 	Line,
-	LineChart,
 	Tooltip,
 	XAxis,
 	YAxis,
@@ -86,6 +90,7 @@ export function RevenueForecasting({
 	historicalData,
 	currentMonthRevenue,
 }: RevenueForecastingProps) {
+	const chartTextColor = useChartTextColor();
 	const forecastData = generateForecast();
 
 	// Calculate metrics
@@ -176,7 +181,7 @@ export function RevenueForecasting({
 					config={chartConfig}
 					className="aspect-auto h-[300px] w-full"
 				>
-					<AreaChart data={forecastData} width={500} height={300}>
+					<ComposedChart data={forecastData} width={500} height={300}>
 						<defs>
 							<linearGradient id="confidenceRange" x1="0" y1="0" x2="0" y2="1">
 								<stop
@@ -198,12 +203,14 @@ export function RevenueForecasting({
 							axisLine={false}
 							tickMargin={8}
 							style={{ fontSize: "11px" }}
+							tick={<ChartAxisTick fill={chartTextColor} />}
 							tickFormatter={(value) => value.split(" ")[0]}
 						/>
 						<YAxis
 							tickLine={false}
 							axisLine={false}
 							style={{ fontSize: "11px" }}
+							tick={<ChartAxisTick fill={chartTextColor} />}
 							tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`}
 						/>
 						<Tooltip content={<ChartTooltipContent />} />
@@ -243,7 +250,7 @@ export function RevenueForecasting({
 							dot={false}
 							name="Predicted Revenue"
 						/>
-					</AreaChart>
+					</ComposedChart>
 				</ChartContainer>
 
 				{/* Insights */}

@@ -22,6 +22,13 @@ type ChartContextProps = {
 	config: ChartConfig;
 };
 
+type ChartAxisTickProps = React.SVGProps<SVGTextElement> & {
+	payload?: {
+		value?: React.ReactNode;
+	};
+	fill?: string;
+};
+
 const ChartContext = React.createContext<ChartContextProps | null>(null);
 
 function useChart() {
@@ -32,6 +39,50 @@ function useChart() {
 	}
 
 	return context;
+}
+
+function useChartTextColor() {
+	const [textColor, setTextColor] = React.useState("rgb(2, 8, 23)");
+
+	React.useEffect(() => {
+		const updateTextColor = () => {
+			if (typeof window === "undefined") return;
+			const nextColor = getComputedStyle(document.body).color;
+			if (nextColor) {
+				setTextColor(nextColor);
+			}
+		};
+
+		updateTextColor();
+
+		const observer = new MutationObserver(updateTextColor);
+		observer.observe(document.documentElement, {
+			attributes: true,
+			attributeFilter: ["class"],
+		});
+
+		return () => observer.disconnect();
+	}, []);
+
+	return textColor;
+}
+
+function ChartAxisTick({ payload, fill, style, ...props }: ChartAxisTickProps) {
+	const resolvedFill = fill ?? "rgb(2, 8, 23)";
+
+	return (
+		<text
+			{...props}
+			fill={resolvedFill}
+			style={{
+				fill: resolvedFill,
+				color: resolvedFill,
+				...style,
+			}}
+		>
+			{payload?.value}
+		</text>
+	);
 }
 
 const ChartContainer = React.forwardRef<
@@ -52,7 +103,7 @@ const ChartContainer = React.forwardRef<
 				data-chart={chartId}
 				ref={ref}
 				className={cn(
-					"flex aspect-video justify-center text-xs [&_.recharts-cartesian-axis-tick_text]:fill-muted-foreground [&_.recharts-cartesian-grid_line]:stroke-border/50 [&_.recharts-curve.recharts-tooltip-cursor]:stroke-border [&_.recharts-dot[stroke='#fff']]:stroke-transparent [&_.recharts-layer]:outline-none [&_.recharts-polar-grid_[stroke='#ccc']]:stroke-border [&_.recharts-radial-bar-background-sector]:fill-muted [&_.recharts-rectangle.recharts-tooltip-cursor]:fill-muted [&_.recharts-reference-line-line]:stroke-border [&_.recharts-sector[stroke='#fff']]:stroke-transparent [&_.recharts-sector]:outline-none [&_.recharts-surface]:outline-none",
+					"flex aspect-video justify-center text-foreground text-xs [&_.recharts-cartesian-grid_line]:stroke-border/50 [&_.recharts-curve.recharts-tooltip-cursor]:stroke-border [&_.recharts-dot[stroke='#fff']]:stroke-transparent [&_.recharts-layer]:outline-none [&_.recharts-polar-grid_[stroke='#ccc']]:stroke-border [&_.recharts-radial-bar-background-sector]:fill-muted [&_.recharts-rectangle.recharts-tooltip-cursor]:fill-muted [&_.recharts-reference-line-line]:stroke-border [&_.recharts-sector[stroke='#fff']]:stroke-transparent [&_.recharts-sector]:outline-none [&_.recharts-surface]:outline-none",
 					className,
 				)}
 				{...props}
@@ -79,6 +130,19 @@ const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
 
 	return (
 		<style>
+			{`
+[data-chart=${id}] svg text,
+[data-chart=${id}] svg tspan,
+[data-chart=${id}] .recharts-text,
+[data-chart=${id}] .recharts-cartesian-axis-tick-value,
+[data-chart=${id}] .recharts-legend-item-text,
+[data-chart=${id}] .recharts-tooltip-label,
+[data-chart=${id}] .recharts-tooltip-item-name,
+[data-chart=${id}] .recharts-tooltip-item-value {
+  fill: hsl(var(--foreground)) !important;
+  color: hsl(var(--foreground)) !important;
+}
+`}
 			{Object.entries(THEMES)
 				.map(
 					([theme, prefix]) => `${prefix} [data-chart=${id}] {
@@ -176,9 +240,10 @@ const ChartTooltipContent = React.forwardRef<
 			<div
 				ref={ref}
 				className={cn(
-					"grid min-w-[8rem] items-start gap-1.5 rounded-lg border border-border/50 bg-background px-2.5 py-1.5 text-xs shadow-xl",
+					"grid min-w-[8rem] items-start gap-1.5 rounded-lg border border-border/50 px-2.5 py-1.5 text-xs shadow-xl",
 					className,
 				)}
+				style={{ backgroundColor: "hsl(var(--card))" }}
 			>
 				{!nestLabel ? tooltipLabel : null}
 				<div className="grid gap-1.5">
@@ -277,7 +342,7 @@ const ChartLegendContent = React.forwardRef<
 			<div
 				ref={ref}
 				className={cn(
-					"flex items-center justify-center gap-4",
+					"flex items-center justify-center gap-4 text-foreground",
 					verticalAlign === "top" ? "pb-3" : "pt-3",
 					className,
 				)}
@@ -359,4 +424,6 @@ export {
 	ChartLegend,
 	ChartLegendContent,
 	ChartStyle,
+	ChartAxisTick,
+	useChartTextColor,
 };

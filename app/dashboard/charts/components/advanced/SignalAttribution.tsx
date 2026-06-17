@@ -7,17 +7,15 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-import { ChartContainer, ChartTooltipContent } from "@/components/ui/chart";
-import { Target } from "lucide-react";
 import {
-	Bar,
-	BarChart,
-	CartesianGrid,
-	Legend,
-	Tooltip,
-	XAxis,
-	YAxis,
-} from "recharts";
+	ChartAxisTick,
+	ChartContainer,
+	ChartLegendContent,
+	ChartTooltipContent,
+	useChartTextColor,
+} from "@/components/ui/chart";
+import { Target } from "lucide-react";
+import { Bar, BarChart, CartesianGrid, Tooltip, XAxis, YAxis } from "recharts";
 import type { SignalToSaleAttribution } from "../../types/advanced-analytics";
 
 interface SignalAttributionProps {
@@ -25,6 +23,7 @@ interface SignalAttributionProps {
 }
 
 export function SignalAttribution({ data }: SignalAttributionProps) {
+	const chartTextColor = useChartTextColor();
 	const chartConfig = {
 		conversionRate: {
 			label: "Conversion Rate (%)",
@@ -65,14 +64,16 @@ export function SignalAttribution({ data }: SignalAttributionProps) {
 							axisLine={false}
 							tickMargin={8}
 							style={{ fontSize: "11px" }}
+							tick={<ChartAxisTick fill={chartTextColor} />}
 						/>
 						<YAxis
 							tickLine={false}
 							axisLine={false}
 							style={{ fontSize: "11px" }}
+							tick={<ChartAxisTick fill={chartTextColor} />}
 						/>
 						<Tooltip content={<ChartTooltipContent />} />
-						<Legend />
+						<ChartLegendContent />
 						<Bar
 							dataKey="conversionRate"
 							fill={chartConfig.conversionRate.color}

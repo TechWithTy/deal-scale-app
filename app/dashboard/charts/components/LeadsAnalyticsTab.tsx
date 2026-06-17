@@ -8,8 +8,14 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-import { ChartContainer, ChartTooltipContent } from "@/components/ui/chart";
+import {
+	ChartAxisTick,
+	ChartContainer,
+	ChartTooltipContent,
+	useChartTextColor,
+} from "@/components/ui/chart";
 import { Progress } from "@/components/ui/progress";
+import { mockAnalyticsData } from "@/constants/_faker/analytics/charts";
 import { cn } from "@/lib/_utils";
 import {
 	BadgeCheck,
@@ -24,11 +30,13 @@ import { Bar, BarChart, CartesianGrid, Tooltip, XAxis, YAxis } from "recharts";
 import type { LeadsAnalytics } from "../types/analytics";
 
 interface LeadsAnalyticsTabProps {
-	data: LeadsAnalytics;
+	data?: LeadsAnalytics;
 }
 
 export function LeadsAnalyticsTab({ data }: LeadsAnalyticsTabProps) {
-	const { segments } = data;
+	const chartTextColor = useChartTextColor();
+	const analyticsData = data ?? mockAnalyticsData.leads_analytics;
+	const { segments } = analyticsData;
 
 	const chartConfig = {
 		total_leads: {
@@ -69,25 +77,25 @@ export function LeadsAnalyticsTab({ data }: LeadsAnalyticsTabProps) {
 			<div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
 				<SummaryCard
 					title="Total Leads"
-					value={data.total_leads}
+					value={analyticsData.total_leads}
 					description="Across the tracked lead segments"
 					icon={Users}
 				/>
 				<SummaryCard
 					title="Qualified Leads"
-					value={data.qualified_leads}
+					value={analyticsData.qualified_leads}
 					description="Leads ready for follow-up"
 					icon={Target}
 				/>
 				<SummaryCard
 					title="Hot Leads"
-					value={data.hot_leads}
+					value={analyticsData.hot_leads}
 					description="Highest priority opportunities"
 					icon={Flame}
 				/>
 				<SummaryCard
 					title="Avg. Intent Score"
-					value={data.average_intent_score}
+					value={analyticsData.average_intent_score}
 					description="Weighted across all segments"
 					icon={Radar}
 				/>
@@ -117,11 +125,13 @@ export function LeadsAnalyticsTab({ data }: LeadsAnalyticsTabProps) {
 									angle={-18}
 									textAnchor="end"
 									style={{ fontSize: "12px" }}
+									tick={<ChartAxisTick fill={chartTextColor} />}
 								/>
 								<YAxis
 									tickLine={false}
 									axisLine={false}
 									style={{ fontSize: "12px" }}
+									tick={<ChartAxisTick fill={chartTextColor} />}
 								/>
 								<Tooltip content={<ChartTooltipContent />} />
 								<Bar

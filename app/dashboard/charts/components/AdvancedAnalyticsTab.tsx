@@ -46,19 +46,19 @@ export function AdvancedAnalyticsTab() {
 				<AIROIDashboard metrics={advancedData.aiRoi} />
 
 				{/* Predictive Analytics Row */}
-				<div className="grid gap-4 md:grid-cols-2">
+				<div className="grid items-start gap-2 md:grid-cols-2 md:gap-3">
 					<PredictiveLeadScoring />
 					<RevenueForecasting />
 				</div>
 
 				{/* Performance Metrics Row */}
-				<div className="grid gap-4 md:grid-cols-2">
+				<div className="grid items-start gap-2 md:grid-cols-2 md:gap-3">
 					<DealEfficiencyCard data={advancedData.dealEfficiencyIndex} />
 					<PredictiveCloseCard data={advancedData.predictiveClose} />
 				</div>
 
 				{/* Attribution & Hobby Time Row */}
-				<div className="grid gap-4 md:grid-cols-2">
+				<div className="grid items-start gap-2 md:grid-cols-2 md:gap-3">
 					<SignalAttribution data={advancedData.signalAttribution} />
 					<HobbyTimeForecast data={advancedData.hobbyTime} />
 				</div>

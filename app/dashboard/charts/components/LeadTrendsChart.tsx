@@ -7,11 +7,16 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-import { ChartContainer, ChartTooltipContent } from "@/components/ui/chart";
+import {
+	ChartAxisTick,
+	ChartContainer,
+	ChartLegendContent,
+	ChartTooltipContent,
+	useChartTextColor,
+} from "@/components/ui/chart";
 import { format, parseISO } from "date-fns";
 import {
 	CartesianGrid,
-	Legend,
 	Line,
 	LineChart,
 	Tooltip,
@@ -25,6 +30,7 @@ interface LeadTrendsChartProps {
 }
 
 export function LeadTrendsChart({ data }: LeadTrendsChartProps) {
+	const chartTextColor = useChartTextColor();
 	const chartConfig = {
 		total: {
 			label: "Total Leads",
@@ -60,14 +66,16 @@ export function LeadTrendsChart({ data }: LeadTrendsChartProps) {
 							axisLine={false}
 							tickMargin={8}
 							style={{ fontSize: "12px" }}
+							tick={<ChartAxisTick fill={chartTextColor} />}
 						/>
 						<YAxis
 							tickLine={false}
 							axisLine={false}
 							style={{ fontSize: "12px" }}
+							tick={<ChartAxisTick fill={chartTextColor} />}
 						/>
 						<Tooltip content={<ChartTooltipContent />} />
-						<Legend />
+						<ChartLegendContent />
 						<Line
 							type="monotone"
 							dataKey="total"
