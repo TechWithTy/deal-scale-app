@@ -30,11 +30,32 @@ export interface SalesPipeline {
 	deals_closed: number;
 }
 
+export interface LeadSegmentAnalytics {
+	key: "off-market-sellers" | "motivated-sellers" | "cash-buyers";
+	label: string;
+	total_leads: number;
+	qualified_leads: number;
+	hot_leads: number;
+	conversion_rate: number;
+	average_intent_score: number;
+	top_source: string;
+	primary_signal: string;
+}
+
+export interface LeadsAnalytics {
+	total_leads: number;
+	qualified_leads: number;
+	hot_leads: number;
+	average_intent_score: number;
+	segments: LeadSegmentAnalytics[];
+}
+
 export interface AnalyticsData {
 	analytics_summary: AnalyticsSummary;
 	campaign_performance: CampaignPerformance[];
 	lead_trends: LeadTrend[];
 	sales_pipeline: SalesPipeline;
+	leads_analytics: LeadsAnalytics;
 }
 
 export interface ROIMetrics {

@@ -12,6 +12,7 @@ import {
 	Percent,
 	Sparkles,
 	TrendingUp,
+	Users,
 } from "lucide-react";
 import { RefreshCw } from "lucide-react";
 import dynamic from "next/dynamic";
@@ -79,6 +80,14 @@ const AIAgentsTab = dynamic(
 	{ ssr: false, loading: () => <FullWidthSkeleton /> },
 );
 
+const LeadsAnalyticsTab = dynamic(
+	() =>
+		import("./components/LeadsAnalyticsTab").then((mod) => ({
+			default: mod.LeadsAnalyticsTab,
+		})),
+	{ ssr: false, loading: () => <FullWidthSkeleton /> },
+);
+
 const AdvancedAnalyticsTab = dynamic(
 	() =>
 		import("./components/AdvancedAnalyticsTab").then((mod) => ({
@@ -116,6 +125,7 @@ export default function ChartsPage() {
 		analytics_summary,
 		campaign_performance,
 		lead_trends,
+		leads_analytics,
 		sales_pipeline,
 	} = data;
 
@@ -143,6 +153,10 @@ export default function ChartsPage() {
 					<TabsTrigger value="overview" className="flex items-center gap-2">
 						<BarChart className="h-4 w-4" />
 						Overview
+					</TabsTrigger>
+					<TabsTrigger value="leads" className="flex items-center gap-2">
+						<Users className="h-4 w-4" />
+						Leads
 					</TabsTrigger>
 					<TabsTrigger value="ai-agents" className="flex items-center gap-2">
 						<Bot className="h-4 w-4" />
@@ -217,6 +231,18 @@ export default function ChartsPage() {
 					)}
 				</TabsContent>
 
+				<TabsContent value="leads" className="mt-6">
+					{isSlowNetwork ? (
+						<NetworkFallback
+							icon={<Users className="h-4 w-4" />}
+							message="Lead analytics paused"
+							description="Reconnect on a faster network to view lead segment performance."
+						/>
+					) : (
+						<LeadsAnalyticsTab data={leads_analytics} />
+					)}
+				</TabsContent>
+
 				<TabsContent value="ai-agents" className="mt-6">
 					{isSlowNetwork ? (
 						<NetworkFallback
@@ -255,12 +281,12 @@ function NetworkFallback({
 	description: string;
 }): JSX.Element {
 	return (
-		<div className="flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-border/60 bg-muted/40 p-8 text-center">
+		<div className="flex flex-col items-center justify-center gap-2 rounded-xl border border-border/60 border-dashed bg-muted/40 p-8 text-center">
 			<div className="flex h-12 w-12 items-center justify-center rounded-full border border-border/60 text-muted-foreground">
 				{icon}
 			</div>
-			<p className="text-base font-medium text-foreground">{message}</p>
-			<p className="max-w-md text-sm text-muted-foreground">{description}</p>
+			<p className="font-medium text-base text-foreground">{message}</p>
+			<p className="max-w-md text-muted-foreground text-sm">{description}</p>
 		</div>
 	);
 }
