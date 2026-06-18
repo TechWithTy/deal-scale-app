@@ -41,6 +41,14 @@ export function AgentDetailsForm({
 }: AgentDetailsFormProps) {
 	const { name, type, description } = form.watch();
 	const isGenerationDisabled = !name || !type || !description;
+	const requiresOutreachFields =
+		type === "phone-call" || type === "text-message";
+	const salesScriptLabel =
+		type === "text-message" ? "Text Message Script" : "Sales Script";
+	const salesScriptPlaceholder =
+		type === "text-message"
+			? "e.g., Hi [Name], this is [Agent] with..."
+			: "e.g., Hi [Name], I'm calling from...";
 	const [salesScriptFileName, setSalesScriptFileName] = useState("");
 	const [salesScriptUploadError, setSalesScriptUploadError] = useState("");
 
@@ -150,9 +158,11 @@ export function AgentDetailsForm({
 								</SelectTrigger>
 							</FormControl>
 							<SelectContent>
-								<SelectItem value="phone">Phone</SelectItem>
+								<SelectItem value="phone-call">Phone Call Agent</SelectItem>
+								<SelectItem value="text-message">Text Message Agent</SelectItem>
 								<SelectItem value="direct mail">Direct Mail</SelectItem>
-								<SelectItem value="social">Social</SelectItem>
+								<SelectItem value="linkedin">LinkedIn</SelectItem>
+								<SelectItem value="facebook">Facebook</SelectItem>
 							</SelectContent>
 						</Select>
 						<FormMessage />
@@ -180,7 +190,9 @@ export function AgentDetailsForm({
 				name="campaignGoal"
 				render={({ field }) => (
 					<FormItem data-tour="agent-manager-goal">
-						<FormLabel>Campaign Goal</FormLabel>
+						<FormLabel>
+							Campaign Goal{requiresOutreachFields ? " *" : ""}
+						</FormLabel>
 						<FormControl>
 							<Textarea
 								placeholder="e.g., Book 150 qualified demos in Q4."
@@ -196,7 +208,7 @@ export function AgentDetailsForm({
 				name="persona"
 				render={({ field }) => (
 					<FormItem data-tour="agent-manager-persona">
-						<FormLabel>Persona</FormLabel>
+						<FormLabel>Persona{requiresOutreachFields ? " *" : ""}</FormLabel>
 						<FormControl>
 							<Input placeholder="e.g., Friendly & Helpful" {...field} />
 						</FormControl>
@@ -209,16 +221,16 @@ export function AgentDetailsForm({
 				name="salesScript"
 				render={({ field }) => (
 					<FormItem data-tour="agent-manager-script">
-						<FormLabel>Sales Script</FormLabel>
+						<FormLabel>
+							{salesScriptLabel}
+							{requiresOutreachFields ? " *" : ""}
+						</FormLabel>
 						<div className="space-y-3">
 							<FormControl>
-								<Textarea
-									placeholder="e.g., Hi [Name], I'm calling from..."
-									{...field}
-								/>
+								<Textarea placeholder={salesScriptPlaceholder} {...field} />
 							</FormControl>
 							<div
-								className="rounded-md border border-dashed border-border bg-muted/30 p-3"
+								className="rounded-md border border-border border-dashed bg-muted/30 p-3"
 								data-tour="agent-manager-script-upload"
 							>
 								<FormLabel

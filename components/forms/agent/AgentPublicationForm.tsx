@@ -31,9 +31,11 @@ export function AgentPublicationForm({ form }: AgentPublicationFormProps) {
 
 	// Simple placeholder base rate by agent type. Replace with API-driven values later.
 	const baseRateByType: Record<string, number> = {
-		phone: 200,
+		"phone-call": 200,
+		"text-message": 100,
 		"direct mail": 150,
-		social: 100,
+		linkedin: 100,
+		facebook: 100,
 	};
 
 	const baseRate = baseRateByType[agentType ?? ""] ?? 0;

@@ -75,6 +75,7 @@ export function CampaignSchedulePlanner() {
 		setEndDate,
 		reachOnWeekend,
 		reachOnHolidays,
+		primaryChannel,
 	} = useCampaignCreationStore();
 	const holidays = React.useMemo(() => new Holidays("US"), []);
 
@@ -121,6 +122,14 @@ export function CampaignSchedulePlanner() {
 			: "Select a start and stop date on the calendar";
 	const selectedDateSummary = formatDateList(selectedRunDates);
 	const isDateRangeMode = scheduleMode === "date-range";
+	const isTextChannel = primaryChannel === "text";
+	const isInteractionChannel =
+		primaryChannel === "linkedin" || primaryChannel === "facebook";
+	const scheduleUnit = isInteractionChannel
+		? "interaction"
+		: isTextChannel
+			? "message"
+			: "call";
 
 	return (
 		<section
@@ -129,9 +138,12 @@ export function CampaignSchedulePlanner() {
 		>
 			<div className="mb-4 flex flex-wrap items-start justify-between gap-3">
 				<div>
-					<h3 className="font-semibold text-base">Campaign call schedule</h3>
+					<h3 className="font-semibold text-base">
+						Campaign {scheduleUnit} schedule
+					</h3>
 					<p className="text-muted-foreground text-sm">
-						Choose a start/stop window or pick exact calendar days for calls.
+						Choose a start/stop window or pick exact calendar days for{" "}
+						{scheduleUnit}s.
 					</p>
 				</div>
 				<div className="rounded-full border bg-background px-3 py-1 text-muted-foreground text-xs">

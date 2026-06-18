@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useCampaignCreationStore } from "@/lib/stores/campaignCreation";
 import Holidays from "date-holidays";
-import { type FC } from "react";
+import React, { type FC } from "react";
 import { CampaignSchedulePlanner } from "../../../../../../../components/reusables/modals/user/campaign/steps/CampaignSchedulePlanner";
 import {
 	Accordion,
@@ -23,6 +23,7 @@ const TimingPreferencesStep: FC<TimingPreferencesStepProps> = ({
 	onBack,
 }) => {
 	const {
+		primaryChannel,
 		startDate,
 		endDate,
 		reachBeforeBusiness,
@@ -56,6 +57,24 @@ const TimingPreferencesStep: FC<TimingPreferencesStepProps> = ({
 
 	const minAttemptsError = minDailyAttempts < 1;
 	const maxAttemptsError = maxDailyAttempts < minDailyAttempts;
+	const isTextChannel = primaryChannel === "text";
+	const isInteractionChannel =
+		primaryChannel === "linkedin" || primaryChannel === "facebook";
+	const dailyUnit = isInteractionChannel
+		? "interactions"
+		: isTextChannel
+			? "messages"
+			: "calls";
+	const channelSettingsTitle = isInteractionChannel
+		? `${primaryChannel === "facebook" ? "Facebook" : "LinkedIn"} Interaction Settings`
+		: isTextChannel
+			? "Text Message Settings"
+			: "Call Settings";
+	const actionVerb = isInteractionChannel
+		? "Interact"
+		: isTextChannel
+			? "Message"
+			: "Call";
 
 	const isScheduleValid =
 		scheduleMode === "date-range"
@@ -68,9 +87,9 @@ const TimingPreferencesStep: FC<TimingPreferencesStepProps> = ({
 
 			<CampaignSchedulePlanner />
 
-			{/* Call Settings */}
+			{/* Channel Settings */}
 			<div className="space-y-4" data-tour="campaign-call-settings">
-				<h3 className="font-medium text-sm">Call Settings</h3>
+				<h3 className="font-medium text-sm">{channelSettingsTitle}</h3>
 
 				{/* Daily Limits */}
 				<h4 className="font-medium text-muted-foreground text-xs">
@@ -78,7 +97,9 @@ const TimingPreferencesStep: FC<TimingPreferencesStepProps> = ({
 				</h4>
 				<div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
 					<div className="space-y-1">
-						<Label htmlFor="minDailyAttempts">Minimum calls per day</Label>
+						<Label htmlFor="minDailyAttempts">
+							Minimum {dailyUnit} per day
+						</Label>
 						<Input
 							id="minDailyAttempts"
 							type="number"
@@ -92,13 +113,15 @@ const TimingPreferencesStep: FC<TimingPreferencesStepProps> = ({
 						/>
 						{minAttemptsError && (
 							<p className="text-destructive text-xs">
-								Minimum calls must be at least 1.
+								Minimum {dailyUnit} must be at least 1.
 							</p>
 						)}
 					</div>
 
 					<div className="space-y-1">
-						<Label htmlFor="maxDailyAttempts">Maximum calls per day</Label>
+						<Label htmlFor="maxDailyAttempts">
+							Maximum {dailyUnit} per day
+						</Label>
 						<Input
 							id="maxDailyAttempts"
 							type="number"
@@ -112,7 +135,8 @@ const TimingPreferencesStep: FC<TimingPreferencesStepProps> = ({
 						/>
 						{maxAttemptsError && (
 							<p className="text-destructive text-xs">
-								Max calls must be greater than or equal to minimum calls.
+								Max {dailyUnit} must be greater than or equal to minimum{" "}
+								{dailyUnit}.
 							</p>
 						)}
 					</div>
@@ -129,22 +153,28 @@ const TimingPreferencesStep: FC<TimingPreferencesStepProps> = ({
 								<div className="flex items-center gap-2">
 									<Checkbox id="tcpaCompliance" checked={true} disabled />
 									<Label htmlFor="tcpaCompliance">
-										TCPA compliant & voicemail enabled
+										{isInteractionChannel
+											? "Platform messaging compliance enabled"
+											: isTextChannel
+												? "TCPA compliant messaging enabled"
+												: "TCPA compliant & voicemail enabled"}
 									</Label>
 								</div>
 
-								<div className="flex items-center gap-2">
-									<Checkbox
-										id="countVm"
-										checked={countVoicemailAsAnswered}
-										onCheckedChange={(v) => setCountVoicemailAsAnswered(!!v)}
-									/>
-									<Label htmlFor="countVm">Count voicemail as answered</Label>
-								</div>
+								{!isTextChannel && !isInteractionChannel ? (
+									<div className="flex items-center gap-2">
+										<Checkbox
+											id="countVm"
+											checked={countVoicemailAsAnswered}
+											onCheckedChange={(v) => setCountVoicemailAsAnswered(!!v)}
+										/>
+										<Label htmlFor="countVm">Count voicemail as answered</Label>
+									</div>
+								) : null}
 
 								<div>
 									<h4 className="font-medium text-muted-foreground text-xs">
-										When to Call
+										When to {actionVerb}
 									</h4>
 									<div className="mt-2 grid grid-cols-1 gap-3 sm:grid-cols-2">
 										<div className="flex items-center gap-2">
@@ -153,7 +183,9 @@ const TimingPreferencesStep: FC<TimingPreferencesStepProps> = ({
 												checked={reachBeforeBusiness}
 												onCheckedChange={(v) => setReachBeforeBusiness(!!v)}
 											/>
-											<Label htmlFor="beforeBiz">Call before 9 AM</Label>
+											<Label htmlFor="beforeBiz">
+												{actionVerb} before 9 AM
+											</Label>
 										</div>
 										<div className="flex items-center gap-2">
 											<Checkbox
@@ -161,7 +193,7 @@ const TimingPreferencesStep: FC<TimingPreferencesStepProps> = ({
 												checked={reachAfterBusiness}
 												onCheckedChange={(v) => setReachAfterBusiness(!!v)}
 											/>
-											<Label htmlFor="afterBiz">Call after 5 PM</Label>
+											<Label htmlFor="afterBiz">{actionVerb} after 5 PM</Label>
 										</div>
 										<div className="flex items-center gap-2">
 											<Checkbox
@@ -169,7 +201,7 @@ const TimingPreferencesStep: FC<TimingPreferencesStepProps> = ({
 												checked={reachOnWeekend}
 												onCheckedChange={(v) => setReachOnWeekend(!!v)}
 											/>
-											<Label htmlFor="weekend">Call on weekends</Label>
+											<Label htmlFor="weekend">{actionVerb} on weekends</Label>
 										</div>
 										<div className="flex items-center gap-2">
 											<Checkbox
@@ -177,7 +209,7 @@ const TimingPreferencesStep: FC<TimingPreferencesStepProps> = ({
 												checked={reachOnHolidays}
 												onCheckedChange={(v) => setReachOnHolidays(!!v)}
 											/>
-											<Label htmlFor="holidays">Call on holidays</Label>
+											<Label htmlFor="holidays">{actionVerb} on holidays</Label>
 										</div>
 										<div className="flex items-center gap-2">
 											<Checkbox

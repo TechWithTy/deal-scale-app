@@ -1,4 +1,6 @@
-import React from "react";
+import { TimingPreferencesStep } from "@/components/reusables/modals/user/campaign/steps/TimingPreferencesStep";
+import { TimingPreferencesStep as ExternalTimingPreferencesStep } from "@/external/shadcn-table/src/examples/campaigns/modal/steps/TimingPreferencesStep";
+import { useCampaignCreationStore } from "@/lib/stores/campaignCreation";
 import {
 	cleanup,
 	fireEvent,
@@ -6,8 +8,7 @@ import {
 	screen,
 	within,
 } from "@testing-library/react";
-import { TimingPreferencesStep } from "@/components/reusables/modals/user/campaign/steps/TimingPreferencesStep";
-import { useCampaignCreationStore } from "@/lib/stores/campaignCreation";
+import React from "react";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
 describe("TimingPreferencesStep", () => {
@@ -72,6 +73,80 @@ describe("TimingPreferencesStep", () => {
 			screen.getByText("Run only on selected calendar days"),
 		).toBeInTheDocument();
 		expect(screen.getByText(/Selected weekdays: Monday/i)).toBeInTheDocument();
+	});
+
+	test("uses message schedule wording for text campaigns", async () => {
+		const store = useCampaignCreationStore.getState();
+		store.setPrimaryChannel("text");
+
+		render(<TimingPreferencesStep onBack={vi.fn()} onNext={vi.fn()} />);
+
+		expect(screen.getByText("Campaign message schedule")).toBeInTheDocument();
+		expect(
+			screen.getByText(
+				"Choose a start/stop window or pick exact calendar days for messages.",
+			),
+		).toBeInTheDocument();
+	});
+
+	test("uses interaction schedule wording for LinkedIn campaigns", async () => {
+		const store = useCampaignCreationStore.getState();
+		store.setPrimaryChannel("linkedin");
+
+		render(<TimingPreferencesStep onBack={vi.fn()} onNext={vi.fn()} />);
+
+		expect(
+			screen.getByText("Campaign interaction schedule"),
+		).toBeInTheDocument();
+		expect(
+			screen.getByText(
+				"Choose a start/stop window or pick exact calendar days for interactions.",
+			),
+		).toBeInTheDocument();
+	});
+
+	test("uses messages per day labels for text campaign pacing", async () => {
+		const store = useCampaignCreationStore.getState();
+		store.setPrimaryChannel("text");
+
+		render(<ExternalTimingPreferencesStep onBack={vi.fn()} onNext={vi.fn()} />);
+
+		expect(screen.getByText("Text Message Settings")).toBeInTheDocument();
+		expect(screen.getByText("Minimum messages per day")).toBeInTheDocument();
+		expect(screen.getByText("Maximum messages per day")).toBeInTheDocument();
+	});
+
+	test("uses interactions per day labels for LinkedIn and Facebook pacing", async () => {
+		const store = useCampaignCreationStore.getState();
+		store.setPrimaryChannel("linkedin");
+		const { rerender } = render(
+			<ExternalTimingPreferencesStep onBack={vi.fn()} onNext={vi.fn()} />,
+		);
+
+		expect(
+			screen.getByText("LinkedIn Interaction Settings"),
+		).toBeInTheDocument();
+		expect(
+			screen.getByText("Minimum interactions per day"),
+		).toBeInTheDocument();
+		expect(
+			screen.getByText("Maximum interactions per day"),
+		).toBeInTheDocument();
+
+		store.setPrimaryChannel("facebook");
+		rerender(
+			<ExternalTimingPreferencesStep onBack={vi.fn()} onNext={vi.fn()} />,
+		);
+
+		expect(
+			screen.getByText("Facebook Interaction Settings"),
+		).toBeInTheDocument();
+		expect(
+			screen.getByText("Minimum interactions per day"),
+		).toBeInTheDocument();
+		expect(
+			screen.getByText("Maximum interactions per day"),
+		).toBeInTheDocument();
 	});
 
 	test("blocks advancing when selected-days mode has no run dates", async () => {

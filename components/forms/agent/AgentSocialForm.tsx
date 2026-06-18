@@ -27,14 +27,19 @@ import type { Agent } from "./utils/schema";
 interface AgentSocialFormProps {
 	form: UseFormReturn<Agent>;
 	avatars: { id: string; name: string; image: string }[];
+	platformName?: "LinkedIn" | "Facebook";
 }
 
-export function AgentSocialForm({ form, avatars }: AgentSocialFormProps) {
+export function AgentSocialForm({
+	form,
+	avatars,
+	platformName = "LinkedIn",
+}: AgentSocialFormProps) {
 	const avatarImage = form.watch("avatarImage");
 	return (
 		<Card>
 			<CardHeader>
-				<CardTitle>Social Presence</CardTitle>
+				<CardTitle>{platformName} Presence</CardTitle>
 			</CardHeader>
 			<CardContent className="space-y-4">
 				<FormField

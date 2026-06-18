@@ -47,6 +47,9 @@ export function AgentForm({
 	} = useAgentForm(defaultValues);
 
 	const agentType = form.watch("type");
+	const isPhoneCallAgent = agentType === "phone-call";
+	const isSocialAgent = agentType === "linkedin" || agentType === "facebook";
+	const platformName = agentType === "facebook" ? "Facebook" : "LinkedIn";
 
 	return (
 		<>
@@ -66,7 +69,7 @@ export function AgentForm({
 							/>
 							<AgentPublicationForm form={form} />
 
-							{agentType === "phone" && (
+							{isPhoneCallAgent && (
 								<AgentAudioForm
 									form={form}
 									voices={voices}
@@ -77,8 +80,12 @@ export function AgentForm({
 								/>
 							)}
 
-							{agentType === "social" && (
-								<AgentSocialForm form={form} avatars={avatars} />
+							{isSocialAgent && (
+								<AgentSocialForm
+									form={form}
+									avatars={avatars}
+									platformName={platformName}
+								/>
 							)}
 
 							{agentType === "direct mail" && (

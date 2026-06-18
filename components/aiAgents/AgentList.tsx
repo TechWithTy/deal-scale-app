@@ -25,6 +25,14 @@ import {
 import { useEffect, useState } from "react";
 import { AgentAvatar } from "./AgentAvatar";
 
+const agentTypeLabels: Record<NonNullable<Agent["type"]>, string> = {
+	"phone-call": "Phone Call Agent",
+	"text-message": "Text Message Agent",
+	"direct mail": "Direct Mail",
+	linkedin: "LinkedIn",
+	facebook: "Facebook",
+};
+
 interface AgentListProps {
 	onEdit: (agent: Agent) => void;
 	agents: Agent[];
@@ -46,6 +54,7 @@ export function AgentList({ onEdit, agents, setAgents }: AgentListProps) {
 			<TableHeader>
 				<TableRow>
 					<TableHead className="w-[250px]">Agent</TableHead>
+					<TableHead>Type</TableHead>
 					<TableHead>Persona</TableHead>
 					<TableHead>Campaign Goal</TableHead>
 					<TableHead className="text-right">Actions</TableHead>
@@ -57,6 +66,9 @@ export function AgentList({ onEdit, agents, setAgents }: AgentListProps) {
 						<TableCell className="flex items-center space-x-4">
 							<AgentAvatar src={agent.image} alt={agent.name ?? "Agent"} />
 							<span className="truncate">{agent.name ?? "Unnamed Agent"}</span>
+						</TableCell>
+						<TableCell>
+							{agent.type ? agentTypeLabels[agent.type] : "N/A"}
 						</TableCell>
 						<TableCell>{agent.persona ?? "N/A"}</TableCell>
 						<TableCell>{agent.campaignGoal ?? "N/A"}</TableCell>
