@@ -1,5 +1,5 @@
+import { AnimatePresence, motion } from "framer-motion";
 import React from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import type { Player } from "../realtime/WebSocketProvider";
 import { RankRow } from "./RankRow";
 
@@ -50,8 +50,21 @@ export const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
 		[players, visibleCount],
 	);
 
+	if (players.length === 0) {
+		return (
+			<div className="rounded-lg border border-dashed bg-card/60 px-4 py-8 text-center">
+				<p className="font-medium text-foreground text-sm">
+					No active players yet
+				</p>
+				<p className="mt-1 text-muted-foreground text-xs">
+					New rankings will appear here as soon as player activity is available.
+				</p>
+			</div>
+		);
+	}
+
 	return (
-		<div className="space-y-2 md:space-y-3 lg:grid lg:grid-cols-2 lg:gap-4 lg:space-y-0">
+		<div className="grid grid-cols-1 gap-2 md:gap-3 xl:grid-cols-2">
 			<AnimatePresence mode="popLayout">
 				{shown.map((player, index) => (
 					<motion.div
@@ -65,7 +78,7 @@ export const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
 							delay: index * rowDelayMultiplier, // Stagger effect
 							ease: "easeOut",
 						}}
-						className={player.rank === 1 ? "lg:col-span-2" : ""}
+						className={player.rank === 1 ? "xl:col-span-2" : ""}
 					>
 						<RankRow
 							player={player}

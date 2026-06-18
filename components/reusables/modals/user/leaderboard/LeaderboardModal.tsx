@@ -15,7 +15,7 @@ export default function LeaderboardModal() {
 				<div className="relative">
 					{/* Leaderboard content with WebSocket provider */}
 					<WebSocketProvider>
-						<div className="p-2 sm:p-4">
+						<div className="min-w-0">
 							<LeaderboardContainer />
 						</div>
 					</WebSocketProvider>

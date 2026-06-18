@@ -99,7 +99,7 @@ export function AgentForm({
 								<Button type="button" variant="outline" onClick={onCancel}>
 									Cancel
 								</Button>
-								<Button type="submit">
+								<Button type="submit" data-tour="agent-manager-save-control">
 									{isEditing ? "Update Agent" : "Save Agent"}
 								</Button>
 							</div>

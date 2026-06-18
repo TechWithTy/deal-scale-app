@@ -13,6 +13,32 @@ const dashboardRoutesPath = path.join(
 	"tours",
 	"dashboardRoutes.ts",
 );
+const aiAgentsManagerPath = path.join(
+	root,
+	"components",
+	"aiAgents",
+	"index.tsx",
+);
+const aiAgentsListPath = path.join(
+	root,
+	"components",
+	"aiAgents",
+	"AgentList.tsx",
+);
+const agentFormPath = path.join(
+	root,
+	"components",
+	"forms",
+	"agent",
+	"AgentForm.tsx",
+);
+const agentDetailsFormPath = path.join(
+	root,
+	"components",
+	"forms",
+	"agent",
+	"AgentDetailsForm.tsx",
+);
 const appTourProviderPath = path.join(
 	root,
 	"external",
@@ -270,6 +296,43 @@ describe("DashboardNav tour launchers", () => {
 			'[data-tour="employee-header"]',
 		]) {
 			expect(source).toContain(`target: '${target}'`);
+		}
+	});
+
+	it("targets concrete AI agent controls during the guided tour", () => {
+		const dashboardRoutesSource = readFileSync(dashboardRoutesPath, "utf8");
+		const sourceByTarget = [
+			readFileSync(aiAgentsManagerPath, "utf8"),
+			readFileSync(aiAgentsListPath, "utf8"),
+			readFileSync(agentFormPath, "utf8"),
+			readFileSync(agentDetailsFormPath, "utf8"),
+		].join("\n");
+
+		for (const target of [
+			"agent-manager-name-control",
+			"agent-manager-type-control",
+			"agent-manager-goal-control",
+			"agent-manager-persona-control",
+			"agent-manager-script-control",
+			"agent-manager-script-upload-control",
+			"agent-manager-save-control",
+			"agents-table-control",
+		]) {
+			expect(dashboardRoutesSource).toContain(`[data-tour="${target}"]`);
+			expect(sourceByTarget).toContain(`data-tour="${target}"`);
+		}
+
+		for (const oldTarget of [
+			"target: '[data-tour=\"agent-manager-name\"]'",
+			"target: '[data-tour=\"agent-manager-type\"]'",
+			"target: '[data-tour=\"agent-manager-goal\"]'",
+			"target: '[data-tour=\"agent-manager-persona\"]'",
+			"target: '[data-tour=\"agent-manager-script\"]'",
+			"target: '[data-tour=\"agent-manager-script-upload\"]'",
+			"target: '[data-tour=\"agent-manager-save\"]'",
+			"target: '[data-tour=\"agents-table\"]'",
+		]) {
+			expect(dashboardRoutesSource).not.toContain(oldTarget);
 		}
 	});
 

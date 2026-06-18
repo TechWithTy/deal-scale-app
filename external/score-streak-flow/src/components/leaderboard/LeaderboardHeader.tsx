@@ -1,7 +1,7 @@
-import { motion } from "framer-motion";
 import { Badge } from "@root/components/ui/badge";
-import { Wifi, WifiOff, RefreshCw } from "lucide-react";
 import { Button } from "@root/components/ui/button";
+import { motion } from "framer-motion";
+import { RefreshCw, Wifi, WifiOff } from "lucide-react";
 import { formatTime } from "../utils/time";
 
 interface HeaderProps {
@@ -29,13 +29,13 @@ export const LeaderboardHeader = ({
 				duration: animationEnabled ? settings.animationDuration : 0,
 				delay: animationEnabled ? settings.headerDelay : 0,
 			}}
-			className="space-y-4 text-center"
+			className="space-y-3 text-center"
 		>
 			<div className="text-center">
-				<h1 className="bg-gradient-primary bg-clip-text font-bold text-2xl text-transparent sm:text-3xl md:text-4xl lg:text-6xl">
+				<h1 className="bg-gradient-primary bg-clip-text font-bold text-2xl text-transparent sm:text-3xl md:text-4xl">
 					Live Leaderboard
 				</h1>
-				<p className="mt-2 text-sm text-muted-foreground sm:text-base md:text-lg">
+				<p className="mt-1 text-muted-foreground text-sm sm:text-base">
 					Real-time competitive rankings with AI predictions
 				</p>
 			</div>

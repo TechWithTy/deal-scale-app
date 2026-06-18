@@ -1,21 +1,21 @@
-import React, { useMemo, useState } from "react";
-import { motion } from "framer-motion";
-import { LeaderboardTable } from "./LeaderboardTable";
-import { YourRankCard } from "./YourRankCard";
-import { PlayerToWatchAlert } from "../ai/PlayerToWatchAlert";
-import { useLeaderboard } from "../realtime/useLeaderboard";
-import { leaderboardConfig } from "./config";
 import { Button } from "@root/components/ui/button";
 import { useGamificationStore } from "@root/lib/stores/gamification";
-import { LeaderboardHeader } from "./LeaderboardHeader";
-import { LeaderboardSettingsPanel } from "./LeaderboardSettingsPanel";
-import { TableToolbar } from "./TableToolbar";
-import { LeaderboardFooter } from "./LeaderboardFooter";
+import { motion } from "framer-motion";
+import React, { useMemo, useState } from "react";
+import { PlayerToWatchAlert } from "../ai/PlayerToWatchAlert";
+import { useLeaderboard } from "../realtime/useLeaderboard";
 import {
 	LeaderboardFilters,
-	type TimePeriod,
 	type LeaderboardType,
+	type TimePeriod,
 } from "./LeaderboardFilters";
+import { LeaderboardFooter } from "./LeaderboardFooter";
+import { LeaderboardHeader } from "./LeaderboardHeader";
+import { LeaderboardSettingsPanel } from "./LeaderboardSettingsPanel";
+import { LeaderboardTable } from "./LeaderboardTable";
+import { TableToolbar } from "./TableToolbar";
+import { YourRankCard } from "./YourRankCard";
+import { leaderboardConfig } from "./config";
 
 function safeSetLocalStorage(key: string, value: string) {
 	try {
@@ -39,14 +39,15 @@ export const LeaderboardContainer = () => {
 		resume,
 	} = useLeaderboard();
 	const setCurrentRank = useGamificationStore((state) => state.setCurrentRank);
-	const checkRankChange = useGamificationStore((state) => state.checkRankChange);
+	const checkRankChange = useGamificationStore(
+		(state) => state.checkRankChange,
+	);
 	React.useEffect(() => {
 		if (typeof myRank === "number" && myRank > 0) {
 			setCurrentRank(myRank);
 			checkRankChange(myRank);
 		}
 	}, [myRank, setCurrentRank, checkRankChange]);
-
 
 	const [settings, setSettings] = useState(leaderboardConfig);
 	const [animationEnabled, setAnimationEnabled] = useState(false);
@@ -56,7 +57,8 @@ export const LeaderboardContainer = () => {
 
 	// Filter states
 	const [timePeriod, setTimePeriod] = useState<TimePeriod>("week");
-	const [leaderboardType, setLeaderboardType] = useState<LeaderboardType>("individual");
+	const [leaderboardType, setLeaderboardType] =
+		useState<LeaderboardType>("individual");
 
 	// Throttled snapshot of live data, updated at settings.refreshIntervalMs
 	const [throttledPlayers, setThrottledPlayers] = useState(players);
@@ -83,9 +85,12 @@ export const LeaderboardContainer = () => {
 		// Group by leaderboard type
 		if (leaderboardType === "team") {
 			// Group by company and sum scores
-			const teamScores = new Map<string, { score: number; players: typeof filtered }>();
-			
-			filtered.forEach((player) => {
+			const teamScores = new Map<
+				string,
+				{ score: number; players: typeof filtered }
+			>();
+
+			for (const player of filtered) {
 				const company = player.company || "Unknown";
 				const existing = teamScores.get(company);
 				if (existing) {
@@ -94,14 +99,14 @@ export const LeaderboardContainer = () => {
 				} else {
 					teamScores.set(company, { score: player.score, players: [player] });
 				}
-			});
+			}
 
 			// Convert to team leaderboard format (show best player from each team)
 			filtered = Array.from(teamScores.entries())
 				.map(([company, data]) => {
 					// Get the best player from this company
 					const bestPlayer = data.players.reduce((best, current) =>
-						current.score > best.score ? current : best
+						current.score > best.score ? current : best,
 					);
 					// Use the best player but represent the whole team
 					return {
@@ -114,24 +119,30 @@ export const LeaderboardContainer = () => {
 				.slice(0, Math.min(settings.maxPlayers, 20)); // Show top 20 teams
 		} else if (leaderboardType === "regional") {
 			// Group by state
-			const regionalScores = new Map<string, { score: number; players: typeof filtered }>();
-			
-			filtered.forEach((player) => {
+			const regionalScores = new Map<
+				string,
+				{ score: number; players: typeof filtered }
+			>();
+
+			for (const player of filtered) {
 				const region = player.state || "Unknown";
 				const existing = regionalScores.get(region);
 				if (existing) {
 					existing.score += player.score;
 					existing.players.push(player);
 				} else {
-					regionalScores.set(region, { score: player.score, players: [player] });
+					regionalScores.set(region, {
+						score: player.score,
+						players: [player],
+					});
 				}
-			});
+			}
 
 			// Convert to regional leaderboard
 			filtered = Array.from(regionalScores.entries())
 				.map(([state, data]) => {
 					const bestPlayer = data.players.reduce((best, current) =>
-						current.score > best.score ? current : best
+						current.score > best.score ? current : best,
 					);
 					return {
 						...bestPlayer,
@@ -293,8 +304,8 @@ export const LeaderboardContainer = () => {
 	}, []);
 
 	return (
-		<div className="min-h-screen bg-gradient-bg p-2 sm:p-4 md:p-6 lg:p-8">
-			<div className="mx-auto max-w-4xl space-y-3 sm:space-y-4 md:space-y-6 md:max-w-3xl lg:max-w-6xl">
+		<div className="min-h-screen bg-gradient-bg p-2 sm:p-4 md:p-5">
+			<div className="mx-auto max-w-5xl space-y-3 sm:space-y-4">
 				{/* Header */}
 				<LeaderboardHeader
 					animationEnabled={animationEnabled}
@@ -315,26 +326,26 @@ export const LeaderboardContainer = () => {
 					isOnline={isConnected}
 				/>
 
-			{/* AI Player to Watch Alert */}
-			<PlayerToWatchAlert players={players} />
+				{/* AI Player to Watch Alert */}
+				<PlayerToWatchAlert players={players} />
 
-			{/* Leaderboard Filters */}
-			<LeaderboardFilters
-				timePeriod={timePeriod}
-				onTimePeriodChange={setTimePeriod}
-				leaderboardType={leaderboardType}
-				onLeaderboardTypeChange={setLeaderboardType}
-				currentUserRank={myRank}
-				currentUserId="current-user"
-				currentUserName="You"
-			/>
+				{/* Leaderboard Filters */}
+				<LeaderboardFilters
+					timePeriod={timePeriod}
+					onTimePeriodChange={setTimePeriod}
+					leaderboardType={leaderboardType}
+					onLeaderboardTypeChange={setLeaderboardType}
+					currentUserRank={myRank}
+					currentUserId="current-user"
+					currentUserName="You"
+				/>
 
-			<LeaderboardSettingsPanel
-				animationEnabled={animationEnabled}
-				setAnimationEnabled={setAnimationEnabled}
-				settings={settings}
-				setSettings={setSettings}
-			/>
+				<LeaderboardSettingsPanel
+					animationEnabled={animationEnabled}
+					setAnimationEnabled={setAnimationEnabled}
+					settings={settings}
+					setSettings={setSettings}
+				/>
 
 				{/* Leaderboard Table */}
 				<motion.div
@@ -344,15 +355,21 @@ export const LeaderboardContainer = () => {
 						duration: animationEnabled ? settings.animationDuration : 0,
 						delay: animationEnabled ? settings.tableDelay : 0,
 					}}
-					className="space-y-4"
+					className="space-y-3"
 				>
-				<TableToolbar
-					title={`Top ${Math.min(filteredPlayers.length, visibleCount)} ${leaderboardType === "team" ? "Teams" : leaderboardType === "regional" ? "Regions" : "Players"}`}
-					displayedCount={displayedPlayers.length}
-					pageSize={pageSize}
-					setPageSize={setPageSize}
-					pageSizeOptions={pageSizeOptions}
-				/>
+					<TableToolbar
+						title={`Top ${displayedPlayers.length} ${
+							leaderboardType === "team"
+								? "Teams"
+								: leaderboardType === "regional"
+									? "Regions"
+									: "Players"
+						}`}
+						displayedCount={displayedPlayers.length}
+						pageSize={pageSize}
+						setPageSize={setPageSize}
+						pageSizeOptions={pageSizeOptions}
+					/>
 
 					<LeaderboardTable
 						players={displayedPlayers}
@@ -363,10 +380,10 @@ export const LeaderboardContainer = () => {
 					/>
 				</motion.div>
 
-			{/* Load More */}
-			{visibleCount <
-				Math.min(settings.maxPlayers, filteredPlayers.length) && (
-					<div className="mt-4 flex justify-center">
+				{/* Load More */}
+				{visibleCount <
+					Math.min(settings.maxPlayers, filteredPlayers.length) && (
+					<div className="mt-3 flex justify-center">
 						<Button
 							type="button"
 							size="sm"

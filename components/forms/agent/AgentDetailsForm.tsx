@@ -139,7 +139,11 @@ export function AgentDetailsForm({
 					<FormItem data-tour="agent-manager-name">
 						<FormLabel>Name</FormLabel>
 						<FormControl>
-							<Input placeholder="e.g., Q4 Sales Agent" {...field} />
+							<Input
+								data-tour="agent-manager-name-control"
+								placeholder="e.g., Q4 Sales Agent"
+								{...field}
+							/>
 						</FormControl>
 						<FormMessage />
 					</FormItem>
@@ -153,7 +157,7 @@ export function AgentDetailsForm({
 						<FormLabel>Agent Type</FormLabel>
 						<Select onValueChange={field.onChange} defaultValue={field.value}>
 							<FormControl>
-								<SelectTrigger>
+								<SelectTrigger data-tour="agent-manager-type-control">
 									<SelectValue placeholder="Select an agent type" />
 								</SelectTrigger>
 							</FormControl>
@@ -195,6 +199,7 @@ export function AgentDetailsForm({
 						</FormLabel>
 						<FormControl>
 							<Textarea
+								data-tour="agent-manager-goal-control"
 								placeholder="e.g., Book 150 qualified demos in Q4."
 								{...field}
 							/>
@@ -210,7 +215,11 @@ export function AgentDetailsForm({
 					<FormItem data-tour="agent-manager-persona">
 						<FormLabel>Persona{requiresOutreachFields ? " *" : ""}</FormLabel>
 						<FormControl>
-							<Input placeholder="e.g., Friendly & Helpful" {...field} />
+							<Input
+								data-tour="agent-manager-persona-control"
+								placeholder="e.g., Friendly & Helpful"
+								{...field}
+							/>
 						</FormControl>
 						<FormMessage />
 					</FormItem>
@@ -227,7 +236,11 @@ export function AgentDetailsForm({
 						</FormLabel>
 						<div className="space-y-3">
 							<FormControl>
-								<Textarea placeholder={salesScriptPlaceholder} {...field} />
+								<Textarea
+									data-tour="agent-manager-script-control"
+									placeholder={salesScriptPlaceholder}
+									{...field}
+								/>
 							</FormControl>
 							<div
 								className="rounded-md border border-border border-dashed bg-muted/30 p-3"
@@ -241,6 +254,7 @@ export function AgentDetailsForm({
 								</FormLabel>
 								<Input
 									id="sales-script-upload"
+									data-tour="agent-manager-script-upload-control"
 									type="file"
 									accept=".txt,.md,text/plain,text/markdown"
 									onChange={(event) =>

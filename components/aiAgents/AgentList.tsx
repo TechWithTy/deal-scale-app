@@ -22,7 +22,6 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import { useEffect, useState } from "react";
 import { AgentAvatar } from "./AgentAvatar";
 
 const agentTypeLabels: Record<NonNullable<Agent["type"]>, string> = {
@@ -50,7 +49,7 @@ export function AgentList({ onEdit, agents, setAgents }: AgentListProps) {
 	};
 
 	return (
-		<Table>
+		<Table data-tour="agents-table-control">
 			<TableHeader>
 				<TableRow>
 					<TableHead className="w-[250px]">Agent</TableHead>

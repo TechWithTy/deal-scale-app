@@ -1,7 +1,7 @@
-import { Card, CardContent } from "@root/components/ui/card";
 import { Badge } from "@root/components/ui/badge";
-import { Trophy, TrendingUp } from "lucide-react";
+import { Card, CardContent } from "@root/components/ui/card";
 import { motion } from "framer-motion";
+import { TrendingUp, Trophy } from "lucide-react";
 
 interface YourRankCardProps {
 	rank: number | null;
@@ -12,7 +12,10 @@ interface YourRankCardProps {
 export const YourRankCard = ({ rank, totalPlayers }: YourRankCardProps) => {
 	if (!rank) return null;
 
-	const percentage = (((totalPlayers - rank) / totalPlayers) * 100).toFixed(1);
+	const percentage =
+		totalPlayers > 0
+			? (((totalPlayers - rank) / totalPlayers) * 100).toFixed(1)
+			: "0.0";
 	const isTopTier = rank <= 100;
 
 	return (
@@ -20,21 +23,21 @@ export const YourRankCard = ({ rank, totalPlayers }: YourRankCardProps) => {
 			initial={{ opacity: 0, y: 20 }}
 			animate={{ opacity: 1, y: 0 }}
 			transition={{ duration: 0.4, ease: "easeOut" }}
-			className="sticky top-4 z-10"
+			className="sticky top-2 z-10"
 		>
 			<Card className="border-2 border-primary/40 bg-gradient-to-br from-primary/10 via-primary/5 to-background shadow-lg">
-				<CardContent className="p-3 sm:p-4">
-					<div className="flex items-center justify-between">
-						<div className="flex items-center gap-2 sm:gap-3">
-							<div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/20">
+				<CardContent className="p-3">
+					<div className="flex min-w-0 items-center justify-between gap-3">
+						<div className="flex min-w-0 items-center gap-2 sm:gap-3">
+							<div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/20">
 								<Trophy className="h-5 w-5 text-primary" />
 							</div>
 
 							<div className="min-w-0">
-								<h3 className="font-semibold text-sm text-foreground sm:text-base">
+								<h3 className="font-semibold text-foreground text-sm sm:text-base">
 									Your Rank
 								</h3>
-								<p className="text-muted-foreground text-xs sm:text-sm">
+								<p className="truncate text-muted-foreground text-xs sm:text-sm">
 									Top {percentage}% of players
 								</p>
 							</div>
@@ -48,7 +51,7 @@ export const YourRankCard = ({ rank, totalPlayers }: YourRankCardProps) => {
 								transition={{ duration: 0.6 }}
 								className="flex items-center gap-2"
 							>
-								<span className="font-bold text-lg text-foreground sm:text-xl md:text-2xl lg:text-3xl">
+								<span className="font-bold text-foreground text-lg sm:text-xl md:text-2xl">
 									#{rank.toLocaleString()}
 								</span>
 							</motion.div>
@@ -64,7 +67,7 @@ export const YourRankCard = ({ rank, totalPlayers }: YourRankCardProps) => {
 									</Badge>
 								)}
 
-								<span className="text-muted-foreground text-[10px] sm:text-xs">
+								<span className="text-[10px] text-muted-foreground sm:text-xs">
 									of {totalPlayers.toLocaleString()}
 								</span>
 							</div>

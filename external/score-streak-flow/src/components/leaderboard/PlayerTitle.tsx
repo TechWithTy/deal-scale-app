@@ -1,7 +1,7 @@
+import { cn } from "@root/lib/_utils";
 import React from "react";
 import type { Player } from "../realtime/WebSocketProvider";
 import { getProfileHref } from "./utils";
-import { cn } from "@root/lib/_utils";
 
 interface PlayerTitleProps {
 	player: Player;
@@ -19,7 +19,7 @@ export const PlayerTitle: React.FC<PlayerTitleProps> = ({
 	return (
 		<h3
 			className={cn(
-				"truncate font-semibold transition-colors duration-smooth",
+				"min-w-0 max-w-full truncate font-semibold text-sm transition-colors duration-smooth sm:text-base",
 				isCurrentUser
 					? "text-primary"
 					: "text-foreground group-hover:text-primary",
@@ -31,7 +31,7 @@ export const PlayerTitle: React.FC<PlayerTitleProps> = ({
 					href={profileHref}
 					target="_blank"
 					rel="noopener noreferrer"
-					className="text-inherit underline decoration-dotted underline-offset-2 hover:decoration-solid"
+					className="block max-w-full truncate text-inherit underline decoration-dotted underline-offset-2 hover:decoration-solid"
 				>
 					{player.username}
 				</a>

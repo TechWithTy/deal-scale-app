@@ -30,8 +30,9 @@ describe("Agent sales script upload", () => {
 		expect(source).toContain('accept=".txt,.md,text/plain,text/markdown"');
 		expect(source).toContain("file.text()");
 		expect(source).toContain('data-tour="agent-manager-script-upload"');
+		expect(source).toContain('data-tour="agent-manager-script-upload-control"');
 		expect(routeToursSource).toContain(
-			"target: '[data-tour=\"agent-manager-script-upload\"]'",
+			"target: '[data-tour=\"agent-manager-script-upload-control\"]'",
 		);
 	});
 
