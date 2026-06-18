@@ -33,9 +33,12 @@ export function AdvancedAnalyticsTab() {
 			fallbackMode="overlay"
 			fallbackTier="Enterprise"
 		>
-			<div className="space-y-6">
+			<div className="space-y-6" data-tour="charts-advanced-tab">
 				{/* Unlocked Enterprise Content */}
-				<div className="rounded-lg border border-primary/20 bg-primary/10 p-4">
+				<div
+					className="rounded-lg border border-primary/20 bg-primary/10 p-4"
+					data-tour="charts-advanced-intro"
+				>
 					<div className="flex items-center gap-2 text-primary">
 						<Sparkles className="h-5 w-5" />
 						<p className="font-medium">Enterprise Features Enabled</p>
@@ -43,29 +46,42 @@ export function AdvancedAnalyticsTab() {
 				</div>
 
 				{/* AI ROI Dashboard - Top Priority */}
-				<AIROIDashboard metrics={advancedData.aiRoi} />
+				<div data-tour="charts-advanced-ai-roi">
+					<AIROIDashboard metrics={advancedData.aiRoi} />
+				</div>
 
 				{/* Predictive Analytics Row */}
-				<div className="grid items-start gap-2 md:grid-cols-2 md:gap-3">
+				<div
+					className="grid items-start gap-2 md:grid-cols-2 md:gap-3"
+					data-tour="charts-advanced-predictive"
+				>
 					<PredictiveLeadScoring />
 					<RevenueForecasting />
 				</div>
 
 				{/* Performance Metrics Row */}
-				<div className="grid items-start gap-2 md:grid-cols-2 md:gap-3">
+				<div
+					className="grid items-start gap-2 md:grid-cols-2 md:gap-3"
+					data-tour="charts-advanced-efficiency"
+				>
 					<DealEfficiencyCard data={advancedData.dealEfficiencyIndex} />
 					<PredictiveCloseCard data={advancedData.predictiveClose} />
 				</div>
 
 				{/* Attribution & Hobby Time Row */}
-				<div className="grid items-start gap-2 md:grid-cols-2 md:gap-3">
+				<div
+					className="grid items-start gap-2 md:grid-cols-2 md:gap-3"
+					data-tour="charts-advanced-attribution"
+				>
 					<SignalAttribution data={advancedData.signalAttribution} />
 					<HobbyTimeForecast data={advancedData.hobbyTime} />
 				</div>
 
 				{/* Team Benchmarking - Enterprise Only */}
 				{isEnterprise && advancedData.teamBenchmark && (
-					<TeamBenchmarking data={advancedData.teamBenchmark} />
+					<div data-tour="charts-advanced-benchmarking">
+						<TeamBenchmarking data={advancedData.teamBenchmark} />
+					</div>
 				)}
 			</div>
 		</FeatureGuard>

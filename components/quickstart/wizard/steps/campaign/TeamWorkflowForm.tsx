@@ -19,7 +19,27 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useCampaignCreationStore } from "@/lib/stores/campaignCreation";
+import { InfoCircledIcon } from "@radix-ui/react-icons";
+
+const fallbackPlaybookTooltip =
+	"Uses the calendar dates already selected for this campaign. The playbook controls follow-ups, retries, and handoffs.";
+
+const fallbackSalesScriptTooltip =
+	"Message or call language used during each scheduled outreach touch.";
+
+const getAgentTooltip = (agent: {
+	label: string;
+	status?: string;
+	email?: string;
+}) =>
+	`${agent.label} can own scheduled campaign outreach, lead follow-up, and handoffs.${agent.status ? ` Status: ${agent.status}.` : ""}${agent.email ? ` Email: ${agent.email}.` : ""}`;
 
 const TeamWorkflowForm = () => {
 	const {
@@ -56,6 +76,8 @@ const TeamWorkflowForm = () => {
 			availableAgents.map((agent) => ({
 				value: agent.id,
 				label: `${agent.name} (${agent.status})`,
+				status: agent.status,
+				email: agent.email,
 			})),
 		[availableAgents],
 	);
@@ -65,6 +87,7 @@ const TeamWorkflowForm = () => {
 			availableWorkflows.map((workflow) => ({
 				value: workflow.id,
 				label: workflow.name,
+				description: workflow.description,
 			})),
 		[availableWorkflows],
 	);
@@ -74,6 +97,7 @@ const TeamWorkflowForm = () => {
 			availableSalesScripts.map((script) => ({
 				value: script.id,
 				label: script.name,
+				description: script.description,
 			})),
 		[availableSalesScripts],
 	);
@@ -81,10 +105,10 @@ const TeamWorkflowForm = () => {
 	return (
 		<Card>
 			<CardHeader>
-				<CardTitle className="text-xl">Team & Workflow</CardTitle>
+				<CardTitle className="text-xl">Team & Automation</CardTitle>
 				<CardDescription>
-					Assign ownership and automation logic so leads flow to the right
-					playbook.
+					Assign ownership and choose the follow-up playbook. Scheduling is
+					configured separately.
 				</CardDescription>
 			</CardHeader>
 			<CardContent className="grid gap-4 md:grid-cols-2">
@@ -100,25 +124,65 @@ const TeamWorkflowForm = () => {
 						<SelectContent>
 							{agentOptions.map((option) => (
 								<SelectItem key={option.value} value={option.value}>
-									{option.label}
+									<span className="flex w-full items-center justify-between gap-3">
+										<span className="truncate">{option.label}</span>
+										<TooltipProvider>
+											<Tooltip>
+												<TooltipTrigger asChild>
+													<span
+														aria-label={`${option.label} details`}
+														className="mr-2 inline-flex h-4 w-4 shrink-0 items-center justify-center text-muted-foreground"
+														onPointerDown={(event) => event.stopPropagation()}
+														title={getAgentTooltip(option)}
+													>
+														<InfoCircledIcon className="h-4 w-4" />
+													</span>
+												</TooltipTrigger>
+												<TooltipContent className="max-w-xs">
+													<p>{getAgentTooltip(option)}</p>
+												</TooltipContent>
+											</Tooltip>
+										</TooltipProvider>
+									</span>
 								</SelectItem>
 							))}
 						</SelectContent>
 					</Select>
 				</div>
 				<div className="space-y-2">
-					<Label className="font-medium text-sm">Workflow automation</Label>
+					<Label className="font-medium text-sm">Automation playbook</Label>
 					<Select
 						value={selectedWorkflowId ?? undefined}
 						onValueChange={(value) => setSelectedWorkflowId(value)}
 					>
 						<SelectTrigger>
-							<SelectValue placeholder="Choose workflow" />
+							<SelectValue placeholder="Choose playbook" />
 						</SelectTrigger>
 						<SelectContent>
 							{workflowOptions.map((option) => (
 								<SelectItem key={option.value} value={option.value}>
-									{option.label}
+									<span className="flex w-full items-center justify-between gap-3">
+										<span className="truncate">{option.label}</span>
+										<TooltipProvider>
+											<Tooltip>
+												<TooltipTrigger asChild>
+													<span
+														aria-label={`${option.label} details`}
+														className="mr-2 inline-flex h-4 w-4 shrink-0 items-center justify-center text-muted-foreground"
+														onPointerDown={(event) => event.stopPropagation()}
+														title={
+															option.description ?? fallbackPlaybookTooltip
+														}
+													>
+														<InfoCircledIcon className="h-4 w-4" />
+													</span>
+												</TooltipTrigger>
+												<TooltipContent className="max-w-xs">
+													<p>{option.description ?? fallbackPlaybookTooltip}</p>
+												</TooltipContent>
+											</Tooltip>
+										</TooltipProvider>
+									</span>
 								</SelectItem>
 							))}
 						</SelectContent>
@@ -136,7 +200,30 @@ const TeamWorkflowForm = () => {
 						<SelectContent>
 							{salesScriptOptions.map((option) => (
 								<SelectItem key={option.value} value={option.value}>
-									{option.label}
+									<span className="flex w-full items-center justify-between gap-3">
+										<span className="truncate">{option.label}</span>
+										<TooltipProvider>
+											<Tooltip>
+												<TooltipTrigger asChild>
+													<span
+														aria-label={`${option.label} details`}
+														className="mr-2 inline-flex h-4 w-4 shrink-0 items-center justify-center text-muted-foreground"
+														onPointerDown={(event) => event.stopPropagation()}
+														title={
+															option.description ?? fallbackSalesScriptTooltip
+														}
+													>
+														<InfoCircledIcon className="h-4 w-4" />
+													</span>
+												</TooltipTrigger>
+												<TooltipContent className="max-w-xs">
+													<p>
+														{option.description ?? fallbackSalesScriptTooltip}
+													</p>
+												</TooltipContent>
+											</Tooltip>
+										</TooltipProvider>
+									</span>
 								</SelectItem>
 							))}
 						</SelectContent>

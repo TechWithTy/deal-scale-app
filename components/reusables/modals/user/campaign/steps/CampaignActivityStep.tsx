@@ -192,9 +192,10 @@ export default function CampaignActivityStep(_: CampaignActivityStepProps) {
 			case "directmail":
 			case "email":
 				return "directMail";
+			case "linkedin":
+			case "facebook":
 			case "social":
 				return "social";
-			case "call":
 			default:
 				return "voice";
 		}

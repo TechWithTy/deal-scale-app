@@ -6,9 +6,11 @@ export default function DashboardChatPage() {
 	return (
 		<ChatWorkbench
 			embedded
+			fillAvailableHeight
 			showChatFrameHeader={false}
 			showHeader={false}
 			showManual={false}
+			showWorkspaceSidebars
 		/>
 	);
 }

@@ -7,6 +7,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "../../components/ui/select";
+import { CashBuyerProfilePanel } from "./CashBuyerProfilePanel";
 import type { DemoLead, DemoRow, SocialLink } from "./types";
 
 interface LeadCardProps {
@@ -202,6 +203,7 @@ export function LeadCard({ lead, rowId, setData }: LeadCardProps) {
 					</div>
 				</div>
 			</div>
+			<CashBuyerProfilePanel lead={lead} />
 		</div>
 	);
 }

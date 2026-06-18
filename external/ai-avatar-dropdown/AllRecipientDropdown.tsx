@@ -4,6 +4,7 @@ import AgentVoiceDropdown, { type AgentOption } from "./AgentVoiceDropdown";
 export type BasicPerson = {
 	id: string;
 	name: string;
+	email?: string;
 	status?: "active" | "inactive" | "away" | string;
 };
 
@@ -54,6 +55,7 @@ const AllRecipientDropdown: FC<AllRecipientDropdownProps> = ({
 					description: `AI Agent ${p.name} can handle calls, texts, and follow-ups with your campaign contacts.`,
 					capabilities: ["Calls", "Texts", "Follow-ups"],
 					agentType: "Voice Agent",
+					email: p.email,
 				} as AgentOption,
 			]),
 		).values(),
@@ -67,11 +69,12 @@ const AllRecipientDropdown: FC<AllRecipientDropdownProps> = ({
 					id: `emp-${p.id}`,
 					name: p.name,
 					status: mapStatus(p.status),
-					imageUrl: `https://i.pravatar.cc/64?u=${encodeURIComponent(p.id + "-emp")}`,
+					imageUrl: `https://i.pravatar.cc/64?u=${encodeURIComponent(`${p.id}-emp`)}`,
 					voiceUrl: undefined,
 					description: `${p.name} is a team member who can handle live appraisals and handoffs.`,
 					capabilities: ["Phone", "Scheduling", "Appraisals"],
 					agentType: "Employee",
+					email: p.email,
 				} as AgentOption,
 			]),
 		).values(),

@@ -9,7 +9,7 @@ interface ActionsKanbanPanelProps {
 
 export function ActionsKanbanPanel({ className }: ActionsKanbanPanelProps) {
 	return (
-		<div className={cn("h-full min-h-0", className)}>
+		<div className={cn("flex min-h-full flex-col", className)}>
 			<LiveAvatarActionsKanbanPanel />
 		</div>
 	);

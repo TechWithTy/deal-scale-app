@@ -24,7 +24,7 @@ export default function CampaignCallTablePage({
 		campaignId?: string | null;
 	};
 }) {
-	type ParentTab = "calls" | "text" | "social" | "directMail";
+	type ParentTab = "calls" | "text" | "linkedin" | "facebook" | "directMail";
 
 	const router = useRouter();
 	const pathname = usePathname();
@@ -37,12 +37,13 @@ export default function CampaignCallTablePage({
 		searchParams?.get("campaignId") ?? urlParams?.campaignId ?? null;
 
 	const tabToType = React.useMemo<
-		Record<ParentTab, "call" | "text" | "social" | "direct">
+		Record<ParentTab, "call" | "text" | "linkedin" | "facebook" | "direct">
 	>(
 		() => ({
 			calls: "call",
 			text: "text",
-			social: "social",
+			linkedin: "linkedin",
+			facebook: "facebook",
 			directMail: "direct",
 		}),
 		[],
@@ -55,8 +56,12 @@ export default function CampaignCallTablePage({
 				return "calls";
 			case "text":
 				return "text";
+			case "linkedin":
+				return "linkedin";
+			case "facebook":
+				return "facebook";
 			case "social":
-				return "social";
+				return "linkedin";
 			case "direct":
 				return "directMail";
 			default:
@@ -151,7 +156,8 @@ export default function CampaignCallTablePage({
 	const tabs = [
 		{ key: "calls" as ParentTab, label: "Calls" },
 		{ key: "text" as ParentTab, label: "Text" },
-		{ key: "social" as ParentTab, label: "Social" },
+		{ key: "linkedin" as ParentTab, label: "LinkedIn" },
+		{ key: "facebook" as ParentTab, label: "Facebook" },
 		{ key: "directMail" as ParentTab, label: "Direct Mail" },
 	];
 
@@ -219,9 +225,9 @@ export default function CampaignCallTablePage({
 					initialCampaigns={memoizedTextCampaigns}
 				/>
 			)}
-			{tab === "social" && (
+			{(tab === "linkedin" || tab === "facebook") && (
 				<SocialCampaignsDemoTable
-					key="social"
+					key={tab}
 					onNavigate={handleTabChange}
 					campaignId={currentCampaignIdParam}
 					onCampaignSelect={handleCampaignSelect}

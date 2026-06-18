@@ -487,7 +487,8 @@ const FinalizeCampaignModal: React.FC<FinalizeCampaignModalProps> = ({
 			</div>
 			{dateError && <p className="text-red-500">{dateError}</p>}
 			<p className="mb-4 text-gray-500 text-sm dark:text-gray-400">
-				This campaign will cost {estimatedCredits} credits.
+				Estimated usage: {estimatedCredits.toLocaleString()} credits based on
+				the selected audience, channel, and schedule.
 			</p>
 			{/* Only show Launch button if campaign name, goal, and date range are valid */}
 			<Button

@@ -10,6 +10,19 @@ const shellPath = path.join(
 	"home",
 	"submodule-chat-shell.tsx",
 );
+const chatWorkbenchPath = path.join(
+	root,
+	"components",
+	"home",
+	"chat-workbench.tsx",
+);
+const dashboardChatPagePath = path.join(
+	root,
+	"app",
+	"dashboard",
+	"chat",
+	"page.tsx",
+);
 const rootProvidersPath = path.join(
 	root,
 	"components",
@@ -248,7 +261,10 @@ const externalTooltipPath = path.join(
 describe("SubmoduleChatShell tours", () => {
 	it("mounts the app tour provider around the authenticated app shell", () => {
 		const source = readFileSync(shellPath, "utf8");
-		const authenticatedShellSource = readFileSync(authenticatedShellPath, "utf8");
+		const authenticatedShellSource = readFileSync(
+			authenticatedShellPath,
+			"utf8",
+		);
 
 		expect(authenticatedShellSource).toContain(
 			'import { AppTourProvider } from "@/components/tour/AppTourProvider";',
@@ -258,8 +274,34 @@ describe("SubmoduleChatShell tours", () => {
 		);
 		expect(source).not.toContain("<AppTourProvider>");
 		expect(source).toMatch(
-			/<StreamingAvatarProvider>\s*<SubmoduleChatPanel \/>/,
+			/<StreamingAvatarProvider>\s*<SubmoduleChatPanel[\s\S]*showWorkspaceSidebars=\{showWorkspaceSidebars\}/,
 		);
+	});
+
+	it("lets the dashboard chat route render the embedded workspace sidebars", () => {
+		const shellSource = readFileSync(shellPath, "utf8");
+		const workbenchSource = readFileSync(chatWorkbenchPath, "utf8");
+		const pageSource = readFileSync(dashboardChatPagePath, "utf8");
+
+		expect(shellSource).toContain("fillAvailableHeight?: boolean");
+		expect(shellSource).toContain('fillAvailableHeight ? "h-full"');
+		expect(workbenchSource).toContain("fillAvailableHeight?: boolean");
+		expect(workbenchSource).toContain("h-[calc(100dvh-3.5rem)]");
+		expect(workbenchSource).toContain(
+			"fillAvailableHeight={fillAvailableHeight}",
+		);
+		expect(pageSource).toContain("fillAvailableHeight");
+		expect(shellSource).toContain("showWorkspaceSidebars?: boolean");
+		expect(shellSource).toContain(
+			"setSidebarCollapsed(!showWorkspaceSidebars)",
+		);
+		expect(shellSource).toContain(
+			"setControlsMinimized(!showWorkspaceSidebars)",
+		);
+		expect(workbenchSource).toContain(
+			"showWorkspaceSidebars={showWorkspaceSidebars}",
+		);
+		expect(pageSource).toContain("showWorkspaceSidebars");
 	});
 
 	it("exposes the root chat and workspace targets used by in-app tours", () => {
@@ -323,7 +365,9 @@ describe("SubmoduleChatShell tours", () => {
 		expect(chatSettingsModal).toContain("Emotion colors");
 		expect(chatSettingsModal).toContain("Update chat accent colors");
 		expect(themeEmotionSelect).toContain("useThemeStore");
-		expect(themeEmotionSelect).toContain('className="h-8 w-full min-w-[140px]"');
+		expect(themeEmotionSelect).toContain(
+			'className="h-8 w-full min-w-[140px]"',
+		);
 	});
 
 	it("bridges tour chat events into the embedded shell state", () => {
@@ -470,10 +514,14 @@ export default function Counter() {
 
 		expect(markdownSource).toContain("normalizeMarkdownContent");
 		expect(markdownSource).toContain("normalizedChildren");
-		expect(markdownSource).toContain("const language = extractLanguage(className)");
+		expect(markdownSource).toContain(
+			"const language = extractLanguage(className)",
+		);
 		expect(markdownSource).toContain("!className &&");
 		expect(markdownSource).toContain("table: function TableComponent");
-		expect(markdownSource).toContain("blockquote: function BlockquoteComponent");
+		expect(markdownSource).toContain(
+			"blockquote: function BlockquoteComponent",
+		);
 		expect(normalizeSource).toContain("ComponentCodePreview");
 		expect(normalizeSource).toContain("CODE_BLOCK_TAG");
 		expect(normalizeSource).toContain("collectTag");
@@ -524,7 +572,9 @@ export default function Counter() {
 		expect(mermaidSource).toContain("flex min-h-0 flex-1");
 		expect(mermaidSource).toContain("[&_svg]:h-full");
 		expect(mermaidSource).toContain("[&_svg]:max-h-full");
-		expect(dataViewerSource).toContain("relative h-full min-h-0 min-w-0 overflow-hidden");
+		expect(dataViewerSource).toContain(
+			"relative h-full min-h-0 min-w-0 overflow-hidden",
+		);
 		expect(dataViewerSource).toContain("renderBuiltinRemoveButton");
 		expect(dataViewerSource).toContain("headerAction={headerAction}");
 		expect(dataViewerSource).toContain('data-tour="data-grid-remove-builtin"');
@@ -563,7 +613,9 @@ export default function Counter() {
 		expect(hoverCardSource).not.toContain("return <div>{children}</div>");
 		expect(sourceSource).toContain('alt=""');
 		expect(sourceSource).toContain('aria-hidden="true"');
-		expect(sourceSource).toContain("event.currentTarget.style.display = \"none\"");
+		expect(sourceSource).toContain(
+			'event.currentTarget.style.display = "none"',
+		);
 		expect(sourceSource).toContain("<HoverCardContent");
 	});
 
@@ -595,9 +647,9 @@ export default function Counter() {
 		const exampleReasoning = readFileSync(exampleReasoningPath, "utf8");
 		const messageItem = readFileSync(messageItemPath, "utf8");
 
-		expect(messageList.match(/message\.reasoningOpen \?\? false/g)).toHaveLength(
-			2,
-		);
+		expect(
+			messageList.match(/message\.reasoningOpen \?\? false/g),
+		).toHaveLength(2);
 		expect(messageList).not.toContain(
 			"reasoningOpen={message.id === exampleReasoning.message.id}",
 		);
@@ -612,7 +664,9 @@ export default function Counter() {
 		expect(messageItem).toContain("isReasoningCopied");
 		expect(messageItem).toContain("handleCopyReasoning");
 		expect(messageItem).toContain('aria-label="Copy reasoning"');
-		expect(messageItem).toContain("rounded-md border border-border bg-background");
+		expect(messageItem).toContain(
+			"rounded-md border border-border bg-background",
+		);
 		expect(messageItem).toContain('"Hide reasoning" : "Show reasoning"');
 		expect(messageItem).toContain("navigator.clipboard.writeText(reasoning)");
 		expect(messageItem).toMatch(
@@ -647,7 +701,9 @@ export default function Counter() {
 			const source = readFileSync(tooltipPath, "utf8");
 
 			expect(source).toContain("TooltipPrimitive.Provider");
-			expect(source).toContain("<TooltipProvider delayDuration={delayDuration}>");
+			expect(source).toContain(
+				"<TooltipProvider delayDuration={delayDuration}>",
+			);
 			expect(source).toContain("<TooltipPrimitive.Root");
 		}
 	});

@@ -31,7 +31,8 @@ const CHANNEL_OPTIONS: Array<{ value: PrimaryChannelOption; label: string }> = [
 	{ value: "call", label: "Phone Calls" },
 	{ value: "text", label: "Text Messaging" },
 	{ value: "email", label: "Email Outreach" },
-	{ value: "social", label: "Social DMs" },
+	{ value: "linkedin", label: "LinkedIn DMs" },
+	{ value: "facebook", label: "Facebook DMs" },
 	{ value: "directmail", label: "Direct Mail" },
 ];
 

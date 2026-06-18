@@ -37,7 +37,56 @@ export function generateMockLeadLists(count: number): LeadList[] {
 export const mockLeadListData: LeadList[] | false =
 	NEXT_PUBLIC_APP_TESTING_MODE && generateMockLeadLists(100);
 
+const cashBuyerLeads = staticMockLeadData.filter(
+	(lead) => lead.leadCategory === "cash-buyers",
+);
+
+function createCashBuyerLeadList(
+	id: string,
+	listName: string,
+	dataLink: string,
+): LeadList {
+	return {
+		id,
+		listName,
+		uploadDate: "today",
+		records: cashBuyerLeads.length,
+		phone: cashBuyerLeads.filter((lead) => Boolean(lead.contactInfo.phone))
+			.length,
+		leads: cashBuyerLeads,
+		dataLink,
+		emails: cashBuyerLeads.filter((lead) => Boolean(lead.contactInfo.email))
+			.length,
+		socials: {
+			facebook: cashBuyerLeads.filter((lead) => Boolean(lead.socials?.facebook))
+				.length,
+			linkedin: cashBuyerLeads.filter((lead) => Boolean(lead.socials?.linkedin))
+				.length,
+			instagram: cashBuyerLeads.filter((lead) =>
+				Boolean(lead.socials?.instagram),
+			).length,
+			twitter: cashBuyerLeads.filter((lead) => Boolean(lead.socials?.twitter))
+				.length,
+		},
+	};
+}
+
 export const leadListData: LeadList[] = [
+	createCashBuyerLeadList(
+		"cash-buyers-dallas-buy-box",
+		"Dallas Cash Buyers - Buy Box Ready",
+		"https://example.com/download/dallas-cash-buyers",
+	),
+	createCashBuyerLeadList(
+		"cash-buyers-atlanta-flip",
+		"Atlanta Cash Buyers - Flip / REO",
+		"https://example.com/download/atlanta-cash-buyers",
+	),
+	createCashBuyerLeadList(
+		"cash-buyers-phoenix-rentals",
+		"Phoenix Cash Buyers - Landlord Rentals",
+		"https://example.com/download/phoenix-cash-buyers",
+	),
 	{
 		id: uuidv4(),
 		listName: "Louisville - On Market / 3+ Beds",

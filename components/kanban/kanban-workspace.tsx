@@ -19,7 +19,7 @@ export function KanbanWorkspace({ className }: KanbanWorkspaceProps) {
 		<div
 			className={
 				className ??
-				"container relative mx-auto flex h-[calc(100vh-8rem)] flex-col py-6"
+				"container relative mx-auto flex min-h-[calc(100vh-8rem)] flex-col py-6"
 			}
 			data-tour="kanban-page"
 		>
@@ -33,8 +33,11 @@ export function KanbanWorkspace({ className }: KanbanWorkspaceProps) {
 				</button>
 			</div>
 
-			<div className="min-h-0 flex-1" data-tour="kanban-board-page">
-				<ActionsKanbanPanel className="rounded-lg border border-border" />
+			<div
+				className="flex min-h-0 flex-1 flex-col"
+				data-tour="kanban-board-page"
+			>
+				<ActionsKanbanPanel className="min-h-full rounded-lg border border-border" />
 			</div>
 
 			<WalkThroughModal

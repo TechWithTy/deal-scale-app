@@ -46,17 +46,60 @@ interface FinalizeCampaignStepProps {
 
 // Simple mock workflows for selection
 const MOCK_WORKFLOWS = [
-	{ id: "wf1", name: "Default: Nurture 7-day" },
-	{ id: "wf2", name: "Aggressive: 3-day blitz" },
-	{ id: "wf3", name: "Custom: Follow-up only" },
+	{
+		id: "wf1",
+		name: "Balanced nurture playbook",
+		description:
+			"Uses the calendar dates you selected for steady outreach, standard retries, and normal follow-up handoffs.",
+	},
+	{
+		id: "wf2",
+		name: "High-intent blitz playbook",
+		description:
+			"Uses your selected calendar dates for faster follow-up on hot leads without creating a separate schedule.",
+	},
+	{
+		id: "wf3",
+		name: "Follow-up only playbook",
+		description:
+			"Uses your selected calendar dates only for follow-up touches after the first interaction.",
+	},
 ];
 
 // Simple mock sales scripts for selection
 const MOCK_SCRIPTS = [
-	{ id: "ss1", name: "General Sales Script" },
-	{ id: "ss2", name: "Appointment Setter Script" },
-	{ id: "ss3", name: "Appraisal Follow-up Script" },
+	{
+		id: "ss1",
+		name: "General Sales Script",
+		description:
+			"Broad qualification script for general outreach during the selected campaign dates.",
+	},
+	{
+		id: "ss2",
+		name: "Appointment Setter Script",
+		description:
+			"Focuses each scheduled touch on booking a follow-up appointment.",
+	},
+	{
+		id: "ss3",
+		name: "Appraisal Follow-up Script",
+		description: "Guides follow-up after appraisal or valuation conversations.",
+	},
 ];
+
+const formatCredits = (credits: number) =>
+	new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(
+		Math.max(0, Math.round(credits)),
+	);
+
+const fallbackPlaybookTooltip =
+	"Uses the calendar dates already selected for this campaign. The playbook controls follow-ups, retries, and handoffs.";
+
+const fallbackSalesScriptTooltip =
+	"Message or call language the assigned agent follows during each scheduled outreach touch.";
+
+const getAgentTooltip = (agent: { name: string; status?: string }) =>
+	`${agent.name} can own scheduled campaign outreach, lead follow-up, and handoffs.${agent.status ? ` Status: ${agent.status}.` : ""}`;
 
 const FinalizeCampaignStep: FC<FinalizeCampaignStepProps> = ({
 	estimatedCredits,
@@ -146,18 +189,39 @@ const FinalizeCampaignStep: FC<FinalizeCampaignStepProps> = ({
 								<SelectContent>
 									{availableAgents.map((agent) => (
 										<SelectItem key={agent.id} value={agent.id}>
-											<div className="flex items-center gap-2">
-												<span>{agent.name}</span>
-												<span
-													className={`h-2 w-2 rounded-full ${
-														agent.status === "active"
-															? "bg-green-500"
-															: agent.status === "away"
-																? "bg-yellow-500"
-																: "bg-gray-400"
-													}`}
-													title={agent.status}
-												/>
+											<div className="flex w-full items-center justify-between gap-3">
+												<div className="flex min-w-0 items-center gap-2">
+													<span className="truncate">{agent.name}</span>
+													<span
+														className={`h-2 w-2 shrink-0 rounded-full ${
+															agent.status === "active"
+																? "bg-green-500"
+																: agent.status === "away"
+																	? "bg-yellow-500"
+																	: "bg-gray-400"
+														}`}
+														title={agent.status}
+													/>
+												</div>
+												<TooltipProvider>
+													<Tooltip>
+														<TooltipTrigger asChild>
+															<span
+																aria-label={`${agent.name} details`}
+																className="mr-2 inline-flex h-4 w-4 shrink-0 items-center justify-center text-muted-foreground"
+																onPointerDown={(event) =>
+																	event.stopPropagation()
+																}
+																title={getAgentTooltip(agent)}
+															>
+																<InfoCircledIcon className="h-4 w-4" />
+															</span>
+														</TooltipTrigger>
+														<TooltipContent className="max-w-xs">
+															<p>{getAgentTooltip(agent)}</p>
+														</TooltipContent>
+													</Tooltip>
+												</TooltipProvider>
 											</div>
 										</SelectItem>
 									))}
@@ -174,22 +238,49 @@ const FinalizeCampaignStep: FC<FinalizeCampaignStepProps> = ({
 					render={({ field }) => (
 						<FormItem data-tour="campaign-finalize-workflow">
 							<FormLabel className="flex items-center gap-2">
-								Workflow
+								Automation playbook
 							</FormLabel>
 							<Select onValueChange={field.onChange} defaultValue={field.value}>
 								<FormControl>
 									<SelectTrigger>
-										<SelectValue placeholder="Select a workflow" />
+										<SelectValue placeholder="Select a playbook" />
 									</SelectTrigger>
 								</FormControl>
 								<SelectContent>
 									{MOCK_WORKFLOWS.map((wf) => (
 										<SelectItem key={wf.id} value={wf.id}>
-											{wf.name}
+											<span className="flex w-full items-center justify-between gap-3">
+												<span className="truncate">{wf.name}</span>
+												<TooltipProvider>
+													<Tooltip>
+														<TooltipTrigger asChild>
+															<span
+																aria-label={`${wf.name} details`}
+																className="mr-2 inline-flex h-4 w-4 shrink-0 items-center justify-center text-muted-foreground"
+																onPointerDown={(event) =>
+																	event.stopPropagation()
+																}
+																title={
+																	wf.description ?? fallbackPlaybookTooltip
+																}
+															>
+																<InfoCircledIcon className="h-4 w-4" />
+															</span>
+														</TooltipTrigger>
+														<TooltipContent className="max-w-xs">
+															<p>{wf.description ?? fallbackPlaybookTooltip}</p>
+														</TooltipContent>
+													</Tooltip>
+												</TooltipProvider>
+											</span>
 										</SelectItem>
 									))}
 								</SelectContent>
 							</Select>
+							<p className="text-muted-foreground text-xs">
+								Your schedule controls when outreach runs. This playbook
+								controls what follow-up logic runs after each lead interaction.
+							</p>
 							<FormMessage />
 						</FormItem>
 					)}
@@ -212,7 +303,32 @@ const FinalizeCampaignStep: FC<FinalizeCampaignStepProps> = ({
 								<SelectContent>
 									{MOCK_SCRIPTS.map((s) => (
 										<SelectItem key={s.id} value={s.id}>
-											{s.name}
+											<span className="flex w-full items-center justify-between gap-3">
+												<span className="truncate">{s.name}</span>
+												<TooltipProvider>
+													<Tooltip>
+														<TooltipTrigger asChild>
+															<span
+																aria-label={`${s.name} details`}
+																className="mr-2 inline-flex h-4 w-4 shrink-0 items-center justify-center text-muted-foreground"
+																onPointerDown={(event) =>
+																	event.stopPropagation()
+																}
+																title={
+																	s.description ?? fallbackSalesScriptTooltip
+																}
+															>
+																<InfoCircledIcon className="h-4 w-4" />
+															</span>
+														</TooltipTrigger>
+														<TooltipContent className="max-w-xs">
+															<p>
+																{s.description ?? fallbackSalesScriptTooltip}
+															</p>
+														</TooltipContent>
+													</Tooltip>
+												</TooltipProvider>
+											</span>
 										</SelectItem>
 									))}
 								</SelectContent>
@@ -241,7 +357,9 @@ const FinalizeCampaignStep: FC<FinalizeCampaignStepProps> = ({
 
 				<div className="space-y-4 pt-4" data-tour="campaign-launch-actions">
 					<p className="text-gray-500 text-sm dark:text-gray-400">
-						This campaign will cost {estimatedCredits} credits.
+						{estimatedCredits > 0
+							? `Estimated usage: ${formatCredits(estimatedCredits)} credits based on the selected audience, channel, and schedule.`
+							: "Configure your campaign settings to see cost estimate."}
 					</p>
 
 					<Button

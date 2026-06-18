@@ -11,7 +11,9 @@ export const finalizeCampaignSchema = z.object({
 			"Campaign name can only contain letters, numbers, spaces, and dots.",
 		),
 	selectedAgentId: z.string({ required_error: "Please select an agent." }),
-	selectedWorkflowId: z.string({ required_error: "Please select a workflow." }),
+	selectedWorkflowId: z.string({
+		required_error: "Please select an automation playbook.",
+	}),
 	selectedSalesScriptId: z.string({
 		required_error: "Please select a sales script.",
 	}),

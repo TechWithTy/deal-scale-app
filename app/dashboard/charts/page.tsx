@@ -18,7 +18,7 @@ import { RefreshCw } from "lucide-react";
 import dynamic from "next/dynamic";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { ReactElement } from "react";
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { KPICard } from "./components/KPICard";
 import { useAnalyticsData } from "./hooks/useAnalyticsData";
 
@@ -136,6 +136,23 @@ export default function ChartsPage() {
 		[pathname, router, searchParams],
 	);
 
+	useEffect(() => {
+		function handleTourOpenChartsTab(event: Event) {
+			const tab = (event as CustomEvent<{ tab?: string }>).detail?.tab ?? null;
+			if (isChartTab(tab)) {
+				setActiveTab(tab);
+			}
+		}
+
+		window.addEventListener("tour-open-charts-tab", handleTourOpenChartsTab);
+		return () => {
+			window.removeEventListener(
+				"tour-open-charts-tab",
+				handleTourOpenChartsTab,
+			);
+		};
+	}, [setActiveTab]);
+
 	if (error) {
 		return (
 			<div className="container mx-auto space-y-6 py-6" data-tour="charts-page">
@@ -177,7 +194,12 @@ export default function ChartsPage() {
 						Visualize your data and track your performance metrics
 					</p>
 				</div>
-				<Button onClick={refetch} variant="outline" size="sm">
+				<Button
+					onClick={refetch}
+					variant="outline"
+					size="sm"
+					data-tour="charts-refresh"
+				>
 					<RefreshCw className="mr-2 h-4 w-4" />
 					Refresh
 				</Button>
@@ -185,19 +207,35 @@ export default function ChartsPage() {
 
 			<Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
 				<TabsList data-tour="charts-tabs">
-					<TabsTrigger value="overview" className="flex items-center gap-2">
+					<TabsTrigger
+						value="overview"
+						className="flex items-center gap-2"
+						data-tour="charts-tab-overview"
+					>
 						<BarChart className="h-4 w-4" />
 						Overview
 					</TabsTrigger>
-					<TabsTrigger value="leads" className="flex items-center gap-2">
+					<TabsTrigger
+						value="leads"
+						className="flex items-center gap-2"
+						data-tour="charts-tab-leads"
+					>
 						<Users className="h-4 w-4" />
 						Leads
 					</TabsTrigger>
-					<TabsTrigger value="ai-agents" className="flex items-center gap-2">
+					<TabsTrigger
+						value="ai-agents"
+						className="flex items-center gap-2"
+						data-tour="charts-tab-ai-agents"
+					>
 						<Bot className="h-4 w-4" />
 						AI Agents
 					</TabsTrigger>
-					<TabsTrigger value="advanced" className="flex items-center gap-2">
+					<TabsTrigger
+						value="advanced"
+						className="flex items-center gap-2"
+						data-tour="charts-tab-advanced"
+					>
 						<Sparkles className="h-4 w-4" />
 						Advanced
 					</TabsTrigger>
@@ -253,8 +291,12 @@ export default function ChartsPage() {
 								className="grid gap-4 md:grid-cols-2"
 								data-tour="charts-grid"
 							>
-								<CampaignPerformanceChart data={campaign_performance} />
-								<LeadTrendsChart data={lead_trends} />
+								<div data-tour="charts-campaign-performance">
+									<CampaignPerformanceChart data={campaign_performance} />
+								</div>
+								<div data-tour="charts-lead-trends">
+									<LeadTrendsChart data={lead_trends} />
+								</div>
 							</div>
 							<div data-tour="charts-pipeline">
 								<SalesPipelineFunnel data={sales_pipeline} />

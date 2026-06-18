@@ -49,7 +49,13 @@ interface QuickStartLegacyModalsProps {
 	readonly onStartTour: () => void;
 	readonly onCloseTour: () => void;
 	readonly campaignSteps: readonly unknown[];
-	readonly defaultChannel?: "call" | "text" | "social" | "directmail";
+	readonly defaultChannel?:
+		| "call"
+		| "text"
+		| "linkedin"
+		| "facebook"
+		| "social"
+		| "directmail";
 	readonly onCampaignLaunched?: (payload: {
 		campaignId: string;
 		channelType: string;

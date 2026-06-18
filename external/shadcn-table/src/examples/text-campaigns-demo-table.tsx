@@ -1,68 +1,72 @@
 "use client";
 
-import * as React from "react";
 import { faker } from "@faker-js/faker";
 import type { Row } from "@tanstack/react-table";
+import * as React from "react";
 
+import type { CallCampaign } from "../../../../types/_dashboard/campaign";
 import { DataTable } from "../components/data-table/data-table";
+import { Alert, AlertDescription, AlertTitle } from "../components/ui/alert";
+import { Button } from "../components/ui/button";
 import { useDataTable } from "../hooks/use-data-table";
 import { useRowCarousel } from "../hooks/use-row-carousel";
-import { Button } from "../components/ui/button";
-import { Alert, AlertDescription, AlertTitle } from "../components/ui/alert";
-import type { CallCampaign } from "../../../../types/_dashboard/campaign";
 
+import { useCampaignRowFocus } from "@/components/campaigns/utils/useCampaignRowFocus";
 import {
 	generateCallCampaignData,
 	mockCallCampaignData,
 } from "../../../../constants/_faker/calls/callCampaign";
-import { buildTextCampaignColumns } from "./Phone/text/utils/buildColumns";
-import { TextRowCarousel } from "./Phone/text/components/TextRowCarousel";
-import { SummaryCard } from "./Phone/text/components/SummaryCard";
+import { generateSampleTextMessage } from "../../../../constants/_faker/texts/texts";
 import { AIDialog } from "./Phone/text/components/AIDialog";
 import { ActionBar } from "./Phone/text/components/ActionBar";
+import { SummaryCard } from "./Phone/text/components/SummaryCard";
+import { TextRowCarousel } from "./Phone/text/components/TextRowCarousel";
 import { TextTableToolbar } from "./Phone/text/components/TextTableToolbar";
+import { buildTextCampaignColumns } from "./Phone/text/utils/buildColumns";
 import {
-        getSelectedRowsFromTable,
-        getAllRowsFromTable,
-        summarizeRows,
+	getAllRowsFromTable,
+	getSelectedRowsFromTable,
+	summarizeRows,
 } from "./Phone/text/utils/helpers";
-import { generateSampleTextMessage } from "../../../../constants/_faker/texts/texts";
-import { useCampaignRowFocus } from "@/components/campaigns/utils/useCampaignRowFocus";
-type ParentTab = "calls" | "text" | "social" | "directMail";
+type ParentTab = "calls" | "text" | "linkedin" | "facebook" | "directMail";
 
 interface TextCampaignsDemoTableProps {
-        onNavigate?: (tab: ParentTab) => void;
-        campaignId?: string | null;
-        onCampaignSelect?: (id: string) => void;
-        initialCampaigns?: CallCampaign[];
+	onNavigate?: (tab: ParentTab) => void;
+	campaignId?: string | null;
+	onCampaignSelect?: (id: string) => void;
+	initialCampaigns?: CallCampaign[];
 }
 
 export default function TextCampaignsDemoTable({
-        onNavigate,
-        campaignId = null,
-        onCampaignSelect,
-        initialCampaigns,
+	onNavigate,
+	campaignId = null,
+	onCampaignSelect,
+	initialCampaigns,
 }: TextCampaignsDemoTableProps) {
-        const fallbackCampaigns = React.useMemo(
-                () =>
-                        (mockCallCampaignData as CallCampaign[] | false) ||
-                        generateCallCampaignData(),
-                [],
-        );
+	const fallbackCampaigns = React.useMemo(
+		() =>
+			(mockCallCampaignData as CallCampaign[] | false) ||
+			generateCallCampaignData(),
+		[],
+	);
 
-        const mergeCampaigns = React.useCallback(
-                (incoming?: CallCampaign[]) => {
-                        if (!incoming || incoming.length === 0) {
-                                return [...fallbackCampaigns];
-                        }
-                        const seen = new Set(incoming.map((campaign) => campaign.id));
-                        const extras = fallbackCampaigns.filter((campaign) => !seen.has(campaign.id));
-                        return [...incoming, ...extras];
-                },
-                [fallbackCampaigns],
-        );
+	const mergeCampaigns = React.useCallback(
+		(incoming?: CallCampaign[]) => {
+			if (!incoming || incoming.length === 0) {
+				return [...fallbackCampaigns];
+			}
+			const seen = new Set(incoming.map((campaign) => campaign.id));
+			const extras = fallbackCampaigns.filter(
+				(campaign) => !seen.has(campaign.id),
+			);
+			return [...incoming, ...extras];
+		},
+		[fallbackCampaigns],
+	);
 
-        const [data, setData] = React.useState<CallCampaign[]>(() => mergeCampaigns(initialCampaigns));
+	const [data, setData] = React.useState<CallCampaign[]>(() =>
+		mergeCampaigns(initialCampaigns),
+	);
 	const [query, setQuery] = React.useState("");
 	const [aiOpen, setAiOpen] = React.useState(false);
 	const [aiOutput, setAiOutput] = React.useState<string>("");
@@ -78,24 +82,24 @@ export default function TextCampaignsDemoTable({
 		Record<string, { sentiment: "up" | "down" | null; note: string }>
 	>({});
 
-        React.useEffect(() => {
-                const merged = mergeCampaigns(initialCampaigns);
-                const withMessages = merged.map((row) => {
-                        const count = faker.number.int({ min: 1, max: 5 });
-                        const msgs = Array.from({ length: count }, () =>
-                                generateSampleTextMessage(),
-                        );
-                        if (msgs.length === 0) msgs.push(generateSampleTextMessage());
-                        const biasApple = faker.number.int({ min: 1, max: 100 }) <= 60;
-                        if (biasApple) {
-                                msgs[0].service = "iMessage";
-                                msgs[0].appleDevice = true;
-                                msgs[0].provider = msgs[0].provider ?? "sendblue";
-                        }
-                        return { ...row, messages: msgs };
-                });
-                setData(withMessages as unknown as CallCampaign[]);
-        }, [initialCampaigns, mergeCampaigns]);
+	React.useEffect(() => {
+		const merged = mergeCampaigns(initialCampaigns);
+		const withMessages = merged.map((row) => {
+			const count = faker.number.int({ min: 1, max: 5 });
+			const msgs = Array.from({ length: count }, () =>
+				generateSampleTextMessage(),
+			);
+			if (msgs.length === 0) msgs.push(generateSampleTextMessage());
+			const biasApple = faker.number.int({ min: 1, max: 100 }) <= 60;
+			if (biasApple) {
+				msgs[0].service = "iMessage";
+				msgs[0].appleDevice = true;
+				msgs[0].provider = msgs[0].provider ?? "sendblue";
+			}
+			return { ...row, messages: msgs };
+		});
+		setData(withMessages as unknown as CallCampaign[]);
+	}, [initialCampaigns, mergeCampaigns]);
 
 	const columns = React.useMemo(() => buildTextCampaignColumns(), []);
 
@@ -171,44 +175,44 @@ export default function TextCampaignsDemoTable({
 		},
 	});
 
-        const carousel = useRowCarousel(table, { loop: true });
+	const carousel = useRowCarousel(table, { loop: true });
 
-        // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
-        React.useEffect(() => {
-                if (carousel.open) setDetailIndex(0);
-        }, [carousel.open, carousel.index]);
+	// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
+	React.useEffect(() => {
+		if (carousel.open) setDetailIndex(0);
+	}, [carousel.open, carousel.index]);
 
-        const rowIdResolver = React.useCallback(
-                (row: Row<CallCampaign>) => (row.original as CallCampaign).id,
-                [],
-        );
+	const rowIdResolver = React.useCallback(
+		(row: Row<CallCampaign>) => (row.original as CallCampaign).id,
+		[],
+	);
 
-        const handleRowFocused = React.useCallback(
-                (row: Row<CallCampaign>) => {
-                        setDetailIndex(0);
-                        carousel.openAt(row);
-                        const targetId = rowIdResolver(row);
-                        if (!targetId) return;
-                        requestAnimationFrame(() => {
-                                const element = document.querySelector<HTMLTableRowElement>(
-                                        `[data-row-id="${targetId}"]`,
-                                );
-                                element?.scrollIntoView({ behavior: "smooth", block: "center" });
-                        });
-                },
-                [carousel, rowIdResolver],
-        );
+	const handleRowFocused = React.useCallback(
+		(row: Row<CallCampaign>) => {
+			setDetailIndex(0);
+			carousel.openAt(row);
+			const targetId = rowIdResolver(row);
+			if (!targetId) return;
+			requestAnimationFrame(() => {
+				const element = document.querySelector<HTMLTableRowElement>(
+					`[data-row-id="${targetId}"]`,
+				);
+				element?.scrollIntoView({ behavior: "smooth", block: "center" });
+			});
+		},
+		[carousel, rowIdResolver],
+	);
 
-        const { focusedRowId, status } = useCampaignRowFocus<CallCampaign>({
-                campaignId,
-                table,
-                resolveRowId: rowIdResolver,
-                onRowFocused: handleRowFocused,
-        });
+	const { focusedRowId, status } = useCampaignRowFocus<CallCampaign>({
+		campaignId,
+		table,
+		resolveRowId: rowIdResolver,
+		onRowFocused: handleRowFocused,
+	});
 
-        // helpers moved to ./Phone/text/utils/helpers
+	// helpers moved to ./Phone/text/utils/helpers
 
-        return (
+	return (
 		<main className="container mx-auto max-w-7xl space-y-4 p-6">
 			<SummaryCard
 				table={table}
@@ -217,27 +221,27 @@ export default function TextCampaignsDemoTable({
 				setDateChip={setDateChip}
 			/>
 
-                        {status === "not-found" && campaignId ? (
-                                <Alert variant="destructive">
-                                        <AlertTitle>Campaign not found</AlertTitle>
-                                        <AlertDescription>
-                                                We couldn&apos;t locate a campaign with ID {campaignId} in the
-                                                Text table.
-                                        </AlertDescription>
-                                </Alert>
-                        ) : null}
+			{status === "not-found" && campaignId ? (
+				<Alert variant="destructive">
+					<AlertTitle>Campaign not found</AlertTitle>
+					<AlertDescription>
+						We couldn&apos;t locate a campaign with ID {campaignId} in the Text
+						table.
+					</AlertDescription>
+				</Alert>
+			) : null}
 
-                        <DataTable<CallCampaign>
-                                table={table}
-                                className="mt-2"
-                                focusedRowId={focusedRowId ?? undefined}
-                                getRowId={rowIdResolver}
-                                onRowClick={(row) => {
-                                        const id = rowIdResolver(row);
-                                        if (id) onCampaignSelect?.(id);
-                                        setDetailIndex(0);
-                                        carousel.openAt(row);
-                                }}
+			<DataTable<CallCampaign>
+				table={table}
+				className="mt-2"
+				focusedRowId={focusedRowId ?? undefined}
+				getRowId={rowIdResolver}
+				onRowClick={(row) => {
+					const id = rowIdResolver(row);
+					if (id) onCampaignSelect?.(id);
+					setDetailIndex(0);
+					carousel.openAt(row);
+				}}
 				actionBar={
 					<ActionBar
 						table={table}

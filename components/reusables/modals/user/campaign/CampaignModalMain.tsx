@@ -51,7 +51,13 @@ interface CampaignModalMainProps {
 	initialTransferGuidelines?: string;
 	initialTransferPrompt?: string;
 	initialStep?: number;
-	defaultChannel?: "call" | "text" | "social" | "directmail";
+	defaultChannel?:
+		| "call"
+		| "text"
+		| "linkedin"
+		| "facebook"
+		| "social"
+		| "directmail";
 	onCampaignLaunched?: (payload: {
 		campaignId: string;
 		channelType: string;
@@ -60,13 +66,20 @@ interface CampaignModalMainProps {
 	isVariantMode?: boolean;
 }
 
-const allChannels: ("directmail" | "call" | "text" | "social")[] = [
-	"call",
-	"text",
-	"directmail",
-	"social",
-];
-const disabledChannels: ("directmail" | "call" | "text" | "social")[] = [];
+const allChannels: (
+	| "directmail"
+	| "call"
+	| "text"
+	| "linkedin"
+	| "facebook"
+)[] = ["call", "text", "directmail", "linkedin", "facebook"];
+const disabledChannels: (
+	| "directmail"
+	| "call"
+	| "text"
+	| "linkedin"
+	| "facebook"
+)[] = [];
 
 const DEFAULT_CUSTOMIZATION_VALUES: z.input<typeof FormSchema> = {
 	primaryPhoneNumber: "+11234567890",
@@ -384,7 +397,7 @@ const CampaignModalMain: FC<CampaignModalMainProps> = ({
 		) {
 			setPrimaryChannel("directmail");
 		} else {
-			setPrimaryChannel("social");
+			setPrimaryChannel("linkedin");
 		}
 
 		// Set step to 1 (customization) to skip channel selection
@@ -699,7 +712,11 @@ const CampaignModalMain: FC<CampaignModalMainProps> = ({
 
 			if (defaultChannel) {
 				setPrimaryChannel(
-					defaultChannel === "directmail" ? "email" : defaultChannel,
+					defaultChannel === "directmail"
+						? "email"
+						: defaultChannel === "social"
+							? "linkedin"
+							: defaultChannel,
 				);
 				console.log("[Modal Init] ✅ Set primary channel:", defaultChannel);
 			}
@@ -976,11 +993,13 @@ const CampaignModalMain: FC<CampaignModalMainProps> = ({
 
 			const channelTypeMap: Record<
 				string,
-				"call" | "text" | "social" | "direct"
+				"call" | "text" | "linkedin" | "facebook" | "social" | "direct"
 			> = {
 				call: "call",
 				text: "text",
-				social: "social",
+				linkedin: "linkedin",
+				facebook: "facebook",
+				social: "linkedin",
 				directmail: "direct",
 				email: "direct",
 			};
@@ -1001,12 +1020,14 @@ const CampaignModalMain: FC<CampaignModalMainProps> = ({
 					? "direct"
 					: primaryChannel === "email"
 						? "email"
-						: ((primaryChannel as
-								| "call"
-								| "text"
-								| "social"
-								| "direct"
-								| null) ?? "call");
+						: primaryChannel === "linkedin" || primaryChannel === "facebook"
+							? "social"
+							: ((primaryChannel as
+									| "call"
+									| "text"
+									| "social"
+									| "direct"
+									| null) ?? "call");
 
 			const nowIso = new Date().toISOString();
 			const startIso = startDate?.toISOString() ?? nowIso;
@@ -1236,9 +1257,11 @@ const CampaignModalMain: FC<CampaignModalMainProps> = ({
 					primaryChannel === "text" ||
 					primaryChannel === "social"
 						? (primaryChannel as "call" | "text" | "social")
-						: primaryChannel === "directmail"
-							? ("direct" as const)
-							: ("email" as const);
+						: primaryChannel === "linkedin" || primaryChannel === "facebook"
+							? ("social" as const)
+							: primaryChannel === "directmail"
+								? ("direct" as const)
+								: ("email" as const);
 
 				switch (registrationChannel) {
 					case "call":
@@ -1469,10 +1492,7 @@ const CampaignModalMain: FC<CampaignModalMainProps> = ({
 							onCreateAbTest={handleCreateAbTest}
 							onEvaluate={handleEvaluate}
 							isModalOpen={isOpen}
-							estimatedCredits={Math.max(
-								estimatedCredits,
-								leadCount > 0 ? 100 : 0,
-							)}
+							estimatedCredits={estimatedCredits}
 						/>
 					)}
 

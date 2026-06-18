@@ -7,9 +7,41 @@ import { FeatureGuard } from "../../../../../../../components/access/FeatureGuar
 interface ChannelSelectionStepProps {
 	onNext: () => void;
 	onClose: () => void;
-	allChannels: ("directmail" | "call" | "text" | "social")[];
-	disabledChannels?: ("directmail" | "call" | "text" | "social")[];
+	allChannels: ("directmail" | "call" | "text" | "linkedin" | "facebook")[];
+	disabledChannels?: (
+		| "directmail"
+		| "call"
+		| "text"
+		| "linkedin"
+		| "facebook"
+	)[];
 }
+
+type StoreChannel =
+	| "email"
+	| "call"
+	| "text"
+	| "linkedin"
+	| "facebook"
+	| "social";
+type UiChannel = "directmail" | "call" | "text" | "linkedin" | "facebook";
+
+const channelLabels: Record<UiChannel, string> = {
+	call: "Calls",
+	text: "Text",
+	directmail: "Direct Mail",
+	linkedin: "LinkedIn",
+	facebook: "Facebook",
+};
+
+const toUi = (channel: StoreChannel | null): UiChannel | null => {
+	if (channel === "email") return "directmail";
+	if (channel === "social") return "linkedin";
+	return channel;
+};
+
+const toStore = (channel: UiChannel): StoreChannel =>
+	channel === "directmail" ? "email" : channel;
 
 const ChannelSelectionStep: FC<ChannelSelectionStepProps> = ({
 	onNext,
@@ -23,11 +55,12 @@ const ChannelSelectionStep: FC<ChannelSelectionStepProps> = ({
 
 		// Check if the selected channel is blocked
 		// Convert store channel to UI channel for comparison
-		const storeChannel = primaryChannel as "email" | "call" | "text" | "social";
-		const uiChannel: "directmail" | "call" | "text" | "social" =
-			storeChannel === "email" ? "directmail" : storeChannel;
+		const storeChannel = primaryChannel as StoreChannel;
+		const uiChannel = toUi(storeChannel);
 		const isBlockedChannel =
-			uiChannel === "directmail" || uiChannel === "social";
+			uiChannel === "directmail" ||
+			uiChannel === "linkedin" ||
+			uiChannel === "facebook";
 
 		// For now, allow selection of blocked channels (they'll show overlay)
 		// In the future, this could prevent progression if needed
@@ -56,20 +89,15 @@ const ChannelSelectionStep: FC<ChannelSelectionStepProps> = ({
 			>
 				{allChannels.map((channel) => {
 					// Normalize store channel (which uses 'email' for direct mail) to UI channel label
-					type StoreChannel = "email" | "call" | "text" | "social";
-					type UiChannel = "directmail" | "call" | "text" | "social";
-					const toUi = (c: StoreChannel | null): UiChannel | null =>
-						c === "email" ? "directmail" : c;
-					const toStore = (c: UiChannel): StoreChannel =>
-						c === "directmail" ? "email" : c;
-
 					const storePrimary = primaryChannel as StoreChannel | null;
 					const uiPrimary: UiChannel | null = toUi(storePrimary);
 					const isActive = uiPrimary === channel;
 
 					// Only apply feature blocking to direct mail and social media
 					const needsFeatureBlock =
-						channel === "directmail" || channel === "social";
+						channel === "directmail" ||
+						channel === "linkedin" ||
+						channel === "facebook";
 
 					// Create tab button content with enhanced styling for blocked features
 					const handleChannelClick = () => {
@@ -115,7 +143,9 @@ const ChannelSelectionStep: FC<ChannelSelectionStepProps> = ({
 									className={buttonClassName}
 									type="button"
 								>
-									<span className={labelClassName}>{channel}</span>
+									<span className={labelClassName}>
+										{channelLabels[channel]}
+									</span>
 									<span
 										className={`opacity-60 ${compact ? "text-xs" : "text-xs"}`}
 										title="Premium Feature"
@@ -135,7 +165,7 @@ const ChannelSelectionStep: FC<ChannelSelectionStepProps> = ({
 							className={buttonClassName}
 							type="button"
 						>
-							<span className={labelClassName}>{channel}</span>
+							<span className={labelClassName}>{channelLabels[channel]}</span>
 						</Button>
 					);
 				})}

@@ -78,7 +78,10 @@ export function calculateCampaignCost(
 	const availableAgents = campaignSettings.availableAgents || [];
 	const plan = campaignSettings.plan || "starter";
 	const messageType = campaignSettings.messageType || "sms";
-	const socialPlatform = campaignSettings.socialPlatform || "facebook";
+	const socialPlatform =
+		channel === "linkedin" || channel === "facebook"
+			? channel
+			: campaignSettings.socialPlatform || "facebook";
 	const directMailType = campaignSettings.directMailType || "postcard";
 
 	// Calculate Campaign Duration
@@ -178,7 +181,12 @@ export function calculateCampaignCost(
 			totalContactAttempts * (smsPricing?.customerPricePerTenMessages || 0.01);
 	}
 
-	if (channel === "social" && leadCount > 0) {
+	if (
+		(channel === "social" ||
+			channel === "linkedin" ||
+			channel === "facebook") &&
+		leadCount > 0
+	) {
 		// Social media DM costs (per 10 messages)
 		socialCost =
 			totalContactAttempts *

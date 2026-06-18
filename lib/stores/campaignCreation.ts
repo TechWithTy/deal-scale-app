@@ -34,12 +34,28 @@ const MOCK_AGENTS: Agent[] = [
 export interface WorkflowOption {
 	id: string;
 	name: string;
+	description?: string;
 }
 
 const MOCK_WORKFLOWS: WorkflowOption[] = [
-	{ id: "wf1", name: "Default: Nurture 7-day" },
-	{ id: "wf2", name: "Aggressive: 3-day blitz" },
-	{ id: "wf3", name: "Custom: Follow-up only" },
+	{
+		id: "wf1",
+		name: "Balanced nurture playbook",
+		description:
+			"Uses the calendar dates you selected for steady outreach, standard retries, and normal follow-up handoffs.",
+	},
+	{
+		id: "wf2",
+		name: "High-intent blitz playbook",
+		description:
+			"Uses your selected calendar dates for faster follow-up on hot leads without creating a separate schedule.",
+	},
+	{
+		id: "wf3",
+		name: "Follow-up only playbook",
+		description:
+			"Uses your selected calendar dates only for follow-up touches after the first interaction.",
+	},
 ];
 
 export interface SalesScriptOption {
@@ -160,13 +176,30 @@ const MOCK_SALES_SCRIPTS: SalesScriptOption[] = [
 	},
 ];
 
+export type CampaignScheduleMode = "date-range" | "selected-days";
+export type CampaignRunDay =
+	| "monday"
+	| "tuesday"
+	| "wednesday"
+	| "thursday"
+	| "friday"
+	| "saturday"
+	| "sunday";
+
+export type CampaignPrimaryChannel =
+	| "directmail"
+	| "call"
+	| "text"
+	| "email"
+	| "linkedin"
+	| "facebook"
+	| "social";
+
 // * Campaign Creation Store for multi-step modal context
 export interface CampaignCreationState {
 	// Step 1: Channel Selection
-	primaryChannel: "directmail" | "call" | "text" | "email" | "social" | null;
-	setPrimaryChannel: (
-		channel: "directmail" | "call" | "text" | "email" | "social",
-	) => void;
+	primaryChannel: CampaignPrimaryChannel | null;
+	setPrimaryChannel: (channel: CampaignPrimaryChannel) => void;
 
 	// Campaign Name
 	campaignName: string;
@@ -239,6 +272,14 @@ export interface CampaignCreationState {
 	// Step 3: Timing Preferences
 	daysSelected: number;
 	setDaysSelected: (days: number) => void;
+	scheduleMode: CampaignScheduleMode;
+	setScheduleMode: (mode: CampaignScheduleMode) => void;
+	selectedRunDays: CampaignRunDay[];
+	setSelectedRunDays: (days: CampaignRunDay[]) => void;
+	selectedRunDates: Date[];
+	setSelectedRunDates: (dates: Date[]) => void;
+	staggerEveryDays: number;
+	setStaggerEveryDays: (days: number) => void;
 
 	startDate: Date;
 	setStartDate: (date: Date) => void;
@@ -397,6 +438,14 @@ export const useCampaignCreationStore =
 			// Step 3: Timing Preferences
 			daysSelected: 7,
 			setDaysSelected: (daysSelected) => set({ daysSelected }),
+			scheduleMode: "date-range",
+			setScheduleMode: (scheduleMode) => set({ scheduleMode }),
+			selectedRunDays: ["monday", "tuesday", "wednesday", "thursday", "friday"],
+			setSelectedRunDays: (selectedRunDays) => set({ selectedRunDays }),
+			selectedRunDates: [],
+			setSelectedRunDates: (selectedRunDates) => set({ selectedRunDates }),
+			staggerEveryDays: 2,
+			setStaggerEveryDays: (staggerEveryDays) => set({ staggerEveryDays }),
 			startDate: new Date(),
 			setStartDate: (startDate) => set({ startDate }),
 			endDate: null,
@@ -576,6 +625,16 @@ export const useCampaignCreationStore =
 
 					// Step 3
 					daysSelected: 7,
+					scheduleMode: "date-range",
+					selectedRunDays: [
+						"monday",
+						"tuesday",
+						"wednesday",
+						"thursday",
+						"friday",
+					],
+					selectedRunDates: [],
+					staggerEveryDays: 2,
 					startDate: new Date(),
 					endDate: null,
 					reachBeforeBusiness: false,

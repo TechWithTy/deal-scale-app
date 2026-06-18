@@ -61,8 +61,11 @@ export function LeadsAnalyticsTab({ data }: LeadsAnalyticsTabProps) {
 	}));
 
 	return (
-		<div className="space-y-6">
-			<div className="rounded-lg border border-primary/20 bg-primary/5 p-4">
+		<div className="space-y-6" data-tour="charts-leads-tab">
+			<div
+				className="rounded-lg border border-primary/20 bg-primary/5 p-4"
+				data-tour="charts-leads-intro"
+			>
 				<div className="flex items-center gap-2 text-primary">
 					<Users className="h-5 w-5" />
 					<p className="font-medium">Lead segment analytics</p>
@@ -74,7 +77,10 @@ export function LeadsAnalyticsTab({ data }: LeadsAnalyticsTabProps) {
 				</p>
 			</div>
 
-			<div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+			<div
+				className="grid gap-4 md:grid-cols-2 xl:grid-cols-4"
+				data-tour="charts-leads-summary"
+			>
 				<SummaryCard
 					title="Total Leads"
 					value={analyticsData.total_leads}
@@ -102,7 +108,7 @@ export function LeadsAnalyticsTab({ data }: LeadsAnalyticsTabProps) {
 			</div>
 
 			<div className="grid gap-4 xl:grid-cols-[1.4fr_0.9fr]">
-				<Card>
+				<Card data-tour="charts-leads-mix">
 					<CardHeader>
 						<CardTitle>Lead Mix by Segment</CardTitle>
 						<CardDescription>
@@ -157,7 +163,7 @@ export function LeadsAnalyticsTab({ data }: LeadsAnalyticsTabProps) {
 					</CardContent>
 				</Card>
 
-				<Card>
+				<Card data-tour="charts-leads-quality">
 					<CardHeader>
 						<CardTitle>Segment Quality</CardTitle>
 						<CardDescription>
@@ -200,7 +206,7 @@ export function LeadsAnalyticsTab({ data }: LeadsAnalyticsTabProps) {
 				</Card>
 			</div>
 
-			<Card>
+			<Card data-tour="charts-leads-breakdown">
 				<CardHeader>
 					<CardTitle>Lead Segment Breakdown</CardTitle>
 					<CardDescription>

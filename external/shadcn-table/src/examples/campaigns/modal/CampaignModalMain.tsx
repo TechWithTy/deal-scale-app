@@ -15,13 +15,20 @@ import FinalizeCampaignStep from "./steps/FinalizeCampaignStep";
 import { TimingPreferencesStep } from "./steps/TimingPreferencesStep";
 
 // * Centralized Campaign Main Component
-const allChannels: ("directmail" | "call" | "text" | "social")[] = [
-	"call",
-	"text",
-	"directmail",
-	"social",
-];
-const disabledChannels: ("directmail" | "call" | "text" | "social")[] = [];
+const allChannels: (
+	| "directmail"
+	| "call"
+	| "text"
+	| "linkedin"
+	| "facebook"
+)[] = ["call", "text", "directmail", "linkedin", "facebook"];
+const disabledChannels: (
+	| "directmail"
+	| "call"
+	| "text"
+	| "linkedin"
+	| "facebook"
+)[] = [];
 
 export const DEFAULT_CUSTOMIZATION_VALUES: z.input<typeof FormSchema> = {
 	primaryPhoneNumber: "+11234567890",
@@ -58,7 +65,13 @@ export default function CampaignModalMain({
 }: {
 	open?: boolean;
 	onOpenChange?: (open: boolean) => void;
-	defaultChannel?: "directmail" | "call" | "text" | "social";
+	defaultChannel?:
+		| "directmail"
+		| "call"
+		| "text"
+		| "linkedin"
+		| "facebook"
+		| "social";
 	initialLeadListId?: string;
 	initialLeadListName?: string;
 	initialLeadCount?: number;
@@ -205,8 +218,12 @@ export default function CampaignModalMain({
 		setStep(initialStep);
 
 		if (defaultChannel) {
-			const mapped: "email" | "call" | "text" | "social" =
-				defaultChannel === "directmail" ? "email" : defaultChannel;
+			const mapped: "email" | "call" | "text" | "linkedin" | "facebook" =
+				defaultChannel === "directmail"
+					? "email"
+					: defaultChannel === "social"
+						? "linkedin"
+						: defaultChannel;
 			if (primaryChannel !== mapped) {
 				(
 					setPrimaryChannel as (c: "email" | "call" | "text" | "social") => void

@@ -25,9 +25,12 @@ export function AIAgentsTab() {
 			fallbackMode="overlay"
 			fallbackTier="Starter"
 		>
-			<div className="space-y-6">
+			<div className="space-y-6" data-tour="charts-ai-tab">
 				{/* Unlocked Starter Content */}
-				<div className="rounded-lg border border-primary/20 bg-primary/10 p-4">
+				<div
+					className="rounded-lg border border-primary/20 bg-primary/10 p-4"
+					data-tour="charts-ai-intro"
+				>
 					<div className="flex items-center gap-2 text-primary">
 						<Bot className="h-5 w-5" />
 						<p className="font-medium">AI Agents Analytics Enabled</p>
@@ -35,25 +38,41 @@ export function AIAgentsTab() {
 				</div>
 
 				{/* Section 1: Agent Overview Cards */}
-				<AgentOverviewCards summary={agentData.ai_summary} />
+				<div data-tour="charts-ai-overview">
+					<AgentOverviewCards summary={agentData.ai_summary} />
+				</div>
 
 				{/* Section 2 & 3: Voice and Messaging */}
-				<div className="grid gap-4 md:grid-cols-2">
+				<div
+					className="grid gap-4 md:grid-cols-2"
+					data-tour="charts-ai-performance"
+				>
 					<VoiceAgentPerformance metrics={agentData.modules.voice} />
 					<ScriptMessagingPerformance metrics={agentData.modules.scripts} />
 				</div>
 
 				{/* Section 4 & 5: Enrichment and Workflows */}
-				<div className="grid gap-4 md:grid-cols-2">
+				<div
+					className="grid gap-4 md:grid-cols-2"
+					data-tour="charts-ai-automation"
+				>
 					<EnrichmentIntelligence metrics={agentData.modules.enrichment} />
 					<AutomationWorkflows metrics={agentData.modules.automation} />
 				</div>
 
 				{/* Section 6: Pro Insights (Locked for non-Pro users) */}
-				<ProInsightsSection insights={agentData.pro} isLocked={!hasProAccess} />
+				<div data-tour="charts-ai-pro-insights">
+					<ProInsightsSection
+						insights={agentData.pro}
+						isLocked={!hasProAccess}
+					/>
+				</div>
 
 				{/* Weekly AI Report Summary */}
-				<Card className="border-blue-200 bg-gradient-to-r from-blue-50 to-purple-50 dark:border-blue-800 dark:from-blue-950/30 dark:to-purple-950/30">
+				<Card
+					className="border-blue-200 bg-gradient-to-r from-blue-50 to-purple-50 dark:border-blue-800 dark:from-blue-950/30 dark:to-purple-950/30"
+					data-tour="charts-ai-weekly"
+				>
 					<CardContent className="pt-6">
 						<div className="flex items-start gap-4">
 							<div className="rounded-full bg-primary p-3">
@@ -102,7 +121,10 @@ export function AIAgentsTab() {
 				</Card>
 
 				{/* AI Insights Footer */}
-				<div className="rounded-lg border border-primary/20 bg-gradient-to-r from-primary/10 to-primary/5 p-4">
+				<div
+					className="rounded-lg border border-primary/20 bg-gradient-to-r from-primary/10 to-primary/5 p-4"
+					data-tour="charts-ai-insights"
+				>
 					<div className="flex items-start gap-3">
 						<Sparkles className="mt-0.5 h-5 w-5 flex-shrink-0 text-primary" />
 						<div className="space-y-2">

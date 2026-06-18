@@ -64,6 +64,17 @@ interface FinalizeCampaignStepProps {
 	isModalOpen?: boolean;
 }
 
+const formatCredits = (credits: number) =>
+	new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(
+		Math.max(0, Math.round(credits)),
+	);
+
+const fallbackPlaybookTooltip =
+	"Uses the calendar dates already selected for this campaign. The playbook controls follow-ups, retries, and handoffs.";
+
+const fallbackSalesScriptTooltip =
+	"Message or call language the assigned agent follows during each scheduled outreach touch.";
+
 const FinalizeCampaignStep: FC<FinalizeCampaignStepProps> = ({
 	estimatedCredits,
 	onLaunch,
@@ -352,22 +363,53 @@ const FinalizeCampaignStep: FC<FinalizeCampaignStepProps> = ({
 					render={({ field }) => (
 						<FormItem>
 							<FormLabel className="flex items-center gap-2">
-								Workflow
+								Automation playbook
 							</FormLabel>
 							<Select onValueChange={field.onChange} defaultValue={field.value}>
 								<FormControl>
 									<SelectTrigger>
-										<SelectValue placeholder="Select a workflow" />
+										<SelectValue placeholder="Select a playbook" />
 									</SelectTrigger>
 								</FormControl>
 								<SelectContent>
 									{availableWorkflows.map((workflow) => (
 										<SelectItem key={workflow.id} value={workflow.id}>
-											{workflow.name}
+											<span className="flex w-full items-center justify-between gap-3">
+												<span className="truncate">{workflow.name}</span>
+												<TooltipProvider>
+													<Tooltip>
+														<TooltipTrigger asChild>
+															<span
+																aria-label={`${workflow.name} details`}
+																className="mr-2 inline-flex h-4 w-4 shrink-0 items-center justify-center text-muted-foreground"
+																onPointerDown={(event) =>
+																	event.stopPropagation()
+																}
+																title={
+																	workflow.description ??
+																	fallbackPlaybookTooltip
+																}
+															>
+																<InfoCircledIcon className="h-4 w-4" />
+															</span>
+														</TooltipTrigger>
+														<TooltipContent className="max-w-xs">
+															<p>
+																{workflow.description ??
+																	fallbackPlaybookTooltip}
+															</p>
+														</TooltipContent>
+													</Tooltip>
+												</TooltipProvider>
+											</span>
 										</SelectItem>
 									))}
 								</SelectContent>
 							</Select>
+							<p className="text-muted-foreground text-xs">
+								Your schedule controls when outreach runs. This playbook
+								controls what follow-up logic runs after each lead interaction.
+							</p>
 							<FormMessage />
 						</FormItem>
 					)}
@@ -390,7 +432,34 @@ const FinalizeCampaignStep: FC<FinalizeCampaignStepProps> = ({
 								<SelectContent>
 									{availableSalesScripts.map((script) => (
 										<SelectItem key={script.id} value={script.id}>
-											{script.name}
+											<span className="flex w-full items-center justify-between gap-3">
+												<span className="truncate">{script.name}</span>
+												<TooltipProvider>
+													<Tooltip>
+														<TooltipTrigger asChild>
+															<span
+																aria-label={`${script.name} details`}
+																className="mr-2 inline-flex h-4 w-4 shrink-0 items-center justify-center text-muted-foreground"
+																onPointerDown={(event) =>
+																	event.stopPropagation()
+																}
+																title={
+																	script.description ??
+																	fallbackSalesScriptTooltip
+																}
+															>
+																<InfoCircledIcon className="h-4 w-4" />
+															</span>
+														</TooltipTrigger>
+														<TooltipContent className="max-w-xs">
+															<p>
+																{script.description ??
+																	fallbackSalesScriptTooltip}
+															</p>
+														</TooltipContent>
+													</Tooltip>
+												</TooltipProvider>
+											</span>
 										</SelectItem>
 									))}
 								</SelectContent>
@@ -418,16 +487,9 @@ const FinalizeCampaignStep: FC<FinalizeCampaignStepProps> = ({
 				/>
 
 				<div className="space-y-4 pt-4">
-					{(() => {
-						console.log(
-							"FinalizeCampaignStep render - estimatedCredits:",
-							estimatedCredits,
-						);
-						return null;
-					})()}
 					<p className="text-gray-500 text-sm dark:text-gray-400">
 						{estimatedCredits > 0
-							? `This campaign will cost ${estimatedCredits} credits.`
+							? `Estimated usage: ${formatCredits(estimatedCredits)} credits based on the selected audience, channel, and schedule.`
 							: "Configure your campaign settings to see cost estimate."}
 					</p>
 
@@ -460,6 +522,7 @@ const FinalizeCampaignStep: FC<FinalizeCampaignStepProps> = ({
 						<div className="flex items-start gap-2">
 							<div className="mt-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-blue-500/20">
 								<svg
+									aria-hidden="true"
 									className="h-3 w-3 text-blue-600 dark:text-blue-400"
 									fill="none"
 									viewBox="0 0 24 24"
@@ -490,6 +553,7 @@ const FinalizeCampaignStep: FC<FinalizeCampaignStepProps> = ({
 						<div className="flex items-start gap-2">
 							<div className="mt-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-primary/20">
 								<svg
+									aria-hidden="true"
 									className="h-3 w-3 text-primary"
 									fill="none"
 									viewBox="0 0 24 24"

@@ -64,6 +64,52 @@ const campaignModalStepsPath = path.join(
 	"steps",
 );
 const chatPagePath = path.join(root, "app", "dashboard", "chat", "page.tsx");
+const chatShellPath = path.join(
+	root,
+	"components",
+	"home",
+	"submodule-chat-shell.tsx",
+);
+const submoduleSidebarPath = path.join(
+	root,
+	"external",
+	"interactive-avatar-nextjs-demo",
+	"components",
+	"Sidebar.tsx",
+);
+const submoduleSidebarHeaderPath = path.join(
+	root,
+	"external",
+	"interactive-avatar-nextjs-demo",
+	"components",
+	"Sidebar",
+	"SidebarHeaderSection.tsx",
+);
+const submoduleApplicationsStarterPath = path.join(
+	root,
+	"external",
+	"interactive-avatar-nextjs-demo",
+	"components",
+	"Sidebar",
+	"ApplicationsStarter.tsx",
+);
+const submoduleChatInputPath = path.join(
+	root,
+	"external",
+	"interactive-avatar-nextjs-demo",
+	"components",
+	"AvatarSession",
+	"ChatInput.tsx",
+);
+const submoduleSlashCommandPalettePath = path.join(
+	root,
+	"external",
+	"interactive-avatar-nextjs-demo",
+	"components",
+	"AvatarSession",
+	"chat",
+	"SlashCommandPalette.tsx",
+);
 const leadsDemoTablePath = path.join(
 	root,
 	"external",
@@ -123,7 +169,7 @@ describe("DashboardNav tour launchers", () => {
 		const source = readFileSync(dashboardNavPath, "utf8");
 
 		expect(source).toContain("data-tour-sidebar-launch");
-		expect(source).toContain("startRouteTour(item.href, tourId)");
+		expect(source).toContain("startRouteTour(helpTour.href, helpTour.tourId)");
 		expect(source).toContain("router.push(href)");
 		expect(source).toContain("pendingTour");
 		expect(source).toContain("if (!isMinimized)");
@@ -213,7 +259,8 @@ describe("DashboardNav tour launchers", () => {
 
 		for (const target of [
 			'[data-tour="campaigns-header"]',
-			'[data-tour="chat-header"]',
+			'[data-tour="sidebar-header"]',
+			'[data-tour="top-panel-tabs"]',
 			'[data-tour="connections-header"]',
 			'[data-tour="charts-header"]',
 			'[data-tour="charts-roi-calculator"]',
@@ -254,6 +301,12 @@ describe("DashboardNav tour launchers", () => {
 		const tourHelpersSource = readFileSync(tourHelpersPath, "utf8");
 		const sourceByTarget = [
 			readFileSync(chatPagePath, "utf8"),
+			readFileSync(chatShellPath, "utf8"),
+			readFileSync(submoduleSidebarPath, "utf8"),
+			readFileSync(submoduleSidebarHeaderPath, "utf8"),
+			readFileSync(submoduleApplicationsStarterPath, "utf8"),
+			readFileSync(submoduleChatInputPath, "utf8"),
+			readFileSync(submoduleSlashCommandPalettePath, "utf8"),
 			readFileSync(leadsDemoTablePath, "utf8"),
 			readFileSync(kanbanTaskDialogPath, "utf8"),
 			readFileSync(newTaskDialogPath, "utf8"),
@@ -276,9 +329,23 @@ describe("DashboardNav tour launchers", () => {
 			"kanban-ai-task-form",
 			"kanban-ai-preview",
 			"kanban-task-save",
-			"chat-empty-state",
+			"sidebar-header",
+			"search-conversations",
+			"new-chat",
+			"bookmark-current",
+			"chats-section",
+			"bookmarks",
+			"knowledge-base",
+			"tools",
+			"agents",
+			"app-tours",
+			"top-panel-tabs",
+			"brain-tab",
+			"data-tab",
+			"actions-tab",
 			"chat-input",
-			"chat-send",
+			"slash-command-menu",
+			"slash-command-item",
 			"connections-configure",
 			"connections-highlights",
 			"connections-webhook-modal",
@@ -300,11 +367,15 @@ describe("DashboardNav tour launchers", () => {
 			"resources-mentor-contact",
 			"resources-mentorship-info",
 		]) {
-			expect(sourceByTarget).toContain(`data-tour="${target}"`);
+			expect(sourceByTarget).toContain(target);
 			expect(dashboardRoutesSource).toContain(`[data-tour="${target}"]`);
 		}
 
 		expect(tourHelpersSource).toContain("openDashboardKanbanTaskTarget");
 		expect(tourHelpersSource).toContain("openConnectionsWebhookTarget");
+		expect(tourHelpersSource).toContain("openAppToursSection");
+		expect(tourHelpersSource).toContain("openSidebarSection");
+		expect(tourHelpersSource).toContain("openTopPanel");
+		expect(tourHelpersSource).toContain("openSlashCommandMenu");
 	});
 });

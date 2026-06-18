@@ -3,7 +3,10 @@ import {
 	generateMockIntentSignals,
 } from "../../../../../constants/_faker/intentSignals";
 import { calculateIntentScore } from "../../../../../lib/scoring/intentScoring";
-import type { LeadStatus } from "../../../../../types/_dashboard/leads";
+import type {
+	CashBuyerPersona,
+	LeadStatus,
+} from "../../../../../types/_dashboard/leads";
 import type { ActivityEvent, DemoLead, DemoRow } from "./types";
 
 const DEMO_LISTS = [
@@ -14,6 +17,57 @@ const DEMO_LISTS = [
 	"Phone Sweep",
 ] as const;
 const DEFAULT_LEADS_PER_LIST = 10;
+type CashBuyerListSeed = {
+	list: string;
+	city: string;
+	state: string;
+	zipCodes: string[];
+	personas: CashBuyerPersona[];
+	strategies: string[];
+	budgetMin: number;
+	budgetMax: number;
+	propertyTypes: string[];
+	occupancy: "vacant" | "occupied" | "any";
+};
+
+const CASH_BUYER_LISTS: CashBuyerListSeed[] = [
+	{
+		list: "Dallas Cash Buyers - Buy Box Ready",
+		city: "Dallas",
+		state: "TX",
+		zipCodes: ["75201", "75204", "75206", "75043"],
+		personas: ["investor", "flipper", "landlord"],
+		strategies: ["Fix and flip", "BRRRR", "Small multifamily"],
+		budgetMin: 180000,
+		budgetMax: 475000,
+		propertyTypes: ["Single family", "Duplex", "Triplex"],
+		occupancy: "any",
+	},
+	{
+		list: "Atlanta Cash Buyers - Flip / REO",
+		city: "Atlanta",
+		state: "GA",
+		zipCodes: ["30309", "30310", "30315", "30030"],
+		personas: ["investor", "wholesaler", "flipper"],
+		strategies: ["Wholesale assignment", "Fix and flip", "REO"],
+		budgetMin: 125000,
+		budgetMax: 650000,
+		propertyTypes: ["Single family", "Townhome", "Duplex"],
+		occupancy: "vacant",
+	},
+	{
+		list: "Phoenix Cash Buyers - Landlord Rentals",
+		city: "Phoenix",
+		state: "AZ",
+		zipCodes: ["85004", "85016", "85201", "85301"],
+		personas: ["landlord", "investor"],
+		strategies: ["Buy and hold", "Rental portfolio", "Turnkey rentals"],
+		budgetMin: 240000,
+		budgetMax: 725000,
+		propertyTypes: ["Single family", "Duplex", "Condo"],
+		occupancy: "occupied",
+	},
+];
 
 const FIRST = [
 	"Ruth",
@@ -334,7 +388,76 @@ export function makeLeads(n: number, listName: string): DemoLead[] {
 	return leads;
 }
 
+function makeCashBuyerLeads(n: number, seed: CashBuyerListSeed): DemoLead[] {
+	return makeLeads(n, seed.list).map((lead, index) => {
+		const zipCode = seed.zipCodes[index % seed.zipCodes.length] ?? "00000";
+		const budgetSpread = seed.budgetMax - seed.budgetMin;
+		const priceMin = Math.round(seed.budgetMin * 0.85);
+		const priceMax = Math.round(seed.budgetMax * 0.95);
+
+		return {
+			...lead,
+			id: `${seed.list}-cash-buyer-${index + 1}`,
+			leadCategory: "cash-buyers",
+			status: index % 3 === 0 ? "Contacted" : lead.status,
+			summary: `${seed.city} cash buyer for ${seed.strategies.join(", ").toLowerCase()} opportunities.`,
+			leadSource: "Cash buyer intake",
+			company: `${seed.city} Buyer Group ${index + 1}`,
+			jobTitle: seed.personas.includes("landlord")
+				? "Portfolio Buyer"
+				: "Acquisitions Buyer",
+			tags: `cash buyer, ${seed.city.toLowerCase()}, ${seed.strategies.join(", ").toLowerCase()}`,
+			notes: `Budget range $${seed.budgetMin.toLocaleString()}-$${seed.budgetMax.toLocaleString()} with defined buy box.`,
+			propertyValue: seed.budgetMin + Math.round(budgetSpread * 0.6),
+			address1: {
+				...lead.address1,
+				city: seed.city,
+				state: seed.state,
+				zipCode,
+			},
+			cashBuyerProfile: {
+				buyerPersonas: seed.personas,
+				budgetMin: seed.budgetMin,
+				budgetMax: seed.budgetMax,
+				strategies: seed.strategies,
+				buyBox: {
+					states: [seed.state],
+					cities: [seed.city],
+					zipCodes: seed.zipCodes,
+					propertyTypes: seed.propertyTypes,
+					occupancy: seed.occupancy,
+					priceMin,
+					priceMax,
+					bedroomsMin: 2,
+					bedroomsMax: 5,
+					bathroomsMin: 1,
+					bathroomsMax: 4,
+					sqftMin: 850,
+					sqftMax: 3500,
+					notes: `Prefers ${seed.propertyTypes.join(", ").toLowerCase()} properties for ${seed.strategies[0]?.toLowerCase() ?? "cash offers"}.`,
+				},
+			},
+		} satisfies DemoLead;
+	});
+}
+
 export function makeRow(i: number): DemoRow {
+	const cashBuyerSeed = CASH_BUYER_LISTS[i];
+	if (cashBuyerSeed) {
+		const leads = makeCashBuyerLeads(DEFAULT_LEADS_PER_LIST, cashBuyerSeed);
+
+		return {
+			id: `cash-buyer-${i + 1}`,
+			list: cashBuyerSeed.list,
+			uploadDate: new Date(Date.now() - i * 86_400_000).toISOString(),
+			records: leads.length,
+			phone: leads.filter((lead) => Boolean(lead.phone)).length,
+			emails: leads.filter((lead) => Boolean(lead.email)).length,
+			socials: leads.filter((lead) => (lead.socials?.length ?? 0) > 0).length,
+			leads,
+		} satisfies DemoRow;
+	}
+
 	const list = DEMO_LISTS[i % DEMO_LISTS.length] as string;
 	const leads = makeLeads(DEFAULT_LEADS_PER_LIST, list);
 

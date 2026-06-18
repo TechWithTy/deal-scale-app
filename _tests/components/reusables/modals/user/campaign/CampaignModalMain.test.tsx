@@ -1,6 +1,12 @@
+import {
+	act,
+	fireEvent,
+	render,
+	screen,
+	waitFor,
+} from "@testing-library/react";
 // biome-ignore lint/style/useImportType: <explanation>
 import React from "react";
-import { fireEvent, render, screen, act, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import CampaignModalMain from "@/components/reusables/modals/user/campaign/CampaignModalMain";
@@ -60,9 +66,9 @@ vi.mock(
 					<option value="1">John Doe</option>
 				</select>
 
-				<label htmlFor="selectedWorkflowId">Workflow</label>
+				<label htmlFor="selectedWorkflowId">Automation playbook</label>
 				<select id="selectedWorkflowId" defaultValue="wf1">
-					<option value="wf1">Default: Nurture 7-day</option>
+					<option value="wf1">Balanced nurture playbook</option>
 				</select>
 
 				<label htmlFor="selectedSalesScriptId">Sales Script</label>
@@ -150,86 +156,90 @@ vi.mock(
 );
 
 describe("CampaignModalMain", () => {
-        beforeEach(() => {
-                pushMock.mockReset();
-                act(() => {
-                        const store = useCampaignCreationStore.getState();
-                        store.reset();
-                        store.setPrimaryChannel("call");
-                        store.setCampaignName("Ready Campaign");
-                        store.setSelectedAgentId("1");
-                        store.setSelectedWorkflowId("wf1");
-                        store.setSelectedSalesScriptId("ss1");
-                });
-        });
+	beforeEach(() => {
+		pushMock.mockReset();
+		act(() => {
+			const store = useCampaignCreationStore.getState();
+			store.reset();
+			store.setPrimaryChannel("call");
+			store.setCampaignName("Ready Campaign");
+			store.setSelectedAgentId("1");
+			store.setSelectedWorkflowId("wf1");
+			store.setSelectedSalesScriptId("ss1");
+		});
+	});
 
 	it("notifies launch listeners before the deferred close completes", async () => {
-                const callOrder: string[] = [];
-                const handleOpenChange = vi.fn((open: boolean) => {
-                        if (!open) {
-                                callOrder.push("close");
-                        }
-                });
-                const handleCampaignLaunched = vi.fn((payload?: { campaignId: string; channelType: string }) => {
-                        callOrder.push("launched");
-                });
+		const callOrder: string[] = [];
+		const handleOpenChange = vi.fn((open: boolean) => {
+			if (!open) {
+				callOrder.push("close");
+			}
+		});
+		const handleCampaignLaunched = vi.fn(
+			(payload?: { campaignId: string; channelType: string }) => {
+				callOrder.push("launched");
+			},
+		);
 
-                pushMock.mockImplementation(() => {
-                        callOrder.push("navigate");
-                });
+		pushMock.mockImplementation(() => {
+			callOrder.push("navigate");
+		});
 
-                render(
-                        <CampaignModalMain
-                                isOpen
-                                onOpenChange={handleOpenChange}
-                                initialStep={3}
-                                onCampaignLaunched={handleCampaignLaunched}
-                        />,
-                );
+		render(
+			<CampaignModalMain
+				isOpen
+				onOpenChange={handleOpenChange}
+				initialStep={3}
+				onCampaignLaunched={handleCampaignLaunched}
+			/>,
+		);
 
-                const launchButtons = screen.getAllByRole("button", {
-                        name: /launch campaign/i,
-                });
-                const launchButton = launchButtons[launchButtons.length - 1];
+		const launchButtons = screen.getAllByRole("button", {
+			name: /launch campaign/i,
+		});
+		const launchButton = launchButtons[launchButtons.length - 1];
 
 		fireEvent.click(launchButton);
 
 		await waitFor(() => expect(handleOpenChange).toHaveBeenCalledWith(false));
-		await waitFor(() => expect(handleCampaignLaunched).toHaveBeenCalledTimes(1));
+		await waitFor(() =>
+			expect(handleCampaignLaunched).toHaveBeenCalledTimes(1),
+		);
 		expect(callOrder).toEqual(["launched", "close"]);
 		expect(pushMock).not.toHaveBeenCalled();
-                const payload = handleCampaignLaunched.mock.calls[0]?.[0];
-                expect(payload?.campaignId).toMatch(/^campaign_\d+$/);
-                expect(payload?.channelType).toBe("call");
-        });
+		const payload = handleCampaignLaunched.mock.calls[0]?.[0];
+		expect(payload?.campaignId).toMatch(/^campaign_\d+$/);
+		expect(payload?.channelType).toBe("call");
+	});
 
 	it("navigates with campaign query parameters when no listeners are provided", async () => {
-                const callOrder: string[] = [];
-                const handleOpenChange = vi.fn((open: boolean) => {
-                        if (!open) {
-                                callOrder.push("close");
-                        }
-                });
+		const callOrder: string[] = [];
+		const handleOpenChange = vi.fn((open: boolean) => {
+			if (!open) {
+				callOrder.push("close");
+			}
+		});
 
-                pushMock.mockImplementation((destination: string) => {
-                        callOrder.push("navigate");
-                        return destination;
-                });
+		pushMock.mockImplementation((destination: string) => {
+			callOrder.push("navigate");
+			return destination;
+		});
 
-                render(
-                        <CampaignModalMain
-                                isOpen
-                                onOpenChange={handleOpenChange}
-                                initialStep={3}
-                        />,
-                );
+		render(
+			<CampaignModalMain
+				isOpen
+				onOpenChange={handleOpenChange}
+				initialStep={3}
+			/>,
+		);
 
-                const goalField = screen.getByLabelText(/campaign goal/i);
-                fireEvent.change(goalField, {
-                        target: {
-                                value: "Generate at least 10 qualified leads for our sales team.",
-                        },
-                });
+		const goalField = screen.getByLabelText(/campaign goal/i);
+		fireEvent.change(goalField, {
+			target: {
+				value: "Generate at least 10 qualified leads for our sales team.",
+			},
+		});
 
 		const launchButtons = screen.getAllByRole("button", {
 			name: /launch campaign/i,
@@ -239,28 +249,30 @@ describe("CampaignModalMain", () => {
 
 		await waitFor(() => expect(callOrder).toEqual(["close", "navigate"]));
 		expect(pushMock).toHaveBeenCalledTimes(1);
-                const destination = pushMock.mock.calls[0]?.[0];
-                expect(destination).toContain("/dashboard/campaigns?");
-                expect(destination).toContain("type=call");
-                expect(destination).toMatch(/campaignId=campaign_\d+/);
-        });
+		const destination = pushMock.mock.calls[0]?.[0];
+		expect(destination).toContain("/dashboard/campaigns?");
+		expect(destination).toContain("type=call");
+		expect(destination).toMatch(/campaignId=campaign_\d+/);
+	});
 
 	it("ignores duplicate launch attempts once the modal has started closing", async () => {
-                const callOrder: string[] = [];
-                const handleOpenChange = vi.fn();
-                const handleCampaignLaunched = vi.fn((payload?: { campaignId: string; channelType: string }) => {
-                        callOrder.push("launched");
-                });
-                const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+		const callOrder: string[] = [];
+		const handleOpenChange = vi.fn();
+		const handleCampaignLaunched = vi.fn(
+			(payload?: { campaignId: string; channelType: string }) => {
+				callOrder.push("launched");
+			},
+		);
+		const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
 
-                render(
-                        <CampaignModalMain
-                                isOpen
-                                onOpenChange={handleOpenChange}
-                                initialStep={3}
-                                onCampaignLaunched={handleCampaignLaunched}
-                        />,
-                );
+		render(
+			<CampaignModalMain
+				isOpen
+				onOpenChange={handleOpenChange}
+				initialStep={3}
+				onCampaignLaunched={handleCampaignLaunched}
+			/>,
+		);
 
 		const launchButtons = screen.getAllByRole("button", {
 			name: /launch campaign/i,

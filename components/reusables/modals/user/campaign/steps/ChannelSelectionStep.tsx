@@ -1,16 +1,28 @@
 import { Button } from "@/components/ui/button";
+import {
+	type CampaignPrimaryChannel,
+	useCampaignCreationStore,
+} from "@/lib/stores/campaignCreation";
 import type { FC } from "react";
 import { toast } from "sonner";
 
 // * Step 1: Channel Selection
+type ChannelOption = Exclude<CampaignPrimaryChannel, "email" | "social">;
+
+const channelLabels: Record<ChannelOption, string> = {
+	call: "Calls",
+	text: "Text",
+	directmail: "Direct Mail",
+	linkedin: "LinkedIn",
+	facebook: "Facebook",
+};
+
 interface ChannelSelectionStepProps {
 	onNext: () => void;
 	onClose: () => void;
-	allChannels: ("email" | "call" | "text" | "social")[];
-	disabledChannels?: ("email" | "call" | "text" | "social")[];
+	allChannels: ChannelOption[];
+	disabledChannels?: ChannelOption[];
 }
-
-import { useCampaignCreationStore } from "@/lib/stores/campaignCreation";
 
 const ChannelSelectionStep: FC<ChannelSelectionStepProps> = ({
 	onNext,
@@ -39,12 +51,18 @@ const ChannelSelectionStep: FC<ChannelSelectionStepProps> = ({
 						<Button
 							key={channel}
 							onClick={() => !isDisabled && setPrimaryChannel(channel)}
-							variant={primaryChannel === channel ? "default" : "outline"}
-							className="flex items-center justify-between capitalize"
+							variant={
+								primaryChannel === channel ||
+								(primaryChannel === "email" && channel === "directmail") ||
+								(primaryChannel === "social" && channel === "linkedin")
+									? "default"
+									: "outline"
+							}
+							className="flex items-center justify-between"
 							disabled={isDisabled}
 							type="button"
 						>
-							<span>{channel}</span>
+							<span>{channelLabels[channel]}</span>
 							{isDisabled && (
 								<span className="ml-2 rounded bg-gray-200 px-2 py-0.5 text-gray-500 text-xs">
 									Coming Soon

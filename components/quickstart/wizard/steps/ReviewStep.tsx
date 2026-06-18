@@ -187,8 +187,8 @@ const ReviewStep = () => {
 				<CardHeader>
 					<CardTitle className="text-xl">Campaign Details</CardTitle>
 					<CardDescription>
-						Review owner assignments, workflow automation, and scripting
-						selections.
+						Review owner assignments, automation playbook, and scripting
+						selections. Campaign timing is controlled by the schedule.
 					</CardDescription>
 				</CardHeader>
 				<CardContent className="grid gap-4 md:grid-cols-3">
@@ -209,7 +209,7 @@ const ReviewStep = () => {
 						<p className="text-muted-foreground text-xs">{agentLabel}</p>
 					</div>
 					<div className="rounded-lg border p-4 text-sm">
-						<p className="font-medium">Workflow</p>
+						<p className="font-medium">Automation playbook</p>
 						<p className="text-muted-foreground text-xs">{workflowLabel}</p>
 					</div>
 					<div className="rounded-lg border p-4 text-sm">

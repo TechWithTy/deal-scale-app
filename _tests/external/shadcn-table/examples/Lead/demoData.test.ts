@@ -31,6 +31,30 @@ describe("lead list demo data", () => {
 		}
 	});
 
+	it("seeds visible cash buyer rows with typed cash buyer profiles", () => {
+		const rows = makeData(5);
+		const cashBuyerRows = rows.filter((row) =>
+			row.list.toLowerCase().includes("cash buyers"),
+		);
+
+		expect(cashBuyerRows).toHaveLength(3);
+		for (const row of cashBuyerRows) {
+			expect(row.records).toBe(10);
+			for (const lead of row.leads) {
+				expect(lead.leadCategory).toBe("cash-buyers");
+				expect(lead.cashBuyerProfile?.buyerPersonas?.length).toBeGreaterThan(0);
+				expect(lead.cashBuyerProfile?.strategies?.length).toBeGreaterThan(0);
+				expect(lead.cashBuyerProfile?.buyBox?.zipCodes?.length).toBeGreaterThan(
+					0,
+				);
+				expect(lead.cashBuyerProfile?.budgetMin).toBeGreaterThan(0);
+				expect(lead.cashBuyerProfile?.budgetMax).toBeGreaterThan(
+					lead.cashBuyerProfile?.budgetMin ?? 0,
+				);
+			}
+		}
+	});
+
 	it("generates enough per-contact activity and intent signals to verify pagination", () => {
 		const row = makeRow(0);
 		const [lead] = row.leads;

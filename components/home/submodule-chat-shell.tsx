@@ -482,7 +482,13 @@ function WorkspacePanel({ tab }: { tab: WorkspaceTab }) {
 	);
 }
 
-function SubmoduleChatPanel() {
+function SubmoduleChatPanel({
+	fillAvailableHeight = false,
+	showWorkspaceSidebars = false,
+}: {
+	fillAvailableHeight?: boolean;
+	showWorkspaceSidebars?: boolean;
+}) {
 	const chatExperience = useSessionStore((state) => state.chatExperience);
 	const closeChatSettings = useSessionStore((state) => state.closeChatSettings);
 	const isChatSettingsOpen = useSessionStore(
@@ -529,10 +535,15 @@ function SubmoduleChatPanel() {
 	const previousTabRef = useRef<WorkspaceTab>("video");
 
 	useEffect(() => {
-		setSidebarCollapsed(true);
-		setControlsMinimized(true);
+		setSidebarCollapsed(!showWorkspaceSidebars);
+		setControlsMinimized(!showWorkspaceSidebars);
 		setViewTab("video");
-	}, [setControlsMinimized, setSidebarCollapsed, setViewTab]);
+	}, [
+		setControlsMinimized,
+		setSidebarCollapsed,
+		setViewTab,
+		showWorkspaceSidebars,
+	]);
 
 	useEffect(() => {
 		const nextTab = viewTab as WorkspaceTab;
@@ -606,7 +617,11 @@ function SubmoduleChatPanel() {
 	};
 
 	return (
-		<div className="relative flex h-[calc(100vh-8rem)] min-h-0 w-full flex-1 overflow-visible bg-slate-950 text-foreground">
+		<div
+			className={`relative flex min-h-0 w-full flex-1 overflow-visible bg-slate-950 text-foreground ${
+				fillAvailableHeight ? "h-full" : "h-[calc(100vh-8rem)]"
+			}`}
+		>
 			<BasicChatSettingsModal
 				mode={chatExperience}
 				open={isChatSettingsOpen}
@@ -751,7 +766,13 @@ function SubmoduleChatPanel() {
 	);
 }
 
-export function SubmoduleChatShell() {
+export function SubmoduleChatShell({
+	fillAvailableHeight = false,
+	showWorkspaceSidebars = false,
+}: {
+	fillAvailableHeight?: boolean;
+	showWorkspaceSidebars?: boolean;
+}) {
 	const [apiService, setApiService] = useState<ApiService | null>(null);
 
 	return (
@@ -759,7 +780,10 @@ export function SubmoduleChatShell() {
 			<ApiServiceProvider service={apiService} setApiService={setApiService}>
 				<ToastProvider>
 					<StreamingAvatarProvider>
-						<SubmoduleChatPanel />
+						<SubmoduleChatPanel
+							fillAvailableHeight={fillAvailableHeight}
+							showWorkspaceSidebars={showWorkspaceSidebars}
+						/>
 					</StreamingAvatarProvider>
 				</ToastProvider>
 			</ApiServiceProvider>

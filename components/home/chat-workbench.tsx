@@ -10,9 +10,11 @@ import { Badge } from "@/components/ui/badge";
 type WorkbenchTab = "chat" | "manual";
 type ChatWorkbenchProps = {
 	embedded?: boolean;
+	fillAvailableHeight?: boolean;
 	showManual?: boolean;
 	showHeader?: boolean;
 	showChatFrameHeader?: boolean;
+	showWorkspaceSidebars?: boolean;
 };
 
 const QuickStartFlow = dynamic(
@@ -29,22 +31,32 @@ const QuickStartFlow = dynamic(
 
 export function ChatWorkbench({
 	embedded = false,
+	fillAvailableHeight = false,
 	showManual = true,
 	showHeader = true,
 	showChatFrameHeader = true,
+	showWorkspaceSidebars = false,
 }: ChatWorkbenchProps) {
 	const [tab, setTab] = useState<WorkbenchTab>("chat");
 	const [hasOpenedManual, setHasOpenedManual] = useState(false);
 	const shellClassName = embedded
-		? "flex w-full flex-col gap-5"
+		? fillAvailableHeight
+			? "flex h-[calc(100dvh-3.5rem)] min-h-0 w-full flex-col"
+			: "flex w-full flex-col gap-5"
 		: "min-h-screen bg-[radial-gradient(circle_at_top,rgba(34,211,238,0.14),transparent_32%),linear-gradient(to_bottom,#020617,#0f172a_52%,#020617)] px-4 py-6 text-slate-100 md:px-6";
 	const contentClassName = embedded
-		? "mx-auto flex w-full max-w-7xl flex-col gap-5 text-slate-100"
+		? fillAvailableHeight
+			? "flex h-full min-h-0 w-full flex-col text-slate-100"
+			: "mx-auto flex w-full max-w-7xl flex-col gap-5 text-slate-100"
 		: "mx-auto flex w-full max-w-7xl flex-col gap-6";
 	const titleClassName = embedded
 		? "font-semibold text-2xl tracking-tight md:text-3xl"
 		: "font-semibold text-3xl tracking-tight md:text-4xl";
-	const chatHeightClassName = embedded ? "min-h-[68vh]" : "min-h-[72vh]";
+	const chatHeightClassName = fillAvailableHeight
+		? "h-full min-h-0"
+		: embedded
+			? "min-h-[68vh]"
+			: "min-h-[72vh]";
 
 	return (
 		<div className={shellClassName} data-tour="chat-experience-page">
@@ -113,9 +125,21 @@ export function ChatWorkbench({
 
 				<section
 					aria-hidden={tab !== "chat"}
-					className={tab === "chat" ? "block" : "hidden"}
+					className={
+						tab === "chat"
+							? fillAvailableHeight
+								? "block min-h-0 flex-1"
+								: "block"
+							: "hidden"
+					}
 				>
-					<div className="overflow-hidden rounded-3xl border border-white/10 bg-black/40 shadow-2xl shadow-black/30">
+					<div
+						className={`overflow-hidden border border-white/10 bg-black/40 shadow-2xl shadow-black/30 ${
+							fillAvailableHeight
+								? "h-full min-h-0 rounded-none"
+								: "rounded-3xl"
+						}`}
+					>
 						{showChatFrameHeader ? (
 							<div className="flex items-center justify-between border-white/10 border-b px-4 py-3">
 								<div>
@@ -133,7 +157,10 @@ export function ChatWorkbench({
 							</div>
 						) : null}
 						<div className={`${chatHeightClassName} bg-slate-950`}>
-							<SubmoduleChatShell />
+							<SubmoduleChatShell
+								fillAvailableHeight={fillAvailableHeight}
+								showWorkspaceSidebars={showWorkspaceSidebars}
+							/>
 						</div>
 					</div>
 				</section>

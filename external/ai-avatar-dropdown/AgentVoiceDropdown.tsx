@@ -4,7 +4,11 @@
  * Supports audio playback with play/stop toggle and visual feedback
  */
 
+import { InfoCircledIcon } from "@radix-ui/react-icons";
+import { Loader2, Play, Square, Volume2 } from "lucide-react";
 import * as React from "react";
+import { Badge } from "../shadcn-table/src/components/ui/badge";
+import { Button } from "../shadcn-table/src/components/ui/button";
 import {
 	Select,
 	SelectContent,
@@ -12,15 +16,12 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "../shadcn-table/src/components/ui/select";
-import { Button } from "../shadcn-table/src/components/ui/button";
-import { Play, Square, Bot, Volume2, Loader2 } from "lucide-react";
 import {
 	Tooltip,
 	TooltipContent,
 	TooltipProvider,
 	TooltipTrigger,
 } from "../shadcn-table/src/components/ui/tooltip";
-import { Badge } from "../shadcn-table/src/components/ui/badge";
 
 // Utility function for className merging
 function cn(...classes: (string | boolean | undefined)[]) {
@@ -36,6 +37,7 @@ export type AgentOption = {
 	description?: string;
 	capabilities?: string[]; // e.g. ["Calls", "Texts", "DMs"]
 	agentType?: string; // e.g. "Voice Agent"
+	email?: string;
 };
 
 export interface AgentVoiceDropdownProps {
@@ -138,6 +140,15 @@ export default function AgentVoiceDropdown({
 			return "bg-yellow-500";
 		}
 		return "bg-gray-400";
+	};
+
+	const getAgentDetails = (agent: AgentOption) => {
+		const status = agent.status ? `Status: ${agent.status}.` : "";
+		const email = agent.email ? ` Email: ${agent.email}.` : "";
+		const capabilities = agent.capabilities?.length
+			? ` Capabilities: ${agent.capabilities.join(", ")}.`
+			: "";
+		return `${agent.description ?? "Agent can be assigned to this campaign."} ${status}${email}${capabilities}`.trim();
 	};
 
 	return (
@@ -249,77 +260,112 @@ export default function AgentVoiceDropdown({
 										</div>
 									</div>
 
-									{/* Right: Play Button */}
-									{o.voiceUrl && (
+									<div className="flex shrink-0 items-center gap-1">
+										{o.voiceUrl && (
+											<Tooltip>
+												<TooltipTrigger asChild>
+													<Button
+														type="button"
+														size="sm"
+														variant={playingId === o.id ? "default" : "ghost"}
+														onMouseDown={(e) => e.preventDefault()}
+														onClick={(e) => handleTogglePlay(o, e)}
+														className={cn(
+															"h-8 w-8 shrink-0 p-0",
+															playingId === o.id &&
+																"bg-blue-600 text-white hover:bg-blue-700",
+															loadingId === o.id && "cursor-wait opacity-70",
+														)}
+														aria-label={
+															playingId === o.id
+																? "Stop preview"
+																: "Play voice preview"
+														}
+														disabled={loadingId === o.id}
+													>
+														{loadingId === o.id ? (
+															<Loader2 className="h-4 w-4 animate-spin" />
+														) : playingId === o.id ? (
+															<Square className="h-4 w-4 fill-current" />
+														) : (
+															<Play className="h-4 w-4" />
+														)}
+													</Button>
+												</TooltipTrigger>
+												<TooltipContent side="left" className="z-[10050]">
+													<div className="max-w-xs space-y-2">
+														<div className="flex items-start gap-2">
+															<Volume2 className="h-4 w-4 shrink-0 text-blue-500" />
+															<div className="min-w-0">
+																<p className="font-medium text-sm leading-tight">
+																	{playingId === o.id
+																		? "Playing voice preview"
+																		: "Preview agent voice"}
+																</p>
+																{o.description && (
+																	<p className="mt-1 line-clamp-3 text-muted-foreground text-xs">
+																		{o.description}
+																	</p>
+																)}
+																{o.capabilities &&
+																	o.capabilities.length > 0 && (
+																		<div className="mt-2 flex flex-wrap gap-1">
+																			{o.capabilities.map((cap) => (
+																				<Badge
+																					key={cap}
+																					variant="secondary"
+																					className="font-medium text-[10px]"
+																				>
+																					{cap}
+																				</Badge>
+																			))}
+																		</div>
+																	)}
+															</div>
+														</div>
+														<p className="text-muted-foreground text-xs italic">
+															{playingId === o.id
+																? "Click again to stop"
+																: "Click to hear how this agent sounds"}
+														</p>
+													</div>
+												</TooltipContent>
+											</Tooltip>
+										)}
 										<Tooltip>
 											<TooltipTrigger asChild>
-												<Button
-													type="button"
-													size="sm"
-													variant={playingId === o.id ? "default" : "ghost"}
-													onMouseDown={(e) => e.preventDefault()}
-													onClick={(e) => handleTogglePlay(o, e)}
-													className={cn(
-														"h-8 w-8 shrink-0 p-0",
-														playingId === o.id &&
-															"bg-blue-600 text-white hover:bg-blue-700",
-														loadingId === o.id && "cursor-wait opacity-70",
-													)}
-													aria-label={
-														playingId === o.id
-															? "Stop preview"
-															: "Play voice preview"
-													}
-													disabled={loadingId === o.id}
+												<span
+													aria-label={`${o.name} details`}
+													className="inline-flex h-8 w-8 items-center justify-center text-muted-foreground"
+													onPointerDown={(event) => event.stopPropagation()}
+													title={getAgentDetails(o)}
 												>
-													{loadingId === o.id ? (
-														<Loader2 className="h-4 w-4 animate-spin" />
-													) : playingId === o.id ? (
-														<Square className="h-4 w-4 fill-current" />
-													) : (
-														<Play className="h-4 w-4" />
-													)}
-												</Button>
+													<InfoCircledIcon className="h-4 w-4" />
+												</span>
 											</TooltipTrigger>
-											<TooltipContent side="left" className="z-[9999]">
+											<TooltipContent side="left" className="z-[10050]">
 												<div className="max-w-xs space-y-2">
-													<div className="flex items-start gap-2">
-														<Volume2 className="h-4 w-4 shrink-0 text-blue-500" />
-														<div className="min-w-0">
-															<p className="font-medium text-sm leading-tight">
-																{playingId === o.id
-																	? "Playing voice preview"
-																	: "Preview agent voice"}
-															</p>
-															{o.description && (
-																<p className="mt-1 line-clamp-3 text-muted-foreground text-xs">
-																	{o.description}
-																</p>
-															)}
-															{o.capabilities && o.capabilities.length > 0 && (
-																<div className="mt-2 flex flex-wrap gap-1">
-																	{o.capabilities.map((cap) => (
-																		<Badge
-																			key={cap}
-																			variant="secondary"
-																			className="font-medium text-[10px]"
-																		>
-																			{cap}
-																		</Badge>
-																	))}
-																</div>
-															)}
-														</div>
-													</div>
-													<p className="text-muted-foreground text-xs italic">
-														{playingId === o.id
-															? "Click again to stop"
-															: "Click to hear how this agent sounds"}
+													<p className="font-medium text-sm">{o.name}</p>
+													<p className="text-muted-foreground text-xs">
+														{getAgentDetails(o)}
 													</p>
+													{o.capabilities && o.capabilities.length > 0 && (
+														<div className="flex flex-wrap gap-1">
+															{o.capabilities.map((cap) => (
+																<Badge
+																	key={cap}
+																	variant="secondary"
+																	className="font-medium text-[10px]"
+																>
+																	{cap}
+																</Badge>
+															))}
+														</div>
+													)}
 												</div>
 											</TooltipContent>
 										</Tooltip>
-									)}
+									</div>
 								</div>
 							</SelectItem>
 						))}

@@ -1,58 +1,65 @@
 "use client";
 
-import * as React from "react";
 import type { ColumnDef, Row } from "@tanstack/react-table";
+import * as React from "react";
 
+import { useCampaignRowFocus } from "@/components/campaigns/utils/useCampaignRowFocus";
+import { FeatureGuard } from "../../../../components/access/FeatureGuard";
+import type { CallCampaign } from "../../../../types/_dashboard/campaign";
 import { DataTable } from "../components/data-table/data-table";
-import { DataTableToolbar } from "../components/data-table/data-table-toolbar";
 import { DataTableExportButton } from "../components/data-table/data-table-export-button";
+import { DataTableToolbar } from "../components/data-table/data-table-toolbar";
+import { Alert, AlertDescription, AlertTitle } from "../components/ui/alert";
+import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { useDataTable } from "../hooks/use-data-table";
 import { useRowCarousel } from "../hooks/use-row-carousel";
-import { SummaryCard, type DateChip } from "./Social/components/SummaryCard";
-import { Button } from "../components/ui/button";
-import { Alert, AlertDescription, AlertTitle } from "../components/ui/alert";
-import { ActionBar } from "./Social/components/ActionBar";
 import { AIDialog } from "./Social/components/AIDialog";
-import { summarizeRows } from "./Social/utils/summarize";
+import { ActionBar } from "./Social/components/ActionBar";
 import { SocialRowCarousel } from "./Social/components/SocialRowCarousel";
+import { type DateChip, SummaryCard } from "./Social/components/SummaryCard";
 import { buildSocialColumns } from "./Social/utils/buildColumns-refactored";
-import { FeatureGuard } from "../../../../components/access/FeatureGuard";
-import { CallCampaign } from "../../../../types/_dashboard/campaign";
-import CampaignModalMain from "./campaigns/modal/CampaignModalMain";
-import { useCampaignRowFocus } from "@/components/campaigns/utils/useCampaignRowFocus";
 import { generateSocialCampaignData } from "./Social/utils/mock";
+import { summarizeRows } from "./Social/utils/summarize";
+import CampaignModalMain from "./campaigns/modal/CampaignModalMain";
 
-type ParentTab = "calls" | "text" | "social" | "directMail";
+type ParentTab = "calls" | "text" | "linkedin" | "facebook" | "directMail";
 
 interface SocialCampaignsDemoTableProps {
-        onNavigate?: (tab: ParentTab) => void;
-        campaignId?: string | null;
-        onCampaignSelect?: (id: string) => void;
-        initialCampaigns?: CallCampaign[];
+	onNavigate?: (tab: ParentTab) => void;
+	campaignId?: string | null;
+	onCampaignSelect?: (id: string) => void;
+	initialCampaigns?: CallCampaign[];
 }
 
 export default function SocialCampaignsDemoTable({
-        onNavigate,
-        campaignId = null,
-        onCampaignSelect,
-        initialCampaigns,
+	onNavigate,
+	campaignId = null,
+	onCampaignSelect,
+	initialCampaigns,
 }: SocialCampaignsDemoTableProps) {
-        const fallbackCampaigns = React.useMemo(() => generateSocialCampaignData(), []);
+	const fallbackCampaigns = React.useMemo(
+		() => generateSocialCampaignData(),
+		[],
+	);
 
-        const mergeCampaigns = React.useCallback(
-                (incoming?: CallCampaign[]) => {
-                        if (!incoming || incoming.length === 0) {
-                                return [...fallbackCampaigns];
-                        }
-                        const seen = new Set(incoming.map((campaign) => campaign.id));
-                        const extras = fallbackCampaigns.filter((campaign) => !seen.has(campaign.id));
-                        return [...incoming, ...extras];
-                },
-                [fallbackCampaigns],
-        );
+	const mergeCampaigns = React.useCallback(
+		(incoming?: CallCampaign[]) => {
+			if (!incoming || incoming.length === 0) {
+				return [...fallbackCampaigns];
+			}
+			const seen = new Set(incoming.map((campaign) => campaign.id));
+			const extras = fallbackCampaigns.filter(
+				(campaign) => !seen.has(campaign.id),
+			);
+			return [...incoming, ...extras];
+		},
+		[fallbackCampaigns],
+	);
 
-        const [data, setData] = React.useState<CallCampaign[]>(() => mergeCampaigns(initialCampaigns));
+	const [data, setData] = React.useState<CallCampaign[]>(() =>
+		mergeCampaigns(initialCampaigns),
+	);
 	const [query, setQuery] = React.useState("");
 	const [aiOpen, setAiOpen] = React.useState(false);
 	const [aiRows, setAiRows] = React.useState<CallCampaign[]>([]);
@@ -68,9 +75,9 @@ export default function SocialCampaignsDemoTable({
 	>({});
 	const getKey = React.useCallback((r: CallCampaign) => r.id ?? r.name, []);
 
-        React.useEffect(() => {
-                setData(mergeCampaigns(initialCampaigns));
-        }, [initialCampaigns, mergeCampaigns]);
+	React.useEffect(() => {
+		setData(mergeCampaigns(initialCampaigns));
+	}, [initialCampaigns, mergeCampaigns]);
 
 	const columns = React.useMemo<ColumnDef<CallCampaign>[]>(
 		() => buildSocialColumns(),
@@ -158,36 +165,36 @@ export default function SocialCampaignsDemoTable({
 		},
 	});
 
-        const carousel = useRowCarousel(table, { loop: true });
+	const carousel = useRowCarousel(table, { loop: true });
 
-        const rowIdResolver = React.useCallback(
-                (row: Row<CallCampaign>) => (row.original as CallCampaign).id,
-                [],
-        );
+	const rowIdResolver = React.useCallback(
+		(row: Row<CallCampaign>) => (row.original as CallCampaign).id,
+		[],
+	);
 
-        const handleRowFocused = React.useCallback(
-                (row: Row<CallCampaign>) => {
-                        carousel.openAt(row);
-                        const targetId = rowIdResolver(row);
-                        if (!targetId) return;
-                        requestAnimationFrame(() => {
-                                const element = document.querySelector<HTMLTableRowElement>(
-                                        `[data-row-id="${targetId}"]`,
-                                );
-                                element?.scrollIntoView({ behavior: "smooth", block: "center" });
-                        });
-                },
-                [carousel, rowIdResolver],
-        );
+	const handleRowFocused = React.useCallback(
+		(row: Row<CallCampaign>) => {
+			carousel.openAt(row);
+			const targetId = rowIdResolver(row);
+			if (!targetId) return;
+			requestAnimationFrame(() => {
+				const element = document.querySelector<HTMLTableRowElement>(
+					`[data-row-id="${targetId}"]`,
+				);
+				element?.scrollIntoView({ behavior: "smooth", block: "center" });
+			});
+		},
+		[carousel, rowIdResolver],
+	);
 
-        const { focusedRowId, status } = useCampaignRowFocus<CallCampaign>({
-                campaignId,
-                table,
-                resolveRowId: rowIdResolver,
-                onRowFocused: handleRowFocused,
-        });
+	const { focusedRowId, status } = useCampaignRowFocus<CallCampaign>({
+		campaignId,
+		table,
+		resolveRowId: rowIdResolver,
+		onRowFocused: handleRowFocused,
+	});
 
-        function getSelectedRows(): CallCampaign[] {
+	function getSelectedRows(): CallCampaign[] {
 		return table
 			.getFilteredSelectedRowModel()
 			.rows.map((r) => r.original as CallCampaign);
@@ -208,26 +215,26 @@ export default function SocialCampaignsDemoTable({
 				setDateChip={setDateChip}
 			/>
 
-                        {status === "not-found" && campaignId ? (
-                                <Alert variant="destructive">
-                                        <AlertTitle>Campaign not found</AlertTitle>
-                                        <AlertDescription>
-                                                We couldn&apos;t locate a campaign with ID {campaignId} in the
-                                                Social table.
-                                        </AlertDescription>
-                                </Alert>
-                        ) : null}
+			{status === "not-found" && campaignId ? (
+				<Alert variant="destructive">
+					<AlertTitle>Campaign not found</AlertTitle>
+					<AlertDescription>
+						We couldn&apos;t locate a campaign with ID {campaignId} in the
+						Social table.
+					</AlertDescription>
+				</Alert>
+			) : null}
 
-                        <DataTable<CallCampaign>
-                                table={table}
-                                className="mt-2"
-                                focusedRowId={focusedRowId ?? undefined}
-                                getRowId={rowIdResolver}
-                                onRowClick={(row) => {
-                                        const id = rowIdResolver(row);
-                                        if (id) onCampaignSelect?.(id);
-                                        carousel.openAt(row);
-                                }}
+			<DataTable<CallCampaign>
+				table={table}
+				className="mt-2"
+				focusedRowId={focusedRowId ?? undefined}
+				getRowId={rowIdResolver}
+				onRowClick={(row) => {
+					const id = rowIdResolver(row);
+					if (id) onCampaignSelect?.(id);
+					carousel.openAt(row);
+				}}
 				actionBar={
 					<ActionBar
 						table={table}
@@ -247,7 +254,7 @@ export default function SocialCampaignsDemoTable({
 						className="h-8 w-64"
 					/>
 					{/* Status chips */}
-		
+
 					<ActionBar
 						table={table}
 						getSelectedRows={getSelectedRows}

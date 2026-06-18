@@ -1,5 +1,5 @@
-import React from "react";
 import { act, screen, within } from "@testing-library/react";
+import React from "react";
 import { beforeEach, describe, expect, it } from "vitest";
 
 import QuickStartWizard from "@/components/quickstart/wizard/QuickStartWizard";
@@ -56,7 +56,9 @@ describe("QuickStart wizard summary previews", () => {
 		expect(bulletText).toEqual(
 			expect.arrayContaining([
 				expect.stringMatching(/Primary channel: Text/i),
-				expect.stringMatching(/Workflow: Aggressive: 3-day blitz/i),
+				expect.stringMatching(
+					/Automation playbook: High-intent blitz playbook/i,
+				),
 				expect.stringMatching(/Assigned agent: Jane Smith/i),
 				expect.stringMatching(
 					/Automation rules: Hot borrower follow-up • Stalled deal escalation/i,

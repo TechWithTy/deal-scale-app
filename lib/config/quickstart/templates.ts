@@ -125,7 +125,7 @@ const TEMPLATE_DEFINITIONS: Record<
 				"Automation defaults coordinate borrower intake and funding teams via SMS.",
 			bullets: [
 				"Primary channel: Text",
-				"Workflow: Aggressive: 3-day blitz",
+				"Automation playbook: High-intent blitz playbook",
 				"Assigned agent: Jane Smith",
 				"Automation rules: Hot borrower follow-up • Stalled deal escalation",
 				"Webhook subscriptions: Borrower intake",

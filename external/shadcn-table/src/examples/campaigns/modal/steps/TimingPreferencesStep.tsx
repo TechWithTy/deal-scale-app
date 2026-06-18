@@ -1,16 +1,11 @@
 import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-	Popover,
-	PopoverContent,
-	PopoverTrigger,
-} from "@/components/ui/popover";
 import { useCampaignCreationStore } from "@/lib/stores/campaignCreation";
 import Holidays from "date-holidays";
-import { type FC, useEffect } from "react";
+import { type FC } from "react";
+import { CampaignSchedulePlanner } from "../../../../../../../components/reusables/modals/user/campaign/steps/CampaignSchedulePlanner";
 import {
 	Accordion,
 	AccordionContent,
@@ -30,8 +25,6 @@ const TimingPreferencesStep: FC<TimingPreferencesStepProps> = ({
 	const {
 		startDate,
 		endDate,
-		setStartDate,
-		setEndDate,
 		reachBeforeBusiness,
 		reachAfterBusiness,
 		reachOnWeekend,
@@ -48,6 +41,8 @@ const TimingPreferencesStep: FC<TimingPreferencesStepProps> = ({
 		setMaxDailyAttempts,
 		countVoicemailAsAnswered,
 		setCountVoicemailAsAnswered,
+		scheduleMode,
+		selectedRunDates,
 	} = useCampaignCreationStore();
 
 	const hd = new Holidays("US");
@@ -62,83 +57,16 @@ const TimingPreferencesStep: FC<TimingPreferencesStepProps> = ({
 	const minAttemptsError = minDailyAttempts < 1;
 	const maxAttemptsError = maxDailyAttempts < minDailyAttempts;
 
-	const daysSelected = useCampaignCreationStore((s) => s.daysSelected);
-
-	useEffect(() => {
-		if (!startDate) return;
-		if (!endDate || (endDate as Date) < startDate) {
-			const end = new Date(
-				startDate.getTime() + (daysSelected || 7) * 24 * 60 * 60 * 1000,
-			);
-			setEndDate(end);
-		}
-	}, [startDate, endDate, daysSelected, setEndDate]);
-
-	const handleStartSelect = (d?: Date) => {
-		if (!d) return;
-		if (!reachOnWeekend && isWeekend(d)) return;
-		if (!reachOnHolidays && isHoliday(d)) return;
-		setStartDate(new Date(d));
-	};
-
-	const handleEndSelect = (d?: Date) => {
-		if (!d) return;
-		if (!reachOnWeekend && isWeekend(d)) return;
-		if (!reachOnHolidays && isHoliday(d)) return;
-		setEndDate(new Date(d));
-	};
+	const isScheduleValid =
+		scheduleMode === "date-range"
+			? Boolean(startDate && endDate && startDate <= endDate)
+			: selectedRunDates.length > 0;
 
 	return (
 		<div className="space-y-6" data-tour="campaign-timing-step">
 			<h2 className="font-semibold text-lg">Timing Preferences</h2>
 
-			{/* Date Selection */}
-			<div className="space-y-1" data-tour="campaign-date-range">
-				<Label>Select Start Date And End Date</Label>
-				<div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-					<Popover>
-						<PopoverTrigger asChild>
-							<Button variant="outline" className="justify-start">
-								{startDate ? startDate.toLocaleDateString() : "Start date"}
-							</Button>
-						</PopoverTrigger>
-						<PopoverContent align="start" className="p-2">
-							<Calendar
-								mode="single"
-								selected={startDate ?? undefined}
-								onSelect={handleStartSelect}
-								fromDate={new Date()}
-								disabled={(date) => {
-									const weekendDisabled = !reachOnWeekend && isWeekend(date);
-									const holidayDisabled = !reachOnHolidays && isHoliday(date);
-									return weekendDisabled || holidayDisabled;
-								}}
-							/>
-						</PopoverContent>
-					</Popover>
-
-					<Popover>
-						<PopoverTrigger asChild>
-							<Button variant="outline" className="justify-start">
-								{endDate ? (endDate as Date).toLocaleDateString() : "End date"}
-							</Button>
-						</PopoverTrigger>
-						<PopoverContent align="start" className="p-2">
-							<Calendar
-								mode="single"
-								selected={(endDate as Date) ?? undefined}
-								onSelect={handleEndSelect}
-								fromDate={startDate ?? new Date()}
-								disabled={(date) => {
-									const weekendDisabled = !reachOnWeekend && isWeekend(date);
-									const holidayDisabled = !reachOnHolidays && isHoliday(date);
-									return weekendDisabled || holidayDisabled;
-								}}
-							/>
-						</PopoverContent>
-					</Popover>
-				</div>
-			</div>
+			<CampaignSchedulePlanner />
 
 			{/* Call Settings */}
 			<div className="space-y-4" data-tour="campaign-call-settings">
@@ -304,7 +232,7 @@ const TimingPreferencesStep: FC<TimingPreferencesStepProps> = ({
 				<Button type="button" variant="ghost" onClick={onBack}>
 					Back
 				</Button>
-				<Button type="button" onClick={onNext}>
+				<Button type="button" disabled={!isScheduleValid} onClick={onNext}>
 					Next
 				</Button>
 			</div>
