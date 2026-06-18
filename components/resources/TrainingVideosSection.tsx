@@ -16,7 +16,13 @@ import { Play, Video } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
 
-export function TrainingVideosSection() {
+type TrainingVideosSectionProps = {
+	videos?: TrainingVideo[];
+};
+
+export function TrainingVideosSection({
+	videos = trainingVideos,
+}: TrainingVideosSectionProps) {
 	const [selectedVideo, setSelectedVideo] = useState<TrainingVideo | null>(
 		null,
 	);
@@ -62,54 +68,63 @@ export function TrainingVideosSection() {
 				</div>
 			</div>
 
-			{/* Videos Grid */}
-			<div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-				{trainingVideos.map((video, index) => (
-					<Card
-						key={video.id}
-						className="group cursor-pointer overflow-hidden transition-all hover:shadow-lg"
-						onClick={() => handleVideoClick(video)}
-						data-tour={index === 0 ? "resources-training-card" : undefined}
-					>
-						<div className="relative aspect-video overflow-hidden bg-muted">
-							<Image
-								src={video.thumbnail}
-								alt={video.title}
-								fill
-								className="object-cover transition-transform group-hover:scale-105"
-								unoptimized
-							/>
-							<div
-								className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity group-hover:opacity-100"
-								data-tour={index === 0 ? "resources-training-open" : undefined}
-							>
-								<div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary">
-									<Play className="ml-1 h-8 w-8 text-primary-foreground" />
+			{videos.length === 0 ? (
+				<Card className="border-dashed bg-muted/20">
+					<CardContent className="p-6 text-center text-muted-foreground">
+						No training videos match this search.
+					</CardContent>
+				</Card>
+			) : (
+				<div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+					{videos.map((video, index) => (
+						<Card
+							key={video.id}
+							className="group cursor-pointer overflow-hidden transition-all hover:shadow-lg"
+							onClick={() => handleVideoClick(video)}
+							data-tour={index === 0 ? "resources-training-card" : undefined}
+						>
+							<div className="relative aspect-video overflow-hidden bg-muted">
+								<Image
+									src={video.thumbnail}
+									alt={video.title}
+									fill
+									className="object-cover transition-transform group-hover:scale-105"
+									unoptimized
+								/>
+								<div
+									className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity group-hover:opacity-100"
+									data-tour={
+										index === 0 ? "resources-training-open" : undefined
+									}
+								>
+									<div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary">
+										<Play className="ml-1 h-8 w-8 text-primary-foreground" />
+									</div>
+								</div>
+								<div className="absolute right-2 bottom-2 rounded bg-black/70 px-2 py-1 font-medium text-white text-xs">
+									{video.duration}
 								</div>
 							</div>
-							<div className="absolute right-2 bottom-2 rounded bg-black/70 px-2 py-1 font-medium text-white text-xs">
-								{video.duration}
-							</div>
-						</div>
-						<CardHeader className="p-4">
-							<div className="mb-2 flex items-center justify-between">
-								<Badge
-									variant="outline"
-									className={getCategoryBadge(video.category)}
-								>
-									{video.category.replace("-", " ")}
-								</Badge>
-							</div>
-							<CardTitle className="line-clamp-2 text-base">
-								{video.title}
-							</CardTitle>
-							<CardDescription className="line-clamp-2 text-sm">
-								{video.description}
-							</CardDescription>
-						</CardHeader>
-					</Card>
-				))}
-			</div>
+							<CardHeader className="p-4">
+								<div className="mb-2 flex items-center justify-between">
+									<Badge
+										variant="outline"
+										className={getCategoryBadge(video.category)}
+									>
+										{video.category.replace("-", " ")}
+									</Badge>
+								</div>
+								<CardTitle className="line-clamp-2 text-base">
+									{video.title}
+								</CardTitle>
+								<CardDescription className="line-clamp-2 text-sm">
+									{video.description}
+								</CardDescription>
+							</CardHeader>
+						</Card>
+					))}
+				</div>
+			)}
 
 			{/* Video Modal */}
 			{selectedVideo && (

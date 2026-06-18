@@ -12,6 +12,7 @@ import type {
 } from "../../../../activity-graph/types";
 import { Button } from "../ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
+import { Skeleton } from "../ui/skeleton";
 import { buildChannelActivityData } from "./activity";
 import { CampaignActivitySummary } from "./campaign-activity-summary";
 
@@ -150,6 +151,21 @@ export function DataTableRowModalCarousel<TData>(
 
 	const row = rows[index];
 	const [comparisonLeads, setComparisonLeads] = useState<string[]>([]);
+	const [isContentReady, setIsContentReady] = useState(false);
+
+	React.useEffect(() => {
+		if (!open || !row) {
+			setIsContentReady(false);
+			return;
+		}
+
+		setIsContentReady(false);
+		const timer = window.setTimeout(() => {
+			setIsContentReady(true);
+		}, 0);
+
+		return () => window.clearTimeout(timer);
+	}, [open, row]);
 
 	// Combine selected leads with comparison leads for data generation
 	// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
@@ -412,6 +428,27 @@ export function DataTableRowModalCarousel<TData>(
 				? "grid-cols-2"
 				: "grid-cols-1";
 
+	const loadingContent = (
+		<div className="space-y-6">
+			<div className="space-y-2">
+				<Skeleton className="h-5 w-40" />
+				<Skeleton className="h-4 w-64" />
+			</div>
+			<div className="grid gap-4 lg:grid-cols-[minmax(0,1.4fr)_minmax(280px,0.9fr)]">
+				<div className="space-y-3 rounded-lg border border-border bg-card p-4">
+					<Skeleton className="h-4 w-32" />
+					<Skeleton className="h-64 w-full" />
+				</div>
+				<div className="space-y-3 rounded-lg border border-border bg-card p-4">
+					<Skeleton className="h-4 w-28" />
+					<Skeleton className="h-10 w-full" />
+					<Skeleton className="h-10 w-4/5" />
+					<Skeleton className="h-10 w-3/5" />
+				</div>
+			</div>
+		</div>
+	);
+
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
 			<DialogContent className="flex max-h-[85vh] w-full max-w-4xl flex-col overflow-hidden border border-border bg-card text-foreground shadow-xl">
@@ -429,7 +466,9 @@ export function DataTableRowModalCarousel<TData>(
 					) : null}
 				</DialogHeader>
 				<div className="flex-1 overflow-y-auto px-6 py-4">
-					{!showContentTabs ? (
+					{!isContentReady ? (
+						loadingContent
+					) : !showContentTabs ? (
 						row ? (
 							render(row, index)
 						) : (

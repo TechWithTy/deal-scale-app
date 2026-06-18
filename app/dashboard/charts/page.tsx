@@ -16,7 +16,9 @@ import {
 } from "lucide-react";
 import { RefreshCw } from "lucide-react";
 import dynamic from "next/dynamic";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { ReactElement } from "react";
+import { useCallback, useMemo } from "react";
 import { KPICard } from "./components/KPICard";
 import { useAnalyticsData } from "./hooks/useAnalyticsData";
 
@@ -96,10 +98,43 @@ const AdvancedAnalyticsTab = dynamic(
 	{ ssr: false, loading: () => <FullWidthSkeleton /> },
 );
 
+const CHART_TABS = ["overview", "leads", "ai-agents", "advanced"] as const;
+type ChartTab = (typeof CHART_TABS)[number];
+
+function isChartTab(value: string | null): value is ChartTab {
+	return Boolean(value && CHART_TABS.includes(value as ChartTab));
+}
+
 export default function ChartsPage() {
 	const { data, loading, error, refetch } = useAnalyticsData();
 	const { tier: networkTier } = useNetworkQuality();
+	const router = useRouter();
+	const pathname = usePathname();
+	const searchParams = useSearchParams();
 	const isSlowNetwork = networkTier === "slow";
+	const activeTab = useMemo<ChartTab>(() => {
+		const tabParam = searchParams?.get("tab");
+		return isChartTab(tabParam) ? tabParam : "overview";
+	}, [searchParams]);
+
+	const setActiveTab = useCallback(
+		(nextTab: string) => {
+			if (!isChartTab(nextTab)) return;
+
+			const params = new URLSearchParams(searchParams?.toString());
+			if (nextTab === "overview") {
+				params.delete("tab");
+			} else {
+				params.set("tab", nextTab);
+			}
+
+			const query = params.toString();
+			router.replace(query ? `${pathname}?${query}` : pathname, {
+				scroll: false,
+			});
+		},
+		[pathname, router, searchParams],
+	);
 
 	if (error) {
 		return (
@@ -148,7 +183,7 @@ export default function ChartsPage() {
 				</Button>
 			</div>
 
-			<Tabs defaultValue="overview" className="w-full">
+			<Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
 				<TabsList data-tour="charts-tabs">
 					<TabsTrigger value="overview" className="flex items-center gap-2">
 						<BarChart className="h-4 w-4" />

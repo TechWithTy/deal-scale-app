@@ -13,7 +13,13 @@ import { simulations } from "@/constants/resourcesData";
 import type { Simulation } from "@/types/_dashboard/resources";
 import { BarChart3, MessageCircle, TrendingUp } from "lucide-react";
 
-export function SimulationsSection() {
+type SimulationsSectionProps = {
+	simulationsList?: Simulation[];
+};
+
+export function SimulationsSection({
+	simulationsList = simulations,
+}: SimulationsSectionProps) {
 	const handleViewInDiscord = (discordLink: string) => {
 		window.open(discordLink, "_blank", "noopener,noreferrer");
 	};
@@ -60,60 +66,67 @@ export function SimulationsSection() {
 				</div>
 			</div>
 
-			{/* Simulations Grid */}
-			<div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-				{simulations.map((simulation, index) => (
-					<Card
-						key={simulation.id}
-						className="group transition-all hover:shadow-lg"
-						data-tour={index === 0 ? "resources-simulation-card" : undefined}
-					>
-						<CardHeader className="p-4">
-							<div className="mb-3 flex items-start justify-between">
-								<div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br from-primary/20 to-primary/10">
-									{getTypeIcon(simulation.type)}
+			{simulationsList.length === 0 ? (
+				<Card className="border-dashed bg-muted/20">
+					<CardContent className="p-6 text-center text-muted-foreground">
+						No simulations match this search.
+					</CardContent>
+				</Card>
+			) : (
+				<div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+					{simulationsList.map((simulation, index) => (
+						<Card
+							key={simulation.id}
+							className="group transition-all hover:shadow-lg"
+							data-tour={index === 0 ? "resources-simulation-card" : undefined}
+						>
+							<CardHeader className="p-4">
+								<div className="mb-3 flex items-start justify-between">
+									<div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br from-primary/20 to-primary/10">
+										{getTypeIcon(simulation.type)}
+									</div>
+									{simulation.difficulty && (
+										<Badge
+											variant="outline"
+											className={getDifficultyColor(simulation.difficulty)}
+										>
+											{simulation.difficulty}
+										</Badge>
+									)}
 								</div>
-								{simulation.difficulty && (
+								<CardTitle className="line-clamp-2 text-base">
+									{simulation.name}
+								</CardTitle>
+								<CardDescription className="line-clamp-3 text-sm">
+									{simulation.description}
+								</CardDescription>
+							</CardHeader>
+							<CardContent className="p-4 pt-0">
+								<div className="mb-3">
 									<Badge
 										variant="outline"
-										className={getDifficultyColor(simulation.difficulty)}
+										className="bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200"
 									>
-										{simulation.difficulty}
+										{simulation.type.replace("-", " ")}
 									</Badge>
-								)}
-							</div>
-							<CardTitle className="line-clamp-2 text-base">
-								{simulation.name}
-							</CardTitle>
-							<CardDescription className="line-clamp-3 text-sm">
-								{simulation.description}
-							</CardDescription>
-						</CardHeader>
-						<CardContent className="p-4 pt-0">
-							<div className="mb-3">
-								<Badge
+								</div>
+								<Button
+									onClick={() => handleViewInDiscord(simulation.discordLink)}
+									className="w-full"
 									variant="outline"
-									className="bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200"
+									size="sm"
+									data-tour={
+										index === 0 ? "resources-simulation-discord" : undefined
+									}
 								>
-									{simulation.type.replace("-", " ")}
-								</Badge>
-							</div>
-							<Button
-								onClick={() => handleViewInDiscord(simulation.discordLink)}
-								className="w-full"
-								variant="outline"
-								size="sm"
-								data-tour={
-									index === 0 ? "resources-simulation-discord" : undefined
-								}
-							>
-								<MessageCircle className="mr-2 h-4 w-4" />
-								View in Discord
-							</Button>
-						</CardContent>
-					</Card>
-				))}
-			</div>
+									<MessageCircle className="mr-2 h-4 w-4" />
+									View in Discord
+								</Button>
+							</CardContent>
+						</Card>
+					))}
+				</div>
+			)}
 
 			{/* Discord CTA */}
 			<Card

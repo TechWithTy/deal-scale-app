@@ -5,11 +5,29 @@ import { Cross2Icon } from "@radix-ui/react-icons";
 import * as React from "react";
 
 import { cn } from "@/lib/_utils";
+import {
+	isAppTourEvent,
+	shouldIgnoreAppTourDismiss,
+} from "@/lib/utils/tourInteractions";
 
 const OPAQUE_DIALOG_BACKGROUND = "#020617";
 const OPAQUE_DIALOG_FOREGROUND = "#f8fafc";
 
-const Dialog = DialogPrimitive.Root;
+const Dialog = ({
+	onOpenChange,
+	...props
+}: React.ComponentPropsWithoutRef<typeof DialogPrimitive.Root>) => (
+	<DialogPrimitive.Root
+		onOpenChange={(open) => {
+			if (!open && shouldIgnoreAppTourDismiss()) {
+				return;
+			}
+
+			onOpenChange?.(open);
+		}}
+		{...props}
+	/>
+);
 
 const DialogTrigger = DialogPrimitive.Trigger;
 
@@ -28,6 +46,12 @@ const DialogOverlay = React.forwardRef<
 			className,
 		)}
 		onMouseDown={(e) => {
+			if (isAppTourEvent(e.nativeEvent)) {
+				e.stopPropagation();
+				e.preventDefault();
+				return;
+			}
+
 			// Check if click target is within a toast - if so, don't let overlay handle it
 			const target = e.target as HTMLElement;
 			// Check using composedPath for shadow DOM compatibility
@@ -104,6 +128,12 @@ const DialogOverlay = React.forwardRef<
 			}
 		}}
 		onClick={(e) => {
+			if (isAppTourEvent(e.nativeEvent)) {
+				e.stopPropagation();
+				e.preventDefault();
+				return;
+			}
+
 			// Same check for onClick - stop propagation to prevent modal close
 			const target = e.target as HTMLElement;
 			const nativeEvent = e.nativeEvent || e;
@@ -186,7 +216,7 @@ DialogOverlay.displayName = DialogPrimitive.Overlay.displayName;
 const DialogContent = React.forwardRef<
 	React.ElementRef<typeof DialogPrimitive.Content>,
 	React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
->(({ className, children, style, ...props }, ref) => (
+>(({ className, children, style, onInteractOutside, ...props }, ref) => (
 	<DialogPortal>
 		<DialogOverlay />
 		<DialogPrimitive.Content
@@ -203,6 +233,11 @@ const DialogContent = React.forwardRef<
 				opacity: 1,
 			}}
 			onInteractOutside={(e) => {
+				if (isAppTourEvent(e)) {
+					e.preventDefault();
+					return;
+				}
+
 				// Don't close modal if clicking on toast
 				const target = e.target as HTMLElement;
 				const nativeEvent = e.nativeEvent || e;
@@ -277,9 +312,7 @@ const DialogContent = React.forwardRef<
 				}
 
 				// Allow default behavior for non-toast clicks
-				if (props.onInteractOutside) {
-					props.onInteractOutside(e);
-				}
+				onInteractOutside?.(e);
 			}}
 			{...props}
 		>

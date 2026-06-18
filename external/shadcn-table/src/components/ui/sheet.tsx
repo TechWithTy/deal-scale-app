@@ -4,10 +4,29 @@ import * as SheetPrimitive from "@radix-ui/react-dialog";
 import { XIcon } from "lucide-react";
 import type * as React from "react";
 
+import {
+	isAppTourEvent,
+	shouldIgnoreAppTourDismiss,
+} from "@/lib/utils/tourInteractions";
 import { cn } from "../../lib/utils";
 
-function Sheet({ ...props }: React.ComponentProps<typeof SheetPrimitive.Root>) {
-	return <SheetPrimitive.Root data-slot="sheet" {...props} />;
+function Sheet({
+	onOpenChange,
+	...props
+}: React.ComponentProps<typeof SheetPrimitive.Root>) {
+	return (
+		<SheetPrimitive.Root
+			data-slot="sheet"
+			onOpenChange={(open) => {
+				if (!open && shouldIgnoreAppTourDismiss()) {
+					return;
+				}
+
+				onOpenChange?.(open);
+			}}
+			{...props}
+		/>
+	);
 }
 
 function SheetTrigger({
@@ -47,6 +66,7 @@ function SheetOverlay({
 function SheetContent({
 	className,
 	children,
+	onInteractOutside,
 	side = "right",
 	...props
 }: React.ComponentProps<typeof SheetPrimitive.Content> & {
@@ -69,6 +89,14 @@ function SheetContent({
 						"data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom inset-x-0 bottom-0 h-auto border-t",
 					className,
 				)}
+				onInteractOutside={(event) => {
+					if (isAppTourEvent(event)) {
+						event.preventDefault();
+						return;
+					}
+
+					onInteractOutside?.(event);
+				}}
 				{...props}
 			>
 				{children}

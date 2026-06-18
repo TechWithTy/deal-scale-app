@@ -13,7 +13,13 @@ import { customGPTs } from "@/constants/resourcesData";
 import type { CustomGPT } from "@/types/_dashboard/resources";
 import { Bot, ExternalLink, Sparkles } from "lucide-react";
 
-export function CustomGPTsSection() {
+type CustomGPTsSectionProps = {
+	gpts?: CustomGPT[];
+};
+
+export function CustomGPTsSection({
+	gpts = customGPTs,
+}: CustomGPTsSectionProps) {
 	const handleOpenTool = (url: string) => {
 		window.open(url, "_blank", "noopener,noreferrer");
 	};
@@ -48,59 +54,66 @@ export function CustomGPTsSection() {
 				</div>
 			</div>
 
-			{/* GPTs Grid */}
-			<div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-				{customGPTs.map((gpt, index) => (
-					<Card
-						key={gpt.id}
-						className="group transition-all hover:shadow-lg"
-						data-tour={index === 0 ? "resources-gpt-card" : undefined}
-					>
-						<CardHeader className="p-4">
-							<div className="mb-3 flex items-start justify-between">
-								<div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br from-primary/20 to-primary/10 text-2xl">
-									{gpt.icon}
+			{gpts.length === 0 ? (
+				<Card className="border-dashed bg-muted/20">
+					<CardContent className="p-6 text-center text-muted-foreground">
+						No custom GPTs match this search.
+					</CardContent>
+				</Card>
+			) : (
+				<div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+					{gpts.map((gpt, index) => (
+						<Card
+							key={gpt.id}
+							className="group transition-all hover:shadow-lg"
+							data-tour={index === 0 ? "resources-gpt-card" : undefined}
+						>
+							<CardHeader className="p-4">
+								<div className="mb-3 flex items-start justify-between">
+									<div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br from-primary/20 to-primary/10 text-2xl">
+										{gpt.icon}
+									</div>
+									{gpt.isPremium && (
+										<Badge
+											variant="outline"
+											className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
+										>
+											<Sparkles className="mr-1 h-3 w-3" />
+											Premium
+										</Badge>
+									)}
 								</div>
-								{gpt.isPremium && (
+								<CardTitle className="line-clamp-1 text-base">
+									{gpt.name}
+								</CardTitle>
+								<CardDescription className="line-clamp-2 text-sm">
+									{gpt.description}
+								</CardDescription>
+							</CardHeader>
+							<CardContent className="p-4 pt-0">
+								<div className="mb-3">
 									<Badge
 										variant="outline"
-										className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
+										className={getCategoryColor(gpt.category)}
 									>
-										<Sparkles className="mr-1 h-3 w-3" />
-										Premium
+										{gpt.category.replace("-", " ")}
 									</Badge>
-								)}
-							</div>
-							<CardTitle className="line-clamp-1 text-base">
-								{gpt.name}
-							</CardTitle>
-							<CardDescription className="line-clamp-2 text-sm">
-								{gpt.description}
-							</CardDescription>
-						</CardHeader>
-						<CardContent className="p-4 pt-0">
-							<div className="mb-3">
-								<Badge
+								</div>
+								<Button
+									onClick={() => handleOpenTool(gpt.url)}
+									className="w-full"
 									variant="outline"
-									className={getCategoryColor(gpt.category)}
+									size="sm"
+									data-tour={index === 0 ? "resources-gpt-open" : undefined}
 								>
-									{gpt.category.replace("-", " ")}
-								</Badge>
-							</div>
-							<Button
-								onClick={() => handleOpenTool(gpt.url)}
-								className="w-full"
-								variant="outline"
-								size="sm"
-								data-tour={index === 0 ? "resources-gpt-open" : undefined}
-							>
-								<ExternalLink className="mr-2 h-4 w-4" />
-								Open Tool
-							</Button>
-						</CardContent>
-					</Card>
-				))}
-			</div>
+									<ExternalLink className="mr-2 h-4 w-4" />
+									Open Tool
+								</Button>
+							</CardContent>
+						</Card>
+					))}
+				</div>
+			)}
 		</div>
 	);
 }

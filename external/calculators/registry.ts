@@ -1,11 +1,13 @@
 import { AmortizationCalculator } from "./components/AmortizationCalculator";
 import { BRRRRCalculator } from "./components/BRRRRCalculator";
+import { CashBuyerBuyBoxScorer } from "./components/CashBuyerBuyBoxScorer";
 import { ClosingCostCalculator } from "./components/ClosingCostCalculator";
 import { CommissionSplitCalculator } from "./components/CommissionSplitCalculator";
-import { DealComparisonCalculator } from "./components/DealComparisonCalculator";
 import { DSCRCalculator } from "./components/DSCRCalculator";
+import { DealComparisonCalculator } from "./components/DealComparisonCalculator";
 import { FixFlipROICalculator } from "./components/FixFlipROICalculator";
 import { LTVCalculator } from "./components/LTVCalculator";
+import { OffMarketMAOCalculator } from "./components/OffMarketMAOCalculator";
 import { OfferEstimatorCalculator } from "./components/OfferEstimatorCalculator";
 import { RentalCashFlowCalculator } from "./components/RentalCashFlowCalculator";
 import { WholesaleCalculator } from "./components/WholesaleCalculator";
@@ -74,6 +76,24 @@ export const calculatorDefinitions: CalculatorDefinition[] = [
 		category: "Acquisition",
 		keywords: ["offer", "mao", "comps"],
 		Component: OfferEstimatorCalculator,
+	},
+	{
+		id: "cash-buyer-buy-box",
+		title: "Cash Buyer Buy Box Scorer",
+		description:
+			"Score a property against your cash buyer criteria for price, spread, and ROI.",
+		category: "Acquisition",
+		keywords: ["buy box", "cash buyer", "score"],
+		Component: CashBuyerBuyBoxScorer,
+	},
+	{
+		id: "off-market-mao",
+		title: "Off-Market MAO Calculator",
+		description:
+			"Set a seller-facing MAO target while keeping investor margins visible.",
+		category: "Acquisition",
+		keywords: ["off market", "mao", "seller"],
+		Component: OffMarketMAOCalculator,
 	},
 	{
 		id: "ltv",

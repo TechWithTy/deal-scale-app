@@ -1,25 +1,15 @@
 "use client";
 
 import { Breadcrumbs } from "@/components/breadcrumbs";
-import PageContainer from "@/components/layout/page-container";
 import { AIQuickActionsPopover } from "@/components/deal-room/AIQuickActionsPopover";
 import { ChecklistProgress } from "@/components/deal-room/ChecklistProgress";
 import { DealTimeline } from "@/components/deal-room/DealTimeline";
 import { DocumentFolderTree } from "@/components/deal-room/DocumentFolderTree";
 import { StakeholderList } from "@/components/deal-room/StakeholderList";
+import PageContainer from "@/components/layout/page-container";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
-import { Separator } from "@/components/ui/separator";
-import {
-	sampleDeals,
-	sampleDocuments,
-	sampleStakeholders,
-	sampleChecklistTasks,
-	sampleMilestones,
-} from "@/constants/dealRoomData";
-import type { DealStatus, DocumentCategory } from "@/types/_dashboard/dealRoom";
 import {
 	Dialog,
 	DialogContent,
@@ -27,13 +17,28 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
+import { Progress } from "@/components/ui/progress";
+import { Separator } from "@/components/ui/separator";
 import {
-	Share2,
-	Upload,
-	DollarSign,
-	TrendingUp,
+	sampleChecklistTasks,
+	sampleDeals,
+	sampleDocuments,
+	sampleMilestones,
+	sampleStakeholders,
+} from "@/constants/dealRoomData";
+import { useDealRoomStore } from "@/lib/stores/dealRoom";
+import type {
+	DealDocument,
+	DealStatus,
+	DocumentCategory,
+} from "@/types/_dashboard/dealRoom";
+import {
 	Calendar,
+	DollarSign,
 	Home,
+	Share2,
+	TrendingUp,
+	Upload,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -72,24 +77,45 @@ export default function DealRoomDetailPage() {
 	const params = useParams();
 	const dealId = params.dealId as string;
 
-	// Find deal by ID (in real app, fetch from API)
-	const deal = sampleDeals.find((d) => d.id === dealId) || sampleDeals[0];
+	const liveDeal = useDealRoomStore((state) =>
+		state.deals.find((d) => d.id === dealId),
+	);
+	// Fall back to seeded samples only when no live deal exists in the store.
+	const deal = liveDeal ?? sampleDeals.find((d) => d.id === dealId) ?? null;
+
+	if (!deal) {
+		return (
+			<PageContainer scrollable>
+				<div className="mx-auto w-full max-w-7xl">
+					<Card>
+						<CardContent className="flex min-h-[240px] flex-col items-center justify-center gap-2 py-10 text-center">
+							<h2 className="font-semibold text-lg">Deal not found</h2>
+							<p className="max-w-md text-muted-foreground text-sm">
+								This deal is not loaded in the current session yet. Go back to
+								the deal room list and open it from there.
+							</p>
+						</CardContent>
+					</Card>
+				</div>
+			</PageContainer>
+		);
+	}
+
 	const documents = sampleDocuments.filter((d) => d.dealId === dealId);
 	const stakeholders = sampleStakeholders.filter((s) => s.dealId === dealId);
 	const tasks = sampleChecklistTasks.filter((t) => t.dealId === dealId);
 	const milestones = sampleMilestones.filter((m) => m.dealId === dealId);
-
 	const breadcrumbItems = [
 		{ title: "Dashboard", link: "/dashboard" },
 		{ title: "Deal Room", link: "/dashboard/deal-room" },
 		{ title: deal.propertyAddress, link: `/dashboard/deal-room/${dealId}` },
 	];
 
-	const handleViewDocument = (doc: any) => {
+	const handleViewDocument = (doc: DealDocument) => {
 		toast.info(`Viewing ${doc.name}`);
 	};
 
-	const handleDownloadDocument = (doc: any) => {
+	const handleDownloadDocument = (doc: DealDocument) => {
 		toast.success(`Downloading ${doc.name}`);
 	};
 
@@ -256,7 +282,7 @@ export default function DealRoomDetailPage() {
 							</div>
 						)}
 						<div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/50 to-transparent" />
-						<div className="absolute bottom-0 left-0 right-0 p-6">
+						<div className="absolute right-0 bottom-0 left-0 p-6">
 							<div className="flex items-end justify-between gap-4">
 								<div>
 									<h1 className="mb-1 font-bold text-3xl text-white md:text-4xl">
@@ -301,7 +327,7 @@ export default function DealRoomDetailPage() {
 									<p className="mb-1 text-muted-foreground text-xs">
 										Projected ROI
 									</p>
-									<p className="font-bold text-green-600 text-2xl dark:text-green-400">
+									<p className="font-bold text-2xl text-green-600 dark:text-green-400">
 										{deal.projectedROI}%
 									</p>
 								</CardContent>

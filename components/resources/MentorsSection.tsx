@@ -14,7 +14,11 @@ import { mentors } from "@/constants/resourcesData";
 import type { Mentor } from "@/types/_dashboard/resources";
 import { Calendar, Mail, MessageCircle, Users } from "lucide-react";
 
-export function MentorsSection() {
+type MentorsSectionProps = {
+	mentorsList?: Mentor[];
+};
+
+export function MentorsSection({ mentorsList = mentors }: MentorsSectionProps) {
 	const handleContact = (mentor: Mentor) => {
 		switch (mentor.contactMethod) {
 			case "discord":
@@ -88,73 +92,82 @@ export function MentorsSection() {
 				</div>
 			</div>
 
-			{/* Mentors Grid */}
-			<div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-				{mentors.map((mentor, index) => (
-					<Card
-						key={mentor.id}
-						className="group transition-all hover:shadow-lg"
-						data-tour={index === 0 ? "resources-mentor-card" : undefined}
-					>
-						<CardHeader className="p-4 pb-3">
-							<div className="mb-3 flex items-start gap-3">
-								<div className="relative">
-									<Avatar className="h-16 w-16">
-										<AvatarImage src={mentor.avatar} alt={mentor.name} />
-										<AvatarFallback className="bg-primary/10 font-semibold text-lg text-primary">
-											{getInitials(mentor.name)}
-										</AvatarFallback>
-									</Avatar>
-									<div
-										className={`absolute right-0 bottom-0 h-4 w-4 rounded-full border-2 border-background ${getAvailabilityColor(
-											mentor.availability,
-										)}`}
-									/>
+			{mentorsList.length === 0 ? (
+				<Card className="border-dashed bg-muted/20">
+					<CardContent className="p-6 text-center text-muted-foreground">
+						No mentors match this search.
+					</CardContent>
+				</Card>
+			) : (
+				<div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+					{mentorsList.map((mentor, index) => (
+						<Card
+							key={mentor.id}
+							className="group transition-all hover:shadow-lg"
+							data-tour={index === 0 ? "resources-mentor-card" : undefined}
+						>
+							<CardHeader className="p-4 pb-3">
+								<div className="mb-3 flex items-start gap-3">
+									<div className="relative">
+										<Avatar className="h-16 w-16">
+											<AvatarImage src={mentor.avatar} alt={mentor.name} />
+											<AvatarFallback className="bg-primary/10 font-semibold text-lg text-primary">
+												{getInitials(mentor.name)}
+											</AvatarFallback>
+										</Avatar>
+										<div
+											className={`absolute right-0 bottom-0 h-4 w-4 rounded-full border-2 border-background ${getAvailabilityColor(
+												mentor.availability,
+											)}`}
+										/>
+									</div>
+									<div className="min-w-0 flex-1">
+										<CardTitle className="line-clamp-1 text-base">
+											{mentor.name}
+										</CardTitle>
+										{mentor.yearsExperience && (
+											<p className="text-muted-foreground text-xs">
+												{mentor.yearsExperience}+ years experience
+											</p>
+										)}
+									</div>
 								</div>
-								<div className="min-w-0 flex-1">
-									<CardTitle className="line-clamp-1 text-base">
-										{mentor.name}
-									</CardTitle>
-									{mentor.yearsExperience && (
-										<p className="text-muted-foreground text-xs">
-											{mentor.yearsExperience}+ years experience
-										</p>
-									)}
+								<div className="flex flex-wrap gap-1">
+									{mentor.expertise.slice(0, 3).map((exp, idx) => (
+										<Badge
+											key={idx}
+											variant="outline"
+											className="bg-primary/5 text-xs"
+										>
+											{exp}
+										</Badge>
+									))}
 								</div>
-							</div>
-							<div className="flex flex-wrap gap-1">
-								{mentor.expertise.slice(0, 3).map((exp, idx) => (
-									<Badge
-										key={idx}
-										variant="outline"
-										className="bg-primary/5 text-xs"
-									>
-										{exp}
-									</Badge>
-								))}
-							</div>
-						</CardHeader>
-						<CardContent className="p-4 pt-0">
-							<CardDescription className="mb-3 line-clamp-3 text-sm">
-								{mentor.bio}
-							</CardDescription>
-							<Button
-								onClick={() => handleContact(mentor)}
-								className="w-full"
-								variant={
-									mentor.availability === "available" ? "default" : "outline"
-								}
-								size="sm"
-								disabled={mentor.availability === "offline"}
-								data-tour={index === 0 ? "resources-mentor-contact" : undefined}
-							>
-								{getContactIcon(mentor.contactMethod)}
-								{getContactLabel(mentor.contactMethod)}
-							</Button>
-						</CardContent>
-					</Card>
-				))}
-			</div>
+							</CardHeader>
+							<CardContent className="p-4 pt-0">
+								<CardDescription className="mb-3 line-clamp-3 text-sm">
+									{mentor.bio}
+								</CardDescription>
+								<Button
+									onClick={() => handleContact(mentor)}
+									className="w-full"
+									variant={
+										mentor.availability === "available" ? "default" : "outline"
+									}
+									size="sm"
+									disabled={mentor.availability === "offline"}
+									data-tour={
+										index === 0 ? "resources-mentor-contact" : undefined
+									}
+								>
+									{getContactIcon(mentor.contactMethod)}
+									{getContactLabel(mentor.contactMethod)}
+								</Button>
+							</CardContent>
+						</Card>
+					))}
+				</div>
+			)}
 
 			{/* Mentorship Info */}
 			<Card
