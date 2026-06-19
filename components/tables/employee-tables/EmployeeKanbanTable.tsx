@@ -11,7 +11,11 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import type { TeamMember } from "@/types/userProfile";
-import type { ColumnDef, Table as TanstackTable } from "@tanstack/react-table";
+import type {
+	ColumnDef,
+	Row,
+	Table as TanstackTable,
+} from "@tanstack/react-table";
 import { DataTable } from "external/shadcn-table/src/components/data-table/data-table";
 import { useDataTable } from "external/shadcn-table/src/hooks/use-data-table";
 import type { ReactNode } from "react";
@@ -69,7 +73,7 @@ export default function EmployeeKanbanTable({
 				: null}
 			<DataTable
 				table={table.table}
-				onRowClick={(row) => {
+				onRowClick={(row: Row<TeamMember>) => {
 					const original = row.original as TeamMember;
 					setCurrent(original);
 					setRowOpen(true);
@@ -110,7 +114,7 @@ export default function EmployeeKanbanTable({
 				open={aiOpen}
 				onOpenChange={setAiOpen}
 				selected={(table.table.getFilteredSelectedRowModel().rows ?? []).map(
-					(r) => r.original,
+					(r: Row<TeamMember>) => r.original,
 				)}
 			/>
 			<EmployeeRowModal

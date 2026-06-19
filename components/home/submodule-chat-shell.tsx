@@ -37,11 +37,24 @@ import dynamic from "next/dynamic";
 import React from "react";
 import { useEffect, useRef, useState } from "react";
 
+const BasicChatSettingsModalRoot =
+	BasicChatSettingsModal as unknown as React.ComponentType<any>;
+const ChatRoot = Chat as unknown as React.ComponentType<any>;
+const SessionQuickStartCardRoot =
+	SessionQuickStartCard as unknown as React.ComponentType<any>;
+const SubmoduleSidebarRoot =
+	SubmoduleSidebar as unknown as React.ComponentType<any>;
+const ApiServiceProviderRoot =
+	ApiServiceProvider as unknown as React.ComponentType<any>;
+const AvatarQueryProviderRoot =
+	AvatarQueryProvider as unknown as React.ComponentType<any>;
+const ToastProviderRoot = ToastProvider as unknown as React.ComponentType<any>;
+
 const BrainGraphViewer = dynamic(
 	() =>
 		import(
 			"@/external/interactive-avatar-nextjs-demo/components/three-graph-viewer"
-		).then((module) => module.ThreeGraphViewer),
+		).then((module) => module.ThreeGraphViewer as React.ComponentType<any>),
 	{
 		ssr: false,
 		loading: () => (
@@ -56,7 +69,7 @@ const DataViewerPanel = dynamic(
 	() =>
 		import(
 			"@/external/interactive-avatar-nextjs-demo/components/data-viewer"
-		).then((module) => module.DataViewer),
+		).then((module) => module.DataViewer as React.ComponentType<any>),
 	{
 		ssr: false,
 		loading: () => (
@@ -71,7 +84,7 @@ const KanbanActionsPanel = dynamic(
 	() =>
 		import(
 			"@/external/interactive-avatar-nextjs-demo/components/kanban/ActionsKanbanPanel"
-		).then((module) => module.ActionsKanbanPanel),
+		).then((module) => module.ActionsKanbanPanel as React.ComponentType<any>),
 	{
 		ssr: false,
 		loading: () => (
@@ -272,10 +285,12 @@ function WorkspacePanel({ tab }: { tab: WorkspaceTab }) {
 		};
 	}, [liveAvatarEmbedUrl]);
 
-	const avatarOptions = avatarOptionItems.map((option) => ({
-		avatar_id: option.value,
-		name: option.label,
-	}));
+	const avatarOptions = avatarOptionItems.map(
+		(option: { value: string; label: string }) => ({
+			avatar_id: option.value,
+			name: option.label,
+		}),
+	);
 	const selectedAvatarId =
 		selectedAvatar === "CUSTOM" ? customAvatarId.trim() : selectedAvatar;
 	const customIdValid = UUID_PATTERN.test(selectedAvatarId);
@@ -444,7 +459,7 @@ function WorkspacePanel({ tab }: { tab: WorkspaceTab }) {
 									className="pointer-events-none absolute left-1/2 top-3 z-30 h-2 w-2 -translate-x-1/2"
 									data-tour="live-avatar-tour-anchor"
 								/>
-								<SessionQuickStartCard
+								<SessionQuickStartCardRoot
 									avatarOptions={avatarOptions}
 									contextOptions={contextOptions}
 									voiceOptions={voiceOptions}
@@ -510,7 +525,7 @@ function SubmoduleChatPanel({
 		sendMessageVoid,
 		startVoiceChatVoid,
 		stopVoiceChatVoid,
-	} = useChatController(StreamingAvatarSessionState.CONNECTED);
+	} = useChatController(StreamingAvatarSessionState.CONNECTED) as any;
 	const setSidebarCollapsed = usePlacementStore(
 		(state) => state.setSidebarCollapsed,
 	);
@@ -622,11 +637,11 @@ function SubmoduleChatPanel({
 				fillAvailableHeight ? "h-full" : "h-[calc(100vh-8rem)]"
 			}`}
 		>
-			<BasicChatSettingsModal
+			<BasicChatSettingsModalRoot
 				mode={chatExperience}
 				open={isChatSettingsOpen}
 				onModeChange={handleChatExperienceChange}
-				onOpenChange={(open) => {
+				onOpenChange={(open: boolean) => {
 					if (open) {
 						openChatSettings();
 					} else {
@@ -634,7 +649,7 @@ function SubmoduleChatPanel({
 					}
 				}}
 			/>
-			<SubmoduleSidebar showCollapsedTrigger={false} />
+			<SubmoduleSidebarRoot showCollapsedTrigger={false} />
 			<EmbeddedShellControls
 				chatMinimized={chatMinimized}
 				hidden={videoSelectOpen}
@@ -746,7 +761,7 @@ function SubmoduleChatPanel({
 						}`}
 						data-tour="bottom-chat-panel"
 					>
-						<Chat
+						<ChatRoot
 							chatInput={chatInput}
 							isSending={isSending}
 							isVoiceChatActive={isVoiceChatActive}
@@ -776,17 +791,20 @@ export function SubmoduleChatShell({
 	const [apiService, setApiService] = useState<ApiService | null>(null);
 
 	return (
-		<AvatarQueryProvider>
-			<ApiServiceProvider service={apiService} setApiService={setApiService}>
-				<ToastProvider>
+		<AvatarQueryProviderRoot>
+			<ApiServiceProviderRoot
+				service={apiService}
+				setApiService={setApiService}
+			>
+				<ToastProviderRoot>
 					<StreamingAvatarProvider>
 						<SubmoduleChatPanel
 							fillAvailableHeight={fillAvailableHeight}
 							showWorkspaceSidebars={showWorkspaceSidebars}
 						/>
 					</StreamingAvatarProvider>
-				</ToastProvider>
-			</ApiServiceProvider>
-		</AvatarQueryProvider>
+				</ToastProviderRoot>
+			</ApiServiceProviderRoot>
+		</AvatarQueryProviderRoot>
 	);
 }

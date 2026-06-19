@@ -1061,7 +1061,8 @@ function FocusModePanel({
 	const handleMediaResult = useCallback(
 		(event: VoiceMediaEvent) => {
 			onMediaEvent?.(event);
-			const { type, status, error } = event;
+			const { type, status } = event;
+			const error = "error" in event ? event.error : undefined;
 
 			if (type === "call") {
 				if (status === "pending") {

@@ -254,6 +254,23 @@ export interface PlanTier {
 	cta?: string;
 }
 
+export const mockPlans: PlanTier[] = pricingTiers.subscription.map((tier) => ({
+	id: tier.id,
+	name: tier.name,
+	price: tier.billing.monthly.price,
+	priceSuffix: "/mo",
+	description: tier.addOn,
+	features: tier.features,
+	credits: {
+		ai: typeof tier.credits.ai === "number" ? tier.credits.ai : 0,
+		leads: typeof tier.credits.leads === "number" ? tier.credits.leads : 0,
+		skipTraces:
+			typeof tier.credits.skipTrace === "number" ? tier.credits.skipTrace : 0,
+	},
+	planFeatures: tier.planFeatures,
+	cta: "Get Started",
+}));
+
 /**
  * Check if live API endpoint is available
  * @returns Promise that resolves to true if /api/plans is reachable

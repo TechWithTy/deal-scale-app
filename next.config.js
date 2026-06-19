@@ -182,6 +182,7 @@ const nextConfig = {
 			...(config.resolve.alias || {}),
 			"@": path.resolve(__dirname),
 			external: path.resolve(__dirname, "external"),
+			"@ssf": path.resolve(__dirname, "external/score-streak-flow/src"),
 			"@external/dynamic-hero": path.resolve(
 				__dirname,
 				"external/dynamic-hero/src/index.ts",

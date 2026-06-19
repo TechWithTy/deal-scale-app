@@ -104,7 +104,7 @@ const QuickStartLegacyModals: FC<QuickStartLegacyModalsProps> = ({
 			isOpen={showBulkSuiteModal}
 			onClose={onCloseBulkSuite}
 			initialCsvFile={bulkCsvFile}
-			initialCsvHeaders={bulkCsvHeaders}
+			initialCsvHeaders={[...bulkCsvHeaders]}
 			onSuiteLaunchComplete={onSuiteLaunchComplete}
 		/>
 
@@ -142,7 +142,7 @@ const QuickStartLegacyModals: FC<QuickStartLegacyModalsProps> = ({
 			videoUrl="https://app.supademo.com/embed/cmhjlwt7i0jk4u1hm0scmf39w?embed_v=2&utm_source=embed"
 			title="Welcome To Deal Scale"
 			subtitle="Get help getting started with your lead generation platform."
-			steps={campaignSteps}
+			steps={[...campaignSteps]}
 			isTourOpen={isTourOpen}
 			onStartTour={onStartTour}
 			onCloseTour={onCloseTour}

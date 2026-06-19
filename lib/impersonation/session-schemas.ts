@@ -1,5 +1,16 @@
 import { z } from "zod";
 
+const userRoleSchema = z.enum([
+	"admin",
+	"manager",
+	"member",
+	"support",
+	"platform_admin",
+	"platform_support",
+]);
+
+const subscriptionTierSchema = z.enum(["Basic", "Starter", "Enterprise"]);
+
 export const identitySchema = z.object({
 	id: z.string().min(1, "Missing user identifier"),
 	name: z.string().nullish(),
@@ -23,8 +34,8 @@ export const sessionUserSchema = z
 		id: z.string(),
 		name: z.string(),
 		email: z.string().email(),
-		role: z.string(),
-		tier: z.string(),
+		role: userRoleSchema,
+		tier: subscriptionTierSchema,
 		permissions: z.array(z.string()),
 		permissionMatrix: z.record(z.array(z.string())),
 		permissionList: z.array(z.string()),

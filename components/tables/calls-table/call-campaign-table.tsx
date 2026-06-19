@@ -11,7 +11,7 @@ import {
 import { type ColumnDef, flexRender } from "@tanstack/react-table";
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 import React from "react";
-import { useDataTable } from "../../../external/shadcn-table/src/hooks/use-data-table";
+import { useDataTable } from "external/shadcn-table/src/hooks/use-data-table";
 
 interface DataTableProps<TData, TValue> {
 	columns: ColumnDef<TData, TValue>[];
@@ -36,7 +36,7 @@ export function CallCampaignTable<TData, TValue>({
 			pagination: { pageIndex: 0, pageSize: pageSizeOptions?.[0] ?? 10 },
 		},
 		// let the shared hook manage filtering/sorting/pagination via nuqs
-		getRowId: (row, index) => {
+		getRowId: (row: TData, index: number) => {
 			const candidate = row as unknown as { id?: string | number };
 			return candidate.id !== undefined ? String(candidate.id) : String(index);
 		},
@@ -58,9 +58,9 @@ export function CallCampaignTable<TData, TValue>({
 				{/* Ensure horizontal scroll */}
 				<Table className="min-w-[1200px]">
 					<TableHeader>
-						{table.getHeaderGroups().map((headerGroup) => (
+						{table.getHeaderGroups().map((headerGroup: any) => (
 							<TableRow key={headerGroup.id}>
-								{headerGroup.headers.map((header, index) => (
+								{headerGroup.headers.map((header: any, index: number) => (
 									<TableHead
 										key={header.id}
 										className={`${index === 0 ? "text-left" : "text-center"}`} // Center all headers except the first one
@@ -78,9 +78,9 @@ export function CallCampaignTable<TData, TValue>({
 					</TableHeader>
 					<TableBody>
 						{table.getRowModel().rows?.length ? (
-							table.getRowModel().rows.map((row) => (
+							table.getRowModel().rows.map((row: any) => (
 								<TableRow key={row.id}>
-									{row.getVisibleCells().map((cell, index) => (
+									{row.getVisibleCells().map((cell: any, index: number) => (
 										<TableCell
 											key={cell.id}
 											className={index === 0 ? "text-left" : "text-center"} // Center all cells except the first one

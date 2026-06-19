@@ -9,9 +9,18 @@ interface VoicemailModalProps {
 	open: boolean;
 	onClose: () => void;
 	onSave: (audioBlob: Blob) => void;
-	preferences: VoiceCreationPreferences;
-	onPreferencesChange: (prefs: VoiceCreationPreferences) => void;
+	preferences?: VoiceCreationPreferences;
+	onPreferencesChange?: (prefs: VoiceCreationPreferences) => void;
 }
+
+const DEFAULT_VOICE_PREFERENCES: VoiceCreationPreferences = {
+	voiceUsage: "voicemail",
+	knowledgeBaseEnabled: true,
+	aiTrainingEnabled: false,
+	monetizationEnabled: false,
+	priceMultiplier: 1,
+	acceptedTerms: false,
+};
 
 const MIN_RECORDING_LENGTH = 5;
 const MAX_RECORDING_LENGTH = 120;
@@ -20,8 +29,8 @@ const VoicemailModal: React.FC<VoicemailModalProps> = ({
 	open,
 	onClose,
 	onSave,
-	preferences,
-	onPreferencesChange,
+	preferences = DEFAULT_VOICE_PREFERENCES,
+	onPreferencesChange = () => {},
 }) => {
 	return (
 		<VoiceRecorderCore

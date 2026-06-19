@@ -158,7 +158,7 @@ export default function SuperUsersTable() {
 
 			<DataTable
 				table={table.table}
-				onRowClick={(row) => {
+				onRowClick={(row: { original: { id: string } }) => {
 					setSelectedUserId(row.original.id);
 					setIsModalOpen(true);
 				}}

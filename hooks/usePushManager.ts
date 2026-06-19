@@ -49,10 +49,12 @@ async function createSubscription(): Promise<PushSubscription> {
 	}
 
 	const applicationServerKey = urlBase64ToUint8Array(vapidKey);
+	const applicationServerKeyBuffer = new Uint8Array([...applicationServerKey])
+		.buffer;
 
 	return registration.pushManager.subscribe({
 		userVisibleOnly: true,
-		applicationServerKey,
+		applicationServerKey: applicationServerKeyBuffer,
 	});
 }
 

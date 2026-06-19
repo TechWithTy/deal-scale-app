@@ -9,11 +9,11 @@ import type { DirectMailCampaign } from "external/shadcn-table/src/examples/Dire
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import * as React from "react";
 import { shallow } from "zustand/shallow";
-import CallCampaignsDemoTable from "../../../external/shadcn-table/src/examples/call-campaigns-demo-table";
-import CampaignModalMain from "../../../external/shadcn-table/src/examples/campaigns/modal/CampaignModalMain";
-import DirectMailCampaignsDemoTable from "../../../external/shadcn-table/src/examples/direct-mail-campaigns-demo-table";
-import SocialCampaignsDemoTable from "../../../external/shadcn-table/src/examples/social-campaigns-demo-table";
-import TextCampaignsDemoTable from "../../../external/shadcn-table/src/examples/text-campaigns-demo-table";
+import CallCampaignsDemoTable from "external/shadcn-table/src/examples/call-campaigns-demo-table";
+import CampaignModalMain from "external/shadcn-table/src/examples/campaigns/modal/CampaignModalMain";
+import DirectMailCampaignsDemoTable from "external/shadcn-table/src/examples/direct-mail-campaigns-demo-table";
+import SocialCampaignsDemoTable from "external/shadcn-table/src/examples/social-campaigns-demo-table";
+import TextCampaignsDemoTable from "external/shadcn-table/src/examples/text-campaigns-demo-table";
 import { useCampaignTourModal } from "./useCampaignTourModal";
 
 export default function CampaignCallTablePage({

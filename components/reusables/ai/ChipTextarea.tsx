@@ -14,6 +14,7 @@ import {
 	type ChangeEvent,
 	type ClipboardEvent,
 	type KeyboardEvent,
+	type ReactNode,
 	useCallback,
 	useMemo,
 	useRef,
@@ -34,7 +35,7 @@ interface ChipTextareaProps {
 	rows?: number;
 	availableChips: ChipItem[];
 	error?: string;
-	helpText?: string;
+	helpText?: ReactNode;
 	className?: string;
 	disabled?: boolean;
 	showChipsBelow?: boolean;

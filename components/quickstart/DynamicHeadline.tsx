@@ -233,36 +233,37 @@ const DynamicHeadline = ({ personaId }: DynamicHeadlineProps) => {
 		(state) => state.personaId,
 	);
 
-	const activePersona = personaId ?? selectedPersona ?? "default";
+	const activePersona = personaId ?? selectedPersona;
+	const activePersonaKey = activePersona ?? "default";
 	const copy = useMemo(
 		() => getQuickStartHeadlineCopy(activePersona),
 		[activePersona],
 	);
 	const trustProof =
-		TRUST_SOCIAL_PROOF[activePersona] ?? TRUST_SOCIAL_PROOF.default;
-	const trustReviews = TRUST_REVIEWS[activePersona] ?? TRUST_REVIEWS.default;
+		TRUST_SOCIAL_PROOF[activePersonaKey] ?? TRUST_SOCIAL_PROOF.default;
+	const trustReviews = TRUST_REVIEWS[activePersonaKey] ?? TRUST_REVIEWS.default;
 	const trustCaption = trustProof.caption?.trim();
+	const problemRotations = copy.rotations.problems ?? [copy.values.problem];
+	const solutionRotations = copy.rotations.solutions ?? [copy.values.solution];
+	const fearRotations = copy.rotations.fears ?? [copy.values.fear];
 
 	const problemsKey = useMemo(
-		() => copy.rotations.problems.join("|"),
-		[copy.rotations.problems],
+		() => problemRotations.join("|"),
+		[problemRotations],
 	);
 	const hopesKey = useMemo(
 		() => copy.rotations.hopes?.join("|") ?? copy.values.hope,
 		[copy.rotations.hopes, copy.values.hope],
 	);
 	const solutionsKey = useMemo(
-		() => copy.rotations.solutions.join("|"),
-		[copy.rotations.solutions],
+		() => solutionRotations.join("|"),
+		[solutionRotations],
 	);
-	const fearsKey = useMemo(
-		() => copy.rotations.fears.join("|"),
-		[copy.rotations.fears],
-	);
+	const fearsKey = useMemo(() => fearRotations.join("|"), [fearRotations]);
 
-	const problems = useMemo(() => copy.rotations.problems, [problemsKey]);
-	const solutions = useMemo(() => copy.rotations.solutions, [solutionsKey]);
-	const fears = useMemo(() => copy.rotations.fears, [fearsKey]);
+	const problems = useMemo(() => problemRotations, [problemsKey]);
+	const solutions = useMemo(() => solutionRotations, [solutionsKey]);
+	const fears = useMemo(() => fearRotations, [fearsKey]);
 	const hopes = useMemo(
 		() => copy.rotations.hopes ?? [copy.values.hope],
 		[hopesKey],

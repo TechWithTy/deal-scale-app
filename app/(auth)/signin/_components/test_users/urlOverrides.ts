@@ -145,28 +145,28 @@ const normalizeString = (value: Nullable<string>): string | undefined => {
 };
 
 export interface DemoLinkOverrides {
-	readonly targetEmail?: string;
-	readonly targetId?: string;
-	readonly seedId?: string;
-	readonly name?: string;
-	readonly email?: string;
-	readonly role?: UserRole;
-	readonly tier?: string;
-	readonly isBetaTester?: boolean;
-	readonly isPilotTester?: boolean;
-	readonly isFreeTier?: boolean;
-	readonly quickStartDefaults?: QuickStartDefaults;
-	readonly demoConfig?: Partial<DemoConfig>;
-	readonly quotas?: {
-		readonly aiAllotted?: number;
-		readonly aiUsed?: number;
-		readonly leadsAllotted?: number;
-		readonly leadsUsed?: number;
-		readonly skipAllotted?: number;
-		readonly skipUsed?: number;
+	targetEmail?: string;
+	targetId?: string;
+	seedId?: string;
+	name?: string;
+	email?: string;
+	role?: UserRole;
+	tier?: string;
+	isBetaTester?: boolean;
+	isPilotTester?: boolean;
+	isFreeTier?: boolean;
+	quickStartDefaults?: QuickStartDefaults;
+	demoConfig?: Partial<DemoConfig>;
+	quotas?: {
+		aiAllotted?: number;
+		aiUsed?: number;
+		leadsAllotted?: number;
+		leadsUsed?: number;
+		skipAllotted?: number;
+		skipUsed?: number;
 	};
-	readonly autoLogin?: boolean;
-	readonly password?: string;
+	autoLogin?: boolean;
+	password?: string;
 }
 
 const resolveRole = (value: Nullable<string>): UserRole | undefined => {

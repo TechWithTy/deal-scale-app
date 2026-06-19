@@ -35,9 +35,9 @@ const defaultCols = (mockUserProfile?.companyInfo.KanbanTasks.columns ??
 export type ColumnId = (typeof defaultCols)[number]["id"];
 
 export function KanbanBoard() {
-	const columns = useTaskStore((state) => state.columns);
+	const columns = useTaskStore((state) => state.columns) as KanbanColumn[];
 	const setColumns = useTaskStore((state) => state.setCols);
-	const tasks = useTaskStore((state) => state.tasks);
+	const tasks = useTaskStore((state) => state.tasks) as KanbanTask[];
 	const setTasks = useTaskStore((state) => state.setTasks);
 	const pickedUpTaskColumn = useRef<ColumnId | null>(null);
 	const columnsId = useMemo(

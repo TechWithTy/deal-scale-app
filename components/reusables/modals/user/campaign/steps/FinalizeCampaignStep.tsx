@@ -344,7 +344,7 @@ const FinalizeCampaignStep: FC<FinalizeCampaignStepProps> = ({
 							<FormControl>
 								<AllRecipientDropdown
 									value={field.value}
-									onChange={(val) => {
+									onChange={(val: string) => {
 										field.onChange(val);
 										setSelectedAgentId(val);
 									}}

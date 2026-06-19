@@ -632,7 +632,7 @@ export const KnowledgeBaseMain: React.FC<KnowledgeBaseMainProps> = ({
 				<VoicemailModal
 					open={showVoicemailModal}
 					onClose={() => setShowVoicemailModal(false)}
-					onSave={(audioBlob) => {
+					onSave={(audioBlob: Blob) => {
 						// todo: handle upload or save logic
 						setShowVoicemailModal(false);
 					}}
@@ -642,7 +642,7 @@ export const KnowledgeBaseMain: React.FC<KnowledgeBaseMainProps> = ({
 				<CloneModal
 					open={showVoiceCloneModal}
 					onClose={() => setShowVoiceCloneModal(false)}
-					onSave={(audioBlob) => {
+					onSave={(audioBlob: Blob) => {
 						// todo: handle upload or save logic
 						setShowVoiceCloneModal(false);
 					}}

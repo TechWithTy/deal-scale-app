@@ -28,12 +28,14 @@
  */
 
 import { useCallback, useEffect, useRef } from "react";
+import { toast } from "sonner";
 
 import type {
 	QuickStartGoalDefinition,
 	QuickStartFlowStepDefinition,
 } from "@/lib/config/quickstart/wizardFlows";
 import { useGoalFlowExecutionStore } from "@/lib/stores/goalFlowExecution";
+import type { GoalFlowExecutionState } from "@/lib/stores/goalFlowExecution";
 import type { WebhookStage } from "@/lib/stores/dashboard";
 import { captureQuickStartEvent } from "@/lib/analytics/quickstart";
 import {
@@ -66,18 +68,12 @@ interface UseGoalFlowExecutorReturn {
 	readonly retry: () => void;
 	readonly cancel: () => void;
 	readonly currentState: {
-		readonly status: ReturnType<typeof useGoalFlowExecutionStore>["status"];
-		readonly currentCardId: ReturnType<
-			typeof useGoalFlowExecutionStore
-		>["currentCardId"];
-		readonly progress: ReturnType<typeof useGoalFlowExecutionStore>["progress"];
-		readonly error: ReturnType<typeof useGoalFlowExecutionStore>["error"];
-		readonly retryCount: ReturnType<
-			typeof useGoalFlowExecutionStore
-		>["retryCount"];
-		readonly maxRetries: ReturnType<
-			typeof useGoalFlowExecutionStore
-		>["maxRetries"];
+		readonly status: GoalFlowExecutionState["status"];
+		readonly currentCardId: GoalFlowExecutionState["currentCardId"];
+		readonly progress: GoalFlowExecutionState["progress"];
+		readonly error: GoalFlowExecutionState["error"];
+		readonly retryCount: GoalFlowExecutionState["retryCount"];
+		readonly maxRetries: GoalFlowExecutionState["maxRetries"];
 	};
 }
 
@@ -88,7 +84,7 @@ interface UseGoalFlowExecutorReturn {
 export const useGoalFlowExecutor = (
 	handlers: GoalFlowExecutorHandlers,
 ): UseGoalFlowExecutorReturn => {
-	const store = useGoalFlowExecutionStore();
+	const store = useGoalFlowExecutionStore() as GoalFlowExecutionState;
 	const executionInProgressRef = useRef(false);
 
 	console.log("[useGoalFlowExecutor] Hook initialized with handlers:", {
@@ -270,7 +266,7 @@ export const useGoalFlowExecutor = (
 		// Start from the current step index (useful for retries and resume)
 		for (let i = currentStepIndex; i < flowSteps.length; i++) {
 			// Check for pause before each step
-			if (store.status === "paused") {
+			if (useGoalFlowExecutionStore.getState().status === "paused") {
 				console.log("[useGoalFlowExecutor] Flow paused, stopping execution");
 				executionInProgressRef.current = false;
 				return;
@@ -293,7 +289,7 @@ export const useGoalFlowExecutor = (
 				await executeStep(step, stepNumber, totalSteps);
 
 				// Check for pause after step completes
-				if (store.status === "paused") {
+				if (useGoalFlowExecutionStore.getState().status === "paused") {
 					console.log(
 						"[useGoalFlowExecutor] Flow paused after step completion",
 					);
@@ -312,7 +308,7 @@ export const useGoalFlowExecutor = (
 				await new Promise((resolve) => setTimeout(resolve, 800));
 
 				// Check for pause after delay
-				if (store.status === "paused") {
+				if (useGoalFlowExecutionStore.getState().status === "paused") {
 					console.log("[useGoalFlowExecutor] Flow paused after delay");
 					executionInProgressRef.current = false;
 					return;

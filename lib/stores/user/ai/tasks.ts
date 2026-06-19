@@ -66,7 +66,7 @@ export const useAITasksStore = create<AITasksState>((set, get) => ({
 		const t = get().aiTasks.find((x) => x.id === id);
 		if (!t) return;
 		// Map into useTaskStore.addTask signature
-		const add = useTaskStore.getState().addTask;
+		const add = useTaskStore.getState().addTask as (...args: any[]) => void;
 		add(
 			t.title,
 			t.description ?? "",

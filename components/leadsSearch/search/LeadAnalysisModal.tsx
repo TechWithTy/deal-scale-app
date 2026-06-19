@@ -40,7 +40,11 @@ const copySummary = async (text: string) => {
 
 const SummaryTab = ({ payload }: { payload: SummaryPayload }) => (
 	<div className="space-y-4">
-		<ExpandableAISummary section={payload.section} />
+		<ExpandableAISummary
+			section={payload.section}
+			defaultExpanded
+			gridColsClassName="grid-cols-1 md:grid-cols-2 xl:grid-cols-3"
+		/>
 		<div className="rounded-lg border border-border bg-muted/40 p-4">
 			<div className="mb-2 flex items-center justify-between gap-2">
 				<span className="font-medium text-foreground text-sm">Template</span>

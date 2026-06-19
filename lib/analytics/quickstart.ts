@@ -26,7 +26,14 @@ type QuickStartAnalyticsEvent =
 	| "quickstart_persona_selected"
 	| "quickstart_goal_selected"
 	| "quickstart_wizard_cancelled"
-	| "quickstart_plan_completed";
+	| "quickstart_plan_completed"
+	| "goal_flow_started"
+	| "goal_flow_step_started"
+	| "goal_flow_step_completed"
+	| "goal_flow_step_failed"
+	| "goal_flow_completed"
+	| "goal_flow_final_action"
+	| "goal_flow_cancelled";
 
 type QuickStartAnalyticsPayload = Record<string, unknown>;
 

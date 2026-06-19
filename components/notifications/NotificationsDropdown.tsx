@@ -51,7 +51,6 @@ export default function NotificationsDropdown() {
 				description: "Starter plan, 42 leads, SMS + Email",
 				icon: "🚀",
 				colorHsl: "142 76% 36%",
-				// @ts-expect-error extend action via duck typing
 				action: {
 					approveLabel: "Approve",
 					denyLabel: "Deny",
@@ -91,7 +90,6 @@ export default function NotificationsDropdown() {
 				) as any,
 				icon: "💳",
 				colorHsl: "280 70% 50%",
-				// @ts-expect-error extend action via duck typing
 				action: {
 					approveLabel: "Accept Offer",
 					denyLabel: "Decline",

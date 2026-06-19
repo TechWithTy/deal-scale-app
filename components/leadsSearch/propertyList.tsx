@@ -62,6 +62,8 @@ const PropertyListView: React.FC<PropertyListProps> = ({ properties }) => {
 			),
 		[],
 	);
+	// todo: Move selection state to Zustand/global if needed for cross-component access
+	const [selectedPropertyIds, setSelectedPropertyIds] = useState<string[]>([]);
 
 	const openSkipTraceDialog = useCallback(() => {
 		useModalStore.getState().openModal("skipTrace", {
@@ -72,8 +74,6 @@ const PropertyListView: React.FC<PropertyListProps> = ({ properties }) => {
 			costPerRecord: 0.1,
 		});
 	}, [filteredProperties, selectedPropertyIds, availableListNames]);
-	// todo: Move selection state to Zustand/global if needed for cross-component access
-	const [selectedPropertyIds, setSelectedPropertyIds] = useState<string[]>([]);
 
 	const {
 		isDrawerOpen,

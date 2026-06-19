@@ -12,6 +12,7 @@ import type {
 	AudiencePerformanceSummary,
 	PerformanceMetrics,
 } from "@/types/lookalike";
+import type { ElementType } from "react";
 import {
 	DollarSign,
 	Facebook,
@@ -70,7 +71,7 @@ export function PerformanceTracker({
 		);
 	}
 
-	const platformIcons = {
+	const platformIcons: Record<string, ElementType> = {
 		meta: Facebook,
 		google: () => <span className="font-bold text-red-600">G</span>,
 		linkedin: Linkedin,
@@ -146,7 +147,7 @@ export function PerformanceTracker({
 				<CardContent>
 					<div className="space-y-3">
 						{performance.byPlatform.map((platformMetrics) => {
-							const Icon = platformIcons[platformMetrics.platform];
+							const Icon = platformIcons[platformMetrics.platform] ?? Target;
 							const isImproving =
 								platformMetrics.conversionRate > performance.avgConversionRate;
 

@@ -1195,7 +1195,7 @@ function ColorCodedChipsDisplay({
 	const chips = useMemo(() => {
 		const variableMap = new Map<
 			string,
-			{ count: number; def: ChipDefinition }
+			{ count: number; def: ChipDefinition; isLocked: boolean }
 		>();
 		// Match {{variable}} with optional spaces: {{ variable }}, {{variable}}, etc.
 		const variableRegex = /\{\{\s*(\w+)\s*\}\}/g;

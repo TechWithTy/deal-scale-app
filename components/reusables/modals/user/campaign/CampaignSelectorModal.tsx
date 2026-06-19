@@ -15,16 +15,15 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { useCampaignStore } from "@/lib/stores/campaigns";
-import type {
-	CallCampaign,
-	DirectMailCampaign,
-} from "@/types/_dashboard/campaign";
+import type { CallCampaign } from "@/types/_dashboard/campaign";
 import type { EmailCampaign } from "@/types/goHighLevel/email";
+import type { DirectMailCampaign } from "external/shadcn-table/src/examples/DirectMail/utils/mock";
 import { Mail, MessageSquare, Phone, Search, Send, Share2 } from "lucide-react";
 import { useMemo, useState } from "react";
 
 type CampaignRecord = CallCampaign | EmailCampaign | DirectMailCampaign;
-type CampaignChannel = "all" | "call" | "text" | "social" | "email" | "direct";
+type CampaignType = "call" | "text" | "social" | "email" | "direct";
+type CampaignChannel = "all" | CampaignType;
 
 interface CampaignSelectorModalProps {
 	isOpen: boolean;
@@ -65,7 +64,7 @@ const getStatusColor = (status: string) => {
 	}
 };
 
-const getCampaignType = (campaign: CampaignRecord): CampaignChannel => {
+const getCampaignType = (campaign: CampaignRecord): CampaignType => {
 	if ("callInformation" in campaign) return "call";
 	if ("emails" in campaign) return "email";
 	if ("sentCount" in campaign && "listCount" in campaign) return "direct";

@@ -11,9 +11,18 @@ interface CreateVoiceModalProps {
 	minLength?: number;
 	maxLength?: number;
 	onSave: (audioBlob: Blob) => Promise<void>;
-	preferences: VoiceCreationPreferences;
-	onPreferencesChange: (prefs: VoiceCreationPreferences) => void;
+	preferences?: VoiceCreationPreferences;
+	onPreferencesChange?: (prefs: VoiceCreationPreferences) => void;
 }
+
+const DEFAULT_VOICE_PREFERENCES: VoiceCreationPreferences = {
+	voiceUsage: "call",
+	knowledgeBaseEnabled: true,
+	aiTrainingEnabled: false,
+	monetizationEnabled: false,
+	priceMultiplier: 1,
+	acceptedTerms: false,
+};
 
 /**
  * Modal for creating a new voice prompt with guidelines.
@@ -26,8 +35,8 @@ const CreateVoiceModal: React.FC<CreateVoiceModalProps> = ({
 	minLength = 20,
 	maxLength = 200,
 	onSave,
-	preferences,
-	onPreferencesChange,
+	preferences = DEFAULT_VOICE_PREFERENCES,
+	onPreferencesChange = () => {},
 }) => {
 	const [prompt, setPrompt] = useState("");
 	const [error, setError] = useState("");

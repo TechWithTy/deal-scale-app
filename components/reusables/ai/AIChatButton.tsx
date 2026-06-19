@@ -8,9 +8,9 @@
 import { Button } from "@/components/ui/button";
 import FeatureGuard from "@/components/access/FeatureGuard";
 import { MessageSquare, Sparkles } from "lucide-react";
-import { useUserStore } from "@/lib/stores/userStore";
 import { toast } from "sonner";
 import BorderBeam from "@/components/magicui/border-beam";
+import { useSession } from "next-auth/react";
 
 interface AIChatButtonProps {
 	promptValue?: string;
@@ -25,10 +25,13 @@ export function AIChatButton({
 	disabled = false,
 	className = "",
 }: AIChatButtonProps) {
-	const userId = useUserStore((state) => state.userProfile?.id);
-	const agentId = useUserStore(
-		(state) => state.userProfile?.aIKnowledgebase?.assignedAssistantID,
-	);
+	const { data: session } = useSession();
+	const userId = session?.user?.id;
+	const agentId = (
+		session?.user as
+			| { aIKnowledgebase?: { assignedAssistantID?: string } }
+			| undefined
+	)?.aIKnowledgebase?.assignedAssistantID;
 
 	const normalizePrompt = (prompt: string): string => {
 		// Normalize {{ variable }} to {{variable}} (remove spaces around variable names)
@@ -37,7 +40,7 @@ export function AIChatButton({
 
 	const handleChatClick = () => {
 		// Normalize prompt before sending
-		const normalizedPrompt = normalizePrompt(promptValue);
+		const normalizedPrompt = normalizePrompt(promptValue ?? "");
 
 		// Build URL params for chat
 		const params = new URLSearchParams();

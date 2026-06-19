@@ -22,14 +22,14 @@ export function ChartsCommandPalette() {
 				label: "Open Charts & Analytics",
 				group: "Navigation",
 				icon: "chart",
-				run: () => router.push("/dashboard/charts"),
+				action: () => router.push("/dashboard/charts"),
 			},
 			{
 				id: "charts-refresh",
 				label: "Refresh Chart Data",
 				group: "Actions",
 				icon: "refresh",
-				run: () => {
+				action: () => {
 					// Trigger a page reload to refresh data
 					window.location.reload();
 				},
@@ -39,7 +39,7 @@ export function ChartsCommandPalette() {
 				label: "Export Analytics Data",
 				group: "Actions",
 				icon: "download",
-				run: () => {
+				action: () => {
 					// TODO: Implement data export functionality
 					console.log("Export analytics data");
 					alert("Export functionality coming soon!");
@@ -50,7 +50,7 @@ export function ChartsCommandPalette() {
 				label: "Open ROI Calculator",
 				group: "Tools",
 				icon: "calculator",
-				run: () => {
+				action: () => {
 					// Scroll to ROI calculator
 					const roiElement = document.querySelector('[class*="ROICalculator"]');
 					if (roiElement) {
@@ -63,7 +63,7 @@ export function ChartsCommandPalette() {
 				label: "View Sales Pipeline",
 				group: "Charts",
 				icon: "pipeline",
-				run: () => {
+				action: () => {
 					// Scroll to pipeline visualization
 					const pipelineElement = document.querySelector(
 						'[class*="SalesPipelineFunnel"]',
@@ -81,7 +81,7 @@ export function ChartsCommandPalette() {
 				label: "View Campaign Performance",
 				group: "Charts",
 				icon: "chart-bar",
-				run: () => {
+				action: () => {
 					// Scroll to campaign chart
 					const campaignElement = document.querySelector(
 						'[class*="CampaignPerformanceChart"]',

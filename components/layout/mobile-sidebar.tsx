@@ -177,7 +177,7 @@ export function MobileSidebar({ className }: SidebarProps) {
 												<CrudToggle
 													value={flags}
 													readOnly
-													onInviteRequest={(key, desired) => {
+													onInviteRequest={(key: string, desired: boolean) => {
 														console.log("Invite request:", {
 															entity: label,
 															key,

@@ -9,6 +9,12 @@ interface WalkThroughModalProps {
 	title: string; // Title of the modal
 	subtitle: string; // Subtitle for additional context
 	termsUrl?: string; // Optional link to the Terms of Use
+	steps?: unknown[];
+	isTourOpen?: boolean;
+	onStartTour?: () => void;
+	onCloseTour?: () => void;
+	supademoDemoId?: string;
+	supademoShowcaseId?: string;
 }
 
 // Utility to detect embed type and convert URLs
@@ -53,6 +59,7 @@ const WalkThroughModal: FC<WalkThroughModalProps> = ({
 	title,
 	subtitle,
 	termsUrl, // Optional terms URL
+	onStartTour,
 }) => {
 	const [videoLoading, setVideoLoading] = React.useState(true);
 	const embedInfo = getEmbedInfo(videoUrl);
@@ -198,10 +205,15 @@ const WalkThroughModal: FC<WalkThroughModalProps> = ({
 						className="w-full rounded-lg bg-primary px-4 py-2 font-semibold text-primary-foreground hover:bg-primary/90"
 						onClick={(e) => {
 							e.stopPropagation();
+							if (onStartTour) {
+								onStartTour();
+								onClose();
+								return;
+							}
 							onClose();
 						}}
 					>
-						Got it
+						{onStartTour ? "Start Tour" : "Got it"}
 					</button>
 
 					{/* Conditionally render the Terms of Use clause */}

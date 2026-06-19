@@ -526,7 +526,7 @@ export function parsePOMLToWorkflow(poml: string): WorkflowDefinition {
  */
 export function parseN8nWorkflow(n8nJson: any): WorkflowDefinition {
 	const nodes: WorkflowNode[] = [];
-	const edges: Array<{ from: string; to: string }> = [];
+	const edges: Array<{ from: string; to: string; label?: string }> = [];
 
 	// Parse n8n nodes
 	if (n8nJson.nodes && Array.isArray(n8nJson.nodes)) {
@@ -577,7 +577,7 @@ export function parseN8nWorkflow(n8nJson: any): WorkflowDefinition {
  */
 export function parseMakeScenario(makeJson: any): WorkflowDefinition {
 	const nodes: WorkflowNode[] = [];
-	const edges: Array<{ from: string; to: string }> = [];
+	const edges: Array<{ from: string; to: string; label?: string }> = [];
 
 	// Parse Make modules
 	if (makeJson.modules && Array.isArray(makeJson.modules)) {
@@ -725,7 +725,7 @@ export function generateWorkflowMermaid(
 
 	try {
 		if (platform === "poml" && typeof input === "string") {
-			workflow = parsePOMLToWorkflow(input, "kestra");
+			workflow = parsePOMLToWorkflow(input);
 		} else if (platform === "n8n") {
 			const json = typeof input === "string" ? JSON.parse(input) : input;
 			workflow = parseN8nWorkflow(json);

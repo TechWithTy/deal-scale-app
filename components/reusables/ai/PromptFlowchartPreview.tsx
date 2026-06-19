@@ -28,11 +28,13 @@ const parsePOMLToMermaid = (poml: string): string => {
 	if (!poml.trim()) return "";
 
 	// Extract key sections from POML
-	const roleMatch = poml.match(/<role>(.*?)<\/role>/s);
-	const taskMatch = poml.match(/<task>(.*?)<\/task>/s);
-	const instructionsMatch = poml.match(/<instructions>(.*?)<\/instructions>/s);
-	const workflowMatch = poml.match(/<workflow[^>]*>(.*?)<\/workflow>/s);
-	const agentsMatch = poml.match(/<agents>(.*?)<\/agents>/s);
+	const roleMatch = poml.match(/<role>([\s\S]*?)<\/role>/);
+	const taskMatch = poml.match(/<task>([\s\S]*?)<\/task>/);
+	const instructionsMatch = poml.match(
+		/<instructions>([\s\S]*?)<\/instructions>/,
+	);
+	const workflowMatch = poml.match(/<workflow[^>]*>([\s\S]*?)<\/workflow>/);
+	const agentsMatch = poml.match(/<agents>([\s\S]*?)<\/agents>/);
 
 	// Extract variables ({{variable}})
 	const variables = Array.from(poml.matchAll(/\{\{(\w+)\}\}/g)).map(

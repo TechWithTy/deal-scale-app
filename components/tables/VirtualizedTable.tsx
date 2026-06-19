@@ -20,8 +20,7 @@
 
 "use client";
 
-import { memo, useCallback, useMemo, useRef } from "react";
-import { FixedSizeList as List } from "react-window";
+import { memo, useMemo } from "react";
 
 /**
  * Table column definition
@@ -47,48 +46,44 @@ interface VirtualizedTableProps<T> {
 /**
  * Memoized table row component
  */
-const TableRow = memo(
-	<T,>({
-		item,
-		columns,
-		onClick,
-		isSelected,
-	}: {
-		item: T;
-		columns: Column<T>[];
-		onClick?: () => void;
-		isSelected: boolean;
-	}) => {
-		return (
-			<div
-				className={`flex border-b border-border transition-colors ${
-					onClick ? "cursor-pointer hover:bg-muted/50" : ""
-				} ${isSelected ? "bg-muted" : ""}`}
-				onClick={onClick}
-				onKeyDown={(e) => {
-					if (onClick && (e.key === "Enter" || e.key === " ")) {
-						e.preventDefault();
-						onClick();
-					}
-				}}
-				role={onClick ? "button" : undefined}
-				tabIndex={onClick ? 0 : undefined}
-			>
-				{columns.map((column) => (
-					<div
-						key={column.key}
-						className="flex items-center overflow-hidden px-4 py-3"
-						style={{ width: column.width, minWidth: column.width }}
-					>
-						<div className="truncate text-sm">{column.render(item)}</div>
-					</div>
-				))}
-			</div>
-		);
-	},
-);
-
-TableRow.displayName = "TableRow";
+function TableRow<T>({
+	item,
+	columns,
+	onClick,
+	isSelected,
+}: {
+	item: T;
+	columns: Column<T>[];
+	onClick?: () => void;
+	isSelected: boolean;
+}) {
+	return (
+		<div
+			className={`flex border-b border-border transition-colors ${
+				onClick ? "cursor-pointer hover:bg-muted/50" : ""
+			} ${isSelected ? "bg-muted" : ""}`}
+			onClick={onClick}
+			onKeyDown={(e) => {
+				if (onClick && (e.key === "Enter" || e.key === " ")) {
+					e.preventDefault();
+					onClick();
+				}
+			}}
+			role={onClick ? "button" : undefined}
+			tabIndex={onClick ? 0 : undefined}
+		>
+			{columns.map((column) => (
+				<div
+					key={column.key}
+					className="flex items-center overflow-hidden px-4 py-3"
+					style={{ width: column.width, minWidth: column.width }}
+				>
+					<div className="truncate text-sm">{column.render(item)}</div>
+				</div>
+			))}
+		</div>
+	);
+}
 
 /**
  * VirtualizedTable Component
@@ -121,8 +116,6 @@ function VirtualizedTable<T>({
 	getRowId,
 	emptyMessage = "No data available",
 }: VirtualizedTableProps<T>) {
-	const listRef = useRef<List>(null);
-
 	// Calculate total table width
 	const tableWidth = useMemo(
 		() => columns.reduce((sum, col) => sum + col.width, 0),
@@ -134,27 +127,6 @@ function VirtualizedTable<T>({
 		const contentHeight = data.length * rowHeight;
 		return Math.min(contentHeight, maxHeight);
 	}, [data.length, rowHeight, maxHeight]);
-
-	// Memoized row renderer
-	const Row = useCallback(
-		({ index, style }: { index: number; style: React.CSSProperties }) => {
-			const item = data[index];
-			const rowId = getRowId ? getRowId(item) : index;
-			const isSelected = selectedIds ? selectedIds.has(rowId) : false;
-
-			return (
-				<div style={style}>
-					<TableRow
-						item={item}
-						columns={columns}
-						onClick={onRowClick ? () => onRowClick(item, index) : undefined}
-						isSelected={isSelected}
-					/>
-				</div>
-			);
-		},
-		[data, columns, onRowClick, selectedIds, getRowId],
-	);
 
 	if (data.length === 0) {
 		return (
@@ -182,18 +154,26 @@ function VirtualizedTable<T>({
 				))}
 			</div>
 
-			{/* Virtualized Table Body */}
-			<List
-				ref={listRef}
-				height={listHeight}
-				itemCount={data.length}
-				itemSize={rowHeight}
-				width="100%"
-				overscanCount={5} // Pre-render 5 rows above and below viewport
-				className="scrollbar-thin scrollbar-thumb-muted-foreground scrollbar-track-muted"
+			{/* Table Body */}
+			<div
+				className="scrollbar-thin scrollbar-thumb-muted-foreground scrollbar-track-muted overflow-auto"
+				style={{ maxHeight: listHeight }}
 			>
-				{Row}
-			</List>
+				{data.map((item, index) => {
+					const rowId = getRowId ? getRowId(item) : index;
+					const isSelected = selectedIds ? selectedIds.has(rowId) : false;
+
+					return (
+						<TableRow
+							key={rowId}
+							item={item}
+							columns={columns}
+							onClick={onRowClick ? () => onRowClick(item, index) : undefined}
+							isSelected={isSelected}
+						/>
+					);
+				})}
+			</div>
 		</div>
 	);
 }

@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import React from "react";
-import { ModalImageLens } from "../../../external/modal-image-inspect";
+import { ModalImageLens } from "external/modal-image-inspect";
 
 export default function ImageLensTestPage() {
 	const seed = "lens-demo";

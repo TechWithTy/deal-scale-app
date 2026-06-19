@@ -72,6 +72,10 @@ export const extractOAuthDataFromUserProfile = (
 			habitica: profile?.connectedAccounts?.habitica || null,
 		},
 		socialMediaTags: profile?.companyInfo?.socialMediaTags || [],
-		aiProvider: profile?.meta?.aiProvider as any,
+		aiProvider: (
+			profile as
+				| { meta?: { aiProvider?: InitialOauthSetupData["aiProvider"] } }
+				| undefined
+		)?.meta?.aiProvider,
 	};
 };

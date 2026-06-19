@@ -92,11 +92,14 @@ const TestAndLaunchStep = () => {
 		setErrorMessage(null);
 
 		const normalizedChecklist = CHECKLIST_CONFIG.reduce<
-			Partial<LaunchChecklist>
-		>((acc, { key }) => {
-			acc[key] = Boolean(launchChecklist?.[key]);
-			return acc;
-		}, {}) as LaunchChecklist;
+			Record<keyof LaunchChecklist, boolean>
+		>(
+			(acc, { key }) => {
+				acc[key] = Boolean(launchChecklist?.[key]);
+				return acc;
+			},
+			{} as Record<keyof LaunchChecklist, boolean>,
+		);
 
 		try {
 			await runCampaignTest({

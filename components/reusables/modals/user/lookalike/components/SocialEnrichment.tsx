@@ -83,16 +83,6 @@ export function SocialEnrichment({ form }: SocialEnrichmentProps) {
 								/>
 								<span className="text-sm">Instagram</span>
 							</label>
-
-							<label className="flex items-center gap-2">
-								<Checkbox
-									checked={form.watch("includeTwitter") ?? false}
-									onCheckedChange={(checked) =>
-										form.setValue("includeTwitter", Boolean(checked))
-									}
-								/>
-								<span className="text-sm">Twitter/X</span>
-							</label>
 						</div>
 					</div>
 

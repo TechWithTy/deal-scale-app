@@ -20,7 +20,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import type { SubscriptionTier } from "@/constants/subscription/tiers";
-import type { UserRole } from "@/types/user";
+import type { PermissionAction, UserRole } from "@/types/user";
 import { Plus } from "lucide-react";
 import { useState } from "react";
 import type { EditableUser } from "./userHelpers";
@@ -29,7 +29,7 @@ interface NewDemoUserButtonProps {
 	onCreateUser: (user: EditableUser) => void;
 }
 
-const fullCrud = ["create", "read", "update", "delete"] as const;
+const fullCrud: PermissionAction[] = ["create", "read", "update", "delete"];
 
 export function NewDemoUserButton({ onCreateUser }: NewDemoUserButtonProps) {
 	const [open, setOpen] = useState(false);
@@ -73,6 +73,17 @@ export function NewDemoUserButton({ onCreateUser }: NewDemoUserButtonProps) {
 			aiCredits: { allotted: 100, used: 0, resetInDays: 30 },
 			leadsCredits: { allotted: 100, used: 0, resetInDays: 30 },
 			skipTracesCredits: { allotted: 50, used: 0, resetInDays: 30 },
+			quotas: {
+				ai: { allotted: 100, used: 0, resetInDays: 30 },
+				leads: { allotted: 100, used: 0, resetInDays: 30 },
+				skipTraces: { allotted: 50, used: 0, resetInDays: 30 },
+			},
+			subscription: {
+				name: formData.tier,
+				aiCredits: { allotted: 100, used: 0, resetInDays: 30 },
+				leads: { allotted: 100, used: 0, resetInDays: 30 },
+				skipTraces: { allotted: 50, used: 0, resetInDays: 30 },
+			},
 			demoConfig: {
 				companyName: formData.name,
 				email: formData.email,

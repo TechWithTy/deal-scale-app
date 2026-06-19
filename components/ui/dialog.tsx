@@ -240,7 +240,7 @@ const DialogContent = React.forwardRef<
 
 				// Don't close modal if clicking on toast
 				const target = e.target as HTMLElement;
-				const nativeEvent = e.nativeEvent || e;
+				const nativeEvent = e as Event;
 				const composedPath = (
 					typeof nativeEvent.composedPath === "function"
 						? nativeEvent.composedPath()

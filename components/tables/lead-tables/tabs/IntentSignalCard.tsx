@@ -35,6 +35,19 @@ interface IntentSignalCardProps {
 	showMetadata?: boolean;
 }
 
+type IntentSignalDisplayMetadata = NonNullable<IntentSignal["metadata"]> & {
+	readonly propertyAddress?: string;
+	readonly searchQuery?: string;
+	readonly formType?: string;
+	readonly pageCount?: number;
+	readonly videoTitle?: string;
+	readonly calculatorType?: string;
+	readonly growthIndicator?: string;
+	readonly newRole?: string;
+	readonly fundingAmount?: string;
+	readonly platform?: string;
+};
+
 /**
  * Get icon component for signal category
  */
@@ -87,7 +100,7 @@ function getSignalIcon(category: IntentSignal["category"]) {
  * Get human-readable description for signal
  */
 function getSignalDescription(signal: IntentSignal): string {
-	const metadata = signal.metadata || {};
+	const metadata = (signal.metadata || {}) as IntentSignalDisplayMetadata;
 
 	switch (signal.category) {
 		case "email_open":

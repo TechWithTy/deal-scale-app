@@ -50,7 +50,7 @@ interface StepExecutionRecord {
 	readonly error?: string;
 }
 
-interface GoalFlowExecutionState {
+export interface GoalFlowExecutionState {
 	// Current execution state
 	readonly goalId: QuickStartGoalId | null;
 	readonly status: GoalFlowExecutionStatus;

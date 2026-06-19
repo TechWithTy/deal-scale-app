@@ -18,8 +18,7 @@
 
 import type { Property } from "@/types/_dashboard/property";
 import type React from "react";
-import { memo, useCallback, useMemo, useRef } from "react";
-import { FixedSizeList as List } from "react-window";
+import { memo } from "react";
 import PropertyCard from "./propertyCard";
 
 interface VirtualizedPropertyListProps {
@@ -97,41 +96,10 @@ const VirtualizedPropertyList: React.FC<VirtualizedPropertyListProps> = ({
 	selectedPropertyIds,
 	onPropertySelect,
 	itemsPerRow = 3,
-	itemHeight = 400,
+	itemHeight: _itemHeight = 400,
 }) => {
-	const listRef = useRef<List>(null);
-
 	// Calculate number of rows needed
 	const rowCount = Math.ceil(properties.length / itemsPerRow);
-
-	// Memoize the row renderer to prevent unnecessary re-renders
-	const Row = useCallback(
-		({ index, style }: { index: number; style: React.CSSProperties }) => (
-			<div style={style}>
-				<PropertyRow
-					properties={properties}
-					selectedPropertyIds={selectedPropertyIds}
-					onPropertySelect={onPropertySelect}
-					itemsPerRow={itemsPerRow}
-					index={index}
-				/>
-			</div>
-		),
-		[properties, selectedPropertyIds, onPropertySelect, itemsPerRow],
-	);
-
-	// Calculate list height (max 80vh or window height)
-	const listHeight = useMemo(() => {
-		const maxHeight =
-			typeof window !== "undefined" ? window.innerHeight * 0.8 : 600;
-		return Math.min(rowCount * itemHeight, maxHeight);
-	}, [rowCount, itemHeight]);
-
-	// Calculate list width
-	const listWidth = useMemo(() => {
-		if (typeof window === "undefined") return "100%";
-		return "100%";
-	}, []);
 
 	if (properties.length === 0) {
 		return (
@@ -142,18 +110,17 @@ const VirtualizedPropertyList: React.FC<VirtualizedPropertyListProps> = ({
 	}
 
 	return (
-		<div className="w-full">
-			<List
-				ref={listRef}
-				height={listHeight}
-				itemCount={rowCount}
-				itemSize={itemHeight}
-				width={listWidth}
-				overscanCount={2} // Pre-render 2 rows above and below viewport
-				className="scrollbar-thin scrollbar-thumb-muted-foreground scrollbar-track-muted"
-			>
-				{Row}
-			</List>
+		<div className="w-full space-y-4">
+			{Array.from({ length: rowCount }, (_, index) => (
+				<PropertyRow
+					key={index}
+					properties={properties}
+					selectedPropertyIds={selectedPropertyIds}
+					onPropertySelect={onPropertySelect}
+					itemsPerRow={itemsPerRow}
+					index={index}
+				/>
+			))}
 		</div>
 	);
 };

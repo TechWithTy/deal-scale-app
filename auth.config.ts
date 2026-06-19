@@ -1,8 +1,8 @@
 import type { NextAuthConfig } from "next-auth";
 import type { User as NextAuthUser } from "next-auth";
 import type { JWT } from "next-auth/jwt";
-import type { UserProfileSubscription } from "@/constants/_faker/profile/userSubscription";
 import type { ImpersonationIdentity } from "@/types/impersonation";
+import type { QuickStartDefaults } from "@/types/userProfile";
 import Credentials from "next-auth/providers/credentials";
 import { getUserByEmail } from "@/lib/mock-db";
 import { isAdminAreaAuthorized } from "@/lib/admin/roles";
@@ -18,6 +18,7 @@ import {
 } from "@/lib/demo/normalizeDemoPayload";
 import type {
 	PermissionAction,
+	DemoConfig,
 	PermissionMatrix,
 	PermissionResource,
 	User,
@@ -129,15 +130,12 @@ type ExtendedJWT = JWT & {
         permissionMatrix?: PermissionMatrix;
         permissionList?: string[];
         quotas?: UserQuotas;
-        subscription?: UserProfileSubscription;
+        subscription?: User["subscription"];
         isBetaTester?: boolean;
         isPilotTester?: boolean;
         isFreeTier?: boolean;
         demoConfig?: DemoConfig;
-		quickStartDefaults?: {
-                personaId?: "investor" | "wholesaler" | "loan_officer" | "agent";
-                goalId?: string;
-        };
+		quickStartDefaults?: QuickStartDefaults;
         impersonator?: ImpersonationIdentity | null;
 };
 
@@ -149,15 +147,12 @@ type ExtendedUserLike = {
         permissionMatrix?: PermissionMatrix;
         permissionList?: string[];
         quotas?: UserQuotas;
-        subscription?: UserProfileSubscription;
+        subscription?: User["subscription"];
         isBetaTester?: boolean;
         isPilotTester?: boolean;
         isFreeTier?: boolean;
         demoConfig?: DemoConfig;
-		quickStartDefaults?: {
-                personaId?: "investor" | "wholesaler" | "loan_officer" | "agent";
-                goalId?: string;
-        };
+		quickStartDefaults?: QuickStartDefaults;
         name?: string | null;
         email?: string | null;
 };
@@ -170,15 +165,12 @@ type SessionUserLike = {
         permissionMatrix?: PermissionMatrix;
         permissionList?: string[];
         quotas?: UserQuotas;
-        subscription?: UserProfileSubscription;
+        subscription?: User["subscription"];
         isBetaTester?: boolean;
         isPilotTester?: boolean;
         isFreeTier?: boolean;
         demoConfig?: DemoConfig;
-		quickStartDefaults?: {
-                personaId?: "investor" | "wholesaler" | "loan_officer" | "agent";
-                goalId?: string;
-        };
+		quickStartDefaults?: QuickStartDefaults;
         name?: string | null;
         email?: string | null;
 };
@@ -281,6 +273,21 @@ const authConfig = {
 				},
 				isFreeTier: {
 					label: "Free Tier",
+					type: "text",
+					required: false,
+				},
+				isCustomUser: {
+					label: "Custom User",
+					type: "text",
+					required: false,
+				},
+				customUserData: {
+					label: "Custom User Data",
+					type: "text",
+					required: false,
+				},
+				quickStartDefaults: {
+					label: "QuickStart Defaults",
 					type: "text",
 					required: false,
 				},
@@ -557,7 +564,7 @@ const authConfig = {
 		async jwt({ token, user, trigger, session }) {
 			const extendedToken = token as ExtendedJWT;
 			if (user) {
-				const userData = user as ExtendedUserLike & { subscription?: UserProfileSubscription };
+				const userData = user as ExtendedUserLike;
 				applyExtendedUserToToken(extendedToken, userData);
 				extendedToken.impersonator = null;
 			}
@@ -600,7 +607,7 @@ const authConfig = {
 			if (session.user) {
 				const extendedToken = token as ExtendedJWT;
 				applyTokenToSessionUser(
-					session.user as SessionUserLike & Record<string, unknown>,
+					session.user as unknown as SessionUserLike & Record<string, unknown>,
 					extendedToken,
 				);
 				session.impersonator = extendedToken.impersonator ?? null;

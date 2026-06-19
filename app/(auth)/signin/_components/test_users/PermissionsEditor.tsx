@@ -74,7 +74,7 @@ export function PermissionsEditor({
 							<span className="text-foreground text-sm">{label}</span>
 							<CrudToggle
 								value={flags}
-								onChange={(next) => handleChange(entity, next)}
+								onChange={(next: CrudFlags) => handleChange(entity, next)}
 								size="sm"
 							/>
 						</div>

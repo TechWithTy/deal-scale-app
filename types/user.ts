@@ -1,3 +1,6 @@
+import type { SubscriptionTier } from "@/constants/subscription/tiers";
+import type { QuickStartDefaults } from "@/types/userProfile";
+
 export type PermissionAction = "create" | "read" | "update" | "delete";
 
 export type PermissionResource =
@@ -130,9 +133,5 @@ export interface User {
 	/** Optional demo configuration for client simulations */
 	demoConfig?: DemoConfig;
 	/** QuickStart wizard preferences - automatically pre-selects persona/goal */
-	quickStartDefaults?: {
-		personaId?: "investor" | "wholesaler" | "loan_officer" | "agent";
-		goalId?: string;
-	};
+	quickStartDefaults?: QuickStartDefaults;
 }
-import type { SubscriptionTier } from "@/constants/subscription/tiers";

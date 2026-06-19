@@ -92,7 +92,7 @@ export function EmbedFocusWidget({ config, onError }: EmbedFocusWidgetProps) {
 			const mod = isMac ? event.metaKey : event.ctrlKey;
 			if (mod && event.shiftKey && (event.key === "F" || event.key === "f")) {
 				event.preventDefault();
-				setIsOpen((prev) => !prev);
+				setIsOpen((prev: boolean) => !prev);
 			}
 		};
 		window.addEventListener("keydown", handler);
@@ -129,7 +129,7 @@ export function EmbedFocusWidget({ config, onError }: EmbedFocusWidgetProps) {
 				<button
 					type="button"
 					className="deal-scale-focus-toggle"
-					onClick={() => setIsOpen((prev) => !prev)}
+					onClick={() => setIsOpen((prev: boolean) => !prev)}
 				>
 					{isOpen ? closeLabel : openLabel}
 				</button>

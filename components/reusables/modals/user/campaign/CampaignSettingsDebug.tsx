@@ -77,7 +77,8 @@ export default function CampaignSettingsDebug({
 	campaignCost,
 }: CampaignSettingsDebugProps) {
 	const liveStore = useCampaignCreationStore();
-	const store = storeSnapshot ?? liveStore;
+	const store = (storeSnapshot ?? liveStore) as CampaignCreationState &
+		Record<string, any>;
 
 	// Helper function to format values for display
 	const formatValue = (value: any): string => {
@@ -127,7 +128,7 @@ export default function CampaignSettingsDebug({
 			`Area Mode (Form): ${formatValue(formData?.areaMode)}`,
 			`Zip Code: ${formatValue(formData?.zipCode)}`,
 			`Selected Lead List (Form): ${formatValue(formData?.selectedLeadListId)}`,
-			`Social Platform: ${formatValue(formData?.socialMedia)}`,
+			`Social Platform: ${formatValue(formData?.socialPlatform)}`,
 			`Direct Mail Type: ${formatValue(formData?.directMailType)}`,
 			`Templates: ${formatValue(store.selectedDirectMailTemplates?.length || 0)} selected (requires at least 1)`,
 			`Transfer Enabled: ${formatValue(store.transferEnabled)}`,
@@ -159,7 +160,7 @@ export default function CampaignSettingsDebug({
 			`Can Send Links: ${formatValue(store.smsCanSendLinks)}`,
 			"",
 			"TIMING PREFERENCES:",
-			`Days Selected: ${formatValue(store.daysSelected?.length || 0)}`,
+			`Days Selected: ${formatValue(store.daysSelected)}`,
 			`Start Date: ${formatValue(store.scheduleStartDate)}`,
 			`End Date: ${formatValue(store.scheduleEndDate)}`,
 			`Reach Before Business: ${formatValue(store.reachBeforeBusiness)}`,

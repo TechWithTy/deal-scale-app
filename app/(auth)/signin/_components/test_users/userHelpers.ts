@@ -15,6 +15,7 @@ import {
 	resolveDemoLogoUrl,
 } from "@/lib/demo/normalizeDemoPayload";
 import type {
+	PermissionAction,
 	PermissionMatrix,
 	UserRole,
 	User as UserType,
@@ -97,12 +98,13 @@ const buildPermissionMatrix = (
 			return acc;
 		}
 
+		const typedAction = action as PermissionAction;
 		const currentActions = acc[resource as keyof PermissionMatrix] ?? [];
 		return {
 			...acc,
-			[resource]: currentActions.includes(action)
+			[resource]: currentActions.includes(typedAction)
 				? currentActions
-				: [...currentActions, action],
+				: [...currentActions, typedAction],
 		} as PermissionMatrix;
 	}, {} as PermissionMatrix);
 };

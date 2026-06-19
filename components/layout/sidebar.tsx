@@ -367,7 +367,10 @@ export default function SidebarClient({ user }: { user: UserProfile | null }) {
 													<CrudToggle
 														value={flags}
 														readOnly
-														onInviteRequest={(key, desired) => {
+														onInviteRequest={(
+															key: string,
+															desired: boolean,
+														) => {
 															console.log("Invite request:", {
 																entity: label,
 																key,

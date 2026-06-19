@@ -105,7 +105,11 @@ const LocationInput: React.FC<LocationInputProps> = ({
 					(async () => {
 						cleanup = await initAutocomplete(
 							inputRef.current as HTMLInputElement,
-							(seed) => {
+							(seed: {
+								formattedAddress?: string;
+								name?: string;
+								location?: { lat: number; lng: number };
+							}) => {
 								const display = seed.formattedAddress || seed.name || "";
 								const loc = seed.location;
 								const valueStr =

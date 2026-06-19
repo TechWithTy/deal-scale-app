@@ -1,5 +1,5 @@
 import { InviteFriendsCard } from "@/components/reusables/cards/InviteFriendsCard";
-import React from "react";
+import type React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -41,7 +41,6 @@ import {
 	Webhook,
 	Workflow,
 } from "lucide-react";
-import type React from "react";
 import { useEffect, useState } from "react";
 import type { UseFormReturn } from "react-hook-form";
 import { toast } from "sonner";

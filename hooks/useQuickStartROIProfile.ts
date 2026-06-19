@@ -195,7 +195,10 @@ export const useQuickStartROIProfile = (): ROIProfileOverrides => {
 			profileOverrides.avgDealValue = inferredDealValue;
 		}
 
-		if (userProfile?.companyInfo?.GHLID?.subAccountId) {
+		const ghlConnection = userProfile?.companyInfo?.GHLID as
+			| { subAccountId?: string }
+			| undefined;
+		if (ghlConnection?.subAccountId) {
 			profileOverrides.monthlyOverhead = 3500;
 		}
 

@@ -20,12 +20,12 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { useCampaignCreationStore } from "@/lib/stores/campaignCreation";
+import {
+	type CampaignPrimaryChannel,
+	useCampaignCreationStore,
+} from "@/lib/stores/campaignCreation";
 
-type CampaignCreationSlice = ReturnType<typeof useCampaignCreationStore>;
-type PrimaryChannelOption = NonNullable<
-	CampaignCreationSlice["primaryChannel"]
->;
+type PrimaryChannelOption = CampaignPrimaryChannel;
 
 const CHANNEL_OPTIONS: Array<{ value: PrimaryChannelOption; label: string }> = [
 	{ value: "call", label: "Phone Calls" },

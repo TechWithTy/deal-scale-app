@@ -40,18 +40,24 @@ const BASE_PRESET: QuickStartROIPreset = {
 	},
 };
 
+const withProfileDefaults = (
+	overrides: Partial<DealScaleProfileInputs>,
+): DealScaleProfileInputs => ({
+	...BASE_PRESET.profileInputs,
+	...overrides,
+});
+
 const PERSONA_PRESETS: Partial<
 	Record<QuickStartPersonaId, QuickStartROIPreset>
 > = {
 	investor: {
-		profileInputs: {
-			...BASE_PRESET.profileInputs,
+		profileInputs: withProfileDefaults({
 			personaId: "investor",
 			dealsPerMonth: 7,
 			avgDealValue: 45000,
 			profitMarginPercent: 28,
 			hoursPerDeal: 20,
-		},
+		}),
 		highlights: {
 			hoursSavedPerWeek: 10,
 			responseRateIncrease: 20,
@@ -59,14 +65,13 @@ const PERSONA_PRESETS: Partial<
 		},
 	},
 	wholesaler: {
-		profileInputs: {
-			...BASE_PRESET.profileInputs,
+		profileInputs: withProfileDefaults({
 			personaId: "wholesaler",
 			dealsPerMonth: 9,
 			avgDealValue: 15000,
 			profitMarginPercent: 30,
 			hoursPerDeal: 22,
-		},
+		}),
 		highlights: {
 			hoursSavedPerWeek: 11,
 			responseRateIncrease: 18,
@@ -74,29 +79,27 @@ const PERSONA_PRESETS: Partial<
 		},
 	},
 	agent: {
-		profileInputs: {
-			...BASE_PRESET.profileInputs,
+		profileInputs: withProfileDefaults({
 			personaId: "agent",
 			dealsPerMonth: 5,
 			avgDealValue: 600000,
 			profitMarginPercent: 17,
 			hoursPerDeal: 16,
-		},
+		}),
 		highlights: {
 			hoursSavedPerWeek: 7,
 			responseRateIncrease: 24,
 			conversionMultiplier: 1.8,
 		},
 	},
-	lender: {
-		profileInputs: {
-			...BASE_PRESET.profileInputs,
+	loan_officer: {
+		profileInputs: withProfileDefaults({
 			personaId: "loan_officer",
 			dealsPerMonth: 14,
 			avgDealValue: 5000,
 			profitMarginPercent: 35,
 			hoursPerDeal: 14,
-		},
+		}),
 		highlights: {
 			hoursSavedPerWeek: 12,
 			responseRateIncrease: 26,
@@ -107,13 +110,13 @@ const PERSONA_PRESETS: Partial<
 
 const GOAL_PRESETS: Partial<Record<QuickStartGoalId, QuickStartROIPreset>> = {
 	"investor-pipeline": {
-		profileInputs: {
+		profileInputs: withProfileDefaults({
 			...PERSONA_PRESETS.investor?.profileInputs,
 			goalId: "investor-pipeline",
 			dealsPerMonth: 8,
 			avgDealValue: 48000,
 			months: MONTHS_IN_YEAR,
-		},
+		}),
 		highlights: {
 			hoursSavedPerWeek: 11,
 			responseRateIncrease: 22,
@@ -121,13 +124,13 @@ const GOAL_PRESETS: Partial<Record<QuickStartGoalId, QuickStartROIPreset>> = {
 		},
 	},
 	"investor-market": {
-		profileInputs: {
+		profileInputs: withProfileDefaults({
 			...PERSONA_PRESETS.investor?.profileInputs,
 			goalId: "investor-market",
 			dealsPerMonth: 6,
 			avgDealValue: 42000,
 			months: MONTHS_IN_YEAR,
-		},
+		}),
 		highlights: {
 			hoursSavedPerWeek: 9,
 			responseRateIncrease: 18,
@@ -135,12 +138,12 @@ const GOAL_PRESETS: Partial<Record<QuickStartGoalId, QuickStartROIPreset>> = {
 		},
 	},
 	"wholesaler-dispositions": {
-		profileInputs: {
+		profileInputs: withProfileDefaults({
 			...PERSONA_PRESETS.wholesaler?.profileInputs,
 			goalId: "wholesaler-dispositions",
 			dealsPerMonth: 10,
 			avgDealValue: 16000,
-		},
+		}),
 		highlights: {
 			hoursSavedPerWeek: 12,
 			responseRateIncrease: 21,
@@ -148,12 +151,12 @@ const GOAL_PRESETS: Partial<Record<QuickStartGoalId, QuickStartROIPreset>> = {
 		},
 	},
 	"wholesaler-acquisitions": {
-		profileInputs: {
+		profileInputs: withProfileDefaults({
 			...PERSONA_PRESETS.wholesaler?.profileInputs,
 			goalId: "wholesaler-acquisitions",
 			dealsPerMonth: 8,
 			avgDealValue: 14000,
-		},
+		}),
 		highlights: {
 			hoursSavedPerWeek: 10,
 			responseRateIncrease: 19,
@@ -161,12 +164,12 @@ const GOAL_PRESETS: Partial<Record<QuickStartGoalId, QuickStartROIPreset>> = {
 		},
 	},
 	"agent-sphere": {
-		profileInputs: {
+		profileInputs: withProfileDefaults({
 			...PERSONA_PRESETS.agent?.profileInputs,
 			goalId: "agent-sphere",
 			dealsPerMonth: 6,
 			avgDealValue: 650000,
-		},
+		}),
 		highlights: {
 			hoursSavedPerWeek: 8,
 			responseRateIncrease: 25,
@@ -174,12 +177,12 @@ const GOAL_PRESETS: Partial<Record<QuickStartGoalId, QuickStartROIPreset>> = {
 		},
 	},
 	"agent-expansion": {
-		profileInputs: {
+		profileInputs: withProfileDefaults({
 			...PERSONA_PRESETS.agent?.profileInputs,
 			goalId: "agent-expansion",
 			dealsPerMonth: 7,
 			avgDealValue: 620000,
-		},
+		}),
 		highlights: {
 			hoursSavedPerWeek: 9,
 			responseRateIncrease: 23,
@@ -187,12 +190,12 @@ const GOAL_PRESETS: Partial<Record<QuickStartGoalId, QuickStartROIPreset>> = {
 		},
 	},
 	"lender-fund-fast": {
-		profileInputs: {
-			...PERSONA_PRESETS.lender?.profileInputs,
+		profileInputs: withProfileDefaults({
+			...PERSONA_PRESETS.loan_officer?.profileInputs,
 			goalId: "lender-fund-fast",
 			dealsPerMonth: 16,
 			avgDealValue: 5500,
-		},
+		}),
 		highlights: {
 			hoursSavedPerWeek: 14,
 			responseRateIncrease: 27,

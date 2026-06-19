@@ -1510,7 +1510,9 @@ export default function QuickStartPage() {
 				);
 
 				// Small delay to ensure state is updated
-				await new Promise((resolve) => scheduleTimeout(resolve, 100));
+				await new Promise((resolve) => {
+					scheduleTimeout(() => resolve(undefined), 100);
+				});
 
 				// Close config modal and open results
 				setShowLookalikeConfigModal(false);
@@ -1714,7 +1716,9 @@ export default function QuickStartPage() {
 			toast.info(`Loading ${friendlyName}...`);
 
 			// Small delay for loading indicator
-			await new Promise((resolve) => scheduleTimeout(resolve, 300));
+			await new Promise((resolve) => {
+				scheduleTimeout(() => resolve(undefined), 300);
+			});
 
 			router.push(path);
 		},

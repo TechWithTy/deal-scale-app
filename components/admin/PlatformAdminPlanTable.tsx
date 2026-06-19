@@ -110,7 +110,7 @@ export default function PlatformAdminPlanTable({
 	plan,
 }: PlatformAdminPlanTableProps) {
 	const table = useDataTable<PlatformAdminPlanItem>({
-		data: plan,
+		data: [...plan],
 		columns: planColumns,
 		pageCount: 0,
 		initialState: {

@@ -3,10 +3,10 @@ import type {
 	QuickStartGoalId,
 	QuickStartPersonaId,
 } from "@/lib/config/quickstart/wizardFlows";
-import type { UserProfileSubscription } from "@/constants/_faker/profile/userSubscription";
 import type {
 	DemoConfig,
 	PermissionMatrix,
+	User,
 	UserQuotas,
 	UserRole,
 	UserTier,
@@ -32,7 +32,7 @@ declare module "next-auth" {
 			isPilotTester?: boolean;
 			isFreeTier?: boolean;
 			demoConfig?: DemoConfig;
-			subscription?: UserProfileSubscription;
+			subscription?: User["subscription"];
 			quickStartDefaults?: {
 				personaId?: QuickStartPersonaId;
 				goalId?: QuickStartGoalId;
@@ -52,7 +52,7 @@ declare module "next-auth" {
 		isPilotTester?: boolean;
 		isFreeTier?: boolean;
 		demoConfig?: DemoConfig;
-		subscription?: UserProfileSubscription;
+		subscription?: User["subscription"];
 		quickStartDefaults?: {
 			personaId?: QuickStartPersonaId;
 			goalId?: QuickStartGoalId;
@@ -74,7 +74,7 @@ declare module "next-auth/jwt" {
 		isPilotTester?: boolean;
 		isFreeTier?: boolean;
 		demoConfig?: DemoConfig;
-		subscription?: UserProfileSubscription;
+		subscription?: User["subscription"];
 		quickStartDefaults?: {
 			personaId?: QuickStartPersonaId;
 			goalId?: QuickStartGoalId;

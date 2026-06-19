@@ -1,1 +1,1 @@
-export * from "../../external/interactive-avatar-nextjs-demo/components/tour/tourHelpers";
+export {};

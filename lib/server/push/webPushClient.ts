@@ -1,4 +1,4 @@
-import webPush from "web-push";
+import webPush, { type PushSubscription, type WebPushError } from "web-push";
 import type { PushNotificationPayload } from "./schema";
 import type { StoredPushSubscription } from "./subscriptionStore";
 
@@ -24,9 +24,7 @@ function configureWebPush(): void {
 	configured = true;
 }
 
-function toPushSubscription(
-	record: StoredPushSubscription,
-): webPush.PushSubscription {
+function toPushSubscription(record: StoredPushSubscription): PushSubscription {
 	return {
 		endpoint: record.endpoint,
 		keys: record.keys,
@@ -58,8 +56,8 @@ export async function deliverPushNotification(
 	} catch (error) {
 		const message = error instanceof Error ? error.message : String(error);
 		const statusCode =
-			typeof (error as webPush.WebPushError)?.statusCode === "number"
-				? (error as webPush.WebPushError).statusCode
+			typeof (error as WebPushError)?.statusCode === "number"
+				? (error as WebPushError).statusCode
 				: undefined;
 		return {
 			endpoint: record.endpoint,

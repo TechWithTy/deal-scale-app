@@ -20,7 +20,7 @@ export const pushSubscriptionSchema = z.object({
 
 export const pushSubscriptionPayloadSchema = z.object({
 	subscription: pushSubscriptionSchema,
-	metadata: z.record(metadataValueSchema).optional().default(undefined),
+	metadata: z.record(metadataValueSchema).optional(),
 });
 
 export const pushUnsubscribeSchema = z.object({

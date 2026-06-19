@@ -38,7 +38,6 @@ import {
 	Twitter,
 	Users,
 } from "lucide-react";
-import type React from "react";
 import { useState } from "react";
 
 /**

@@ -137,7 +137,7 @@ export function shouldAutoConvertLead(lead: LeadTypeGlobal): boolean {
 	// Convert if lead has high intent signals
 	if (lead.intentSignals && lead.intentSignals.length > 0) {
 		const highIntentSignals = lead.intentSignals.filter(
-			(signal) => signal.strength === "strong" || signal.confidence > 0.8,
+			(signal) => signal.rawScore >= 20,
 		);
 		if (highIntentSignals.length >= 2) {
 			return true;
@@ -253,7 +253,11 @@ export function validateDealData(deal: Partial<Deal>): {
 		errors.push("Valid purchase price is required");
 	}
 
-	if (deal.estimatedARV && deal.estimatedARV < deal.purchasePrice) {
+	if (
+		deal.estimatedARV &&
+		deal.purchasePrice !== undefined &&
+		deal.estimatedARV < deal.purchasePrice
+	) {
 		errors.push("ARV cannot be less than purchase price");
 	}
 

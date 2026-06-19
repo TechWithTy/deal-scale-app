@@ -10,6 +10,17 @@ export interface ImpersonationIdentity {
 	id: string;
 	name?: string | null;
 	email?: string | null;
+	role?: UserRole;
+	tier?: SubscriptionTier;
+	permissions?: string[];
+	permissionMatrix?: PermissionMatrix;
+	permissionList?: string[];
+	quotas?: UserQuotas;
+	subscription?: User["subscription"];
+	isBetaTester?: boolean;
+	isPilotTester?: boolean;
+	isFreeTier?: boolean;
+	demoConfig?: User["demoConfig"];
 }
 
 export interface ImpersonationSessionUserSnapshot {

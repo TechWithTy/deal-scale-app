@@ -1,4 +1,4 @@
-import React from "react";
+import type React from "react";
 import {
 	FormField,
 	FormItem,
@@ -6,7 +6,6 @@ import {
 	FormMessage,
 } from "@/components/ui/form";
 import { Search, XIcon } from "lucide-react";
-import type React from "react";
 import { useEffect, useState } from "react";
 
 interface SearchTermsInputProps {

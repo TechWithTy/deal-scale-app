@@ -15,6 +15,7 @@ import {
 	getGoalDefinition,
 	getPersonaDefinition,
 } from "@/lib/config/quickstart/wizardFlows";
+import type { ReadonlyURLSearchParams } from "next/navigation";
 
 /**
  * URL parameter keys for QuickStart wizard

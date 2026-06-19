@@ -1,10 +1,7 @@
 import type { Coordinate } from "@/types/_dashboard/maps";
 import { LoadScript } from "@react-google-maps/api";
 import { MapWithDrawing } from "external/google-maps-two/components";
-import {
-	PlaceSearchPanel,
-	type UIPanelPlace,
-} from "external/google-maps-two/components/composit/components/PlaceSearchPanel";
+import { PlaceSearchPanel } from "external/google-maps-two/components/composit/components/PlaceSearchPanel";
 import React from "react";
 import { GOOGLE_LIBS } from "./helpers";
 
@@ -75,7 +72,10 @@ const MapArea: React.FC<MapAreaProps> = ({
 					} as unknown as google.maps.LatLngLiteral
 				}
 				radiusMeters={1000}
-				onSelectPlace={(place: UIPanelPlace) =>
+				onSelectPlace={(place: {
+					id?: string | number;
+					location?: google.maps.LatLngLiteral;
+				}) =>
 					onSelectPlace({
 						placeId: place.id ? String(place.id) : undefined,
 						location: place.location,

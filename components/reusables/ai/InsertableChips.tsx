@@ -24,14 +24,14 @@ export interface InsertableChip {
 	description?: string;
 	icon?: React.ReactNode;
 	locked?: boolean;
-	lockedMessage?: string;
+	lockedMessage?: React.ReactNode;
 }
 
 interface InsertableChipsProps {
 	chips: InsertableChip[];
 	onChipClick: (key: string) => void;
 	label?: string;
-	helpText?: string;
+	helpText?: React.ReactNode;
 	searchPlaceholder?: string;
 	emptyMessage?: string;
 	className?: string;

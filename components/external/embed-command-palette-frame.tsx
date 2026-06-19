@@ -40,8 +40,17 @@ export function EmbedCommandPaletteFrame({
 	useEffect(() => {
 		if (typeof window === "undefined") return;
 		if (!config.token) return;
+		const existing = window.DealActionBar;
 		window.DealActionBar = {
-			...(window.DealActionBar ?? {}),
+			open: existing?.open ?? (() => {}),
+			close: existing?.close ?? (() => {}),
+			toggle: existing?.toggle ?? (() => {}),
+			register: existing?.register ?? (() => {}),
+			setVariant: existing?.setVariant ?? (() => {}),
+			setInitialQuery: existing?.setInitialQuery ?? (() => {}),
+			setEndpoint: existing?.setEndpoint ?? (() => {}),
+			setKeyboard: existing?.setKeyboard ?? (() => {}),
+			element: existing?.element,
 			token: config.token,
 		};
 	}, [config.token]);

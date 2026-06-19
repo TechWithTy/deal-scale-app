@@ -88,7 +88,7 @@ export default async function RoiCalculatorPage({
 			<section className="mt-16">
 				<DealScaleRoiCalculator
 					className="rounded-3xl border border-border bg-card/60 shadow-sm"
-					session={session}
+					session={session?.user ?? null}
 				/>
 			</section>
 		</main>

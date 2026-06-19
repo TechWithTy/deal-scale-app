@@ -56,7 +56,7 @@ export const highQualityInvestorTemplate: Partial<SavedSearch> = {
 			minEmailDeliverability: 85,
 			requireMultipleContacts: true,
 		},
-	} as LookalikeConfig,
+	} as unknown as LookalikeConfig,
 };
 
 /**
@@ -99,7 +99,7 @@ export const distressedPropertyTemplate: Partial<SavedSearch> = {
 			skipRecentlySold: true,
 			minPhoneValidity: 70,
 		},
-	} as LookalikeConfig,
+	} as unknown as LookalikeConfig,
 };
 
 /**
@@ -144,7 +144,7 @@ export const firstTimeBuyerTemplate: Partial<SavedSearch> = {
 			socialEnrichment: true,
 			minEmailDeliverability: 80,
 		},
-	} as LookalikeConfig,
+	} as unknown as LookalikeConfig,
 };
 
 /**
@@ -190,7 +190,7 @@ export const cashBuyerTemplate: Partial<SavedSearch> = {
 			minPhoneValidity: 85,
 			requireMultipleContacts: true,
 		},
-	} as LookalikeConfig,
+	} as unknown as LookalikeConfig,
 };
 
 /**
@@ -244,7 +244,7 @@ export const luxuryMarketTemplate: Partial<SavedSearch> = {
 			minEmailDeliverability: 90,
 			requireMultipleContacts: true,
 		},
-	} as LookalikeConfig,
+	} as unknown as LookalikeConfig,
 };
 
 /**

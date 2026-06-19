@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/floating-music-widget/constants";
 import {
 	type MusicWidgetPosition,
+	type StoredMusicPreferences,
 	useMusicPreferencesStore,
 } from "@/lib/stores/musicPreferences";
 import { calculateSnapAnchor, snapToEdge } from "@/lib/utils/snapToEdge";

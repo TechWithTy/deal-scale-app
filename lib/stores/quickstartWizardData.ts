@@ -1,4 +1,3 @@
-import { useSession } from "next-auth/react";
 import { createWithEqualityFn } from "zustand/traditional";
 
 import type { QuickStartWizardPreset } from "@/components/quickstart/types";
@@ -12,16 +11,112 @@ import {
 import { useUserProfileStore } from "@/lib/stores/user/userProfile";
 import type { QuickStartDefaults } from "@/types/userProfile";
 
+export type LeadSourceOption = "csv-upload" | "saved-search" | "integrations";
+export type MarketTimelineOption =
+	| "immediate"
+	| "next-30-days"
+	| "this-quarter"
+	| "later";
+
+export interface CaptureOptions {
+	readonly enableWidget: boolean;
+	readonly enableExtension: boolean;
+	readonly autoResponderEnabled: boolean;
+	readonly forwardingNumber: string;
+	readonly notifyEmail: string;
+}
+
+export interface LaunchChecklist {
+	readonly sandboxValidated: boolean;
+	readonly complianceReviewComplete: boolean;
+	readonly notificationsEnabled: boolean;
+	readonly goLiveApproved: boolean;
+}
+
 interface QuickStartWizardDataState {
 	readonly personaId: QuickStartPersonaId | null;
 	readonly goalId: QuickStartGoalId | null;
 	readonly isCompleting: boolean;
+	readonly leadSource: LeadSourceOption;
+	readonly csvFileName: string | null;
+	readonly csvRecordEstimate: number | null;
+	readonly selectedIntegrations: readonly string[];
+	readonly savedSearchName: string;
+	readonly targetMarkets: readonly string[];
+	readonly leadNotes: string;
+	readonly marketFilters: readonly string[];
+	readonly budgetRange: readonly [number, number];
+	readonly timeline: MarketTimelineOption;
+	readonly marketNotes: string;
+	readonly captureOptions: CaptureOptions;
+	readonly reviewNotes: string;
+	readonly launchChecklist: LaunchChecklist;
 	readonly selectPersona: (personaId: QuickStartPersonaId) => void;
 	readonly selectGoal: (goalId: QuickStartGoalId) => void;
 	readonly applyPreset: (preset?: QuickStartWizardPreset) => void;
 	readonly reset: () => void;
 	readonly setCompleting: (completing: boolean) => void;
+	readonly setLeadSource: (leadSource: LeadSourceOption) => void;
+	readonly setCsvDetails: (details: {
+		readonly fileName: string | null;
+		readonly recordEstimate: number | null;
+	}) => void;
+	readonly toggleIntegrationSource: (integration: string) => void;
+	readonly setSavedSearchName: (savedSearchName: string) => void;
+	readonly addTargetMarket: (market: string) => void;
+	readonly removeTargetMarket: (market: string) => void;
+	readonly setLeadNotes: (leadNotes: string) => void;
+	readonly toggleMarketFilter: (filter: string) => void;
+	readonly setBudgetRange: (budgetRange: readonly [number, number]) => void;
+	readonly setTimeline: (timeline: MarketTimelineOption) => void;
+	readonly setMarketNotes: (marketNotes: string) => void;
+	readonly setCaptureOption: <Key extends keyof CaptureOptions>(
+		key: Key,
+		value: CaptureOptions[Key],
+	) => void;
+	readonly setReviewNotes: (reviewNotes: string) => void;
+	readonly toggleLaunchChecklist: (key: keyof LaunchChecklist) => void;
 }
+
+const DEFAULT_CAPTURE_OPTIONS: CaptureOptions = {
+	enableWidget: true,
+	enableExtension: false,
+	autoResponderEnabled: true,
+	forwardingNumber: "",
+	notifyEmail: "",
+};
+
+const DEFAULT_LAUNCH_CHECKLIST: LaunchChecklist = {
+	sandboxValidated: false,
+	complianceReviewComplete: false,
+	notificationsEnabled: false,
+	goLiveApproved: false,
+};
+
+const createWizardFormState = () => ({
+	leadSource: "csv-upload" as LeadSourceOption,
+	csvFileName: null as string | null,
+	csvRecordEstimate: null as number | null,
+	selectedIntegrations: [] as string[],
+	savedSearchName: "",
+	targetMarkets: [] as string[],
+	leadNotes: "",
+	marketFilters: [] as string[],
+	budgetRange: [25000, 100000] as const,
+	timeline: "next-30-days" as MarketTimelineOption,
+	marketNotes: "",
+	captureOptions: { ...DEFAULT_CAPTURE_OPTIONS },
+	reviewNotes: "",
+	launchChecklist: { ...DEFAULT_LAUNCH_CHECKLIST },
+});
+
+const toggleStringValue = (
+	values: readonly string[],
+	value: string,
+): string[] =>
+	values.includes(value)
+		? values.filter((current) => current !== value)
+		: [...values, value];
 
 const deriveStateFromDefaults = (
 	defaults: QuickStartDefaults | null | undefined,
@@ -80,10 +175,61 @@ export const useQuickStartWizardDataStore =
 	createWithEqualityFn<QuickStartWizardDataState>(
 		(set, get) => ({
 			...createInitialState(),
+			...createWizardFormState(),
 			isCompleting: false,
 			setCompleting: (completing: boolean) => {
 				set({ isCompleting: completing });
 			},
+			setLeadSource: (leadSource) => set({ leadSource }),
+			setCsvDetails: ({ fileName, recordEstimate }) =>
+				set({ csvFileName: fileName, csvRecordEstimate: recordEstimate }),
+			toggleIntegrationSource: (integration) =>
+				set((state) => ({
+					selectedIntegrations: toggleStringValue(
+						state.selectedIntegrations,
+						integration,
+					),
+				})),
+			setSavedSearchName: (savedSearchName) => set({ savedSearchName }),
+			addTargetMarket: (market) =>
+				set((state) => {
+					const trimmed = market.trim();
+					if (!trimmed || state.targetMarkets.includes(trimmed)) {
+						return {};
+					}
+
+					return { targetMarkets: [...state.targetMarkets, trimmed] };
+				}),
+			removeTargetMarket: (market) =>
+				set((state) => ({
+					targetMarkets: state.targetMarkets.filter(
+						(current) => current !== market,
+					),
+				})),
+			setLeadNotes: (leadNotes) => set({ leadNotes }),
+			toggleMarketFilter: (filter) =>
+				set((state) => ({
+					marketFilters: toggleStringValue(state.marketFilters, filter),
+				})),
+			setBudgetRange: (budgetRange) =>
+				set({ budgetRange: [budgetRange[0], budgetRange[1]] }),
+			setTimeline: (timeline) => set({ timeline }),
+			setMarketNotes: (marketNotes) => set({ marketNotes }),
+			setCaptureOption: (key, value) =>
+				set((state) => ({
+					captureOptions: {
+						...state.captureOptions,
+						[key]: value,
+					},
+				})),
+			setReviewNotes: (reviewNotes) => set({ reviewNotes }),
+			toggleLaunchChecklist: (key) =>
+				set((state) => ({
+					launchChecklist: {
+						...state.launchChecklist,
+						[key]: !state.launchChecklist[key],
+					},
+				})),
 			selectPersona: (personaId) => {
 				console.log("👤 [WIZARD DATA] selectPersona() called:", personaId);
 				const previousState = get();
@@ -207,41 +353,38 @@ export const useQuickStartWizardDataStore =
 
 					return createInitialState();
 				}),
-			reset: () => set({ ...createInitialState(), isCompleting: false }),
+			reset: () =>
+				set({
+					...createInitialState(),
+					...createWizardFormState(),
+					isCompleting: false,
+				}),
 		}),
 		Object.is,
 	);
 
 // Subscribe to UserProfile changes
-useUserProfileStore.subscribe(
-	(state) => state.userProfile?.quickStartDefaults,
-	(defaults) => {
-		useQuickStartWizardDataStore.setState((current) => {
-			// Don't sync if wizard is completing (prevents interference with modal opening)
-			if (current.isCompleting) {
-				return {};
-			}
-			if (current.personaId || current.goalId) {
-				return {};
-			}
+useUserProfileStore.subscribe((state) => {
+	const defaults = state.userProfile?.quickStartDefaults;
 
-			const nextState = deriveStateFromDefaults(defaults);
+	useQuickStartWizardDataStore.setState((current) => {
+		// Don't sync if wizard is completing (prevents interference with modal opening)
+		if (current.isCompleting) {
+			return {};
+		}
+		if (current.personaId || current.goalId) {
+			return {};
+		}
 
-			if (
-				current.personaId === nextState.personaId &&
-				current.goalId === nextState.goalId
-			) {
-				return {};
-			}
+		const nextState = deriveStateFromDefaults(defaults);
 
-			return nextState;
-		});
-	},
-);
+		if (
+			current.personaId === nextState.personaId &&
+			current.goalId === nextState.goalId
+		) {
+			return {};
+		}
 
-// ALSO subscribe to session changes (for authenticated users without full UserProfile)
-if (typeof window !== "undefined") {
-	import("next-auth/react").then(({ useSession }) => {
-		// This will be handled by the SessionDefaultsSync component
+		return nextState;
 	});
-}
+});

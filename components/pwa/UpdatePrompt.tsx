@@ -22,7 +22,6 @@ export function UpdatePrompt(): React.ReactElement | null {
 			action: {
 				label: isReloading ? "Updating..." : "Refresh now",
 				onClick: applyUpdate,
-				disabled: isReloading,
 			},
 			dismissible: true,
 			description: "We’ll reload to apply the latest improvements.",

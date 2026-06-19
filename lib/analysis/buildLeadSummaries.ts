@@ -56,6 +56,15 @@ const getRentDom = (property: Property): number | null =>
 	isRentCastProperty(property)
 		? (property.listing?.daysOnMarket ?? null)
 		: null;
+const getLastUpdated = (property: Property): string | undefined => {
+	if (isRealtorProperty(property)) {
+		return property.metadata.lastUpdated;
+	}
+	if (isRentCastProperty(property)) {
+		return property.metadata.lastUpdated;
+	}
+	return (property as { lastUpdated?: string }).lastUpdated;
+};
 
 const turnoverLabel = (
 	value: number | null,
@@ -119,11 +128,7 @@ export function buildLeadSummaries(
 		if (!buckets.has(type))
 			buckets.set(type, { sale: [], dom: [], rent: [], rentDom: [] });
 		const bucket = buckets.get(type)!;
-		const updatedAt = parseDate(
-			isRealtorProperty(property) || isRentCastProperty(property)
-				? property.metadata.lastUpdated
-				: property.lastUpdated,
-		);
+		const updatedAt = parseDate(getLastUpdated(property));
 		if (!Number.isNaN(updatedAt) && nowTs - updatedAt <= THIRTY_DAYS_MS)
 			newListings += 1;
 

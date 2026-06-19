@@ -37,19 +37,20 @@ export function useNetworkQuality(): NetworkQuality {
 		).connection;
 
 		if (!connection) return;
+		const activeConnection = connection;
 
 		function updateQuality() {
-			const effectiveType = connection.effectiveType ?? null;
-			const downlink = connection.downlink ?? null;
+			const effectiveType = activeConnection.effectiveType ?? null;
+			const downlink = activeConnection.downlink ?? null;
 			const tier = effectiveType ? (tierMap[effectiveType] ?? "fast") : "fast";
 			setQuality({ tier, downlink, effectiveType });
 		}
 
 		updateQuality();
-		connection.addEventListener?.("change", updateQuality);
+		activeConnection.addEventListener?.("change", updateQuality);
 
 		return () => {
-			connection.removeEventListener?.("change", updateQuality);
+			activeConnection.removeEventListener?.("change", updateQuality);
 		};
 	}, []);
 

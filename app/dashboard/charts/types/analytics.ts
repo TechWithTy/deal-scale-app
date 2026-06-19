@@ -65,6 +65,9 @@ export interface ROIMetrics {
 	averageDealValue: number;
 	costPerLead: number;
 	costPerConversion: number;
+	campaignCost?: number;
+	includedCredits?: number;
+	campaignOverage?: number;
 }
 
 export type SubscriptionPlan = "basic" | "starter" | "enterprise";

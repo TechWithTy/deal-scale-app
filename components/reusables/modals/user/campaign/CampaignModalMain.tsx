@@ -31,9 +31,9 @@ import { shallow } from "zustand/shallow";
 import ChannelCustomizationStep, {
 	TransferConditionalSchema,
 	type FormSchema,
-} from "../../../../../external/shadcn-table/src/examples/campaigns/modal/steps/ChannelCustomizationStep";
-import ChannelSelectionStep from "../../../../../external/shadcn-table/src/examples/campaigns/modal/steps/ChannelSelectionStep";
-import { TimingPreferencesStep } from "../../../../../external/shadcn-table/src/examples/campaigns/modal/steps/TimingPreferencesStep.tsx";
+} from "external/shadcn-table/src/examples/campaigns/modal/steps/ChannelCustomizationStep";
+import ChannelSelectionStep from "external/shadcn-table/src/examples/campaigns/modal/steps/ChannelSelectionStep";
+import { TimingPreferencesStep } from "external/shadcn-table/src/examples/campaigns/modal/steps/TimingPreferencesStep";
 import CampaignSettingsDebug from "./CampaignSettingsDebug";
 import { EvaluationReportModal } from "./EvaluationReportModal";
 import FinalizeCampaignStep from "./steps/FinalizeCampaignStep";
@@ -409,64 +409,64 @@ const CampaignModalMain: FC<CampaignModalMainProps> = ({
 	useEffect(() => {
 		if (!campaignModalDebugEnabled) return;
 		let hasLoggedInitialSnapshot = false;
+		let previousSnapshot: CampaignStoreDebugSnapshot | undefined;
 		try {
-			const unsubscribe = useCampaignCreationStore.subscribe(
-				selectCampaignStoreDebugSnapshot,
-				(
-					currentSnapshot: CampaignStoreDebugSnapshot,
-					previousSnapshot: CampaignStoreDebugSnapshot | undefined,
-				) => {
-					if (!liveIsOpenRef.current && !closingStateRef.current.closing) {
-						return;
-					}
+			const unsubscribe = useCampaignCreationStore.subscribe((state) => {
+				const currentSnapshot = selectCampaignStoreDebugSnapshot(state);
+				if (!liveIsOpenRef.current && !closingStateRef.current.closing) {
+					return;
+				}
 
-					if (!hasLoggedInitialSnapshot) {
-						hasLoggedInitialSnapshot = true;
-						campaignDebugLog("store-snapshot-initial", {
-							snapshot: currentSnapshot,
-							isOpen: liveIsOpenRef.current,
-							closing: closingStateRef.current.closing,
-							step: stepRef.current,
-						});
-					}
-
-					if (!previousSnapshot) {
-						return;
-					}
-
-					const diffEntries = Object.entries(currentSnapshot).reduce<
-						Record<
-							string,
-							{
-								previous: unknown;
-								next: unknown;
-							}
-						>
-					>((accumulator, [key, value]) => {
-						const typedKey = key as keyof CampaignStoreDebugSnapshot;
-						const previousValue = previousSnapshot[typedKey];
-						if (!Object.is(value, previousValue)) {
-							accumulator[key] = {
-								previous: previousValue,
-								next: value,
-							};
-						}
-						return accumulator;
-					}, {});
-
-					if (Object.keys(diffEntries).length === 0) {
-						return;
-					}
-
-					campaignDebugLog("store-change", {
-						diff: diffEntries,
+				if (!hasLoggedInitialSnapshot) {
+					hasLoggedInitialSnapshot = true;
+					campaignDebugLog("store-snapshot-initial", {
+						snapshot: currentSnapshot,
 						isOpen: liveIsOpenRef.current,
 						closing: closingStateRef.current.closing,
-						renderCount: closingStateRef.current.renderCount,
 						step: stepRef.current,
 					});
-				},
-			);
+				}
+
+				if (!previousSnapshot) {
+					previousSnapshot = currentSnapshot;
+					return;
+				}
+				const previous = previousSnapshot;
+
+				const diffEntries = Object.entries(currentSnapshot).reduce<
+					Record<
+						string,
+						{
+							previous: unknown;
+							next: unknown;
+						}
+					>
+				>((accumulator, [key, value]) => {
+					const typedKey = key as keyof CampaignStoreDebugSnapshot;
+					const previousValue = previous[typedKey];
+					if (!Object.is(value, previousValue)) {
+						accumulator[key] = {
+							previous: previousValue,
+							next: value,
+						};
+					}
+					return accumulator;
+				}, {});
+
+				if (Object.keys(diffEntries).length === 0) {
+					previousSnapshot = currentSnapshot;
+					return;
+				}
+
+				campaignDebugLog("store-change", {
+					diff: diffEntries,
+					isOpen: liveIsOpenRef.current,
+					closing: closingStateRef.current.closing,
+					renderCount: closingStateRef.current.renderCount,
+					step: stepRef.current,
+				});
+				previousSnapshot = currentSnapshot;
+			});
 
 			return () => {
 				unsubscribe();
@@ -797,7 +797,12 @@ const CampaignModalMain: FC<CampaignModalMainProps> = ({
 				}
 
 				if (initialTransferType) {
-					customizationForm.setValue("transferType", initialTransferType);
+					customizationForm.setValue(
+						"transferType",
+						initialTransferType === "warm_transfer"
+							? "outbound_call"
+							: initialTransferType,
+					);
 					console.log(
 						"[Modal Init] ✅ Set form transferType to:",
 						initialTransferType,

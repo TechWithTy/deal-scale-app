@@ -118,7 +118,7 @@ const buildProfileFromSession = (
 	base.lastName = familyName ?? base.lastName;
 	base.quickStartDefaults = quickStartDefaults ?? base.quickStartDefaults;
 	base.subscription = session.user.subscription ?? base.subscription;
-	const hydratedSubscription = base.subscription as
+	const hydratedSubscription = base.subscription as unknown as
 		| (UserProfileSubscription & Record<string, unknown>)
 		| undefined;
 	if (hydratedSubscription) {

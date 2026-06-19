@@ -1,8 +1,4 @@
-import {
-	type StateStorage,
-	createJSONStorage,
-	persist,
-} from "zustand/middleware";
+import { createJSONStorage, persist } from "zustand/middleware";
 import { createWithEqualityFn } from "zustand/traditional";
 
 interface QuickStartWizardExperienceState {
@@ -15,7 +11,7 @@ interface QuickStartWizardExperienceState {
 
 const defaultState = { hasSeenWizard: false, isHydrated: false } as const;
 
-const createNoopStorage = (): StateStorage => ({
+const createNoopStorage = () => ({
 	getItem: () => Promise.resolve(null),
 	setItem: () => Promise.resolve(),
 	removeItem: () => Promise.resolve(),
@@ -23,7 +19,7 @@ const createNoopStorage = (): StateStorage => ({
 
 const resolveStorage = () => {
 	if (typeof window === "undefined") {
-		return createNoopStorage();
+		return createJSONStorage(createNoopStorage);
 	}
 
 	return createJSONStorage(() => window.localStorage);

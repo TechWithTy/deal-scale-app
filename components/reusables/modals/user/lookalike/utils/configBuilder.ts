@@ -54,7 +54,7 @@ export function buildLookalikeConfig(
 			minPurchaseIntent: values.minPurchaseIntent,
 			excludeLowEngagement: values.excludeLowEngagement,
 			skipColdLeads: values.skipColdLeads,
-		},
+		} as LookalikeConfig["salesTargeting"] & Record<string, unknown>,
 		propertyFilters: {
 			propertyTypes: values.propertyTypes as any,
 			propertyStatus: values.propertyStatus as any,
@@ -94,7 +94,7 @@ export function buildLookalikeConfig(
 			requireRecentPhotos: values.requireRecentPhotos,
 			skipRecentlySold: values.skipRecentlySold,
 			skipListedProperties: values.skipListedProperties,
-		},
+		} as LookalikeConfig["propertyFilters"] & Record<string, unknown>,
 		geoFilters: {
 			states: values.states,
 			counties: values.counties,
@@ -127,7 +127,7 @@ export function buildLookalikeConfig(
 			requireUrbanProximity: values.requireUrbanProximity,
 			skipOverlappingAreas: values.skipOverlappingAreas,
 			consolidateByMarket: values.consolidateByMarket,
-		},
+		} as LookalikeConfig["geoFilters"] & Record<string, unknown>,
 		generalOptions: {
 			excludeListIds: values.excludeListIds,
 			dncCompliance: true, // Always true
@@ -182,6 +182,6 @@ export function buildLookalikeConfig(
 			requireNcoaVerified: values.requireNcoaVerified,
 			excludeLandlines: values.excludeLandlines,
 			requireMultipleContacts: values.requireMultipleContacts,
-		},
+		} as LookalikeConfig["generalOptions"] & Record<string, unknown>,
 	};
 }

@@ -15,6 +15,21 @@ import dynamic from "next/dynamic";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import React, { type ReactNode } from "react";
 
+const CommandPaletteProviderRoot =
+	CommandPaletteProvider as unknown as React.ComponentType<{
+		children?: ReactNode;
+	}>;
+const ProvidersRoot = Providers as unknown as React.ComponentType<{
+	session: Session | null;
+	children?: ReactNode;
+}>;
+const AppTourProviderRoot = AppTourProvider as unknown as React.ComponentType<{
+	children?: ReactNode;
+}>;
+const NuqsAdapterRoot = NuqsAdapter as unknown as React.ComponentType<{
+	children?: ReactNode;
+}>;
+
 const SupademoClient = dynamic(
 	() => import("@/components/integrations/SupademoClient"),
 	{
@@ -43,11 +58,11 @@ export function AuthenticatedAppShell({
 	const shouldLoadSupademo = process.env.NODE_ENV === "production";
 	void React;
 	return (
-		<CommandPaletteProvider>
+		<CommandPaletteProviderRoot>
 			<CommandPaletteAppCommands />
-			<NuqsAdapter>
-				<Providers session={session}>
-					<AppTourProvider>
+			<NuqsAdapterRoot>
+				<ProvidersRoot session={session}>
+					<AppTourProviderRoot>
 						<OfflineBanner />
 						{shouldLoadSupademo ? <SupademoClient /> : null}
 						<FloatingMusicWidget />
@@ -58,11 +73,11 @@ export function AuthenticatedAppShell({
 						{shouldLoadSupademo ? (
 							<FloatingHelpSupademo defaultVisible={false} />
 						) : null}
-					</AppTourProvider>
-				</Providers>
+					</AppTourProviderRoot>
+				</ProvidersRoot>
 				<ActionBarRoot />
-			</NuqsAdapter>
-		</CommandPaletteProvider>
+			</NuqsAdapterRoot>
+		</CommandPaletteProviderRoot>
 	);
 }
 
