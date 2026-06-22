@@ -42,42 +42,22 @@ function useChart() {
 }
 
 function useChartTextColor() {
-	const [textColor, setTextColor] = React.useState("rgb(2, 8, 23)");
-
-	React.useEffect(() => {
-		const updateTextColor = () => {
-			if (typeof window === "undefined") return;
-			const nextColor = getComputedStyle(document.body).color;
-			if (nextColor) {
-				setTextColor(nextColor);
-			}
-		};
-
-		updateTextColor();
-
-		const observer = new MutationObserver(updateTextColor);
-		observer.observe(document.documentElement, {
-			attributes: true,
-			attributeFilter: ["class"],
-		});
-
-		return () => observer.disconnect();
-	}, []);
-
-	return textColor;
+	return "currentColor";
 }
 
 function ChartAxisTick({ payload, fill, style, ...props }: ChartAxisTickProps) {
-	const resolvedFill = fill ?? "rgb(2, 8, 23)";
+	const resolvedFill =
+		fill && !["rgb(0, 0, 0)", "rgb(2, 8, 23)"].includes(fill)
+			? fill
+			: "currentColor";
 
 	return (
 		<text
 			{...props}
 			fill={resolvedFill}
 			style={{
-				fill: resolvedFill,
-				color: resolvedFill,
 				...style,
+				fill: resolvedFill,
 			}}
 		>
 			{payload?.value}
@@ -124,13 +104,13 @@ const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
 		([_, config]) => config.theme || config.color,
 	);
 
-	if (!colorConfig.length) {
-		return null;
-	}
-
 	return (
 		<style>
 			{`
+[data-chart=${id}] {
+  color: inherit;
+}
+
 [data-chart=${id}] svg text,
 [data-chart=${id}] svg tspan,
 [data-chart=${id}] .recharts-text,
@@ -139,13 +119,14 @@ const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
 [data-chart=${id}] .recharts-tooltip-label,
 [data-chart=${id}] .recharts-tooltip-item-name,
 [data-chart=${id}] .recharts-tooltip-item-value {
-  fill: hsl(var(--foreground)) !important;
-  color: hsl(var(--foreground)) !important;
+  fill: currentColor !important;
+  color: inherit !important;
 }
 `}
-			{Object.entries(THEMES)
-				.map(
-					([theme, prefix]) => `${prefix} [data-chart=${id}] {
+			{colorConfig.length
+				? Object.entries(THEMES)
+						.map(
+							([theme, prefix]) => `${prefix} [data-chart=${id}] {
 ${colorConfig
 	.map(([key, itemConfig]) => {
 		const color =
@@ -155,8 +136,9 @@ ${colorConfig
 	})
 	.join("\n")}
 }`,
-				)
-				.join("\n")}
+						)
+						.join("\n")
+				: null}
 		</style>
 	);
 };
@@ -240,7 +222,7 @@ const ChartTooltipContent = React.forwardRef<
 			<div
 				ref={ref}
 				className={cn(
-					"grid min-w-[8rem] items-start gap-1.5 rounded-lg border border-border/50 px-2.5 py-1.5 text-xs shadow-xl",
+					"grid min-w-[8rem] items-start gap-1.5 rounded-lg border border-border/50 px-2.5 py-1.5 text-foreground text-xs shadow-xl",
 					className,
 				)}
 				style={{ backgroundColor: "hsl(var(--card))" }}
@@ -368,7 +350,9 @@ const ChartLegendContent = React.forwardRef<
 									}}
 								/>
 							)}
-							{itemConfig?.label}
+							<span className="text-foreground">
+								{itemConfig?.label || item.value}
+							</span>
 						</div>
 					);
 				})}
