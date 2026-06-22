@@ -12,7 +12,7 @@ import type {
 } from "@/types/_dashboard/campaign"; // Types for campaigns
 import type { EmailCampaign } from "@/types/goHighLevel/email";
 import type { GHLTextMessageCampaign } from "@/types/goHighLevel/text";
-import { HelpCircle, Search } from "lucide-react";
+import { Search } from "lucide-react";
 import React, { useEffect, useState } from "react";
 
 import StatCard from "./statCard";
@@ -231,18 +231,6 @@ const CampaignHeader: React.FC = () => {
 						performance metrics, segment audiences, and download leads.
 					</p>
 				</div>
-				<button
-					type="button"
-					onClick={() => {
-						if (typeof window !== "undefined") {
-							window.dispatchEvent(new Event("dealScale:helpFab:show"));
-						}
-					}}
-					className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border bg-background text-muted-foreground shadow-sm transition-all hover:border-primary/50 hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-					aria-label="Show help and demo"
-				>
-					<HelpCircle className="h-5 w-5" />
-				</button>
 			</div>
 
 			{/* Credits Remaining */}

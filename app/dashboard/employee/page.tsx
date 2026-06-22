@@ -19,7 +19,7 @@ import type { TeamMember, UserProfile } from "@/types/userProfile";
 import type { Table as TanstackTable } from "@tanstack/react-table";
 import TeamActivityFeed from "external/activity-graph/components/TeamActivityFeed";
 import { DataTableViewOptions } from "external/shadcn-table/src/components/data-table/data-table-view-options";
-import { HelpCircle, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react"; // Import useState and useEffect for state management
 import { z } from "zod";
@@ -102,22 +102,6 @@ export default function EmployeePage({
 							title={`Employee (${totalUsers})`}
 							description="Manage employees (Server side table functionalities.)"
 						/>
-					</div>
-
-					{/* Help Button */}
-					<div className="flex w-full justify-center sm:w-auto">
-						<button
-							type="button"
-							onClick={() => {
-								if (typeof window !== "undefined") {
-									window.dispatchEvent(new Event("dealScale:helpFab:show"));
-								}
-							}}
-							className="my-4 flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border bg-background text-muted-foreground shadow-sm transition-all hover:border-primary/50 hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-							aria-label="Show help and demo"
-						>
-							<HelpCircle className="h-5 w-5" />
-						</button>
 					</div>
 
 					{/* Add New Button */}
