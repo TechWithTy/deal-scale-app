@@ -22,6 +22,7 @@ const dashboardTourByPath: Array<{ path: string; tourId: TourId }> = [
 	{ path: "/dashboard/resources", tourId: "resources" },
 	{ path: "/dashboard/deal-room", tourId: "deal-room" },
 	{ path: "/dashboard/employee", tourId: "employee" },
+	{ path: "/dashboard/profile", tourId: "profile" },
 	{ path: "/dashboard/agents", tourId: "agent-manager" },
 	{ path: "/dashboard", tourId: "chat" },
 ];

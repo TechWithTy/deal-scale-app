@@ -206,7 +206,10 @@ export const ProfileStepper: React.FC = () => {
 
 	const StepperHeader = () => {
 		return (
-			<div className="mb-8 flex items-center overflow-x-auto">
+			<div
+				className="mb-8 flex items-center overflow-x-auto"
+				data-tour="profile-stepper"
+			>
 				{steps.map((step, idx) => {
 					const isCompleted = idx < currentStep;
 					const isCurrent = idx === currentStep;
@@ -270,8 +273,12 @@ export const ProfileStepper: React.FC = () => {
 			<form
 				onSubmit={form.handleSubmit(onSubmit)}
 				className="flex flex-col gap-8 p-8"
+				data-tour="profile-form"
 			>
-				<div className="mb-4 flex items-center justify-between">
+				<div
+					className="mb-4 flex items-center justify-between"
+					data-tour="profile-header"
+				>
 					<div>
 						<h2 className="font-bold text-xl">Profile Settings</h2>
 						<p className="text-gray-500 text-sm">
@@ -293,6 +300,7 @@ export const ProfileStepper: React.FC = () => {
 							variant="outline"
 							onClick={openSecurityModal}
 							className="gap-2"
+							data-tour="profile-security-settings"
 						>
 							<Shield className="h-4 w-4" />
 							Security Settings
@@ -301,7 +309,7 @@ export const ProfileStepper: React.FC = () => {
 				</div>
 				<StepperHeader />
 				{/* Show required fields for the current step at the top of the form */}
-				<div className="mb-4">
+				<div className="mb-4" data-tour="profile-required-fields">
 					<span className="font-semibold">Required fields:</span>
 					<ul className="flex flex-wrap gap-2">
 						{stepFields[currentStep].map((field) => {
@@ -323,25 +331,29 @@ export const ProfileStepper: React.FC = () => {
 					</ul>
 				</div>
 				{/* Render the current step's component with its props */}
-				{currentStep === 0 && <PersonalInformationFormMain loading={loading} />}
-				{currentStep === 1 && (
-					<BaseSetupMain loading={loading} initialData={initialData} />
-				)}
-				{currentStep === 2 && (
-					<KnowledgeBaseMain
-						loading={loading}
-						handleVoiceSelect={handleVoiceSelect}
-						handleScriptUpload={handleScriptUpload}
-						selectedScriptFileName={selectedScriptFileName}
-						handleEmailUpload={handleEmailUpload}
-						selectedEmailFileName={selectedEmailFileName}
-						initialData={initialData}
-					/>
-				)}
-				{currentStep === 3 && (
-					<OAuthMain loading={loading} initialData={initialData} />
-				)}
-				<div className="mt-8 flex flex-col gap-2">
+				<div data-tour="profile-step-content">
+					{currentStep === 0 && (
+						<PersonalInformationFormMain loading={loading} />
+					)}
+					{currentStep === 1 && (
+						<BaseSetupMain loading={loading} initialData={initialData} />
+					)}
+					{currentStep === 2 && (
+						<KnowledgeBaseMain
+							loading={loading}
+							handleVoiceSelect={handleVoiceSelect}
+							handleScriptUpload={handleScriptUpload}
+							selectedScriptFileName={selectedScriptFileName}
+							handleEmailUpload={handleEmailUpload}
+							selectedEmailFileName={selectedEmailFileName}
+							initialData={initialData}
+						/>
+					)}
+					{currentStep === 3 && (
+						<OAuthMain loading={loading} initialData={initialData} />
+					)}
+				</div>
+				<div className="mt-8 flex flex-col gap-2" data-tour="profile-actions">
 					{stepError && (
 						<div className="mb-2 text-red-500 text-sm">{stepError}</div>
 					)}

@@ -35,6 +35,7 @@ const dashboardTourByHref: Partial<Record<string, TourId>> = {
 	"/dashboard/resources": "resources",
 	"/dashboard/deal-room": "deal-room",
 	"/dashboard/employee": "employee",
+	"/dashboard/profile": "profile",
 };
 
 const DASHBOARD_HELP_VIDEO_URL =
