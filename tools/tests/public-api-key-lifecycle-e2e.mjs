@@ -120,10 +120,15 @@ async function revokeApiKey(token, keyId) {
 }
 
 async function logout(token) {
-	await requestJson("/api/v1/auth/logout", {
+	const { body, response } = await requestJson("/api/v1/auth/logout", {
 		headers: { Authorization: `Bearer ${token}` },
 		method: "POST",
 	});
+
+	assertOk(
+		response.status === 200,
+		`Logout failed: ${response.status} ${JSON.stringify(body)}`,
+	);
 }
 
 async function main() {
@@ -147,18 +152,22 @@ async function main() {
 			`Created API key was not returned by list endpoint: ${keyId}`,
 		);
 	} finally {
-		if (token && keyId) {
-			await revokeApiKey(token, keyId);
+		try {
+			if (token && keyId) {
+				await revokeApiKey(token, keyId);
 
-			const keysAfterCleanup = await listApiKeys(token);
-			assertOk(
-				!keysAfterCleanup.some((key) => key.id === keyId || key.key_id === keyId),
-				`API key cleanup failed; key still exists: ${keyId}`,
-			);
-		}
-
-		if (token) {
-			await logout(token);
+				const keysAfterCleanup = await listApiKeys(token);
+				assertOk(
+					!keysAfterCleanup.some(
+						(key) => key.id === keyId || key.key_id === keyId,
+					),
+					`API key cleanup failed; key still exists: ${keyId}`,
+				);
+			}
+		} finally {
+			if (token) {
+				await logout(token);
+			}
 		}
 	}
 
