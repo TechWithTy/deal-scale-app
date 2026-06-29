@@ -113,6 +113,42 @@ describe("public API client", () => {
 		}
 	});
 
+	it.each([
+		"PROVIDER_NOT_CONFIGURED",
+		"PROVIDER_UNAVAILABLE",
+		"SERVICE_UNAVAILABLE",
+	])("classifies %s by its stable error code", async (code) => {
+		vi.stubGlobal(
+			"fetch",
+			vi.fn(async () => {
+				return new Response(
+					JSON.stringify({ error: { code, message: "Unavailable" } }),
+					{ status: 503 },
+				);
+			}),
+		);
+
+		await expect(publicApiFetch("/api/v1/provider")).rejects.toMatchObject({
+			code,
+			kind: "provider_unavailable",
+		});
+	});
+
+	it("does not classify an uncoded 503 as a provider state", async () => {
+		vi.stubGlobal(
+			"fetch",
+			vi.fn(async () => {
+				return new Response(JSON.stringify({ error: { message: "Failed" } }), {
+					status: 503,
+				});
+			}),
+		);
+
+		await expect(publicApiFetch("/api/v1/provider")).rejects.toMatchObject({
+			kind: "server",
+		});
+	});
+
 	it("normalizes validation detail arrays", async () => {
 		vi.stubGlobal(
 			"fetch",

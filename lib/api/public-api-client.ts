@@ -82,6 +82,21 @@ export class PublicApiError extends Error {
 }
 
 function getErrorKind(status: number, code?: string): ApiErrorKind {
+	switch (code) {
+		case "AUTH_REQUIRED":
+			return "auth";
+		case "AUTH_FORBIDDEN":
+			return "forbidden";
+		case "NOT_FOUND":
+			return "not_found";
+		case "VALIDATION_ERROR":
+			return "validation";
+		case "PROVIDER_NOT_CONFIGURED":
+		case "PROVIDER_UNAVAILABLE":
+		case "SERVICE_UNAVAILABLE":
+			return "provider_unavailable";
+	}
+
 	if (status === 401) {
 		return "auth";
 	}
@@ -93,9 +108,6 @@ function getErrorKind(status: number, code?: string): ApiErrorKind {
 	}
 	if (status === 422 || status === 400) {
 		return "validation";
-	}
-	if (status === 503 || code === "PROVIDER_NOT_CONFIGURED") {
-		return "provider_unavailable";
 	}
 	if (status >= 500) {
 		return "server";

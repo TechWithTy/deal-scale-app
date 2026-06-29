@@ -16,7 +16,11 @@ const REPORT_PATH = path.join(
 );
 const METHODS_WITH_BODY = new Set(["PATCH", "POST", "PUT"]);
 const SAFE_STATUS_MAX = 499;
-const PROVIDER_NOT_CONFIGURED = "PROVIDER_NOT_CONFIGURED";
+const EXPECTED_UNAVAILABLE_CODES = new Set([
+	"PROVIDER_NOT_CONFIGURED",
+	"PROVIDER_UNAVAILABLE",
+	"SERVICE_UNAVAILABLE",
+]);
 const REQUEST_TIMEOUT_MS = Number(
 	process.env.DEAL_SCALE_SMOKE_TIMEOUT_MS || 30_000,
 );
@@ -243,7 +247,8 @@ async function smokeOperation(method, pathTemplate, operation) {
 	try {
 		const { body, response } = await requestJson(url, init);
 		const isExpectedProviderUnavailable =
-			response.status === 503 && body?.error?.code === PROVIDER_NOT_CONFIGURED;
+			response.status === 503 &&
+			EXPECTED_UNAVAILABLE_CODES.has(body?.error?.code);
 		const outcome = isExpectedProviderUnavailable
 			? "expected_provider_unavailable"
 			: response.status < 400
