@@ -54,6 +54,7 @@
     "test": "pnpm run test:vitest",
     "test:coverage": "pnpm exec vitest run --run --passWithNoTests",
     "test:critical": "pnpm exec tsx tools/tests/run-critical-tests.ts",
+    "test:e2e:public-api-full": "node tools/tests/smoke-public-api.mjs --include-mutating",
     "test:e2e:public-api-cleanup": "node tools/tests/public-api-key-lifecycle-e2e.mjs",
     "test:pwa": "vitest run tests/pwa/pwa.spec.ts --config vitest.config.ts --reporter=dot",
     "test:pwa:local": "node scripts/pwa/test-local.js",

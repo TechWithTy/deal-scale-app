@@ -17,11 +17,18 @@ const REPORT_PATH = path.join(
 const METHODS_WITH_BODY = new Set(["PATCH", "POST", "PUT"]);
 const SAFE_STATUS_MAX = 499;
 const PROVIDER_NOT_CONFIGURED = "PROVIDER_NOT_CONFIGURED";
+const REQUEST_TIMEOUT_MS = Number(
+	process.env.DEAL_SCALE_SMOKE_TIMEOUT_MS || 30_000,
+);
+const SENSITIVE_FIELD_PATTERN =
+	/(^|_)(api_key|access_token|refresh_token|password|secret|token)$/i;
 const TEST_EMAIL =
 	process.env.DEAL_SCALE_SMOKE_EMAIL || `codex-smoke-${Date.now()}@example.com`;
 const TEST_PASSWORD =
 	process.env.DEAL_SCALE_SMOKE_PASSWORD || `CodexSmoke${Date.now()}!`;
-const INCLUDE_MUTATING = process.env.DEAL_SCALE_SMOKE_MUTATING === "1";
+const INCLUDE_MUTATING =
+	process.env.DEAL_SCALE_SMOKE_MUTATING === "1" ||
+	process.argv.includes("--include-mutating");
 const MUTATING_ALLOWLIST = new Set(
 	(process.env.DEAL_SCALE_SMOKE_ALLOWLIST || "")
 		.split(",")
@@ -121,7 +128,10 @@ function buildBody(operation) {
 }
 
 async function requestJson(url, init) {
-	const response = await fetch(url, init);
+	const response = await fetch(url, {
+		...init,
+		signal: init?.signal || AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+	});
 	const text = await response.text();
 
 	try {
@@ -129,6 +139,22 @@ async function requestJson(url, init) {
 	} catch {
 		return { body: text.slice(0, 500), response };
 	}
+}
+
+function redactSensitive(value) {
+	if (Array.isArray(value)) {
+		return value.map(redactSensitive);
+	}
+	if (!value || typeof value !== "object") {
+		return value;
+	}
+
+	return Object.fromEntries(
+		Object.entries(value).map(([key, child]) => [
+			key,
+			SENSITIVE_FIELD_PATTERN.test(key) ? "[REDACTED]" : redactSensitive(child),
+		]),
+	);
 }
 
 async function authenticate() {
@@ -218,12 +244,20 @@ async function smokeOperation(method, pathTemplate, operation) {
 		const { body, response } = await requestJson(url, init);
 		const isExpectedProviderUnavailable =
 			response.status === 503 && body?.error?.code === PROVIDER_NOT_CONFIGURED;
+		const outcome = isExpectedProviderUnavailable
+			? "expected_provider_unavailable"
+			: response.status < 400
+				? "success"
+				: response.status < 500
+					? "controlled_client_error"
+					: "failure";
 
 		return {
 			durationMs: Date.now() - startedAt,
 			method,
 			ok: response.status <= SAFE_STATUS_MAX || isExpectedProviderUnavailable,
 			operationId: operation.operationId,
+			outcome,
 			path: pathTemplate,
 			responsePreview: body,
 			status: response.status,
@@ -244,35 +278,124 @@ async function smokeOperation(method, pathTemplate, operation) {
 	}
 }
 
+async function cleanupResources(results) {
+	const token = tokenByScheme.get("BearerAuth");
+	const headers = { Authorization: `Bearer ${token}` };
+	const createdKeyIds = results
+		.filter((result) => result.operationId === "ApiKeys-create_user_api_key")
+		.map((result) => result.responsePreview?.key_id)
+		.filter(Boolean);
+	const revokedKeyIds = [];
+
+	for (const keyId of createdKeyIds) {
+		const { response } = await requestJson(
+			new URL(`/api/v1/api-keys/${encodeURIComponent(keyId)}`, API_BASE_URL),
+			{ headers, method: "DELETE" },
+		);
+		if (![200, 404].includes(response.status)) {
+			throw new Error(
+				`API key cleanup failed for ${keyId}: ${response.status}`,
+			);
+		}
+		revokedKeyIds.push(keyId);
+	}
+
+	const { body: keys, response: listResponse } = await requestJson(
+		new URL("/api/v1/api-keys/", API_BASE_URL),
+		{ headers, method: "GET" },
+	);
+	if (
+		listResponse.status !== 200 ||
+		!Array.isArray(keys) ||
+		createdKeyIds.some((keyId) =>
+			keys.some((key) => key.id === keyId || key.key_id === keyId),
+		)
+	) {
+		throw new Error("API key cleanup verification failed");
+	}
+
+	const { response: cartResponse } = await requestJson(
+		new URL("/api/v1/cart", API_BASE_URL),
+		{ headers, method: "DELETE" },
+	);
+	if (cartResponse.status !== 200) {
+		throw new Error(`Cart cleanup failed: ${cartResponse.status}`);
+	}
+
+	return {
+		apiKeysRevoked: revokedKeyIds.length,
+		cartCleared: true,
+		verified: true,
+	};
+}
+
 async function main() {
 	const auth = await authenticate();
 	const operations = [];
+	const deferredOperations = [];
 
 	for (const [pathTemplate, pathItem] of Object.entries(spec.paths)) {
 		for (const [method, operation] of Object.entries(pathItem)) {
-			operations.push([method.toUpperCase(), pathTemplate, operation]);
+			const entry = [method.toUpperCase(), pathTemplate, operation];
+			if (operation.operationId === "Authentication-logout") {
+				deferredOperations.push(entry);
+			} else {
+				operations.push(entry);
+			}
 		}
 	}
-
 	const results = [];
 	for (const [method, pathTemplate, operation] of operations) {
+		results.push(await smokeOperation(method, pathTemplate, operation));
+	}
+
+	let cleanup = { verified: false };
+	try {
+		if (INCLUDE_MUTATING) {
+			cleanup = await cleanupResources(results);
+		}
+	} catch (error) {
+		cleanup = { error: error.message, verified: false };
+	}
+
+	for (const [method, pathTemplate, operation] of deferredOperations) {
 		results.push(await smokeOperation(method, pathTemplate, operation));
 	}
 
 	const summary = {
 		apiBaseUrl: API_BASE_URL,
 		auth,
+		cleanup,
 		failed: results.filter((result) => !result.ok).length,
 		generatedAt: new Date().toISOString(),
 		mutatingAllowlist: Array.from(MUTATING_ALLOWLIST).sort(),
 		mutatingEnabled: INCLUDE_MUTATING,
+		outcomes: {
+			controlledClientErrors: results.filter(
+				(result) => result.outcome === "controlled_client_error",
+			).length,
+			expectedProviderUnavailable: results.filter(
+				(result) => result.outcome === "expected_provider_unavailable",
+			).length,
+			success: results.filter((result) => result.outcome === "success").length,
+		},
 		passed: results.filter((result) => result.ok && !result.skipped).length,
 		skipped: results.filter((result) => result.skipped).length,
 		total: results.length,
 	};
 
-	writeFileSync(REPORT_PATH, JSON.stringify({ results, summary }, null, 2));
+	writeFileSync(
+		REPORT_PATH,
+		JSON.stringify(redactSensitive({ results, summary }), null, 2),
+	);
 	console.log(JSON.stringify(summary, null, 2));
+
+	if (
+		INCLUDE_MUTATING &&
+		(summary.failed > 0 || summary.skipped > 0 || !cleanup.verified)
+	) {
+		process.exitCode = 1;
+	}
 }
 
 main().catch((error) => {

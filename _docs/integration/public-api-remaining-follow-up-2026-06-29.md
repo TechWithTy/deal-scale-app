@@ -1,133 +1,99 @@
 # Public API Remaining Follow-Up - 2026-06-29
 
-## Current Smoke Status
+## Full E2E Status
 
 - API base URL: `https://api.dealscale.io`
-- Generated at: `2026-06-29T19:07:52.607Z`
-- Total OpenAPI operations: `173`
-- Passed: `72`
-- Failed: `2`
-- Skipped: `99`
+- Generated at: `2026-06-29T19:48:24.170Z`
+- OpenAPI operations executed: `173`
+- Successful responses: `67`
+- Controlled client errors: `91`
+- Expected provider-unavailable responses: `3`
+- Failed: `12`
+- Skipped: `0`
+- API keys revoked during cleanup: `1`
+- Cart cleanup: passed
+- Logout: passed
+- Command exit status: failed as expected while endpoint failures remain
 
-## Resolved In Latest Deployment
-
-The prior generic `500` failures are fixed:
-
-- `GET /api/v1/messaging/facebook/threads/{recipient_id}`
-  - Now returns `400 VALIDATION_ERROR`
-  - Previously returned generic `500 SERVER_ERROR`
-- `GET /api/v1/messaging/linkedin/threads/{recipient_id}`
-  - Now returns `400 VALIDATION_ERROR`
-  - Previously returned generic `500 SERVER_ERROR`
-
-## Remaining Smoke Failures
-
-These are controlled provider-configuration responses. They still count as
-smoke failures only because the smoke script treats all `5xx` responses as
-failures.
-
-### GHL Google Calendar OAuth
-
-- Endpoint: `GET /api/v1/integrations/ghl/calendar/auth-url`
-- Status: `503`
-- Error code: `PROVIDER_NOT_CONFIGURED`
-- Message: `GoHighLevel Google Calendar OAuth is not configured.`
-- Request ID: `eb66c22461ae2dc1345e18044aa12d4e`
-
-Decision needed:
-
-- Configure GHL Google Calendar OAuth in production, or
-- Accept this as an expected unavailable-provider response.
-
-### USPS Address Verification
-
-- Endpoint: `GET /api/v1/usps/verify-address`
-- Status: `503`
-- Error code: `PROVIDER_NOT_CONFIGURED`
-- Message: `USPS provider is not configured`
-- Request ID: `9b4ce2768ccaa0d2ed39ae47ec4c8216`
-
-Decision needed:
-
-- Configure USPS in production, or
-- Accept this as an expected unavailable-provider response.
-
-## Repo Follow-Up
-
-If controlled provider `503` responses are acceptable, update:
-
-```text
-tools/tests/smoke-public-api.mjs
-```
-
-Current behavior:
-
-```js
-const SAFE_STATUS_MAX = 499;
-ok: response.status <= SAFE_STATUS_MAX;
-```
-
-Recommended behavior:
-
-- Count `503` as pass only when
-  `responsePreview.error.code === "PROVIDER_NOT_CONFIGURED"`.
-
-Expected result after smoke policy update:
-
-- Generic `500` count: `0`
-- Controlled provider-unavailable responses: pass
-- Smoke failures: `0`, assuming no new regressions
-
-## Backend Follow-Up Still Recommended
-
-### Internal DB Error Leakage
-
-The following endpoints return `401 AUTH_REQUIRED`, but expose internal database
-resolution details:
-
-- `GET /api/v1/admin/users/search`
-- `GET /api/v1/admin/users/{user_id}/logs`
-- `GET /api/v1/secrets/status`
-- `GET /api/v1/secrets/rotation-status`
-
-Current message includes:
-
-```text
-psycopg.OperationalError failed to resolve host 'dpg-d1455bvfte5s73e00r40-a'
-```
-
-Recommended fix:
-
-- Return a stable public auth error message.
-- Log DB/driver details server-side only.
-- Verify whether the unresolved DB hostname indicates a real production config
-  issue.
-
-### Sentiment Runtime Dependency
-
-- Endpoint: `GET /api/v1/sentiment/analyze`
-- Status: `400 VALIDATION_ERROR`
-- Issue: public response reports missing TextBlob/NLTK corpora.
-
-Recommended fix:
-
-- Bundle required corpora in the runtime image if sentiment is enabled.
-- Otherwise return a controlled unavailable/configuration response instead of
-  dependency installation instructions.
-
-## Verification
-
-Run:
+Run the complete suite with:
 
 ```bash
-node tools/tests/smoke-public-api.mjs
+pnpm test:e2e:public-api-full
 ```
 
-Success criteria:
+## Backend Failures
 
-- No generic `500` responses.
-- Facebook and LinkedIn thread lookups remain `400 VALIDATION_ERROR` for
-  placeholder IDs.
-- GHL and USPS either return `200` after provider configuration or controlled
-  `503 PROVIDER_NOT_CONFIGURED`.
-- Public responses do not leak internal infrastructure details.
+The following operations returned `500 SERVER_ERROR`:
+
+| Method | Endpoint | Observed issue |
+| --- | --- | --- |
+| `POST` | `/api/v1/auth/social` | Generic unexpected server error |
+| `PUT` | `/api/v1/auth/profile-setup` | Failed to update profile setup |
+| `DELETE` | `/api/v1/integrations/ghl/calendar/` | Generic unexpected server error |
+| `POST` | `/api/v1/affiliates/payout/request` | `AffiliateService.request_payout` is missing |
+| `POST` | `/api/v1/affiliates/links/generate` | `AffiliateService.generate_referral_link` is missing |
+| `POST` | `/api/v1/credits/transfer` | A domain `400` for insufficient credits is incorrectly wrapped as `500` |
+| `POST` | `/api/v1/twilio/receive` | Generic unexpected server error |
+| `POST` | `/api/v1/messaging/direct-mail/send` | Code expects an object with `id` but receives a dictionary |
+| `POST` | `/api/v1/messaging/facebook/send` | Generic unexpected server error |
+| `POST` | `/api/v1/messaging/facebook/comment-to-dm` | Generic unexpected server error |
+| `POST` | `/api/v1/messaging/linkedin/send` | Generic unexpected server error |
+
+The following operation exceeded the E2E request timeout:
+
+| Method | Endpoint | Failure |
+| --- | --- | --- |
+| `POST` | `/api/v1/enrich/sherlock_username` | Aborted after `30,000 ms` |
+
+## Response Contract Issues
+
+Several operations return `200` while their response message describes an
+application failure. These should return an appropriate `4xx` or `5xx` envelope:
+
+- `POST /api/v1/testers/apply`: `Internal error processing application`
+- `POST /api/v1/cart/items/{item_id}`: `Item not found in cart`
+- `DELETE /api/v1/cart/items/{item_id}`: `Item not found in cart`
+- `POST /api/v1/cart/checkout`: `Error processing checkout`
+
+## Provider Configuration
+
+The following remain expected controlled states:
+
+- GHL Google Calendar OAuth: `503 PROVIDER_NOT_CONFIGURED`
+- USPS address verification: `503 PROVIDER_NOT_CONFIGURED`
+
+The E2E runner accepts these only when the top-level error code is exactly
+`PROVIDER_NOT_CONFIGURED`. Other `5xx` responses fail.
+
+## Cleanup And Safety
+
+The full E2E runner now:
+
+- Executes mutating and read-only operations with zero skips.
+- Defers logout until all authenticated operations and cleanup complete.
+- Revokes API keys created during the run and verifies they are absent.
+- Clears the test account cart.
+- Redacts access tokens, refresh tokens, API keys, passwords, and secrets from
+  the saved report.
+- Aborts individual requests after 30 seconds.
+- Exits nonzero for endpoint failures, skipped operations, or cleanup failures.
+
+Production does not expose a public account-deletion endpoint. When reusable
+test credentials are not configured, signup-based runs leave the temporary user
+and domain records without deletion APIs, such as affiliate applications.
+
+Recommended backend support:
+
+- Add an authenticated test-account teardown endpoint restricted to nonproduction
+  environments, or provide a scheduled cleanup job keyed by an E2E run ID.
+- Provide sandbox provider credentials and destinations for messaging, payments,
+  voice, enrichment, and direct mail success-path tests.
+- Add delete/reset operations for test-owned affiliate, tester, campaign, team,
+  and provider resources.
+
+## Additional Existing Follow-Up
+
+- Auth-gated admin and secrets responses must not expose database resolution
+  details in public `401` messages.
+- Sentiment endpoints should bundle required TextBlob/NLTK corpora or return a
+  controlled provider/runtime-unavailable response.
