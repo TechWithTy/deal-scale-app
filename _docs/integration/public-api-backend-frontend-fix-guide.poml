@@ -1,0 +1,197 @@
+<poml version="3.0">
+  <metadata>
+    <title>Deal Scale Public API Backend and Frontend Fix Guide</title>
+    <date>2026-06-23</date>
+    <source>reports/public-api-smoke-latest.json</source>
+    <source>_docs/integration/public-api-smoke-triage-2026-06-23.md</source>
+  </metadata>
+
+  <role>
+    Act as the lead full-stack repair agent for the Deal Scale public API
+    integration. Separate backend FastAPI defects from frontend Next.js gateway
+    work. Fix root causes with small, verifiable changes and rerun the
+    authenticated smoke audit after each meaningful backend batch.
+  </role>
+
+  <context>
+    <project name="Deal Scale">
+      <frontend>Next.js app in this repository</frontend>
+      <backend>FastAPI service hosted at https://api.dealscale.io</backend>
+      <api_contract>OpenAPI 3.1 document at public/openapi/deal-scale-public.openapi.json</api_contract>
+      <gateway>Next.js catch-all proxy at /api/v1/*</gateway>
+    </project>
+
+    <smoke_run>
+      <api_base_url>https://api.dealscale.io</api_base_url>
+      <authenticated>true</authenticated>
+      <signup_status>201</signup_status>
+      <login_status>200</login_status>
+      <total_operations>173</total_operations>
+      <tested_non_mutating_operations>74</tested_non_mutating_operations>
+      <passing_non_mutating_responses>55</passing_non_mutating_responses>
+      <server_failures>19</server_failures>
+      <mutating_operations_skipped>99</mutating_operations_skipped>
+    </smoke_run>
+
+    <targeted_smoke_run date="2026-06-28">
+      <api_base_url>https://api.dealscale.io</api_base_url>
+      <github_actions_run>28336435460</github_actions_run>
+      <deployment_status>success</deployment_status>
+      <report>reports/public-api-targeted-smoke-2026-06-28.json</report>
+      <targeted_checks>9</targeted_checks>
+      <server_failures>0</server_failures>
+      <verified>
+        <endpoint method="POST" path="/api/v1/auth/signup" status="201" />
+        <endpoint method="GET" path="/api/v1/auth/me" status="200" />
+        <endpoint method="GET" path="/api/v1/auth/profile-setup" status="200" />
+        <endpoint method="GET" path="/api/v1/affiliates/commissions" status="200" />
+        <endpoint method="GET" path="/api/v1/affiliates/payouts" status="200" />
+        <endpoint method="GET" path="/api/v1/affiliates/profile" status="200" />
+        <endpoint method="GET" path="/api/v1/affiliates/admin/applications" status="403" />
+        <endpoint method="GET" path="/api/v1/credits/expiring" status="200" />
+        <endpoint method="GET" path="/api/v1/credits/admin/stats" status="403" />
+      </verified>
+    </targeted_smoke_run>
+  </context>
+
+  <principles>
+    <rule>Do not treat frontend gateway code as the source of backend 500/503 responses unless proxy tests fail.</rule>
+    <rule>Backend handlers must not return 500 for expected auth, validation, missing-resource, unsupported-provider, or non-admin cases.</rule>
+    <rule>Admin routes called by a non-admin test user should return 401 or 403, not 500.</rule>
+    <rule>Fake IDs, fake providers, and empty result sets should return 400, 404, or an empty 200 response, not generic 500.</rule>
+    <rule>Provider configuration problems should return a controlled 503 with a clear provider-not-configured error.</rule>
+    <rule>Run mutating endpoint tests only with an explicit allowlist and known safe payloads.</rule>
+  </principles>
+
+  <backend_fixes priority="highest">
+    <section name="Authentication Profile" status="deployed_verified_2026-06-28">
+      <failure endpoint="GET /api/v1/auth/me" status="500" request_id="4e7c6b9e67e86361ae84e1cc84868e1a">
+        UserResponse validation rejects first_name and last_name when they are None.
+      </failure>
+      <failure endpoint="GET /api/v1/auth/profile-setup" status="500" request_id="9e7d152fd76541ff901283ed86bf58a5">
+        Profile setup lookup fails for a newly created user.
+      </failure>
+      <actions>
+        <step>Inspect signup persistence for first_name and last_name. The smoke user supplied both values, so determine whether signup drops them or profile reads from a different table.</step>
+        <step>Normalize response values before building UserResponse, or update the Pydantic schema to allow nullable names if null is valid business state.</step>
+        <step>Ensure newly created users have a profile_setup_status row or a deterministic default response.</step>
+        <step>Add backend tests for signup followed by /auth/me and /auth/profile-setup without email verification.</step>
+      </actions>
+      <acceptance>
+        <assertion>New test user can call GET /api/v1/auth/me and receive 200.</assertion>
+        <assertion>New test user can call GET /api/v1/auth/profile-setup and receive 200 or a documented 404/204 state, never 500.</assertion>
+      </acceptance>
+    </section>
+
+    <section name="Missing Affiliate Service Methods" status="deployed_verified_2026-06-28">
+      <failure endpoint="GET /api/v1/affiliates/commissions" request_id="a7f80e61a76ca5cf81c458bf7d40a2d4">AffiliateService.get_commission_history is missing.</failure>
+      <failure endpoint="GET /api/v1/affiliates/payouts" request_id="02d574300023c7a8c8ebde9b789f3404">AffiliateService.get_payout_history is missing.</failure>
+      <failure endpoint="GET /api/v1/affiliates/profile" request_id="dc559c41546a56d10464f29d4d30e71b">AffiliateService.get_affiliate_profile is missing.</failure>
+      <failure endpoint="GET /api/v1/affiliates/admin/applications" request_id="e02fd35a9d838b8f7af911b2c03bbf21">AffiliateService.check_is_admin is missing.</failure>
+      <actions>
+        <step>Search the FastAPI backend for renamed affiliate service methods before adding new ones.</step>
+        <step>If methods were renamed, update route handlers to call the current service API.</step>
+        <step>If methods do not exist, implement them with empty-state behavior for new users.</step>
+        <step>Move admin authorization into a shared dependency or service helper that returns 403 for non-admin users.</step>
+      </actions>
+      <acceptance>
+        <assertion>Non-admin test user receives 200 empty affiliate state or 403 for admin-only routes.</assertion>
+        <assertion>No affiliate GET endpoint returns AttributeError or 500 for missing methods.</assertion>
+      </acceptance>
+    </section>
+
+    <section name="Credits Service" status="deployed_verified_2026-06-28">
+      <failure endpoint="GET /api/v1/credits/expiring" request_id="9e63201b9c0d8d6eddb9240aba0f2dd5">Failed to check expiring credits.</failure>
+      <failure endpoint="GET /api/v1/credits/admin/stats" request_id="cf5827c363fc156ed63fe48b27e00a71">app.services.credit_service.check_is_admin is missing.</failure>
+      <actions>
+        <step>Implement or redirect check_is_admin to the backend's canonical role/permission helper.</step>
+        <step>Return empty expiring-credit results for users with no credits instead of 500.</step>
+        <step>Add tests for new user credit balances and expiring-credit lookup.</step>
+      </actions>
+    </section>
+
+    <section name="Production Infrastructure" status="pending_environment_fix">
+      <failure endpoint="GET /api/v1/messaging/direct-mail/campaigns/{campaign_id}" status="503" request_id="28f5086c6b46e26aae02115e6e7117bf">
+        Backend is trying to connect to Redis/Valkey at 127.0.0.1:6379 in production.
+      </failure>
+      <failure endpoint="GET /api/v1/usps/verify-address" status="500" request_id="7e64833424b8edbe89b44c6ee1639cc1">
+        USPS_API_TOKEN is not set.
+      </failure>
+      <actions>
+        <step>Set production Redis/Valkey URL to a managed service endpoint; do not use localhost in hosted production.</step>
+        <step>Set USPS_API_TOKEN if USPS lookup should be enabled in production.</step>
+        <step>If USPS is optional, return 503 PROVIDER_NOT_CONFIGURED instead of 500.</step>
+      </actions>
+    </section>
+
+    <section name="Generic 500s" status="pending_full_smoke_rerun_and_log_correlation">
+      <failures>
+        <endpoint request_id="98ecc6c6b3b83bfa97bceedf63de7a0c">GET /api/v1/prospecting/search</endpoint>
+        <endpoint request_id="9d60aea27a2f01576ca78b80c1c88a79" error_id="8876a788-4f46-4645-96d1-5d7722afaa88">GET /api/v1/integrations/ghl/calendar/auth-url</endpoint>
+        <endpoint request_id="b799b4e588b0513d7832206846c55d19" error_id="4df2bfeb-b30c-49c0-b548-1c81c9c3892d">GET /api/v1/integrations/ghl/calendar/status</endpoint>
+        <endpoint request_id="c4fad21a2ff10e25c949d601a5ce326d" error_id="60f675f2-b2e3-4b3d-9792-1be5b5f08376">GET /api/v1/credentials/{provider}</endpoint>
+        <endpoint request_id="217d73cc31abc2b674dceec5986609a0" error_id="776f9d58-ab28-4bc9-bdcb-21aac0a8d77b">GET /api/v1/credentials/</endpoint>
+        <endpoint request_id="6ce4fd3301222b48dc1dbdc5b700b2e9" error_id="71b5dcb2-8e7a-48c5-afc0-f1b8f85af8ff">GET /api/v1/twilio/threads/{recipient}</endpoint>
+        <endpoint request_id="e24169a2a2b6e6a2a369c3a0da644725" error_id="dfb43367-7e61-4c9a-96fb-52960247df9d">GET /api/v1/messaging/facebook/threads/{recipient_id}</endpoint>
+        <endpoint request_id="798805b7a594fa4c0e2c90d34e4f445d" error_id="397013b7-1708-44e3-bc5f-746700266d99">GET /api/v1/messaging/linkedin/threads/{recipient_id}</endpoint>
+        <endpoint request_id="33b8c7ee62d692f843a1c7758409c587" error_id="e83802ec-0ed0-4689-b4d1-2d3f2b651b81">GET /api/v1/realphonevalidation/dnc/lookup/{phone}</endpoint>
+      </failures>
+      <actions>
+        <step>Use request_id and error_id values to correlate production logs.</step>
+        <step>For unsupported fake providers or placeholder IDs, return 400 or 404.</step>
+        <step>For missing third-party credentials, return 401, 403, or 503 with a stable error code.</step>
+        <step>Add endpoint-level tests that assert no placeholder smoke input can trigger a generic 500.</step>
+      </actions>
+    </section>
+  </backend_fixes>
+
+  <frontend_fixes priority="supporting">
+    <section name="Already Implemented">
+      <item>Next.js gateway at /api/v1/* validates paths and methods against the OpenAPI contract.</item>
+      <item>Gateway defaults to https://api.dealscale.io and supports DEAL_SCALE_API_BASE_URL=http://localhost:8000 for local FastAPI testing.</item>
+      <item>Gateway blocks recursive proxying to the current Next.js origin.</item>
+      <item>Authenticated safe smoke runner exists at tools/tests/smoke-public-api.mjs.</item>
+      <item>Frontend public API client exists at lib/api/public-api-client.ts and preserves backend request_id values for support diagnostics.</item>
+      <item>Auth/profile frontend hook exists at hooks/usePublicApiProfile.ts and exposes loading, error, provider-unavailable, user, and profile setup state.</item>
+      <item>Dashboard profile page adopts usePublicApiProfile through ProfilePublicApiStatus and renders classified support diagnostics for public API failures.</item>
+    </section>
+
+    <section name="Frontend Work Still Worth Doing">
+      <actions>
+        <step>Use PublicApiError.kind to render 401, 403, 404, 422, 5xx, and provider-unavailable states consistently.</step>
+        <step>Do not mask backend 500s as frontend success; show getPublicApiSupportLabel output in support diagnostics.</step>
+        <step>Keep mutating smoke tests allowlisted only. Never enable DEAL_SCALE_SMOKE_MUTATING=1 for broad remote runs.</step>
+        <step>After backend environment fixes, rerun the broad OpenAPI non-mutating smoke runner and update the triage report.</step>
+      </actions>
+    </section>
+
+    <section name="Deployment Status" status="targeted_backend_fixes_verified">
+      <item>Production deployment completed through GitHub Actions run 28336435460.</item>
+      <item>Targeted production smoke on 2026-06-28 found zero server failures across the auth, affiliate, and credit endpoints fixed on 2026-06-25.</item>
+      <item>Remaining open work is production Redis/Valkey configuration, USPS provider configuration if required, and broad OpenAPI smoke rerun/log correlation.</item>
+    </section>
+
+    <section name="Localhost Testing">
+      <actions>
+        <step>Use DEAL_SCALE_API_BASE_URL=http://localhost:8000 when a local FastAPI backend is running.</step>
+        <step>Use DEAL_SCALE_API_BASE_URL=https://api.dealscale.io when testing against the hosted backend.</step>
+        <step>If Next dev fails with .next cache errors, stop the dev server, clear .next, and restart pnpm dev before judging gateway behavior.</step>
+      </actions>
+    </section>
+  </frontend_fixes>
+
+  <verification>
+    <commands>
+      <command>node tools/tests/smoke-public-api.mjs</command>
+      <command>pnpm exec vitest run _tests/api/v1/public-api-proxy.test.ts --config vitest.config.ts</command>
+      <command>pnpm typecheck</command>
+    </commands>
+    <success_criteria>
+      <criterion>Authenticated signup/login still succeeds without email verification.</criterion>
+      <criterion>Safe smoke audit reports zero 500 and zero 503 responses.</criterion>
+      <criterion>Admin-only routes return 403 for the smoke user, not 500.</criterion>
+      <criterion>Provider-not-configured cases return controlled 503 responses with stable error codes.</criterion>
+      <criterion>Frontend gateway tests remain green.</criterion>
+    </success_criteria>
+  </verification>
+</poml>

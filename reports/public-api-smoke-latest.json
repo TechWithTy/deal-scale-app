@@ -1,0 +1,3207 @@
+{
+  "results": [
+    {
+      "method": "POST",
+      "ok": true,
+      "operationId": "Authentication-signup",
+      "path": "/api/v1/auth/signup",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "Authentication"
+    },
+    {
+      "method": "POST",
+      "ok": true,
+      "operationId": "Authentication-login",
+      "path": "/api/v1/auth/login",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "Authentication"
+    },
+    {
+      "method": "POST",
+      "ok": true,
+      "operationId": "Authentication-logout",
+      "path": "/api/v1/auth/logout",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "Authentication"
+    },
+    {
+      "method": "POST",
+      "ok": true,
+      "operationId": "Authentication-social_oauth_linkage",
+      "path": "/api/v1/auth/social",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "Authentication"
+    },
+    {
+      "method": "POST",
+      "ok": true,
+      "operationId": "Authentication-revoke_social_oauth",
+      "path": "/api/v1/auth/social/revoke",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "Authentication"
+    },
+    {
+      "method": "POST",
+      "ok": true,
+      "operationId": "Authentication-refresh_social_oauth",
+      "path": "/api/v1/auth/social/refresh",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "Authentication"
+    },
+    {
+      "method": "POST",
+      "ok": true,
+      "operationId": "Authentication-send_phone_otp",
+      "path": "/api/v1/auth/phone/send-otp",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "Authentication"
+    },
+    {
+      "method": "POST",
+      "ok": true,
+      "operationId": "Authentication-verify_phone_otp",
+      "path": "/api/v1/auth/phone/verify-otp",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "Authentication"
+    },
+    {
+      "method": "POST",
+      "ok": true,
+      "operationId": "Authentication-reset_password",
+      "path": "/api/v1/auth/reset-password",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "Authentication"
+    },
+    {
+      "method": "POST",
+      "ok": true,
+      "operationId": "Authentication-set_password",
+      "path": "/api/v1/auth/set-password",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "Authentication"
+    },
+    {
+      "method": "POST",
+      "ok": true,
+      "operationId": "Authentication-refresh_token",
+      "path": "/api/v1/auth/refresh",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "Authentication"
+    },
+    {
+      "durationMs": 948,
+      "method": "GET",
+      "ok": true,
+      "operationId": "Authentication-get_profile_setup",
+      "path": "/api/v1/auth/profile-setup",
+      "responsePreview": {
+        "status": "NOT_STARTED",
+        "progress_percentage": 0,
+        "steps_completed": {
+          "basic_info_completed": false,
+          "preferences_set": false,
+          "payment_method_added": false,
+          "email_verified": false,
+          "phone_verified": false
+        },
+        "created_at": null,
+        "updated_at": null
+      },
+      "status": 200,
+      "tag": "Authentication",
+      "url": "https://api.dealscale.io/api/v1/auth/profile-setup"
+    },
+    {
+      "method": "PUT",
+      "ok": true,
+      "operationId": "Authentication-update_profile_setup",
+      "path": "/api/v1/auth/profile-setup",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "Authentication"
+    },
+    {
+      "durationMs": 936,
+      "method": "GET",
+      "ok": true,
+      "operationId": "Authentication-get_current_user_profile",
+      "path": "/api/v1/auth/me",
+      "responsePreview": {
+        "id": "6a25b7a7-7f55-4e61-a814-b56c28dd231d",
+        "email": "codex-smoke-1782760878197@example.com",
+        "first_name": "Codex",
+        "last_name": "Smoke",
+        "is_active": true,
+        "email_verified": false,
+        "profile_setup_status": "NOT_STARTED",
+        "created_at": "2026-06-29T19:21:19.066086Z",
+        "last_login": null,
+        "total_credits": 0,
+        "available_credits": 0,
+        "reserved_credits": 0,
+        "used_credits": 0,
+        "ai_credits": 0,
+        "lead_credits": 0,
+        "skip_trace_credits": 0,
+        "credit_breakdown": {
+          "ai": {
+            "available": 0,
+            "total": 0,
+            "reserved": 0,
+            "spent": 0
+          }
+        }
+      },
+      "status": 200,
+      "tag": "Authentication",
+      "url": "https://api.dealscale.io/api/v1/auth/me"
+    },
+    {
+      "durationMs": 706,
+      "method": "GET",
+      "ok": true,
+      "operationId": "Authentication-get_oauth_credentials",
+      "path": "/api/v1/auth/oauth/credentials",
+      "responsePreview": {
+        "credentials": [],
+        "total": 0
+      },
+      "status": 200,
+      "tag": "Authentication",
+      "url": "https://api.dealscale.io/api/v1/auth/oauth/credentials"
+    },
+    {
+      "durationMs": 160,
+      "method": "GET",
+      "ok": true,
+      "operationId": "Payments-get_pricing_tiers",
+      "path": "/api/v1/payments/pricing/tiers",
+      "responsePreview": {
+        "tiers": [
+          {
+            "name": "100+ Credits",
+            "credits": 100,
+            "price": 9,
+            "discount": 10,
+            "price_per_credit": 0.09,
+            "savings": 1
+          },
+          {
+            "name": "500+ Credits",
+            "credits": 500,
+            "price": 40,
+            "discount": 20,
+            "price_per_credit": 0.08,
+            "savings": 10
+          },
+          {
+            "name": "1000+ Credits",
+            "credits": 1000,
+            "price": 75,
+            "discount": 25,
+            "price_per_credit": 0.075,
+            "savings": 25
+          }
+        ],
+        "base_price_per_credit": 0.1,
+        "currency": "usd",
+        "description": "Bulk discounts applied automatically based on credit amount",
+        "available_credit_types": [
+          {
+            "value": "ai",
+            "display": "AI Credits"
+          },
+          {
+            "value": "lead",
+            "display": "Lead Credits"
+          },
+          {
+            "value": "skip_trace",
+            "display": "Skip Trace Credits"
+          },
+          {
+            "value": "custom",
+            "display": "Custom Credits"
+          }
+        ]
+      },
+      "status": 200,
+      "tag": "Payments",
+      "url": "https://api.dealscale.io/api/v1/payments/pricing/tiers"
+    },
+    {
+      "durationMs": 170,
+      "method": "GET",
+      "ok": true,
+      "operationId": "Payments-get_credit_pricing",
+      "path": "/api/v1/payments/pricing/{credits}",
+      "responsePreview": {
+        "credits": 1,
+        "total_price": 0.1,
+        "base_price": 0.1,
+        "savings_amount": 0,
+        "savings_percentage": 0,
+        "price_per_credit": 0.1,
+        "currency": "usd",
+        "credit_type": "ai",
+        "credit_type_display": "AI Credits"
+      },
+      "status": 200,
+      "tag": "Payments",
+      "url": "https://api.dealscale.io/api/v1/payments/pricing/1"
+    },
+    {
+      "durationMs": 553,
+      "method": "GET",
+      "ok": true,
+      "operationId": "Payments-get_credit_balances",
+      "path": "/api/v1/payments/balances",
+      "responsePreview": {
+        "user_id": "6a25b7a7-7f55-4e61-a814-b56c28dd231d",
+        "total_available": 0,
+        "total_reserved": 0,
+        "total_earned": 0,
+        "total_spent": 0,
+        "by_type": {
+          "ai": {
+            "available": 0,
+            "reserved": 0,
+            "earned": 0,
+            "spent": 0,
+            "lifetime_earned": 0
+          },
+          "lead": {
+            "available": 0,
+            "reserved": 0,
+            "earned": 0,
+            "spent": 0,
+            "lifetime_earned": 0
+          },
+          "skip_trace": {
+            "available": 0,
+            "reserved": 0,
+            "earned": 0,
+            "spent": 0,
+            "lifetime_earned": 0
+          }
+        },
+        "totals": {
+          "available": 0,
+          "reserved": 0,
+          "earned": 0,
+          "spent": 0
+        },
+        "balances": {
+          "ai": {
+            "available_credits": 0,
+            "reserved_credits": 0,
+            "total_earned": 0,
+            "total_spent": 0,
+            "lifetime_earned": 0
+          },
+          "lead": {
+            "available_credits": 0,
+            "reserved_credits": 0,
+            "total_earned": 0,
+            "total_spent": 0,
+            "lifetime_earned": 0
+          },
+          "skip_trace": {
+            "available_credits": 0,
+            "reserved_credits": 0,
+            "total_earned": 0,
+            "total_spent": 0,
+            "lifetime_earned": 0
+          },
+          "custom": {
+            "available_credits": 0,
+            "reserved_credits": 0,
+            "total_earned": 0,
+            "total_spent": 0,
+            "lifetime_earned": 0
+          }
+        },
+        "credit_types": [
+          {
+            "value": "ai",
+            "display": "AI Credits"
+          },
+          {
+            "value": "lead",
+            "display": "Lead Credits"
+          },
+          {
+            "value": "skip_trace",
+            "display": "Skip Trace Credits"
+          }
+        ],
+        "last_updated": "2026-06-29T19:21:26.111588"
+      },
+      "status": 200,
+      "tag": "Payments",
+      "url": "https://api.dealscale.io/api/v1/payments/balances"
+    },
+    {
+      "method": "POST",
+      "ok": true,
+      "operationId": "Payments-create_checkout_session",
+      "path": "/api/v1/payments/checkout",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "Payments"
+    },
+    {
+      "method": "POST",
+      "ok": true,
+      "operationId": "Payments-stripe_webhook",
+      "path": "/api/v1/payments/webhook",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "Payments"
+    },
+    {
+      "durationMs": 389,
+      "method": "GET",
+      "ok": true,
+      "operationId": "ApiKeys-get_available_scopes",
+      "path": "/api/v1/api-keys/scopes",
+      "responsePreview": {
+        "scopes": [
+          {
+            "scope": "read:profile",
+            "description": "Read user profile information"
+          },
+          {
+            "scope": "write:profile",
+            "description": "Update user profile information"
+          },
+          {
+            "scope": "read:data",
+            "description": "Read user data (leads, campaigns, etc.)"
+          },
+          {
+            "scope": "write:data",
+            "description": "Create and update user data"
+          },
+          {
+            "scope": "read:analytics",
+            "description": "Access analytics and reporting data"
+          },
+          {
+            "scope": "read:billing",
+            "description": "Read billing and subscription information"
+          },
+          {
+            "scope": "read:credentials",
+            "description": "No description available"
+          },
+          {
+            "scope": "webhook:receive",
+            "description": "Receive webhook events"
+          },
+          {
+            "scope": "api:usage",
+            "description": "Access API usage statistics and limits"
+          }
+        ],
+        "user_default_scopes": [
+          "read:profile",
+          "write:profile",
+          "read:data",
+          "write:data",
+          "read:analytics",
+          "read:billing",
+          "read:credentials",
+          "webhook:receive",
+          "api:usage"
+        ],
+        "description": "Available permission scopes for API keys"
+      },
+      "status": 200,
+      "tag": "ApiKeys",
+      "url": "https://api.dealscale.io/api/v1/api-keys/scopes"
+    },
+    {
+      "method": "POST",
+      "ok": true,
+      "operationId": "ApiKeys-create_user_api_key",
+      "path": "/api/v1/api-keys/",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "ApiKeys"
+    },
+    {
+      "durationMs": 550,
+      "method": "GET",
+      "ok": true,
+      "operationId": "ApiKeys-list_api_keys",
+      "path": "/api/v1/api-keys/",
+      "responsePreview": [],
+      "status": 200,
+      "tag": "ApiKeys",
+      "url": "https://api.dealscale.io/api/v1/api-keys/"
+    },
+    {
+      "method": "DELETE",
+      "ok": true,
+      "operationId": "ApiKeys-revoke_user_api_key",
+      "path": "/api/v1/api-keys/{key_id}",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "ApiKeys"
+    },
+    {
+      "durationMs": 169,
+      "method": "GET",
+      "ok": true,
+      "operationId": "ApiKeys-admin_list_all_api_keys",
+      "path": "/api/v1/api-keys/admin/all",
+      "responsePreview": {
+        "request_id": "d22ea0a776e6f40719fd38f2685e0622",
+        "error": {
+          "code": "VALIDATION_ERROR",
+          "message": "Request validation failed",
+          "details": {
+            "validation_errors": [
+              {
+                "type": "missing",
+                "loc": [
+                  "body"
+                ],
+                "msg": "Field required",
+                "input": null
+              }
+            ]
+          }
+        },
+        "timestamp": "2026-06-29T19:21:27.219882Z",
+        "path": "/api/v1/api-keys/admin/all"
+      },
+      "status": 400,
+      "tag": "ApiKeys",
+      "url": "https://api.dealscale.io/api/v1/api-keys/admin/all"
+    },
+    {
+      "method": "DELETE",
+      "ok": true,
+      "operationId": "ApiKeys-admin_revoke_api_key",
+      "path": "/api/v1/api-keys/admin/{key_id}",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "ApiKeys"
+    },
+    {
+      "durationMs": 336,
+      "method": "GET",
+      "ok": true,
+      "operationId": "Prospecting-search_leads",
+      "path": "/api/v1/prospecting/search",
+      "responsePreview": {
+        "request_id": "9477a4609b81f7db62e03b05bfbc2942",
+        "error": {
+          "code": "VALIDATION_ERROR",
+          "message": "At least one location filter (location, state, city, or zip) is required."
+        },
+        "timestamp": "2026-06-29T19:21:27.557814Z",
+        "path": "/api/v1/prospecting/search"
+      },
+      "status": 400,
+      "tag": "Prospecting",
+      "url": "https://api.dealscale.io/api/v1/prospecting/search?source=rentcast"
+    },
+    {
+      "durationMs": 325,
+      "method": "GET",
+      "ok": true,
+      "operationId": "Prospecting-list_sources",
+      "path": "/api/v1/prospecting/sources",
+      "responsePreview": {
+        "sources": [
+          {
+            "name": "rentcast",
+            "credit_cost_per_lead": 1,
+            "description": "Rentcast data source"
+          },
+          {
+            "name": "homeharvest",
+            "credit_cost_per_lead": 0,
+            "description": "Homeharvest data source"
+          }
+        ]
+      },
+      "status": 200,
+      "tag": "Prospecting",
+      "url": "https://api.dealscale.io/api/v1/prospecting/sources"
+    },
+    {
+      "method": "POST",
+      "ok": true,
+      "operationId": "Enrichment Tools-enrich_blackbird_username",
+      "path": "/api/v1/enrich/blackbird_username",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "Enrichment Tools"
+    },
+    {
+      "method": "POST",
+      "ok": true,
+      "operationId": "Enrichment Tools-enrich_phunter_phone_validate",
+      "path": "/api/v1/enrich/phunter_phone_validate",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "Enrichment Tools"
+    },
+    {
+      "method": "POST",
+      "ok": true,
+      "operationId": "Enrichment Tools-enrich_phunter_phone_amazon",
+      "path": "/api/v1/enrich/phunter_phone_amazon",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "Enrichment Tools"
+    },
+    {
+      "method": "POST",
+      "ok": true,
+      "operationId": "Enrichment Tools-enrich_phunter_phone_person",
+      "path": "/api/v1/enrich/phunter_phone_person",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "Enrichment Tools"
+    },
+    {
+      "method": "POST",
+      "ok": true,
+      "operationId": "Enrichment Tools-enrich_phunter_phone_batch",
+      "path": "/api/v1/enrich/phunter_phone_batch",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "Enrichment Tools"
+    },
+    {
+      "method": "POST",
+      "ok": true,
+      "operationId": "Enrichment Tools-enrich_maigret_username",
+      "path": "/api/v1/enrich/maigret_username",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "Enrichment Tools"
+    },
+    {
+      "method": "POST",
+      "ok": true,
+      "operationId": "Enrichment Tools-enrich_sherlock_username",
+      "path": "/api/v1/enrich/sherlock_username",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "Enrichment Tools"
+    },
+    {
+      "method": "POST",
+      "ok": true,
+      "operationId": "Enrichment Tools-enrich_theharvester_domain",
+      "path": "/api/v1/enrich/theharvester_domain",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "Enrichment Tools"
+    },
+    {
+      "method": "POST",
+      "ok": true,
+      "operationId": "Enrichment Tools-enrich_homeharvest_address",
+      "path": "/api/v1/enrich/homeharvest_address",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "Enrichment Tools"
+    },
+    {
+      "method": "POST",
+      "ok": true,
+      "operationId": "Enrichment Tools-enrich_homeharvest_city",
+      "path": "/api/v1/enrich/homeharvest_city",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "Enrichment Tools"
+    },
+    {
+      "method": "POST",
+      "ok": true,
+      "operationId": "Enrichment Tools-enrich_homeharvest_advanced",
+      "path": "/api/v1/enrich/homeharvest_advanced",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "Enrichment Tools"
+    },
+    {
+      "method": "POST",
+      "ok": true,
+      "operationId": "Enrichment Tools-enrich_zehef_email",
+      "path": "/api/v1/enrich/zehef_email",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "Enrichment Tools"
+    },
+    {
+      "durationMs": 308,
+      "method": "GET",
+      "ok": true,
+      "operationId": "Enrichment Tools-list_enrichment_tools",
+      "path": "/api/v1/enrich/tools",
+      "responsePreview": {
+        "version": "2.0.0",
+        "tools": {
+          "blackbird_username": {
+            "endpoint": "/api/v1/enrich/blackbird_username",
+            "display_name": "Username/Email Footprint Search + AI Profiling",
+            "description": "Search for a username or email across 600+ websites with optional AI behavioral profiling and PDF export.",
+            "category": "osint",
+            "credit_cost": 0,
+            "required_params": [
+              "search_value"
+            ],
+            "optional_params": [
+              "search_type",
+              "enable_ai",
+              "export_pdf",
+              "safe_mode",
+              "include_categories",
+              "exclude_categories",
+              "timeout"
+            ],
+            "example": {
+              "search_value": "johndoe",
+              "search_type": "username",
+              "enable_ai": true,
+              "export_pdf": true
+            },
+            "features": [
+              "ai_profiling",
+              "pdf_export",
+              "safe_mode_filtering",
+              "category_filtering",
+              "supabase_storage"
+            ],
+            "available": true
+          },
+          "sherlock_username": {
+            "endpoint": "/api/v1/enrich/sherlock_username",
+            "display_name": "Social Network Username Search",
+            "description": "Hunt down social media accounts by username across 400+ social networks including Twitter, Instagram, GitHub, LinkedIn.",
+            "category": "osint",
+            "credit_cost": 0,
+            "required_params": [
+              "usernames"
+            ],
+            "optional_params": [
+              "site",
+              "print_all",
+              "browse",
+              "no_color",
+              "tor",
+              "nsfw",
+              "csv",
+              "xlsx",
+              "timeout"
+            ],
+            "example": {
+              "usernames": [
+                "johndoe",
+                "janedoe"
+              ],
+              "nsfw": false
+            },
+            "features": [
+              "multi_username_search",
+              "site_filtering",
+              "csv_export",
+              "xlsx_export",
+              "tor_support"
+            ],
+            "available": true
+          },
+          "maigret_username": {
+            "endpoint": "/api/v1/enrich/maigret_username",
+            "display_name": "Advanced Username Reconnaissance",
+            "description": "Deep username reconnaissance across 3000+ sites with profile parsing, recursive search, and detailed analysis.",
+            "category": "osint",
+            "credit_cost": 0,
+            "required_params": [
+              "username"
+            ],
+            "optional_params": [
+              "parse_url",
+              "id_type",
+              "with_domains",
+              "permute",
+              "tags",
+              "timeout"
+            ],
+            "example": {
+              "username": "nasa",
+              "tags": [
+                "networking"
+              ]
+            },
+            "features": [
+              "profile_parsing",
+              "recursive_search",
+              "tag_filtering",
+              "censorship_detection",
+              "report_export"
+            ],
+            "available": true
+          },
+          "phunter_phone_validate": {
+            "endpoint": "/api/v1/enrich/phunter_phone_validate",
+            "display_name": "Phone Validation + Carrier Lookup",
+            "description": "Validate phone numbers and retrieve carrier metadata including line type (mobile, VoIP, etc.) and geographic location.",
+            "category": "validation",
+            "credit_cost": 0,
+            "required_params": [
+              "phone"
+            ],
+            "optional_params": [
+              "lead_id"
+            ],
+            "example": {
+              "phone": "+14155551234",
+              "lead_id": "lead_001"
+            },
+            "features": [
+              "e164_normalization",
+              "carrier_lookup",
+              "line_type_detection",
+              "geographic_lookup"
+            ],
+            "available": true
+          },
+          "phunter_phone_amazon": {
+            "endpoint": "/api/v1/enrich/phunter_phone_amazon",
+            "display_name": "Phone-to-Amazon Account Check",
+            "description": "Check if a phone number is linked to an Amazon account. Note: Limited API availability due to captcha requirements.",
+            "category": "validation",
+            "credit_cost": 0,
+            "required_params": [
+              "phone"
+            ],
+            "optional_params": [
+              "lead_id"
+            ],
+            "example": {
+              "phone": "+14155551234",
+              "lead_id": "lead_002"
+            },
+            "features": [
+              "amazon_account_detection"
+            ],
+            "limitations": [
+              "requires_browser_automation",
+              "captcha_solving"
+            ],
+            "available": true
+          },
+          "phunter_phone_person": {
+            "endpoint": "/api/v1/enrich/phunter_phone_person",
+            "display_name": "Person Lookup by Phone Number",
+            "description": "Lookup owner/person information for a phone number. Full lookup available for French (+33) numbers via Page Blanche.",
+            "category": "validation",
+            "credit_cost": 0,
+            "required_params": [
+              "phone"
+            ],
+            "optional_params": [
+              "lead_id"
+            ],
+            "example": {
+              "phone": "+33612345678",
+              "lead_id": "lead_003"
+            },
+            "features": [
+              "person_lookup",
+              "address_lookup"
+            ],
+            "limitations": [
+              "french_numbers_only",
+              "requires_browser_automation"
+            ],
+            "available": true
+          },
+          "phunter_phone_batch": {
+            "endpoint": "/api/v1/enrich/phunter_phone_batch",
+            "display_name": "Batch Phone Validation (File Upload)",
+            "description": "Upload a file of phone numbers (CSV/TXT) and receive aggregated validation results. Max 100 numbers per request.",
+            "category": "validation",
+            "credit_cost": 0,
+            "required_params": [
+              "file OR phone_list"
+            ],
+            "optional_params": [],
+            "example": {
+              "phone_list": "+14155551234,+14155555678"
+            },
+            "features": [
+              "batch_processing",
+              "csv_upload",
+              "txt_upload",
+              "aggregated_results"
+            ],
+            "content_type": "multipart/form-data",
+            "available": true
+          },
+          "theharvester_domain": {
+            "endpoint": "/api/v1/enrich/theharvester_domain",
+            "display_name": "Domain Intelligence Gathering",
+            "description": "Harvest emails, subdomains, hosts, and IPs from a target domain using Google, Bing, LinkedIn, Shodan, VirusTotal, and more.",
+            "category": "osint",
+            "credit_cost": 0,
+            "required_params": [
+              "domain"
+            ],
+            "optional_params": [
+              "sources",
+              "limit",
+              "start",
+              "dns_lookup",
+              "dns_brute",
+              "take_over",
+              "timeout"
+            ],
+            "example": {
+              "domain": "example.com",
+              "sources": [
+                "bing",
+                "google"
+              ],
+              "limit": 500
+            },
+            "features": [
+              "email_harvesting",
+              "subdomain_discovery",
+              "dns_lookup",
+              "dns_brute_force",
+              "subdomain_takeover_check"
+            ],
+            "available": true
+          },
+          "homeharvest_address": {
+            "endpoint": "/api/v1/enrich/homeharvest_address",
+            "display_name": "Property Search by Address",
+            "description": "Search for property listings by a specific address with normalization, validation, and optional radius search.",
+            "category": "leads",
+            "credit_cost": 0,
+            "required_params": [
+              "address"
+            ],
+            "optional_params": [
+              "radius_miles",
+              "listing_type",
+              "request_id"
+            ],
+            "example": {
+              "address": "123 Main Street, Miami, FL 33101",
+              "listing_type": "for_sale"
+            },
+            "features": [
+              "address_normalization",
+              "radius_search",
+              "agent_contact_info",
+              "consistent_schema"
+            ],
+            "available": true
+          },
+          "homeharvest_city": {
+            "endpoint": "/api/v1/enrich/homeharvest_city",
+            "display_name": "City-Wide Property Search",
+            "description": "Search for property listings across an entire city with filtering by price, beds, baths, sqft, and property type.",
+            "category": "leads",
+            "credit_cost": 0,
+            "required_params": [
+              "city"
+            ],
+            "optional_params": [
+              "state",
+              "listing_type",
+              "min_price",
+              "max_price",
+              "min_beds",
+              "max_beds",
+              "min_baths",
+              "max_baths",
+              "property_types",
+              "max_results",
+              "sort_by",
+              "request_id"
+            ],
+            "example": {
+              "city": "Miami Beach",
+              "state": "FL",
+              "listing_type": "for_sale",
+              "min_beds": 3
+            },
+            "features": [
+              "city_validation",
+              "advanced_filtering",
+              "sorting",
+              "agent_contact_info",
+              "consistent_schema"
+            ],
+            "available": true
+          },
+          "homeharvest_advanced": {
+            "endpoint": "/api/v1/enrich/homeharvest_advanced",
+            "display_name": "Advanced Property Search",
+            "description": "Multi-criteria property search with comprehensive filtering: price, beds, baths, sqft, year built, lot size, property type, and agent contact filters.",
+            "category": "leads",
+            "credit_cost": 0,
+            "required_params": [
+              "location"
+            ],
+            "optional_params": [
+              "listing_type",
+              "filters",
+              "max_results",
+              "sort_by",
+              "include_metadata",
+              "request_id"
+            ],
+            "example": {
+              "location": "Beverly Hills, CA",
+              "listing_type": "for_sale",
+              "filters": {
+                "min_price": 1000000,
+                "max_price": 5000000,
+                "min_beds": 4,
+                "property_types": [
+                  "single_family"
+                ],
+                "has_agent_email": true
+              },
+              "max_results": 50,
+              "sort_by": "price_desc"
+            },
+            "features": [
+              "multi_location_types",
+              "comprehensive_filters",
+              "agent_filters",
+              "radius_search",
+              "time_filters",
+              "empty_results_200_ok"
+            ],
+            "available": true
+          },
+          "zehef_email": {
+            "endpoint": "/api/v1/enrich/zehef_email",
+            "display_name": "Email Account Discovery",
+            "description": "Discover accounts and profiles linked to an email address across GitHub, Gravatar, Pinterest, Spotify, Duolingo, and Chess.com.",
+            "category": "osint",
+            "credit_cost": 0,
+            "required_params": [
+              "email"
+            ],
+            "optional_params": [
+              "timeout",
+              "request_id"
+            ],
+            "example": {
+              "email": "user@example.com"
+            },
+            "features": [
+              "email_normalization",
+              "request_tracking",
+              "empty_results_200_ok"
+            ],
+            "available": true
+          },
+          "trestle_skip_trace": {
+            "endpoint": "/api/v1/enrich/trestle",
+            "display_name": "Professional Skip Tracing",
+            "description": "Premium skip tracing service. Provide email, phone, or full name to get comprehensive contact information.",
+            "category": "premium",
+            "credit_cost": 1,
+            "required_params": [],
+            "optional_params": [
+              "email",
+              "phone",
+              "full_name"
+            ],
+            "example": {
+              "full_name": "John Doe",
+              "phone": "+1-555-123-4567"
+            },
+            "note": "At least one of email, phone, or full_name is required",
+            "available": true
+          }
+        },
+        "total_tools": 13,
+        "categories": [
+          "leads",
+          "osint",
+          "premium",
+          "validation"
+        ]
+      },
+      "status": 200,
+      "tag": "Enrichment Tools",
+      "url": "https://api.dealscale.io/api/v1/enrich/tools"
+    },
+    {
+      "durationMs": 386,
+      "method": "GET",
+      "ok": true,
+      "operationId": "GhlOauth-get_oauth_authorization_url",
+      "path": "/api/v1/integrations/ghl/calendar/auth-url",
+      "responsePreview": {
+        "request_id": "da50c2d02d9b4eafe6efccddeab22366",
+        "error": {
+          "code": "PROVIDER_NOT_CONFIGURED",
+          "message": "GoHighLevel Google Calendar OAuth is not configured.",
+          "details": {
+            "provider": "GHL_GOOGLE_CALENDAR"
+          }
+        },
+        "timestamp": "2026-06-29T19:21:28.574311Z",
+        "path": "/api/v1/integrations/ghl/calendar/auth-url"
+      },
+      "status": 503,
+      "tag": "GhlOauth",
+      "url": "https://api.dealscale.io/api/v1/integrations/ghl/calendar/auth-url"
+    },
+    {
+      "durationMs": 163,
+      "method": "GET",
+      "ok": true,
+      "operationId": "GhlOauth-oauth_callback",
+      "path": "/api/v1/integrations/ghl/calendar/callback",
+      "responsePreview": {
+        "request_id": "d3d1d8c31f570196c67aec238b2a950e",
+        "error": {
+          "code": "VALIDATION_ERROR",
+          "message": "Authorization code is required"
+        },
+        "timestamp": "2026-06-29T19:21:28.738832Z",
+        "path": "/api/v1/integrations/ghl/calendar/callback"
+      },
+      "status": 400,
+      "tag": "GhlOauth",
+      "url": "https://api.dealscale.io/api/v1/integrations/ghl/calendar/callback"
+    },
+    {
+      "durationMs": 382,
+      "method": "GET",
+      "ok": true,
+      "operationId": "GhlOauth-get_connection_status",
+      "path": "/api/v1/integrations/ghl/calendar/status",
+      "responsePreview": {
+        "connected": false,
+        "provider": "GHL_GOOGLE_CALENDAR",
+        "scopes": [],
+        "expires_at": null,
+        "subaccount_id": null
+      },
+      "status": 200,
+      "tag": "GhlOauth",
+      "url": "https://api.dealscale.io/api/v1/integrations/ghl/calendar/status"
+    },
+    {
+      "method": "DELETE",
+      "ok": true,
+      "operationId": "GhlOauth-disconnect_oauth",
+      "path": "/api/v1/integrations/ghl/calendar/",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "GhlOauth"
+    },
+    {
+      "durationMs": 356,
+      "method": "GET",
+      "ok": true,
+      "operationId": "Credentials-get_credentials",
+      "path": "/api/v1/credentials/{provider}",
+      "responsePreview": {
+        "request_id": "1285e229471b581d102e3e84d62e9348",
+        "error": {
+          "code": "VALIDATION_ERROR",
+          "message": "Provider must use uppercase letters, numbers, and underscores.",
+          "details": {
+            "provider": "smoke-test"
+          }
+        },
+        "timestamp": "2026-06-29T19:21:29.475675Z",
+        "path": "/api/v1/credentials/smoke-test"
+      },
+      "status": 400,
+      "tag": "Credentials",
+      "url": "https://api.dealscale.io/api/v1/credentials/smoke-test"
+    },
+    {
+      "durationMs": 334,
+      "method": "GET",
+      "ok": true,
+      "operationId": "Credentials-list_user_providers",
+      "path": "/api/v1/credentials/",
+      "responsePreview": {
+        "providers": [],
+        "total_count": 0
+      },
+      "status": 200,
+      "tag": "Credentials",
+      "url": "https://api.dealscale.io/api/v1/credentials/"
+    },
+    {
+      "method": "POST",
+      "ok": true,
+      "operationId": "Campaigns-launch_campaign",
+      "path": "/api/v1/campaigns/",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "Campaigns"
+    },
+    {
+      "durationMs": 162,
+      "method": "GET",
+      "ok": true,
+      "operationId": "Campaigns-get_campaign_status",
+      "path": "/api/v1/campaigns/{campaign_id}/status",
+      "responsePreview": {
+        "request_id": "7b8f874b1935723a45e02384e0794298",
+        "error": {
+          "code": "AUTH_FORBIDDEN",
+          "message": "Could not validate credentials"
+        },
+        "timestamp": "2026-06-29T19:21:29.973476Z",
+        "path": "/api/v1/campaigns/00000000-0000-4000-8000-000000000000/status"
+      },
+      "status": 403,
+      "tag": "Campaigns",
+      "url": "https://api.dealscale.io/api/v1/campaigns/00000000-0000-4000-8000-000000000000/status"
+    },
+    {
+      "method": "POST",
+      "ok": true,
+      "operationId": "Ai-activate_ai_for_contact",
+      "path": "/api/v1/ai/activate/{contact_id}",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "Ai"
+    },
+    {
+      "method": "POST",
+      "ok": true,
+      "operationId": "Ai-enrich_contact_data",
+      "path": "/api/v1/ai/enrich/{contact_id}",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "Ai"
+    },
+    {
+      "durationMs": 165,
+      "method": "GET",
+      "ok": true,
+      "operationId": "Ai-get_ai_processing_status",
+      "path": "/api/v1/ai/status/{processing_id}",
+      "responsePreview": {
+        "request_id": "3db8381e9f3ae0ca014deb9b0cb293d3",
+        "error": {
+          "code": "AUTH_REQUIRED",
+          "message": "Invalid or expired n8n scoped token"
+        },
+        "timestamp": "2026-06-29T19:21:30.137593Z",
+        "path": "/api/v1/ai/status/00000000-0000-4000-8000-000000000000"
+      },
+      "status": 401,
+      "tag": "Ai",
+      "url": "https://api.dealscale.io/api/v1/ai/status/00000000-0000-4000-8000-000000000000"
+    },
+    {
+      "method": "POST",
+      "ok": true,
+      "operationId": "Testers-apply_for_tester_program",
+      "path": "/api/v1/testers/apply",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "Testers"
+    },
+    {
+      "durationMs": 755,
+      "method": "GET",
+      "ok": true,
+      "operationId": "Testers-get_my_tester_status",
+      "path": "/api/v1/testers/me",
+      "responsePreview": {
+        "user_id": "6a25b7a7-7f55-4e61-a814-b56c28dd231d",
+        "beta_tester": {
+          "status": null,
+          "applied_at": null,
+          "approved_at": null,
+          "can_vote": false
+        },
+        "pilot_tester": {
+          "status": null,
+          "applied_at": null,
+          "approved_at": null,
+          "can_vote": false
+        },
+        "can_vote_features": false
+      },
+      "status": 200,
+      "tag": "Testers",
+      "url": "https://api.dealscale.io/api/v1/testers/me"
+    },
+    {
+      "method": "POST",
+      "ok": true,
+      "operationId": "Testers-approve_tester",
+      "path": "/api/v1/testers/{tester_id}/approve",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "Testers"
+    },
+    {
+      "method": "POST",
+      "ok": true,
+      "operationId": "Testers-reject_tester",
+      "path": "/api/v1/testers/{tester_id}/reject",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "Testers"
+    },
+    {
+      "durationMs": 964,
+      "method": "GET",
+      "ok": true,
+      "operationId": "Testers-get_pending_applications",
+      "path": "/api/v1/testers/pending",
+      "responsePreview": {
+        "applications": [],
+        "total_count": 0,
+        "filtered_by": "all"
+      },
+      "status": 200,
+      "tag": "Testers",
+      "url": "https://api.dealscale.io/api/v1/testers/pending"
+    },
+    {
+      "durationMs": 571,
+      "method": "GET",
+      "ok": true,
+      "operationId": "Features-get_feature_catalog",
+      "path": "/api/v1/features",
+      "responsePreview": {
+        "features": [],
+        "total_count": 0,
+        "page": 1,
+        "per_page": 20
+      },
+      "status": 200,
+      "tag": "Features",
+      "url": "https://api.dealscale.io/api/v1/features"
+    },
+    {
+      "durationMs": 533,
+      "method": "GET",
+      "ok": true,
+      "operationId": "Features-get_voting_stats",
+      "path": "/api/v1/features/stats",
+      "responsePreview": {
+        "total_features": 0,
+        "total_votes": 0,
+        "total_voters": 0,
+        "most_requested_feature": null,
+        "voting_trends": {}
+      },
+      "status": 200,
+      "tag": "Features",
+      "url": "https://api.dealscale.io/api/v1/features/stats"
+    },
+    {
+      "method": "POST",
+      "ok": true,
+      "operationId": "Features-vote_on_feature",
+      "path": "/api/v1/features/{feature_id}/vote",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "Features"
+    },
+    {
+      "method": "DELETE",
+      "ok": true,
+      "operationId": "Features-retract_vote",
+      "path": "/api/v1/features/{feature_id}/vote",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "Features"
+    },
+    {
+      "durationMs": 536,
+      "method": "GET",
+      "ok": true,
+      "operationId": "Features-get_my_votes",
+      "path": "/api/v1/features/my-votes",
+      "responsePreview": {
+        "votes": [],
+        "total_votes": 0
+      },
+      "status": 200,
+      "tag": "Features",
+      "url": "https://api.dealscale.io/api/v1/features/my-votes"
+    },
+    {
+      "method": "POST",
+      "ok": true,
+      "operationId": "Features-seed_feature_catalog",
+      "path": "/api/v1/features/seed-catalog",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "Features"
+    },
+    {
+      "method": "POST",
+      "ok": true,
+      "operationId": "Affiliates-apply_for_affiliate_program",
+      "path": "/api/v1/affiliates/apply",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "Affiliates"
+    },
+    {
+      "durationMs": 588,
+      "method": "GET",
+      "ok": true,
+      "operationId": "Affiliates-get_application_status",
+      "path": "/api/v1/affiliates/application/status",
+      "responsePreview": {
+        "success": true,
+        "status": "not_applied",
+        "message": "No application found",
+        "application": null
+      },
+      "status": 200,
+      "tag": "Affiliates",
+      "url": "https://api.dealscale.io/api/v1/affiliates/application/status"
+    },
+    {
+      "durationMs": 750,
+      "method": "GET",
+      "ok": true,
+      "operationId": "Affiliates-get_commission_history",
+      "path": "/api/v1/affiliates/commissions",
+      "responsePreview": {
+        "success": true,
+        "commissions": [],
+        "pagination": {
+          "page": 1,
+          "per_page": 10,
+          "total": 0,
+          "total_pages": 0
+        }
+      },
+      "status": 200,
+      "tag": "Affiliates",
+      "url": "https://api.dealscale.io/api/v1/affiliates/commissions"
+    },
+    {
+      "method": "POST",
+      "ok": true,
+      "operationId": "Affiliates-request_payout",
+      "path": "/api/v1/affiliates/payout/request",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "Affiliates"
+    },
+    {
+      "durationMs": 530,
+      "method": "GET",
+      "ok": true,
+      "operationId": "Affiliates-get_payout_history",
+      "path": "/api/v1/affiliates/payouts",
+      "responsePreview": {
+        "payouts": []
+      },
+      "status": 200,
+      "tag": "Affiliates",
+      "url": "https://api.dealscale.io/api/v1/affiliates/payouts"
+    },
+    {
+      "durationMs": 575,
+      "method": "GET",
+      "ok": true,
+      "operationId": "Affiliates-get_affiliate_profile",
+      "path": "/api/v1/affiliates/profile",
+      "responsePreview": {
+        "success": true,
+        "affiliate": null,
+        "stats": {
+          "total_clicks": 0,
+          "total_referrals": 0,
+          "active_referrals": 0,
+          "total_commissions": 0,
+          "pending_payout": 0,
+          "lifetime_earnings": 0
+        }
+      },
+      "status": 200,
+      "tag": "Affiliates",
+      "url": "https://api.dealscale.io/api/v1/affiliates/profile"
+    },
+    {
+      "durationMs": 556,
+      "method": "GET",
+      "ok": true,
+      "operationId": "Affiliates-get_affiliate_stats",
+      "path": "/api/v1/affiliates/stats",
+      "responsePreview": {
+        "success": false,
+        "message": "No affiliate profile found"
+      },
+      "status": 200,
+      "tag": "Affiliates",
+      "url": "https://api.dealscale.io/api/v1/affiliates/stats"
+    },
+    {
+      "method": "POST",
+      "ok": true,
+      "operationId": "Affiliates-generate_referral_link",
+      "path": "/api/v1/affiliates/links/generate",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "Affiliates"
+    },
+    {
+      "method": "POST",
+      "ok": true,
+      "operationId": "Affiliates-track_referral_click",
+      "path": "/api/v1/affiliates/track/click",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "Affiliates"
+    },
+    {
+      "method": "POST",
+      "ok": true,
+      "operationId": "Affiliates-approve_affiliate_application",
+      "path": "/api/v1/affiliates/admin/approve/{affiliate_id}",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "Affiliates"
+    },
+    {
+      "durationMs": 581,
+      "method": "GET",
+      "ok": true,
+      "operationId": "Affiliates-get_pending_affiliate_applications",
+      "path": "/api/v1/affiliates/admin/applications",
+      "responsePreview": {
+        "request_id": "27e45371fb41aea752b549244f66d0b9",
+        "error": {
+          "code": "AUTH_FORBIDDEN",
+          "message": "Admin access required"
+        },
+        "timestamp": "2026-06-29T19:21:37.079422Z",
+        "path": "/api/v1/affiliates/admin/applications"
+      },
+      "status": 403,
+      "tag": "Affiliates",
+      "url": "https://api.dealscale.io/api/v1/affiliates/admin/applications"
+    },
+    {
+      "durationMs": 817,
+      "method": "GET",
+      "ok": true,
+      "operationId": "Cart-get_cart",
+      "path": "/api/v1/cart",
+      "responsePreview": {
+        "success": true,
+        "message": "Cart retrieved successfully",
+        "cart": {
+          "id": "fca3e256-38ed-4384-a708-e3a8cbfd12ca",
+          "user_id": "6a25b7a7-7f55-4e61-a814-b56c28dd231d",
+          "items": [],
+          "created_at": "2026-06-29T19:21:37.708797",
+          "updated_at": "2026-06-29T19:21:37.708805",
+          "metadata": {}
+        },
+        "summary": {
+          "subtotal": 0,
+          "shipping": 0,
+          "tax": 0,
+          "discount": 0,
+          "total": 0,
+          "item_count": 0,
+          "total_quantity": 0,
+          "requires_shipping": false,
+          "currency": "USD",
+          "shipping_options": [],
+          "selected_shipping_option": null,
+          "discount_code": null,
+          "tax_rate": null
+        }
+      },
+      "status": 200,
+      "tag": "Cart",
+      "url": "https://api.dealscale.io/api/v1/cart"
+    },
+    {
+      "method": "DELETE",
+      "ok": true,
+      "operationId": "Cart-clear_cart",
+      "path": "/api/v1/cart",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "Cart"
+    },
+    {
+      "method": "POST",
+      "ok": true,
+      "operationId": "Cart-add_to_cart",
+      "path": "/api/v1/cart/items",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "Cart"
+    },
+    {
+      "method": "PUT",
+      "ok": true,
+      "operationId": "Cart-update_cart_item",
+      "path": "/api/v1/cart/items/{item_id}",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "Cart"
+    },
+    {
+      "method": "DELETE",
+      "ok": true,
+      "operationId": "Cart-remove_from_cart",
+      "path": "/api/v1/cart/items/{item_id}",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "Cart"
+    },
+    {
+      "method": "POST",
+      "ok": true,
+      "operationId": "Cart-checkout_cart",
+      "path": "/api/v1/cart/checkout",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "Cart"
+    },
+    {
+      "durationMs": 414,
+      "method": "GET",
+      "ok": true,
+      "operationId": "Cart-get_checkout_status",
+      "path": "/api/v1/cart/checkout/{checkout_session_id}/status",
+      "responsePreview": {
+        "checkout_session_id": "00000000-0000-4000-8000-000000000000",
+        "status": "pending",
+        "message": "Checkout status endpoint - implementation needed"
+      },
+      "status": 200,
+      "tag": "Cart",
+      "url": "https://api.dealscale.io/api/v1/cart/checkout/00000000-0000-4000-8000-000000000000/status"
+    },
+    {
+      "durationMs": 312,
+      "method": "GET",
+      "ok": true,
+      "operationId": "Cart-get_cart_products",
+      "path": "/api/v1/cart/products",
+      "responsePreview": {
+        "success": true,
+        "products": {
+          "credit_packages": [
+            {
+              "sku": "CREDITS_100",
+              "name": "100 AI Credits",
+              "price": 10,
+              "description": "100 AI credits for lead generation and analysis",
+              "metadata": {
+                "credits": 100,
+                "credit_type": "ai"
+              }
+            },
+            {
+              "sku": "CREDITS_500",
+              "name": "500 AI Credits",
+              "price": 45,
+              "description": "500 AI credits with 10% bonus",
+              "metadata": {
+                "credits": 500,
+                "credit_type": "ai",
+                "bonus": "10%"
+              }
+            },
+            {
+              "sku": "CREDITS_1000",
+              "name": "1,000 AI Credits",
+              "price": 80,
+              "description": "1,000 AI credits with 20% bonus",
+              "metadata": {
+                "credits": 1000,
+                "credit_type": "ai",
+                "bonus": "20%"
+              }
+            }
+          ],
+          "subscriptions": [
+            {
+              "sku": "SUB_PRO",
+              "name": "Pro Plan",
+              "price": 99,
+              "description": "Monthly pro subscription with 500 included credits",
+              "metadata": {
+                "type": "subscription",
+                "interval": "month",
+                "included_credits": 500
+              }
+            },
+            {
+              "sku": "SUB_ENTERPRISE",
+              "name": "Enterprise Plan",
+              "price": 299,
+              "description": "Monthly enterprise subscription with unlimited credits",
+              "metadata": {
+                "type": "subscription",
+                "interval": "month",
+                "included_credits": "unlimited"
+              }
+            }
+          ]
+        }
+      },
+      "status": 200,
+      "tag": "Cart",
+      "url": "https://api.dealscale.io/api/v1/cart/products"
+    },
+    {
+      "durationMs": 871,
+      "method": "GET",
+      "ok": true,
+      "operationId": "Credits-get_user_credit_balance",
+      "path": "/api/v1/credits/balance",
+      "responsePreview": {
+        "user_id": "6a25b7a7-7f55-4e61-a814-b56c28dd231d",
+        "balances": {
+          "ai": 0
+        },
+        "total_credits": 0,
+        "last_updated": "2026-06-29T19:21:39.486673Z"
+      },
+      "status": 200,
+      "tag": "Credits",
+      "url": "https://api.dealscale.io/api/v1/credits/balance"
+    },
+    {
+      "durationMs": 332,
+      "method": "GET",
+      "ok": true,
+      "operationId": "Credits-get_credit_history",
+      "path": "/api/v1/credits/history",
+      "responsePreview": [],
+      "status": 200,
+      "tag": "Credits",
+      "url": "https://api.dealscale.io/api/v1/credits/history"
+    },
+    {
+      "method": "POST",
+      "ok": true,
+      "operationId": "Credits-use_credits",
+      "path": "/api/v1/credits/use",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "Credits"
+    },
+    {
+      "method": "POST",
+      "ok": true,
+      "operationId": "Credits-transfer_credits",
+      "path": "/api/v1/credits/transfer",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "Credits"
+    },
+    {
+      "durationMs": 895,
+      "method": "GET",
+      "ok": true,
+      "operationId": "Credits-get_credit_usage_stats",
+      "path": "/api/v1/credits/stats",
+      "responsePreview": {
+        "user_id": "6a25b7a7-7f55-4e61-a814-b56c28dd231d",
+        "by_credit_type": {
+          "ai": {
+            "available": 0,
+            "purchased": 0,
+            "used": 0,
+            "usage_percentage": 0
+          }
+        },
+        "total_used": 0,
+        "total_purchased": 0,
+        "total_available": 0,
+        "overall_usage_percentage": 0
+      },
+      "status": 200,
+      "tag": "Credits",
+      "url": "https://api.dealscale.io/api/v1/credits/stats"
+    },
+    {
+      "durationMs": 365,
+      "method": "GET",
+      "ok": true,
+      "operationId": "Credits-check_expiring_credits",
+      "path": "/api/v1/credits/expiring",
+      "responsePreview": [],
+      "status": 200,
+      "tag": "Credits",
+      "url": "https://api.dealscale.io/api/v1/credits/expiring"
+    },
+    {
+      "method": "POST",
+      "ok": true,
+      "operationId": "Credits-allocate_credits",
+      "path": "/api/v1/credits/admin/allocate",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "Credits"
+    },
+    {
+      "method": "POST",
+      "ok": true,
+      "operationId": "Credits-bulk_allocate_credits",
+      "path": "/api/v1/credits/admin/bulk-allocate",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "Credits"
+    },
+    {
+      "method": "POST",
+      "ok": true,
+      "operationId": "Credits-admin_revoke_credits",
+      "path": "/api/v1/credits/admin/revoke",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "Credits"
+    },
+    {
+      "durationMs": 573,
+      "method": "GET",
+      "ok": true,
+      "operationId": "Credits-admin_get_system_credit_stats",
+      "path": "/api/v1/credits/admin/stats",
+      "responsePreview": {
+        "request_id": "d2c5817187615737f2d6ed6682341202",
+        "error": {
+          "code": "AUTH_FORBIDDEN",
+          "message": "Admin access required"
+        },
+        "timestamp": "2026-06-29T19:21:41.656657Z",
+        "path": "/api/v1/credits/admin/stats"
+      },
+      "status": 403,
+      "tag": "Credits",
+      "url": "https://api.dealscale.io/api/v1/credits/admin/stats"
+    },
+    {
+      "method": "POST",
+      "ok": true,
+      "operationId": "TwilioMessaging-send_message",
+      "path": "/api/v1/twilio/send",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "TwilioMessaging"
+    },
+    {
+      "method": "POST",
+      "ok": true,
+      "operationId": "TwilioMessaging-receive_message",
+      "path": "/api/v1/twilio/receive",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "TwilioMessaging"
+    },
+    {
+      "durationMs": 340,
+      "method": "GET",
+      "ok": true,
+      "operationId": "TwilioMessaging-get_thread_info",
+      "path": "/api/v1/twilio/threads/{recipient}",
+      "responsePreview": {
+        "request_id": "7c981eed7ff1dd11c1d9b8599016a07e",
+        "error": {
+          "code": "VALIDATION_ERROR",
+          "message": "Cannot determine country code for: smoke-test. Please provide E.164 format (+15551234567)",
+          "details": {
+            "provider": "TWILIO",
+            "recipient": "smoke-test"
+          }
+        },
+        "timestamp": "2026-06-29T19:21:41.992807Z",
+        "path": "/api/v1/twilio/threads/smoke-test"
+      },
+      "status": 400,
+      "tag": "TwilioMessaging",
+      "url": "https://api.dealscale.io/api/v1/twilio/threads/smoke-test"
+    },
+    {
+      "durationMs": 386,
+      "method": "GET",
+      "ok": true,
+      "operationId": "Admin-search_users",
+      "path": "/api/v1/admin/users/search",
+      "responsePreview": {
+        "request_id": "fa53ba2c945256926f970008dce9657f",
+        "error": {
+          "code": "AUTH_REQUIRED",
+          "message": "Could not validate credentials: (psycopg.OperationalError) failed to resolve host 'dpg-d1455bvfte5s73e00r40-a': [Errno -2] Name or service not known\n(Background on this error at: https://sqlalche.me/e/20/e3q8)"
+        },
+        "timestamp": "2026-06-29T19:21:42.383086Z",
+        "path": "/api/v1/admin/users/search"
+      },
+      "status": 401,
+      "tag": "Admin",
+      "url": "https://api.dealscale.io/api/v1/admin/users/search"
+    },
+    {
+      "method": "POST",
+      "ok": true,
+      "operationId": "Admin-adjust_credits_endpoint",
+      "path": "/api/v1/admin/users/{user_id}/adjust-credits",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "Admin"
+    },
+    {
+      "method": "POST",
+      "ok": true,
+      "operationId": "Admin-retry_provisioning_endpoint",
+      "path": "/api/v1/admin/users/{user_id}/retry-provisioning",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "Admin"
+    },
+    {
+      "method": "POST",
+      "ok": true,
+      "operationId": "Admin-impersonate_user_endpoint",
+      "path": "/api/v1/admin/users/{user_id}/impersonate",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "Admin"
+    },
+    {
+      "method": "POST",
+      "ok": true,
+      "operationId": "Admin-end_impersonation_endpoint",
+      "path": "/api/v1/admin/users/{user_id}/end-impersonation",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "Admin"
+    },
+    {
+      "durationMs": 582,
+      "method": "GET",
+      "ok": true,
+      "operationId": "Admin-get_user_logs",
+      "path": "/api/v1/admin/users/{user_id}/logs",
+      "responsePreview": {
+        "request_id": "cd8271ce847d913a39b4a8602a29e638",
+        "error": {
+          "code": "AUTH_REQUIRED",
+          "message": "Could not validate credentials: (psycopg.OperationalError) failed to resolve host 'dpg-d1455bvfte5s73e00r40-a': [Errno -2] Name or service not known\n(Background on this error at: https://sqlalche.me/e/20/e3q8)"
+        },
+        "timestamp": "2026-06-29T19:21:42.966089Z",
+        "path": "/api/v1/admin/users/00000000-0000-4000-8000-000000000000/logs"
+      },
+      "status": 401,
+      "tag": "Admin",
+      "url": "https://api.dealscale.io/api/v1/admin/users/00000000-0000-4000-8000-000000000000/logs"
+    },
+    {
+      "durationMs": 159,
+      "method": "GET",
+      "ok": true,
+      "operationId": "Team-get_organization",
+      "path": "/api/v1/team/organization",
+      "responsePreview": {
+        "request_id": "ba9aa6bee0648d7d6cbc6668d9ff7d6e",
+        "error": {
+          "code": "AUTH_FORBIDDEN",
+          "message": "Could not validate credentials"
+        },
+        "timestamp": "2026-06-29T19:21:43.124604Z",
+        "path": "/api/v1/team/organization"
+      },
+      "status": 403,
+      "tag": "Team",
+      "url": "https://api.dealscale.io/api/v1/team/organization"
+    },
+    {
+      "method": "PATCH",
+      "ok": true,
+      "operationId": "Team-update_organization",
+      "path": "/api/v1/team/organization",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "Team"
+    },
+    {
+      "method": "POST",
+      "ok": true,
+      "operationId": "Team-send_invitation",
+      "path": "/api/v1/team/invites",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "Team"
+    },
+    {
+      "durationMs": 163,
+      "method": "GET",
+      "ok": true,
+      "operationId": "Team-list_invitations",
+      "path": "/api/v1/team/invites",
+      "responsePreview": {
+        "request_id": "0468fc8631a2225879d9bd6a33d5b882",
+        "error": {
+          "code": "AUTH_FORBIDDEN",
+          "message": "Could not validate credentials"
+        },
+        "timestamp": "2026-06-29T19:21:43.286667Z",
+        "path": "/api/v1/team/invites"
+      },
+      "status": 403,
+      "tag": "Team",
+      "url": "https://api.dealscale.io/api/v1/team/invites"
+    },
+    {
+      "method": "POST",
+      "ok": true,
+      "operationId": "Team-accept_invitation",
+      "path": "/api/v1/team/invites/accept",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "Team"
+    },
+    {
+      "durationMs": 164,
+      "method": "GET",
+      "ok": true,
+      "operationId": "Team-list_members",
+      "path": "/api/v1/team/members",
+      "responsePreview": {
+        "request_id": "453377e4f1e6acce5014993ffd7f3c76",
+        "error": {
+          "code": "AUTH_FORBIDDEN",
+          "message": "Could not validate credentials"
+        },
+        "timestamp": "2026-06-29T19:21:43.451442Z",
+        "path": "/api/v1/team/members"
+      },
+      "status": 403,
+      "tag": "Team",
+      "url": "https://api.dealscale.io/api/v1/team/members"
+    },
+    {
+      "method": "PATCH",
+      "ok": true,
+      "operationId": "Team-update_member_role",
+      "path": "/api/v1/team/members/{member_id}",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "Team"
+    },
+    {
+      "method": "DELETE",
+      "ok": true,
+      "operationId": "Team-remove_member",
+      "path": "/api/v1/team/members/{member_id}",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "Team"
+    },
+    {
+      "durationMs": 163,
+      "method": "GET",
+      "ok": true,
+      "operationId": "Team-get_activity",
+      "path": "/api/v1/team/activity",
+      "responsePreview": {
+        "request_id": "31a736e9efb6552ef5daba51b75a6128",
+        "error": {
+          "code": "AUTH_FORBIDDEN",
+          "message": "Could not validate credentials"
+        },
+        "timestamp": "2026-06-29T19:21:43.614202Z",
+        "path": "/api/v1/team/activity"
+      },
+      "status": 403,
+      "tag": "Team",
+      "url": "https://api.dealscale.io/api/v1/team/activity"
+    },
+    {
+      "method": "POST",
+      "ok": true,
+      "operationId": "Voice-clone_voice",
+      "path": "/api/v1/voice/clone",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "Voice"
+    },
+    {
+      "durationMs": 272,
+      "method": "GET",
+      "ok": true,
+      "operationId": "Health-health_check_cached",
+      "path": "/api/v1/health",
+      "responsePreview": {
+        "status": "healthy",
+        "valkey": true,
+        "timestamp": 1782760897.1920297,
+        "cached": true
+      },
+      "status": 200,
+      "tag": "Health",
+      "url": "https://api.dealscale.io/api/v1/health"
+    },
+    {
+      "durationMs": 307,
+      "method": "GET",
+      "ok": true,
+      "operationId": "Health-health_check",
+      "path": "/api/v1/health-uncached",
+      "responsePreview": {
+        "status": "healthy",
+        "valkey": true,
+        "prometheus": null,
+        "grafana": null,
+        "telemetry": null,
+        "pulsar": null,
+        "details": {
+          "valkey": "connected"
+        }
+      },
+      "status": 200,
+      "tag": "Health",
+      "url": "https://api.dealscale.io/api/v1/health-uncached"
+    },
+    {
+      "durationMs": 346,
+      "method": "GET",
+      "ok": true,
+      "operationId": "Mcp-get_mcp_status",
+      "path": "/api/v1/mcp/status",
+      "responsePreview": {
+        "status": "running",
+        "version": "1.0.0",
+        "available_tools": 24,
+        "available_resources": 2,
+        "available_prompts": 1,
+        "message": "MCP server is running with FastAPI integration",
+        "fastapi_integration": false
+      },
+      "status": 200,
+      "tag": "Mcp",
+      "url": "https://api.dealscale.io/api/v1/mcp/status"
+    },
+    {
+      "durationMs": 329,
+      "method": "GET",
+      "ok": true,
+      "operationId": "Mcp-health_check",
+      "path": "/api/v1/mcp/health",
+      "responsePreview": {
+        "status": "ok",
+        "service": "mcp"
+      },
+      "status": 200,
+      "tag": "Mcp",
+      "url": "https://api.dealscale.io/api/v1/mcp/health"
+    },
+    {
+      "durationMs": 364,
+      "method": "GET",
+      "ok": true,
+      "operationId": "Mcp-discovery",
+      "path": "/api/v1/mcp/discovery",
+      "responsePreview": {
+        "tools": [
+          {
+            "name": "encode_to_toon_format",
+            "description": "Encode a Python data structure to TOON (Token-Oriented Object Notation) format.\n\nTOON is optimized for LLM consumption with 30-60% fewer tokens than JSON.",
+            "category": null,
+            "url": "/.well-known/mcp/tools/encode_to_toon_format"
+          },
+          {
+            "name": "decode_from_toon_format",
+            "description": "Decode a TOON-formatted string back to Python data structure.",
+            "category": null,
+            "url": "/.well-known/mcp/tools/decode_from_toon_format"
+          },
+          {
+            "name": "compare_json_toon_formats",
+            "description": "Compare JSON and TOON formats for the same data structure.\n\nShows token efficiency and format differences.",
+            "category": null,
+            "url": "/.well-known/mcp/tools/compare_json_toon_formats"
+          },
+          {
+            "name": "get_toon_format_info",
+            "description": "Get information about TOON format and its benefits.",
+            "category": null,
+            "url": "/.well-known/mcp/tools/get_toon_format_info"
+          },
+          {
+            "name": "unipile_status",
+            "description": "Get Unipile configuration and linked-account status for a Deal Scale user.",
+            "category": null,
+            "url": "/.well-known/mcp/tools/unipile_status"
+          },
+          {
+            "name": "unipile_accounts_list",
+            "description": "List Unipile accounts linked to a Deal Scale user.",
+            "category": null,
+            "url": "/.well-known/mcp/tools/unipile_accounts_list"
+          },
+          {
+            "name": "unipile_accounts_link",
+            "description": "Link a Unipile account ID to a Deal Scale user.",
+            "category": null,
+            "url": "/.well-known/mcp/tools/unipile_accounts_link"
+          },
+          {
+            "name": "unipile_accounts_unlink",
+            "description": "Remove a linked Unipile account mapping from a Deal Scale user.",
+            "category": null,
+            "url": "/.well-known/mcp/tools/unipile_accounts_unlink"
+          },
+          {
+            "name": "unipile_accounts_get_remote",
+            "description": "Get remote Unipile account details for a linked account.",
+            "category": null,
+            "url": "/.well-known/mcp/tools/unipile_accounts_get_remote"
+          },
+          {
+            "name": "unipile_upstream_operations",
+            "description": "List backend-allowlisted Unipile upstream operations available through the secure proxy.",
+            "category": null,
+            "url": "/.well-known/mcp/tools/unipile_upstream_operations"
+          },
+          {
+            "name": "unipile_upstream_call",
+            "description": "Execute a backend-allowlisted Unipile upstream operation with account ownership checks.",
+            "category": null,
+            "url": "/.well-known/mcp/tools/unipile_upstream_call"
+          },
+          {
+            "name": "unipile_chats_list",
+            "description": "List chats for a linked Unipile account.",
+            "category": null,
+            "url": "/.well-known/mcp/tools/unipile_chats_list"
+          },
+          {
+            "name": "unipile_chats_start",
+            "description": "Start a Unipile chat and send the first message.",
+            "category": null,
+            "url": "/.well-known/mcp/tools/unipile_chats_start"
+          },
+          {
+            "name": "unipile_messages_send",
+            "description": "Send a message to an existing Unipile chat.",
+            "category": null,
+            "url": "/.well-known/mcp/tools/unipile_messages_send"
+          },
+          {
+            "name": "unipile_linkedin_relation_request",
+            "description": "Send a LinkedIn relation request through a linked Unipile account.",
+            "category": null,
+            "url": "/.well-known/mcp/tools/unipile_linkedin_relation_request"
+          },
+          {
+            "name": "compose_workflow",
+            "description": "Compose a new workflow from sub-workflows and scripts.\n\nThis tool allows you to create custom workflows by combining\nsub-workflows (audience_generation, campaign_creation, etc.) and\nscripts (voice.qualifier, sms.nurture, email.intro).",
+            "category": null,
+            "url": "/.well-known/mcp/tools/compose_workflow"
+          },
+          {
+            "name": "append_sub_workflow",
+            "description": "Append a sub-workflow to an existing workflow.\n\nThis allows you to stack sub-workflows onto an existing workflow,\nextending its functionality.",
+            "category": null,
+            "url": "/.well-known/mcp/tools/append_sub_workflow"
+          },
+          {
+            "name": "append_script",
+            "description": "Append a script phase to an existing workflow.\n\nThis allows you to add script-based phases (voice, SMS, email)\nto an existing workflow.",
+            "category": null,
+            "url": "/.well-known/mcp/tools/append_script"
+          },
+          {
+            "name": "list_composed_workflows",
+            "description": "List all composed workflows.\n\nReturns information about all workflows that have been composed\nusing the workflow composer.",
+            "category": null,
+            "url": "/.well-known/mcp/tools/list_composed_workflows"
+          },
+          {
+            "name": "get_workflow_details",
+            "description": "Get detailed information about a composed workflow.",
+            "category": null,
+            "url": "/.well-known/mcp/tools/get_workflow_details"
+          },
+          {
+            "name": "list_available_sub_workflows",
+            "description": "List all available sub-workflows that can be used in composition.",
+            "category": null,
+            "url": "/.well-known/mcp/tools/list_available_sub_workflows"
+          },
+          {
+            "name": "list_available_scripts",
+            "description": "List all available scripts that can be added to workflows.",
+            "category": null,
+            "url": "/.well-known/mcp/tools/list_available_scripts"
+          },
+          {
+            "name": "stack_workflows",
+            "description": "Stack multiple sub-workflows onto a base workflow.\n\nThis is a convenience function that appends multiple sub-workflows\nin sequence to an existing workflow.",
+            "category": null,
+            "url": "/.well-known/mcp/tools/stack_workflows"
+          },
+          {
+            "name": "calculate",
+            "description": "Perform a basic calculation operation.",
+            "category": null,
+            "url": "/.well-known/mcp/tools/calculate"
+          }
+        ],
+        "resources": [
+          {
+            "name": "get_server_info",
+            "uri": "config://server-info",
+            "description": "Returns server configuration information.\n\nArgs:\n    ctx: Optional MCP context for logging\n    \nReturns:\n    dict: Server information",
+            "mime_type": "text/plain"
+          },
+          {
+            "name": "get_app_version",
+            "uri": "config://app-version",
+            "description": "Returns the application version.",
+            "mime_type": "text/plain"
+          }
+        ],
+        "prompts": [
+          {
+            "name": "dealscale_master_orchestrator_prompt",
+            "description": "DealScale MCP A2A Master Orchestrator Prompt\n\nMaster prompt for orchestrating look-alike audience generation, campaign creation,\nenrichment, and multi-channel outreach using MCP + Agent-to-Agent (A2A) protocol.\n\nThis prompt defines:\n- 8 specialized agents (DataEngineer, AudienceArchitect, CampaignOrchestrator, etc.)\n- 7-phase master workflow (Ingest → Enrich → Audience → Campaign → Outreach → Feedback → Retrain)\n- Sales scripts for voice, SMS, and email outreach\n- Memory stores for persistent state\n- A2A feedback channels for continuous improvement\n\nVariables:\n- tenantId, leadList, campaignName, location, propertyType\n- ownerTimeInProperty, estimatedEquityPercentage, sellerIntentScore\n- responseRate, skipTraceStatus, leadScore, contactStatus\n\nReturns:\n    POML-formatted prompt string",
+            "url": "/.well-known/mcp/prompts/dealscale_master_orchestrator_prompt"
+          }
+        ],
+        "mcp_base_url": "/.well-known/mcp",
+        "documentation": "Check the FastMCP documentation for more details on how to use these endpoints.",
+        "fastapi_endpoints_count": 0
+      },
+      "status": 200,
+      "tag": "Mcp",
+      "url": "https://api.dealscale.io/api/v1/mcp/discovery"
+    },
+    {
+      "durationMs": 360,
+      "method": "GET",
+      "ok": true,
+      "operationId": "Mcp-list_tools",
+      "path": "/api/v1/mcp/tools/list",
+      "responsePreview": {
+        "tools": [
+          {
+            "name": "encode_to_toon_format",
+            "description": "Encode a Python data structure to TOON (Token-Oriented Object Notation) format.\n\nTOON is optimized for LLM consumption with 30-60% fewer tokens than JSON.",
+            "inputSchema": {}
+          },
+          {
+            "name": "decode_from_toon_format",
+            "description": "Decode a TOON-formatted string back to Python data structure.",
+            "inputSchema": {}
+          },
+          {
+            "name": "compare_json_toon_formats",
+            "description": "Compare JSON and TOON formats for the same data structure.\n\nShows token efficiency and format differences.",
+            "inputSchema": {}
+          },
+          {
+            "name": "get_toon_format_info",
+            "description": "Get information about TOON format and its benefits.",
+            "inputSchema": {}
+          },
+          {
+            "name": "unipile_status",
+            "description": "Get Unipile configuration and linked-account status for a Deal Scale user.",
+            "inputSchema": {}
+          },
+          {
+            "name": "unipile_accounts_list",
+            "description": "List Unipile accounts linked to a Deal Scale user.",
+            "inputSchema": {}
+          },
+          {
+            "name": "unipile_accounts_link",
+            "description": "Link a Unipile account ID to a Deal Scale user.",
+            "inputSchema": {}
+          },
+          {
+            "name": "unipile_accounts_unlink",
+            "description": "Remove a linked Unipile account mapping from a Deal Scale user.",
+            "inputSchema": {}
+          },
+          {
+            "name": "unipile_accounts_get_remote",
+            "description": "Get remote Unipile account details for a linked account.",
+            "inputSchema": {}
+          },
+          {
+            "name": "unipile_upstream_operations",
+            "description": "List backend-allowlisted Unipile upstream operations available through the secure proxy.",
+            "inputSchema": {}
+          },
+          {
+            "name": "unipile_upstream_call",
+            "description": "Execute a backend-allowlisted Unipile upstream operation with account ownership checks.",
+            "inputSchema": {}
+          },
+          {
+            "name": "unipile_chats_list",
+            "description": "List chats for a linked Unipile account.",
+            "inputSchema": {}
+          },
+          {
+            "name": "unipile_chats_start",
+            "description": "Start a Unipile chat and send the first message.",
+            "inputSchema": {}
+          },
+          {
+            "name": "unipile_messages_send",
+            "description": "Send a message to an existing Unipile chat.",
+            "inputSchema": {}
+          },
+          {
+            "name": "unipile_linkedin_relation_request",
+            "description": "Send a LinkedIn relation request through a linked Unipile account.",
+            "inputSchema": {}
+          },
+          {
+            "name": "compose_workflow",
+            "description": "Compose a new workflow from sub-workflows and scripts.\n\nThis tool allows you to create custom workflows by combining\nsub-workflows (audience_generation, campaign_creation, etc.) and\nscripts (voice.qualifier, sms.nurture, email.intro).",
+            "inputSchema": {}
+          },
+          {
+            "name": "append_sub_workflow",
+            "description": "Append a sub-workflow to an existing workflow.\n\nThis allows you to stack sub-workflows onto an existing workflow,\nextending its functionality.",
+            "inputSchema": {}
+          },
+          {
+            "name": "append_script",
+            "description": "Append a script phase to an existing workflow.\n\nThis allows you to add script-based phases (voice, SMS, email)\nto an existing workflow.",
+            "inputSchema": {}
+          },
+          {
+            "name": "list_composed_workflows",
+            "description": "List all composed workflows.\n\nReturns information about all workflows that have been composed\nusing the workflow composer.",
+            "inputSchema": {}
+          },
+          {
+            "name": "get_workflow_details",
+            "description": "Get detailed information about a composed workflow.",
+            "inputSchema": {}
+          },
+          {
+            "name": "list_available_sub_workflows",
+            "description": "List all available sub-workflows that can be used in composition.",
+            "inputSchema": {}
+          },
+          {
+            "name": "list_available_scripts",
+            "description": "List all available scripts that can be added to workflows.",
+            "inputSchema": {}
+          },
+          {
+            "name": "stack_workflows",
+            "description": "Stack multiple sub-workflows onto a base workflow.\n\nThis is a convenience function that appends multiple sub-workflows\nin sequence to an existing workflow.",
+            "inputSchema": {}
+          },
+          {
+            "name": "calculate",
+            "description": "Perform a basic calculation operation.",
+            "inputSchema": {}
+          }
+        ]
+      },
+      "status": 200,
+      "tag": "Mcp",
+      "url": "https://api.dealscale.io/api/v1/mcp/tools/list"
+    },
+    {
+      "durationMs": 409,
+      "method": "GET",
+      "ok": true,
+      "operationId": "Mcp-list_resources",
+      "path": "/api/v1/mcp/resources/list",
+      "responsePreview": {
+        "resources": [
+          {
+            "uri": "config://server-info",
+            "name": "get_server_info",
+            "description": "Returns server configuration information.\n\nArgs:\n    ctx: Optional MCP context for logging\n    \nReturns:\n    dict: Server information",
+            "mimeType": "text/plain"
+          },
+          {
+            "uri": "config://app-version",
+            "name": "get_app_version",
+            "description": "Returns the application version.",
+            "mimeType": "text/plain"
+          }
+        ]
+      },
+      "status": 200,
+      "tag": "Mcp",
+      "url": "https://api.dealscale.io/api/v1/mcp/resources/list"
+    },
+    {
+      "durationMs": 364,
+      "method": "GET",
+      "ok": true,
+      "operationId": "Mcp-list_prompts",
+      "path": "/api/v1/mcp/prompts/list",
+      "responsePreview": {
+        "prompts": [
+          {
+            "name": "dealscale_master_orchestrator_prompt",
+            "description": "DealScale MCP A2A Master Orchestrator Prompt\n\nMaster prompt for orchestrating look-alike audience generation, campaign creation,\nenrichment, and multi-channel outreach using MCP + Agent-to-Agent (A2A) protocol.\n\nThis prompt defines:\n- 8 specialized agents (DataEngineer, AudienceArchitect, CampaignOrchestrator, etc.)\n- 7-phase master workflow (Ingest → Enrich → Audience → Campaign → Outreach → Feedback → Retrain)\n- Sales scripts for voice, SMS, and email outreach\n- Memory stores for persistent state\n- A2A feedback channels for continuous improvement\n\nVariables:\n- tenantId, leadList, campaignName, location, propertyType\n- ownerTimeInProperty, estimatedEquityPercentage, sellerIntentScore\n- responseRate, skipTraceStatus, leadScore, contactStatus\n\nReturns:\n    POML-formatted prompt string",
+            "arguments": []
+          }
+        ]
+      },
+      "status": 200,
+      "tag": "Mcp",
+      "url": "https://api.dealscale.io/api/v1/mcp/prompts/list"
+    },
+    {
+      "durationMs": 159,
+      "method": "GET",
+      "ok": true,
+      "operationId": "Vapi-assistants_list",
+      "path": "/api/v1/vapi/assistants",
+      "responsePreview": {
+        "request_id": "81be5720da405e4fa51d3d47eaf593aa",
+        "error": {
+          "code": "AUTH_FORBIDDEN",
+          "message": "Could not validate credentials"
+        },
+        "timestamp": "2026-06-29T19:21:46.526201Z",
+        "path": "/api/v1/vapi/assistants"
+      },
+      "status": 403,
+      "tag": "Vapi",
+      "url": "https://api.dealscale.io/api/v1/vapi/assistants"
+    },
+    {
+      "method": "POST",
+      "ok": true,
+      "operationId": "Vapi-assistants_create",
+      "path": "/api/v1/vapi/assistants",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "Vapi"
+    },
+    {
+      "durationMs": 165,
+      "method": "GET",
+      "ok": true,
+      "operationId": "Vapi-assistants_get",
+      "path": "/api/v1/vapi/assistants/{assistant_id}",
+      "responsePreview": {
+        "request_id": "e0bc282eae279e50c222fa87dc09661d",
+        "error": {
+          "code": "AUTH_FORBIDDEN",
+          "message": "Could not validate credentials"
+        },
+        "timestamp": "2026-06-29T19:21:46.687975Z",
+        "path": "/api/v1/vapi/assistants/00000000-0000-4000-8000-000000000000"
+      },
+      "status": 403,
+      "tag": "Vapi",
+      "url": "https://api.dealscale.io/api/v1/vapi/assistants/00000000-0000-4000-8000-000000000000"
+    },
+    {
+      "method": "PATCH",
+      "ok": true,
+      "operationId": "Vapi-assistants_update",
+      "path": "/api/v1/vapi/assistants/{assistant_id}",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "Vapi"
+    },
+    {
+      "method": "DELETE",
+      "ok": true,
+      "operationId": "Vapi-assistants_delete",
+      "path": "/api/v1/vapi/assistants/{assistant_id}",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "Vapi"
+    },
+    {
+      "durationMs": 159,
+      "method": "GET",
+      "ok": true,
+      "operationId": "Vapi-calls_list",
+      "path": "/api/v1/vapi/calls",
+      "responsePreview": {
+        "request_id": "401d6f7fbc74508d17e45bdbc42014a0",
+        "error": {
+          "code": "AUTH_FORBIDDEN",
+          "message": "Could not validate credentials"
+        },
+        "timestamp": "2026-06-29T19:21:46.848956Z",
+        "path": "/api/v1/vapi/calls"
+      },
+      "status": 403,
+      "tag": "Vapi",
+      "url": "https://api.dealscale.io/api/v1/vapi/calls"
+    },
+    {
+      "method": "POST",
+      "ok": true,
+      "operationId": "Vapi-calls_create",
+      "path": "/api/v1/vapi/calls",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "Vapi"
+    },
+    {
+      "durationMs": 168,
+      "method": "GET",
+      "ok": true,
+      "operationId": "Vapi-calls_get",
+      "path": "/api/v1/vapi/calls/{call_id}",
+      "responsePreview": {
+        "request_id": "7f26dcc51e5f6ea0aa1f871c4dfc380b",
+        "error": {
+          "code": "AUTH_FORBIDDEN",
+          "message": "Could not validate credentials"
+        },
+        "timestamp": "2026-06-29T19:21:47.014255Z",
+        "path": "/api/v1/vapi/calls/00000000-0000-4000-8000-000000000000"
+      },
+      "status": 403,
+      "tag": "Vapi",
+      "url": "https://api.dealscale.io/api/v1/vapi/calls/00000000-0000-4000-8000-000000000000"
+    },
+    {
+      "durationMs": 162,
+      "method": "GET",
+      "ok": true,
+      "operationId": "Vapi-calls_get_credits",
+      "path": "/api/v1/vapi/calls/{call_id}/credits",
+      "responsePreview": {
+        "request_id": "a1c1e4f726ac0cf871c6a4ab7dfb4c88",
+        "error": {
+          "code": "AUTH_FORBIDDEN",
+          "message": "Could not validate credentials"
+        },
+        "timestamp": "2026-06-29T19:21:47.178745Z",
+        "path": "/api/v1/vapi/calls/00000000-0000-4000-8000-000000000000/credits"
+      },
+      "status": 403,
+      "tag": "Vapi",
+      "url": "https://api.dealscale.io/api/v1/vapi/calls/00000000-0000-4000-8000-000000000000/credits"
+    },
+    {
+      "method": "POST",
+      "ok": true,
+      "operationId": "Vapi-phone_numbers_create",
+      "path": "/api/v1/vapi/phone-numbers",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "Vapi"
+    },
+    {
+      "method": "PATCH",
+      "ok": true,
+      "operationId": "Vapi-phone_numbers_update",
+      "path": "/api/v1/vapi/phone-numbers/{phone_number_id}",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "Vapi"
+    },
+    {
+      "method": "DELETE",
+      "ok": true,
+      "operationId": "Vapi-phone_numbers_delete",
+      "path": "/api/v1/vapi/phone-numbers/{phone_number_id}",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "Vapi"
+    },
+    {
+      "method": "POST",
+      "ok": true,
+      "operationId": "Vapi-analytics_query",
+      "path": "/api/v1/vapi/analytics/query",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "Vapi"
+    },
+    {
+      "method": "POST",
+      "ok": true,
+      "operationId": "Vapi-analytics_get",
+      "path": "/api/v1/vapi/analytics/get",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "Vapi"
+    },
+    {
+      "durationMs": 167,
+      "method": "GET",
+      "ok": true,
+      "operationId": "Vapi-chat_list",
+      "path": "/api/v1/vapi/chat",
+      "responsePreview": {
+        "request_id": "0cb750110531de729221e5cad7be9218",
+        "error": {
+          "code": "AUTH_FORBIDDEN",
+          "message": "Could not validate credentials"
+        },
+        "timestamp": "2026-06-29T19:21:47.344947Z",
+        "path": "/api/v1/vapi/chat"
+      },
+      "status": 403,
+      "tag": "Vapi",
+      "url": "https://api.dealscale.io/api/v1/vapi/chat"
+    },
+    {
+      "method": "POST",
+      "ok": true,
+      "operationId": "Vapi-chat_create",
+      "path": "/api/v1/vapi/chat",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "Vapi"
+    },
+    {
+      "durationMs": 161,
+      "method": "GET",
+      "ok": true,
+      "operationId": "Vapi-chat_get",
+      "path": "/api/v1/vapi/chat/{chat_id}",
+      "responsePreview": {
+        "request_id": "39cd3bf1437e358d5ab86a740a3221f9",
+        "error": {
+          "code": "AUTH_FORBIDDEN",
+          "message": "Could not validate credentials"
+        },
+        "timestamp": "2026-06-29T19:21:47.507201Z",
+        "path": "/api/v1/vapi/chat/00000000-0000-4000-8000-000000000000"
+      },
+      "status": 403,
+      "tag": "Vapi",
+      "url": "https://api.dealscale.io/api/v1/vapi/chat/00000000-0000-4000-8000-000000000000"
+    },
+    {
+      "method": "POST",
+      "ok": true,
+      "operationId": "Vapi-chat_responses",
+      "path": "/api/v1/vapi/chat/{chat_id}/responses",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "Vapi"
+    },
+    {
+      "method": "POST",
+      "ok": true,
+      "operationId": "Vapi-provider_create",
+      "path": "/api/v1/vapi/provider/{provider}/{resource_name}",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "Vapi"
+    },
+    {
+      "durationMs": 162,
+      "method": "GET",
+      "ok": true,
+      "operationId": "Vapi-provider_list",
+      "path": "/api/v1/vapi/provider/{provider}/{resource_name}",
+      "responsePreview": {
+        "request_id": "c3032d6cb706e33bf366e0c18cb610c5",
+        "error": {
+          "code": "AUTH_FORBIDDEN",
+          "message": "Could not validate credentials"
+        },
+        "timestamp": "2026-06-29T19:21:47.668676Z",
+        "path": "/api/v1/vapi/provider/smoke-test/smoke-test"
+      },
+      "status": 403,
+      "tag": "Vapi",
+      "url": "https://api.dealscale.io/api/v1/vapi/provider/smoke-test/smoke-test"
+    },
+    {
+      "durationMs": 169,
+      "method": "GET",
+      "ok": true,
+      "operationId": "Vapi-provider_get",
+      "path": "/api/v1/vapi/provider/{provider}/{resource_name}/{resource_id}",
+      "responsePreview": {
+        "request_id": "4b923c946349400a29524f1aa04592e8",
+        "error": {
+          "code": "AUTH_FORBIDDEN",
+          "message": "Could not validate credentials"
+        },
+        "timestamp": "2026-06-29T19:21:47.838535Z",
+        "path": "/api/v1/vapi/provider/smoke-test/smoke-test/00000000-0000-4000-8000-000000000000"
+      },
+      "status": 403,
+      "tag": "Vapi",
+      "url": "https://api.dealscale.io/api/v1/vapi/provider/smoke-test/smoke-test/00000000-0000-4000-8000-000000000000"
+    },
+    {
+      "method": "PATCH",
+      "ok": true,
+      "operationId": "Vapi-provider_update",
+      "path": "/api/v1/vapi/provider/{provider}/{resource_name}/{resource_id}",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "Vapi"
+    },
+    {
+      "method": "DELETE",
+      "ok": true,
+      "operationId": "Vapi-provider_delete",
+      "path": "/api/v1/vapi/provider/{provider}/{resource_name}/{resource_id}",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "Vapi"
+    },
+    {
+      "method": "POST",
+      "ok": true,
+      "operationId": "Vapi-webhook_call_completion",
+      "path": "/api/v1/vapi/webhooks/call-completion",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "Vapi"
+    },
+    {
+      "method": "POST",
+      "ok": true,
+      "operationId": "SendBlueSms-send_message",
+      "path": "/api/v1/sendblue/send",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "SendBlueSms"
+    },
+    {
+      "method": "POST",
+      "ok": true,
+      "operationId": "SendBlueSms-receive_message",
+      "path": "/api/v1/sendblue/receive",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "SendBlueSms"
+    },
+    {
+      "durationMs": 364,
+      "method": "GET",
+      "ok": true,
+      "operationId": "SendBlueSms-get_thread_info",
+      "path": "/api/v1/sendblue/threads/{recipient}",
+      "responsePreview": {
+        "request_id": "d5151890b272463c564f4ec1669fd196",
+        "error": {
+          "code": "VALIDATION_ERROR",
+          "message": "Invalid phone number: Cannot determine country code for: smoke-test. Please provide E.164 format (+15551234567)"
+        },
+        "timestamp": "2026-06-29T19:21:48.200338Z",
+        "path": "/api/v1/sendblue/threads/smoke-test"
+      },
+      "status": 400,
+      "tag": "SendBlueSms",
+      "url": "https://api.dealscale.io/api/v1/sendblue/threads/smoke-test"
+    },
+    {
+      "method": "POST",
+      "ok": true,
+      "operationId": "DirectMail-send_direct_mail",
+      "path": "/api/v1/messaging/direct-mail/send",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "DirectMail"
+    },
+    {
+      "method": "POST",
+      "ok": true,
+      "operationId": "DirectMail-track_engagement",
+      "path": "/api/v1/messaging/direct-mail/track-engagement",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "DirectMail"
+    },
+    {
+      "durationMs": 900,
+      "method": "GET",
+      "ok": true,
+      "operationId": "DirectMail-get_campaign_stats",
+      "path": "/api/v1/messaging/direct-mail/campaigns/{campaign_id}",
+      "responsePreview": {
+        "request_id": "a080a4ce1c9812f767d9534ee7f56c88",
+        "error": {
+          "code": "NOT_FOUND",
+          "message": "The requested resource was not found"
+        },
+        "timestamp": "2026-06-29T19:21:49.102613Z",
+        "path": "/api/v1/messaging/direct-mail/campaigns/00000000-0000-4000-8000-000000000000"
+      },
+      "status": 404,
+      "tag": "DirectMail",
+      "url": "https://api.dealscale.io/api/v1/messaging/direct-mail/campaigns/00000000-0000-4000-8000-000000000000"
+    },
+    {
+      "method": "POST",
+      "ok": true,
+      "operationId": "FacebookMessenger-send_dm",
+      "path": "/api/v1/messaging/facebook/send",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "FacebookMessenger"
+    },
+    {
+      "method": "POST",
+      "ok": true,
+      "operationId": "FacebookMessenger-comment_to_dm",
+      "path": "/api/v1/messaging/facebook/comment-to-dm",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "FacebookMessenger"
+    },
+    {
+      "method": "POST",
+      "ok": true,
+      "operationId": "FacebookMessenger-webhook",
+      "path": "/api/v1/messaging/facebook/webhook",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "FacebookMessenger"
+    },
+    {
+      "durationMs": 392,
+      "method": "GET",
+      "ok": true,
+      "operationId": "FacebookMessenger-get_thread_info",
+      "path": "/api/v1/messaging/facebook/threads/{recipient_id}",
+      "responsePreview": {
+        "request_id": "4e93966d3d3c1e9bce32c4a432d2a787",
+        "error": {
+          "code": "VALIDATION_ERROR",
+          "message": "Recipient ID cannot be a zero UUID placeholder.",
+          "details": {
+            "provider": "FACEBOOK",
+            "recipient": "00000000-0000-4000-8000-000000000000"
+          }
+        },
+        "timestamp": "2026-06-29T19:21:49.492547Z",
+        "path": "/api/v1/messaging/facebook/threads/00000000-0000-4000-8000-000000000000"
+      },
+      "status": 400,
+      "tag": "FacebookMessenger",
+      "url": "https://api.dealscale.io/api/v1/messaging/facebook/threads/00000000-0000-4000-8000-000000000000"
+    },
+    {
+      "method": "POST",
+      "ok": true,
+      "operationId": "LinkedinMessaging-send_message",
+      "path": "/api/v1/messaging/linkedin/send",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "LinkedinMessaging"
+    },
+    {
+      "method": "POST",
+      "ok": true,
+      "operationId": "LinkedinMessaging-webhook",
+      "path": "/api/v1/messaging/linkedin/webhook",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "LinkedinMessaging"
+    },
+    {
+      "durationMs": 358,
+      "method": "GET",
+      "ok": true,
+      "operationId": "LinkedinMessaging-get_thread_info",
+      "path": "/api/v1/messaging/linkedin/threads/{recipient_id}",
+      "responsePreview": {
+        "request_id": "44d3611d41078f64c561532c594c1b04",
+        "error": {
+          "code": "VALIDATION_ERROR",
+          "message": "Recipient ID cannot be a zero UUID placeholder.",
+          "details": {
+            "provider": "LINKEDIN",
+            "recipient": "00000000-0000-4000-8000-000000000000"
+          }
+        },
+        "timestamp": "2026-06-29T19:21:49.851165Z",
+        "path": "/api/v1/messaging/linkedin/threads/00000000-0000-4000-8000-000000000000"
+      },
+      "status": 400,
+      "tag": "LinkedinMessaging",
+      "url": "https://api.dealscale.io/api/v1/messaging/linkedin/threads/00000000-0000-4000-8000-000000000000"
+    },
+    {
+      "method": "POST",
+      "ok": true,
+      "operationId": "RealPhoneValidation-dnc_lookup",
+      "path": "/api/v1/realphonevalidation/dnc/lookup",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "RealPhoneValidation"
+    },
+    {
+      "durationMs": 165,
+      "method": "GET",
+      "ok": true,
+      "operationId": "RealPhoneValidation-dnc_lookup_get",
+      "path": "/api/v1/realphonevalidation/dnc/lookup/{phone}",
+      "responsePreview": {
+        "request_id": "dee58cf802b795423ea6bd793d8153ea",
+        "error": {
+          "code": "VALIDATION_ERROR",
+          "message": "Phone number must be exactly 10 numeric digits.",
+          "details": {
+            "provider": "REALPHONEVALIDATION",
+            "phone": "+15555550123"
+          }
+        },
+        "timestamp": "2026-06-29T19:21:50.014847Z",
+        "path": "/api/v1/realphonevalidation/dnc/lookup/+15555550123"
+      },
+      "status": 400,
+      "tag": "RealPhoneValidation",
+      "url": "https://api.dealscale.io/api/v1/realphonevalidation/dnc/lookup/%2B15555550123"
+    },
+    {
+      "method": "POST",
+      "ok": true,
+      "operationId": "Usps-verify_address",
+      "path": "/api/v1/usps/verify-address",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "Usps"
+    },
+    {
+      "durationMs": 166,
+      "method": "GET",
+      "ok": true,
+      "operationId": "Usps-verify_address_get",
+      "path": "/api/v1/usps/verify-address",
+      "responsePreview": {
+        "request_id": "e234f82876c1bcdf3b906a05fc00e91a",
+        "error": {
+          "code": "PROVIDER_NOT_CONFIGURED",
+          "message": "USPS provider is not configured",
+          "details": {
+            "provider": "usps"
+          }
+        },
+        "timestamp": "2026-06-29T19:21:50.182266Z",
+        "path": "/api/v1/usps/verify-address"
+      },
+      "status": 503,
+      "tag": "Usps",
+      "url": "https://api.dealscale.io/api/v1/usps/verify-address?street_address=smoke-test"
+    },
+    {
+      "method": "POST",
+      "ok": true,
+      "operationId": "Usps-lookup_zip_code",
+      "path": "/api/v1/usps/lookup-zipcode",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "Usps"
+    },
+    {
+      "method": "POST",
+      "ok": true,
+      "operationId": "Sentiment-analyze_sentiment_endpoint",
+      "path": "/api/v1/sentiment/analyze",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "Sentiment"
+    },
+    {
+      "durationMs": 169,
+      "method": "GET",
+      "ok": true,
+      "operationId": "Sentiment-analyze_sentiment_get",
+      "path": "/api/v1/sentiment/analyze",
+      "responsePreview": {
+        "request_id": "c79fd7302ebd7d8aa7e6ccfa315b588b",
+        "error": {
+          "code": "VALIDATION_ERROR",
+          "message": "Failed to analyze sentiment: \nLooks like you are missing some required data for this feature.\n\nTo download the necessary data, simply run\n\n    python -m textblob.download_corpora\n\nor use the NLTK downloader to download the missing data: http://nltk.org/data.html\nIf this doesn't fix the problem, file an issue at https://github.com/sloria/TextBlob/issues.\n"
+        },
+        "timestamp": "2026-06-29T19:21:50.351002Z",
+        "path": "/api/v1/sentiment/analyze"
+      },
+      "status": 400,
+      "tag": "Sentiment",
+      "url": "https://api.dealscale.io/api/v1/sentiment/analyze?text=smoke-test"
+    },
+    {
+      "method": "POST",
+      "ok": true,
+      "operationId": "Sentiment-analyze_batch_sentiment_endpoint",
+      "path": "/api/v1/sentiment/analyze-batch",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "Sentiment"
+    },
+    {
+      "method": "POST",
+      "ok": true,
+      "operationId": "Email Validation-check_email",
+      "path": "/api/v1/email-validation/check",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "Email Validation"
+    },
+    {
+      "durationMs": 242,
+      "method": "GET",
+      "ok": true,
+      "operationId": "Email Validation-health",
+      "path": "/api/v1/email-validation/health",
+      "responsePreview": {
+        "healthy": true,
+        "base_url": "http://10.0.0.5:8080",
+        "has_secret": true
+      },
+      "status": 200,
+      "tag": "Email Validation",
+      "url": "https://api.dealscale.io/api/v1/email-validation/health"
+    },
+    {
+      "method": "POST",
+      "ok": true,
+      "operationId": "Analytics-process_analytics",
+      "path": "/api/v1/analytics/process",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "Analytics"
+    },
+    {
+      "durationMs": 161,
+      "method": "GET",
+      "ok": true,
+      "operationId": "Analytics-stream_analytics",
+      "path": "/api/v1/analytics/stream/{metric_type}",
+      "responsePreview": {
+        "request_id": "eec9e1873f63a74335e2929b0a480850",
+        "error": {
+          "code": "AUTH_FORBIDDEN",
+          "message": "Could not validate credentials"
+        },
+        "timestamp": "2026-06-29T19:21:50.755602Z",
+        "path": "/api/v1/analytics/stream/smoke-test"
+      },
+      "status": 403,
+      "tag": "Analytics",
+      "url": "https://api.dealscale.io/api/v1/analytics/stream/smoke-test"
+    },
+    {
+      "method": "POST",
+      "ok": true,
+      "operationId": "Analytics-aggregate_metrics",
+      "path": "/api/v1/analytics/aggregate",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "Analytics"
+    },
+    {
+      "durationMs": 383,
+      "method": "GET",
+      "ok": true,
+      "operationId": "SecretsManager-get_secrets_status",
+      "path": "/api/v1/secrets/status",
+      "responsePreview": {
+        "request_id": "1cc8b25a3b8a4f649fdbbafa040fa1a7",
+        "error": {
+          "code": "AUTH_REQUIRED",
+          "message": "Could not validate credentials: (psycopg.OperationalError) failed to resolve host 'dpg-d1455bvfte5s73e00r40-a': [Errno -2] Name or service not known\n(Background on this error at: https://sqlalche.me/e/20/e3q8)"
+        },
+        "timestamp": "2026-06-29T19:21:51.138937Z",
+        "path": "/api/v1/secrets/status"
+      },
+      "status": 401,
+      "tag": "SecretsManager",
+      "url": "https://api.dealscale.io/api/v1/secrets/status"
+    },
+    {
+      "method": "POST",
+      "ok": true,
+      "operationId": "SecretsManager-rotate_secret",
+      "path": "/api/v1/secrets/rotate",
+      "skipped": true,
+      "skipReason": "mutating operations are disabled by default",
+      "tag": "SecretsManager"
+    },
+    {
+      "durationMs": 382,
+      "method": "GET",
+      "ok": true,
+      "operationId": "SecretsManager-get_rotation_status",
+      "path": "/api/v1/secrets/rotation-status",
+      "responsePreview": {
+        "request_id": "cf3d3ac23d8d61966944e7b4c48eaf6c",
+        "error": {
+          "code": "AUTH_REQUIRED",
+          "message": "Could not validate credentials: (psycopg.OperationalError) failed to resolve host 'dpg-d1455bvfte5s73e00r40-a': [Errno -2] Name or service not known\n(Background on this error at: https://sqlalche.me/e/20/e3q8)"
+        },
+        "timestamp": "2026-06-29T19:21:51.519205Z",
+        "path": "/api/v1/secrets/rotation-status"
+      },
+      "status": 401,
+      "tag": "SecretsManager",
+      "url": "https://api.dealscale.io/api/v1/secrets/rotation-status"
+    },
+    {
+      "durationMs": 483,
+      "method": "GET",
+      "ok": true,
+      "operationId": "api-metrics",
+      "path": "/metrics",
+      "responsePreview": "# HELP python_gc_objects_collected_total Objects collected during gc\n# TYPE python_gc_objects_collected_total counter\npython_gc_objects_collected_total{generation=\"0\"} 28857.0\npython_gc_objects_collected_total{generation=\"1\"} 52836.0\npython_gc_objects_collected_total{generation=\"2\"} 2164.0\n# HELP python_gc_objects_uncollectable_total Uncollectable objects found during GC\n# TYPE python_gc_objects_uncollectable_total counter\npython_gc_objects_uncollectable_total{generation=\"0\"} 0.0\npython_gc_objec",
+      "status": 200,
+      "tag": "untagged",
+      "url": "https://api.dealscale.io/metrics"
+    }
+  ],
+  "summary": {
+    "apiBaseUrl": "https://api.dealscale.io",
+    "auth": {
+      "email": "codex-smoke-1782760878197@example.com",
+      "loginStatus": 200,
+      "signupStatus": 201
+    },
+    "failed": 0,
+    "generatedAt": "2026-06-29T19:21:52.085Z",
+    "mutatingAllowlist": [],
+    "mutatingEnabled": false,
+    "passed": 74,
+    "skipped": 99,
+    "total": 173
+  }
+}
