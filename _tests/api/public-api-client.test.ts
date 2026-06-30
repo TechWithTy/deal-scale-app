@@ -7,7 +7,9 @@ import {
 	isProviderUnavailable,
 	loginPublicApi,
 	publicApiFetch,
+	resetPasswordPublicApi,
 	searchProspecting,
+	setPasswordPublicApi,
 } from "@/lib/api/public-api-client";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -74,6 +76,54 @@ describe("public API client", () => {
 		expect(pathname).toBe("/api/v1/auth/logout");
 		expect(init?.method).toBe("POST");
 		expect(headers.get("Authorization")).toBe("Bearer token-123");
+	});
+
+	it("requests a password reset through the public API auth endpoint", async () => {
+		vi.stubGlobal(
+			"fetch",
+			vi.fn(async () => {
+				return new Response(JSON.stringify({ message: "sent" }), {
+					status: 200,
+				});
+			}),
+		);
+
+		await resetPasswordPublicApi("user@example.com");
+
+		const [pathname, init] = vi.mocked(fetch).mock.calls[0];
+		expect(pathname).toBe("/api/v1/auth/reset-password");
+		expect(init?.method).toBe("POST");
+		expect(JSON.parse(String(init?.body))).toEqual({
+			email: "user@example.com",
+		});
+	});
+
+	it("sets a password through the public API auth endpoint", async () => {
+		vi.stubGlobal(
+			"fetch",
+			vi.fn(async () => {
+				return new Response(JSON.stringify({ message: "updated" }), {
+					status: 200,
+				});
+			}),
+		);
+
+		await setPasswordPublicApi({
+			confirm_password: "Password123!",
+			email: "user@example.com",
+			new_password: "Password123!",
+			token: "reset-token",
+		});
+
+		const [pathname, init] = vi.mocked(fetch).mock.calls[0];
+		expect(pathname).toBe("/api/v1/auth/set-password");
+		expect(init?.method).toBe("POST");
+		expect(JSON.parse(String(init?.body))).toEqual({
+			confirm_password: "Password123!",
+			email: "user@example.com",
+			new_password: "Password123!",
+			token: "reset-token",
+		});
 	});
 
 	it("builds prospecting search query parameters", async () => {

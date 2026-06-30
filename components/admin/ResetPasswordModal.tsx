@@ -8,8 +8,7 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { resetPasswordPublicApi } from "@/lib/api/public-api-client";
 import { useState } from "react";
 
 interface ResetPasswordModalProps {
@@ -33,12 +32,7 @@ export default function ResetPasswordModal({
 
 		setLoading(true);
 		try {
-			// Mock API call
-			await new Promise((resolve) => setTimeout(resolve, 500));
-
-			// In a real implementation, you would call:
-			// await fetch(`/api/v1/admin/users/${user.id}/reset-password`, { method: 'POST' });
-
+			await resetPasswordPublicApi(user.email);
 			onReset(user.id);
 			setSuccess(true);
 

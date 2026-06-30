@@ -1,39 +1,65 @@
 "use client";
 
-// import { resetPassword } from "@/actions/auth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/use-toast";
+import { setPasswordPublicApi } from "@/lib/api/public-api-client";
 import { useRouter, useSearchParams } from "next/navigation";
 import type React from "react";
-import { useState, useTransition } from "react";
+import { useState } from "react";
 
 const ResetPassword = () => {
 	const [error, setError] = useState<string | null>(null);
-	const [isPending, startTransition] = useTransition();
-	const [loading, setIsLoading] = useState<boolean>(false);
+	const [isPending, setIsPending] = useState(false);
 	const router = useRouter();
 	const searchParams = useSearchParams();
-	const token = searchParams.get("token"); // Extract token from URL
+	const token = searchParams.get("token");
+	const emailParam = searchParams.get("email") ?? "";
 
 	const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
 		event.preventDefault();
 		setError(null);
-		setIsLoading(true);
 
-		// const formData = new FormData(event.currentTarget);
-		// const password = formData.get("password") as string;
-		// const result = await resetPassword(
-		// 	formData,
-		// 	searchParams.get("code") as string,
-		// );
+		const formData = new FormData(event.currentTarget);
+		const email = String(formData.get("email") ?? "").trim();
+		const password = String(formData.get("password") ?? "");
+		const confirmPassword = String(formData.get("confirmPassword") ?? "");
 
-		// if (result.status === "success") {
-		// 	router.push("login");
-		// }
+		if (!token) {
+			setError("Reset token is missing or expired.");
+			return;
+		}
+		if (!email) {
+			setError("Email is required.");
+			return;
+		}
+		if (password !== confirmPassword) {
+			setError("Passwords do not match.");
+			return;
+		}
 
-		setIsLoading(false);
+		setIsPending(true);
+		try {
+			await setPasswordPublicApi({
+				confirm_password: confirmPassword,
+				email,
+				new_password: password,
+				token,
+			});
+			toast({
+				title: "Password updated",
+				variant: "default",
+				description: "Sign in with your new password.",
+			});
+			router.push("/signin");
+		} catch (err) {
+			setError(
+				err instanceof Error ? err.message : "Unable to update password.",
+			);
+		} finally {
+			setIsPending(false);
+		}
 	};
 
 	return (
@@ -45,9 +71,24 @@ const ResetPassword = () => {
 				<CardContent>
 					<form onSubmit={handleSubmit} className="space-y-4">
 						<Input
+							name="email"
+							type="email"
+							placeholder="Enter your email"
+							defaultValue={emailParam}
+							disabled={isPending}
+							required
+						/>
+						<Input
 							name="password"
 							type="password"
 							placeholder="Enter new password"
+							disabled={isPending}
+							required
+						/>
+						<Input
+							name="confirmPassword"
+							type="password"
+							placeholder="Confirm new password"
 							disabled={isPending}
 							required
 						/>

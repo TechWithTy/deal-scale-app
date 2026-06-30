@@ -25,6 +25,8 @@ Last updated: 2026-06-30
   - Sign-up calls `/api/v1/auth/signup`, then establishes the normal NextAuth/public-token session.
   - Logout calls public API logout when a token exists, then continues local signout.
   - Profile status reads public API profile state from the session token.
+  - Forgot/reset password forms call `/api/v1/auth/reset-password` and
+    `/api/v1/auth/set-password`.
 - Lead list index is migrated for Phase 1:
   - Saved lead lists load from `/api/v1/lead-lists`.
   - Cashbuyer rows load from `/api/v1/cashbuyers` with prospecting fallback.
@@ -55,6 +57,8 @@ Last updated: 2026-06-30
   - Usage and upgrade modals read live tiers from `/api/v1/payments/pricing/tiers`.
   - Custom credit purchases create Stripe checkout sessions through `/api/v1/payments/checkout`.
   - Checkout redirects only when the API returns a valid HTTPS session URL.
+  - Legacy `/api/plans` and `/api/payments/session` probes were removed from
+    plan/payment helpers.
   - Subscription/cart checkout remains pending until cart ownership and product semantics are confirmed.
 - Backend handoff for unresolved contracts: [public-api-backend-gap-handoff-2026-06-29.md](./public-api-backend-gap-handoff-2026-06-29.md)
 
@@ -63,6 +67,7 @@ Last updated: 2026-06-30
 - [x] Create public API auth/profile/prospecting wrappers.
 - [x] Keep NextAuth as the app session layer while storing public API tokens in the session.
 - [x] Call public API logout before local NextAuth signout when a token exists.
+- [x] Wire forgot/reset password screens to `/api/v1/auth/reset-password` and `/api/v1/auth/set-password`.
 - [x] Replace manual profile API credential entry with session-backed profile sync.
 - [x] Add cashbuyer/prospecting source discovery with fixture fallback.
 - [x] Wire Phase 1 cashbuyer endpoint with prospecting fallback.
@@ -88,18 +93,18 @@ Last updated: 2026-06-30
 
 | Area / route | Current frontend source | Target public API | Status | Next action |
 | --- | --- | --- | --- | --- |
-| Login / signup | NextAuth session UI with public API token bridge | `/api/v1/auth/login`, `/api/v1/auth/signup` | done | Login and signup use the public API while NextAuth remains the browser session owner. Password reset remains separate until a public contract exists. |
+| Login / signup / password reset | NextAuth session UI with public API token bridge | `/api/v1/auth/login`, `/api/v1/auth/signup`, `/api/v1/auth/reset-password`, `/api/v1/auth/set-password` | done | Login, signup, forgot-password, reset-password, and admin reset email requests use the public API while NextAuth remains the browser session owner. Backend delivery/security evidence remains tracked under BE-12. |
 | Logout | NextAuth `signOut` | `/api/v1/auth/logout` | partial | Public API logout runs when a session token exists, then local signout continues. |
 | Profile status | Manual public API token prompt | `/api/v1/auth/me`, `/api/v1/auth/profile-setup` | done | Uses session-backed public API token. |
 | Lead list index | Public API rows with fixture fallback | `/api/v1/lead-lists`, `/api/v1/lead-lists/{list_id}/leads` | phase1_wired | Saved lead-list rows and lead-list slug hydrate from Phase 1 contracts when a token exists. |
 | Cashbuyers | Public API cashbuyer row with fallback | `/api/v1/cashbuyers`, `/api/v1/cashbuyers/{id}` | phase1_wired | Cashbuyer list loading uses the dedicated Phase 1 endpoint first and prospecting fallback second. |
 | Lead detail | Public API lead detail with local fallback | `/api/v1/leads/{lead_id}` | phase1_wired | Individual lead slugs attempt public API lead detail after local fixture lookup. |
-| Property detail | Public API property detail with existing fallback | `/api/v1/properties/{property_id}` | phase1_wired | Property detail route tries Phase 1 property detail before the existing property source/mock. |
+| Property detail | Public API property detail with mock fallback | `/api/v1/properties/{property_id}` | phase1_wired | Property detail route and client refresh use the Phase 1 property contract; local mock fallback remains for missing token, empty data, or failed calls. |
 | Campaigns | Public API campaign list/create/status overlay | `/api/v1/campaigns`, `/api/v1/campaigns/{campaign_id}`, `/api/v1/campaigns/{campaign_id}/status` | phase1_wired | List/create/status are consumed; update/cancel/delete wrappers are ready for table action replacement after BE-22 fixture coverage. |
 | Credits / usage | Public API balance, stats, history, and expiration data | `/api/v1/credits/*` | done | Confirmed read surfaces are wired in the usage modal. |
 | Admin users | Public API search/action/log overlays with mock fallback | `/api/v1/admin/users/*` | partial | Search, logs, adjust credits, and retry provisioning are wired; public impersonation is session-contract blocked. |
 | Team | Public API organization/member/invitation/activity UI | `/api/v1/team/*` | partial | Confirmed operations are wired; member list lacks identity fields and update supports only role/status. |
-| Payments / cart | Public API custom-credit checkout plus static subscription plans | `/api/v1/payments/*`, `/api/v1/cart*` | partial | Credit tiers and checkout are live in usage/upgrade modals; subscription products, cart state, and billing management remain pending. |
+| Payments / cart | Public API custom-credit checkout and pricing tiers | `/api/v1/payments/*`, `/api/v1/cart*` | partial | Credit tiers, plan helper pricing, and checkout are live through public API payment wrappers; subscription products, cart state, and billing management remain pending. |
 | Messaging | Provider-specific local flows and placeholders | `/api/v1/messaging/*`, `/api/v1/twilio/*`, `/api/v1/sendblue/*` | blocked_product_mapping | Backend must confirm which endpoint owns each chat/campaign action and provider prerequisites. |
 | Enrichment | Tool-specific UI and fixtures | `/api/v1/enrich/*` | blocked_product_mapping | Backend/product must map enrichment operations to existing tool surfaces and configured-provider requirements. |
 | Integrations | Connection UI and provider status cards | `/api/v1/integrations/ghl/calendar/*`, `/api/v1/credentials/*` | blocked_product_mapping | Shared provider error handling exists; canonical connection/status operations are not assigned to the current webhook-oriented UI. |
@@ -111,6 +116,8 @@ Last updated: 2026-06-30
 | --- | --- | --- | --- |
 | `/dashboard` | aggregate/profile/activity/credits | partial | Usage modal uses balance, history, stats, and expiring-credit APIs; unrelated aggregate cards still need endpoint ownership. |
 | `/dashboard/profile` | auth/profile | done | Profile status uses session public API token. |
+| `/forgot-password` | auth/password reset | done | Sends reset email requests through `/api/v1/auth/reset-password`. |
+| `/reset-password` | auth/password reset | done | Completes reset tokens through `/api/v1/auth/set-password`. |
 | `/dashboard/lead-list` | prospecting/cashbuyers | phase1_wired | Loads `/api/v1/lead-lists` plus `/api/v1/cashbuyers` when authenticated; fallback rows remain for empty/error states. |
 | `/dashboard/lead-list/[leadId]` | lead lists | phase1_wired | Hydrates from `/api/v1/lead-lists/{list_id}` and `/api/v1/lead-lists/{list_id}/leads`, with local fallback. |
 | `/dashboard/lead-list/[leadId]/lead/[individualLeadId]` | lead detail | phase1_wired | Resolves local lead first, then `/api/v1/leads/{lead_id}` plus list context. |
@@ -129,7 +136,7 @@ Last updated: 2026-06-30
 | `/dashboard/deal-room/[dealId]` | no public contract identified | blocked_backend_contract | Track once backend exposes deal detail API. |
 | `/dashboard/kanban` | no public contract identified | blocked_backend_contract | Current board appears local/store-backed. |
 | `/dashboard/market` | prospecting/market leads | fallback_mock | Route currently renders the market-leads experience; it is not the payment catalog surface. |
-| `/dashboard/properties/[propertyId]` | property detail | phase1_wired | Tries `/api/v1/properties/{property_id}` first when authenticated, then existing property source/mock. |
+| `/dashboard/properties/[propertyId]` | property detail | phase1_wired | Uses `/api/v1/properties/{property_id}` when authenticated, including client refresh; local mock remains for missing token, empty data, or failed calls. |
 | `/dashboard/quickstart` | auth/profile/campaigns/prospecting | partial | Depends on profile and downstream lead/campaign adapters. |
 | `/dashboard/resources` | static/resources | not_applicable | Static resource route does not require a public API contract. |
 | `/admin` | admin/users | partial | Roadmap page only; no live API call required yet. |
@@ -162,6 +169,8 @@ Status values:
 - Focused auth/credits/admin/team/payments/dashboard Vitest run: `30/30` passed.
 - TypeScript: `pnpm typecheck` passed.
 - Production API baseline remains `173/173` from the completed full smoke run.
+- Phase 2 password reset wiring: `_tests/api/public-api-client.test.ts`
+  `14/14` passed.
 
 ## Remaining frontend boundary
 

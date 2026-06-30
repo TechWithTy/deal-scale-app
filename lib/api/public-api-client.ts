@@ -40,6 +40,8 @@ export type PublicApiSignupRequest = {
 
 export type PublicApiRefreshResponse = PublicApiLoginResponse;
 
+export type PublicApiPasswordResetResponse = Record<string, string>;
+
 export type PublicApiUser = {
 	available_credits?: number;
 	credit_breakdown?: Record<string, unknown> | null;
@@ -279,6 +281,31 @@ export function refreshPublicApi(refreshToken: string) {
 		body: { refresh_token: refreshToken },
 		method: "POST",
 	});
+}
+
+export function resetPasswordPublicApi(email: string) {
+	return publicApiFetch<PublicApiPasswordResetResponse>(
+		"/api/v1/auth/reset-password",
+		{
+			body: { email },
+			method: "POST",
+		},
+	);
+}
+
+export function setPasswordPublicApi(body: {
+	confirm_password: string;
+	email: string;
+	new_password: string;
+	token: string;
+}) {
+	return publicApiFetch<PublicApiPasswordResetResponse>(
+		"/api/v1/auth/set-password",
+		{
+			body,
+			method: "POST",
+		},
+	);
 }
 
 export function getCurrentUserProfile(token?: string) {

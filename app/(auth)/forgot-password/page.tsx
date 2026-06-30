@@ -1,34 +1,48 @@
 "use client";
 
-// import { forgotPassword } from "@/actions/auth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { resetPasswordPublicApi } from "@/lib/api/public-api-client";
 import type React from "react";
-import { useState, useTransition } from "react";
+import { useState } from "react";
 import { useToast } from "../../../components/ui/use-toast";
 
 const ForgotPassword = () => {
 	const [error, setError] = useState<string | null>(null);
-	const [isPending, startTransition] = useTransition();
+	const [isPending, setIsPending] = useState(false);
 	const { toast } = useToast();
+
 	const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
 		event.preventDefault();
 		setError(null);
+		const formData = new FormData(event.currentTarget);
+		const email = String(formData.get("email") ?? "").trim();
 
-		// const formData = new FormData(event.currentTarget);
-		// const result = await forgotPassword(formData);
+		if (!email) {
+			setError("Email is required.");
+			return;
+		}
 
-		// if (result.status === "success") {
-		// 	setError(null);
-		// 	toast({
-		// 		title: "Email Sent",
-		// 		variant: "default",
-		// 		description: "Please Check Your Email",
-		// 	});
-		// } else {
-		// 	setError(result.status);
-		// }
+		setIsPending(true);
+		try {
+			await resetPasswordPublicApi(email);
+			toast({
+				title: "Email sent",
+				variant: "default",
+				description:
+					"If the account exists, reset instructions will arrive shortly.",
+			});
+			event.currentTarget.reset();
+		} catch (err) {
+			setError(
+				err instanceof Error
+					? err.message
+					: "Unable to send reset instructions.",
+			);
+		} finally {
+			setIsPending(false);
+		}
 	};
 
 	return (
