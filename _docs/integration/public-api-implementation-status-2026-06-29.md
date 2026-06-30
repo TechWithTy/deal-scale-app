@@ -62,6 +62,36 @@ Last updated: 2026-06-30
   - Subscription/cart checkout remains pending until cart ownership and product semantics are confirmed.
 - Backend handoff for unresolved contracts: [public-api-backend-gap-handoff-2026-06-29.md](./public-api-backend-gap-handoff-2026-06-29.md)
 
+## Current remaining gaps
+
+These are the current blockers after the latest frontend commits:
+
+| Gap | Status | Current blocker | Frontend behavior until resolved |
+| --- | --- | --- | --- |
+| `BE-05` Admin user detail | blocked_backend_contract | No dedicated `GET /api/v1/admin/users/{user_id}` detail contract. Search results are not reliable detail payloads. | Admin detail views keep fallback directory data and only overlay logs/actions that have public wrappers. |
+| `BE-06` Admin lifecycle actions | partial | Credit adjustment, provisioning retry, logs, and reset-email request are wired. Ban/suspend/edit/access/reset-password-as-admin-specific-action support is not defined. | Unsupported actions remain guarded or use existing UI fallback; no fake successful mutations should be added. |
+| `BE-07` Admin impersonation | blocked_backend_contract | Impersonation token/session exchange into NextAuth and restore behavior are undefined. | Public impersonation endpoints are wrapped but not installed into the browser session. |
+| `BE-08` Team member identity | blocked_backend_contract | `TeamMemberPublic` lacks dependable email/display name fields for table/detail rendering. | Team pages use public role/status where available with fallback identity data. |
+| `BE-09` Team permissions/profile mutation | blocked_backend_contract | Backend must either confirm role/status-only scope or expose typed profile/permission fields. | Employee edit UI only sends supported role/status fields. |
+| `BE-10` Team invitation lifecycle | partial | Invite create/list/accept are wired; resend/revoke ownership and status transitions are not confirmed. | Invitation management is limited to documented create/list/accept operations. |
+| `BE-11` Subscription/cart ownership | blocked_backend_contract | Subscription SKUs, cart merge/replace behavior, billing portal ownership, and checkout terminal states are undefined. | Custom credit checkout uses `/payments/checkout`; subscription/cart UI stays static or external-pricing only. |
+| `BE-12` Password reset delivery/security | frontend_wired_backend_verification_needed | Frontend calls reset/set endpoints. Backend still needs production email URL shape, token TTL/single-use, anti-enumeration, rate limits, and session invalidation evidence. | Forgot/reset/admin reset-email UI calls public API and surfaces stable errors. |
+| `BE-13` Dashboard analytics | blocked_product_mapping | No metric catalog mapping dashboard/charts cards to public analytics keys and response examples. | Aggregate cards/charts remain local/fallback unless already covered by team activity or credits wrappers. |
+| `BE-14` Messaging ownership | blocked_product_mapping | Provider-specific Twilio/Sendblue/direct-mail/VAPI operations are not mapped to canonical product actions and schemas. | Messaging UI should not be treated as fully public-API-backed. |
+| `BE-15` Enrichment ownership | blocked_product_mapping | Enrichment tool-to-screen map, sync/async behavior, normalized result/job models, and credit usage are not finalized. | Enrichment surfaces remain blocked from production-safe wiring beyond controlled error handling. |
+| `BE-16` Credentials/integrations | blocked_product_mapping | Provider catalog/status, credential CRUD, GHL calendar reconnect/disconnect, and safe display models are not assigned to current UI. | Provider unavailable/configuration states are handled; connection lifecycle remains blocked. |
+| `BE-17` VAPI/voice contracts | blocked_backend_contract | VAPI/voice models are still generic/provider-shaped instead of typed frontend resources. | Voice/agent UI stays on existing provider/local flows until typed contracts land. |
+| `BE-18` Webhooks/feeds | blocked_backend_contract | No canonical CRUD/test/delivery-log contract for current connections UI. | Webhook/feed management remains outside the completed public API migration. |
+| `BE-19` Deal room / kanban | blocked_backend_contract | Backend ownership and deal/board/card/concurrency contracts are not defined. | Deal room and kanban remain local/store-backed. |
+| `BE-20` Quickstart orchestration | partial | Profile, prospecting, and campaign pieces are wired, but durable cross-step IDs/resume state are not fully defined. | Quickstart can use wired downstream adapters but should not claim server-backed orchestration completion. |
+| `BE-21` Contract consistency | ongoing_backend_requirement | Pagination, envelopes, enum casing, idempotency, timestamps, and success envelopes still need consistent enforcement across future endpoints. | Frontend adapters normalize common variants and branch on stable `error.code`. |
+| `BE-22` Authenticated fixtures | blocked_backend_contract | Persona fixture matrix and authenticated staging smoke/cleanup evidence remain outstanding. | Fallback/error states stay in migrated screens; CI cannot assert every success-path UI contract yet. |
+| `BE-23` Profile/settings persistence | blocked_backend_contract | Profile/setup endpoint does not yet cover full personal, business, settings, OAuth, and notification preferences. | Profile status is wired; broader settings persistence remains local/fallback. |
+| `BE-24` Account security/privacy | blocked_backend_contract | Session list/revoke, security activity, data export, account deletion, and privacy flows are not defined. | Security/privacy UI should remain disabled/fallback until contracts exist. |
+| `BE-25` Saved user assets | blocked_backend_contract | Saved searches, campaign templates, and workflows need scoped CRUD/versioning contracts. | Existing asset experiences remain local/store-backed. |
+| `BE-26` Knowledge assets | blocked_backend_contract | Upload/list/status/delete contracts, storage limits, processing states, and provider linkage are missing. | Knowledge/script/voice asset managers remain local/provider-specific. |
+| `BE-27` Notifications/preferences | blocked_backend_contract | Notification feed/read state and delivery preference contracts are not defined. | Notification center/preferences remain local/fallback. |
+
 ## Implementation plan
 
 - [x] Create public API auth/profile/prospecting wrappers.

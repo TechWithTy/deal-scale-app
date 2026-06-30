@@ -756,6 +756,8 @@ Frontend acceptance after each handoff:
 - `/api/v1/auth/signup`
 - `/api/v1/auth/login`
 - `/api/v1/auth/logout`
+- `/api/v1/auth/reset-password`
+- `/api/v1/auth/set-password`
 - `/api/v1/auth/me`
 - `/api/v1/auth/profile-setup`
 - `/api/v1/prospecting/sources`
@@ -850,6 +852,9 @@ Repeated checkout requests for the same cart must not create duplicate charges.
 ## Frontend implementation completed before handoff
 
 - Public API signup, login token bridge, profile state, and logout.
+- Forgot/reset password forms and admin reset-email requests call the public API
+  reset/set endpoints; backend delivery/security verification remains tracked as
+  `BE-12`.
 - Credit balance, history, statistics, expiration, pricing, and custom-credit checkout.
 - Campaign create and selected-campaign status polling.
 - Admin search, credit adjustment, provisioning retry, and event logs.
