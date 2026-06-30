@@ -2,12 +2,16 @@
  * Mock payment simulation utility
  *
  * Simulates payment processing with a 2-second delay.
- * This will be replaced with live Stripe checkout session creation
- * when /api/payments/session endpoint becomes available.
+ * Kept as a local fallback while live checkout uses the public API.
  *
  * @see hooks/usePlans.ts for automatic mock-to-live detection
  */
 
+import {
+	createPaymentCheckout,
+	getPaymentPricingTiers,
+} from "@/lib/api/public-api-dashboard";
+import { extractCheckoutUrl } from "@/lib/payments/public-api-credit-pricing";
 import type { PlanTier } from "./plans";
 
 export type PaymentState = "idle" | "processing" | "confirmed";
@@ -41,17 +45,12 @@ export async function mockPayment(plan: PlanTier): Promise<PaymentCallback> {
 }
 
 /**
- * Check if live payment API endpoint is available
- * @returns Promise that resolves to true if /api/payments/session is reachable
+ * Check if live payment pricing is available through the public API.
  */
 export async function checkLivePaymentApiAvailable(): Promise<boolean> {
 	try {
-		const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
-		const response = await fetch(`${baseUrl}/api/payments/session`, {
-			method: "HEAD",
-			signal: AbortSignal.timeout(2000), // 2 second timeout
-		});
-		return response.ok;
+		await getPaymentPricingTiers();
+		return true;
 	} catch {
 		return false;
 	}
@@ -64,16 +63,15 @@ export async function checkLivePaymentApiAvailable(): Promise<boolean> {
 export async function createLivePaymentSession(
 	planId: string,
 ): Promise<{ sessionId: string; url: string }> {
-	const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
-	const response = await fetch(`${baseUrl}/api/payments/session`, {
-		method: "POST",
-		headers: { "Content-Type": "application/json" },
-		body: JSON.stringify({ planId }),
+	const credits = Number.parseInt(planId, 10);
+	const payload = await createPaymentCheckout({
+		credits: Number.isFinite(credits) && credits > 0 ? credits : 1,
+		credit_type: "ai",
 	});
-
-	if (!response.ok) {
-		throw new Error(`Failed to create payment session: ${response.statusText}`);
+	const url = extractCheckoutUrl(payload);
+	if (!url) {
+		throw new Error("Public API checkout response did not include a checkout URL");
 	}
 
-	return response.json();
+	return { sessionId: planId, url };
 }

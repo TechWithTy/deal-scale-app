@@ -2,11 +2,13 @@
  * Unified pricing tiers configuration for DealScale.io
  *
  * Includes Subscription, Success-Based, and One-Time pricing models.
- * This file provides mock data that will be replaced with live API calls
- * when /api/plans endpoint becomes available.
+ * This file provides fallback data used when public API pricing endpoints are
+ * unavailable.
  *
  * @see hooks/usePlans.ts for automatic mock-to-live detection
  */
+
+import { getPaymentPricingTiers } from "@/lib/api/public-api-dashboard";
 
 export type PricingCategory = "subscription" | "successBased" | "oneTime";
 export type BillingCycle = "monthly" | "yearly";
@@ -272,17 +274,12 @@ export const mockPlans: PlanTier[] = pricingTiers.subscription.map((tier) => ({
 }));
 
 /**
- * Check if live API endpoint is available
- * @returns Promise that resolves to true if /api/plans is reachable
+ * Check if live pricing is available through the public API.
  */
 export async function checkLiveApiAvailable(): Promise<boolean> {
 	try {
-		const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
-		const response = await fetch(`${baseUrl}/api/plans`, {
-			method: "HEAD",
-			signal: AbortSignal.timeout(2000), // 2 second timeout
-		});
-		return response.ok;
+		await getPaymentPricingTiers();
+		return true;
 	} catch {
 		return false;
 	}

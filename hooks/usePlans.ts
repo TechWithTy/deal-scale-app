@@ -12,9 +12,10 @@
 
 import {
 	type PlanTier,
-	checkLiveApiAvailable,
 	mockPlans,
 } from "@/lib/mock/plans";
+import { getPaymentPricingTiers } from "@/lib/api/public-api-dashboard";
+import { extractCreditPricingCatalog } from "@/lib/payments/public-api-credit-pricing";
 import { useEffect, useState } from "react";
 
 interface UsePlansResult {
@@ -22,6 +23,30 @@ interface UsePlansResult {
 	loading: boolean;
 	isLive: boolean;
 	error: Error | null;
+}
+
+function toCreditPlans(payload: unknown): PlanTier[] {
+	const catalog = extractCreditPricingCatalog(payload);
+	return catalog.tiers.map((tier) => ({
+		credits: {
+			ai: tier.credits,
+			leads: 0,
+			skipTraces: 0,
+		},
+		cta: "Buy Credits",
+		description:
+			tier.savings > 0
+				? `${catalog.currency} ${tier.price.toLocaleString()} with ${tier.savings.toLocaleString()} savings`
+				: `${catalog.currency} ${tier.price.toLocaleString()}`,
+		features: [
+			`${tier.credits.toLocaleString()} credits`,
+			`${catalog.currency} ${tier.pricePerCredit.toFixed(2)} per credit`,
+		],
+		id: tier.name.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
+		name: tier.name,
+		price: tier.price,
+		priceSuffix: "one-time",
+	}));
 }
 
 /**
@@ -39,43 +64,22 @@ export function usePlans(): UsePlansResult {
 
 		async function fetchPlans() {
 			try {
-				// Check if live API is available
-				const liveApiAvailable = await checkLiveApiAvailable();
+				const fetchedPlans = toCreditPlans(await getPaymentPricingTiers());
+				if (!mounted) return;
 
-				if (liveApiAvailable && mounted) {
-					// Fetch from live API
-					const baseUrl =
-						typeof window !== "undefined" ? window.location.origin : "";
-					const response = await fetch(`${baseUrl}/api/plans`);
-
-					if (!response.ok) {
-						throw new Error(`API returned ${response.status}`);
-					}
-
-					const data = await response.json();
-					const fetchedPlans: PlanTier[] = Array.isArray(data)
-						? data
-						: data.plans || data.items || [];
-
-					if (mounted && fetchedPlans.length > 0) {
-						setPlans(fetchedPlans);
-						setIsLive(true);
-						console.log(
-							"Live DealScale API detected. Using dynamic pricing from api.dealscale.io",
-						);
-					} else if (mounted) {
-						// Fallback to mock if API returns empty array
-						setPlans(mockPlans);
-						setIsLive(false);
-					}
-				} else if (mounted) {
-					// Use mock data
+				if (fetchedPlans.length > 0) {
+					setPlans(fetchedPlans);
+					setIsLive(true);
+				} else {
 					setPlans(mockPlans);
 					setIsLive(false);
 				}
 			} catch (err) {
 				if (mounted) {
-					console.warn("Failed to fetch plans from API, using mock data:", err);
+					console.warn(
+						"Failed to fetch public API pricing tiers, using mock data:",
+						err,
+					);
 					setPlans(mockPlans);
 					setIsLive(false);
 					setError(err instanceof Error ? err : new Error(String(err)));

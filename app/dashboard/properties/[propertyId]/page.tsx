@@ -67,7 +67,6 @@ import {
 	createOnMarketRentCastMock,
 } from "@/lib/utils/rentcastFactory";
 import { createRealtorProperty } from "@/types/_dashboard/property";
-import { z } from "zod";
 import PropertyTabsList from "./utils/propertyTabs";
 
 // Dynamically import the client component with no SSR
@@ -99,56 +98,7 @@ async function fetchProperty(id: string): Promise<Property | null> {
 			);
 			if (publicProperty) return publicProperty;
 		}
-
-		// First try to get the base URL from environment variables
-		const baseUrl =
-			process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
-		const response = await fetch(`${baseUrl}/properties/${id}`, {
-			headers: {
-				"Content-Type": "application/json",
-			},
-			// Add caching for better performance
-			next: { revalidate: 60 * 60 }, // Revalidate every hour
-		});
-
-		if (!response.ok) {
-			console.warn(`Failed to fetch property ${id}: ${response.statusText}`);
-			return null;
-		}
-
-		// Validate and narrow the response before treating it as Property
-		const PropertySchema = z
-			.object({
-				address: z
-					.object({
-						street: z.string(),
-						city: z.string(),
-						state: z.string(),
-						zipCode: z.string(),
-						unit: z.string().optional().nullable(),
-						fullStreetLine: z.string().optional().nullable(),
-						latitude: z.number().optional().nullable(),
-						longitude: z.number().optional().nullable(),
-					})
-					.passthrough(),
-				details: z
-					.object({
-						sqft: z.number().optional().nullable(),
-						lotSqft: z.number().optional().nullable(),
-						style: z.string().optional().nullable(),
-					})
-					.passthrough(),
-			})
-			.passthrough();
-
-		const raw = await response.json().catch(() => ({}));
-		const parsed = PropertySchema.safeParse(raw);
-		if (!parsed.success) {
-			console.warn("Property response did not match expected shape");
-			return null;
-		}
-		const property: Property = parsed.data as unknown as Property;
-		return property;
+		return null;
 	} catch (error) {
 		console.error("Failed to fetch property data:", error);
 		return null;

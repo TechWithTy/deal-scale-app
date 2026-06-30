@@ -3,3 +3,16 @@ packages:
   - '.'
   # explicitly exclude external packages from the workspace
   - '!external/**'
+allowBuilds:
+  '@biomejs/biome': true
+  '@google/genai': true
+  '@prisma/client': true
+  '@prisma/engines': true
+  '@swc/core': true
+  core-js: true
+  esbuild: true
+  msw: true
+  prisma: true
+  protobufjs: true
+  sharp: true
+  workerd: true
