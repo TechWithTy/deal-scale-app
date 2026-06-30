@@ -1,13 +1,10 @@
 "use client";
 
 import { usePublicApiProfile } from "@/hooks/usePublicApiProfile";
-import {
-	type ApiErrorKind,
-	getPublicApiSupportLabel,
-	loginPublicApi,
-} from "@/lib/api/public-api-client";
+import { type ApiErrorKind } from "@/lib/api/public-api-client";
 import { AlertTriangle, CheckCircle2, Loader2 } from "lucide-react";
-import React, { useState } from "react";
+import { useSession } from "next-auth/react";
+import React from "react";
 
 const ERROR_TITLES: Record<ApiErrorKind, string> = {
 	auth: "Session required",
@@ -25,33 +22,9 @@ function getErrorTitle(kind: ApiErrorKind | null) {
 
 export function ProfilePublicApiStatus() {
 	const RuntimeFragment = React.Fragment;
-	const [token, setToken] = useState<string | undefined>();
-	const [email, setEmail] = useState("");
-	const [password, setPassword] = useState("");
-	const [authError, setAuthError] = useState<string | null>(null);
-	const [isSigningIn, setIsSigningIn] = useState(false);
+	const { data: session } = useSession();
+	const token = session?.publicApi?.accessToken;
 	const profile = usePublicApiProfile(token);
-
-	async function handleSignIn(event: React.FormEvent<HTMLFormElement>) {
-		event.preventDefault();
-		setAuthError(null);
-		setIsSigningIn(true);
-
-		try {
-			const response = await loginPublicApi(email.trim(), password);
-			setToken(response.access_token);
-			setPassword("");
-		} catch (error) {
-			setAuthError(getPublicApiSupportLabel(error));
-		} finally {
-			setIsSigningIn(false);
-		}
-	}
-
-	function handleDisconnect() {
-		setToken(undefined);
-		setPassword("");
-	}
 
 	if (profile.isLoading) {
 		return (
@@ -75,39 +48,9 @@ export function ProfilePublicApiStatus() {
 						<p className="text-red-800">HTTP {profile.errorStatus}</p>
 					)}
 					{profile.errorKind === "auth" && (
-						<form
-							className="mt-3 grid gap-2 sm:grid-cols-[1fr_1fr_auto]"
-							onSubmit={handleSignIn}
-						>
-							<input
-								aria-label="Public API email"
-								className="h-9 rounded-md border border-red-200 bg-white px-3 text-slate-950"
-								onChange={(event) => setEmail(event.target.value)}
-								placeholder="Email"
-								type="email"
-								value={email}
-							/>
-							<input
-								aria-label="Public API password"
-								className="h-9 rounded-md border border-red-200 bg-white px-3 text-slate-950"
-								onChange={(event) => setPassword(event.target.value)}
-								placeholder="Password"
-								type="password"
-								value={password}
-							/>
-							<button
-								className="h-9 rounded-md bg-red-700 px-3 font-medium text-white disabled:opacity-60"
-								disabled={isSigningIn || !email.trim() || !password}
-								type="submit"
-							>
-								{isSigningIn ? "Connecting..." : "Connect API"}
-							</button>
-							{authError && (
-								<p className="break-words text-red-900 sm:col-span-3">
-									{authError}
-								</p>
-							)}
-						</form>
+						<p className="text-red-900">
+							Sign in again to establish a public API-backed session.
+						</p>
 					)}
 				</div>
 			</output>
@@ -123,15 +66,6 @@ export function ProfilePublicApiStatus() {
 					? `: ${profile.profileSetup.profile_setup_status}`
 					: ""}
 			</span>
-			{token && (
-				<button
-					className="ml-auto rounded-md border border-emerald-300 px-2 py-1 font-medium text-emerald-950"
-					onClick={handleDisconnect}
-					type="button"
-				>
-					Disconnect API
-				</button>
-			)}
 		</div>
 	);
 }

@@ -4,6 +4,7 @@ import type { AppTestingMode } from "@/constants/testingMode";
 import { users } from "@/lib/mock-db";
 import Link from "next/link";
 import { CredentialSignInForm } from "./_components/CredentialSignInForm";
+import { CredentialSignUpForm } from "./_components/CredentialSignUpForm";
 
 interface AuthFormProps {
 	isSignUp: boolean;
@@ -35,6 +36,23 @@ export default function AuthForm({ isSignUp, mode }: AuthFormProps) {
 		</p>
 	);
 
+	if (isSignUp) {
+		return (
+			<div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
+				<div className="flex flex-col space-y-2 text-center">
+					<h1 className="font-semibold text-2xl tracking-tight">
+						Create an account
+					</h1>
+					<p className="text-muted-foreground text-sm">
+						Create your Deal Scale account through the public API.
+					</p>
+				</div>
+				<CredentialSignUpForm />
+				<TermsNotice />
+			</div>
+		);
+	}
+
 	if (!isDemoMode) {
 		return (
 			<div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
@@ -60,13 +78,10 @@ export default function AuthForm({ isSignUp, mode }: AuthFormProps) {
 	return (
 		<div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
 			<div className="flex flex-col space-y-2 text-center">
-				<h1 className="font-semibold text-2xl tracking-tight">
-					{isSignUp ? "Create an account" : "Demo sign in"}
-				</h1>
+				<h1 className="font-semibold text-2xl tracking-tight">Demo sign in</h1>
 				<p className="text-muted-foreground text-sm">
-					{isSignUp
-						? "Enter your details to sign up"
-						: "Configure test users, select tiers, and update tester flags before logging in."}
+					Configure test users, select tiers, and update tester flags before
+					logging in.
 				</p>
 			</div>
 			<TermsNotice />

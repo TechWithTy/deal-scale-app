@@ -6,6 +6,8 @@
 
 import LeadMainModal from "@/components/reusables/modals/user/lead/LeadModalMain";
 import SkipTraceModalMain from "@/components/reusables/modals/user/skipTrace/SkipTraceModalMain";
+import { usePublicApiLeadLists } from "@/hooks/usePublicApiLeadLists";
+import { useSession } from "next-auth/react";
 import LeadsDemoTable, {
 	type LeadsDemoTableProps,
 } from "external/shadcn-table/src/examples/Lead/LeadsDemoTable";
@@ -23,6 +25,10 @@ export default function LeadListTableWithModals(
 		"onOpenLeadModal" | "onOpenSkipTrace" | "renderModals"
 	>,
 ) {
+	const { data: session } = useSession();
+	const publicApiLeadLists = usePublicApiLeadLists(
+		session?.publicApi?.accessToken,
+	);
 	const [isLeadOpen, setIsLeadOpen] = React.useState(false);
 	const [isSkipTraceOpen, setIsSkipTraceOpen] = React.useState(false);
 	const [skipTraceInit, setSkipTraceInit] =
@@ -37,6 +43,8 @@ export default function LeadListTableWithModals(
 	return (
 		<LeadsDemoTable
 			{...props}
+			apiRows={publicApiLeadLists.rows}
+			apiStatus={publicApiLeadLists.status}
 			onOpenLeadModal={handleOpenLead}
 			onOpenSkipTrace={handleOpenSkipTrace}
 			renderModals={

@@ -17,6 +17,7 @@ import { EmployeeRoleField } from "./steps/EmployeeRoleField";
 import { EmployeeTwoFactorSection } from "./steps/EmployeeTwoFactorSection";
 import { ResetPasswordSection } from "./steps/ResetPasswordSection";
 import { UpdatePasswordSection } from "./steps/UpdatePasswordSection";
+import { toast } from "sonner";
 
 import { teamMemberFormSchema } from "@/types/zod/userSetup/team-member-form-schema";
 import type {
@@ -25,8 +26,16 @@ import type {
 } from "@/types/zod/userSetup/team-member-form-schema";
 
 type MainEmployeeFormProps =
-	| { mode: "invite"; initialData?: TeamMemberFormValues }
-	| { mode: "edit"; initialData: TeamMemberUpdatePasswordFormValues };
+	| {
+			mode: "invite";
+			initialData?: TeamMemberFormValues;
+			onSubmitOverride?: (data: TeamMemberFormValues) => Promise<void>;
+	  }
+	| {
+			mode: "edit";
+			initialData: TeamMemberUpdatePasswordFormValues;
+			onSubmitOverride?: (data: TeamMemberFormValues) => Promise<void>;
+	  };
 
 export const MainEmployeeForm: React.FC<MainEmployeeFormProps> = (props) => {
 	const { mode } = props;
@@ -92,11 +101,16 @@ export const MainEmployeeForm: React.FC<MainEmployeeFormProps> = (props) => {
 	const onSubmit = async (data: TeamMemberFormValues) => {
 		try {
 			setLoading(true);
-			// todo: Integrate API call here
-			// Simulate success toast
-			// toast(initialData ? "Team member updated successfully" : "Team member invited successfully");
+			await props.onSubmitOverride?.(data);
+			toast.success(
+				isEdit
+					? "Team member updated successfully"
+					: "Team member invited successfully",
+			);
 		} catch (error) {
-			// todo: error handling
+			toast.error(
+				error instanceof Error ? error.message : "Unable to save team member",
+			);
 		} finally {
 			setLoading(false);
 		}

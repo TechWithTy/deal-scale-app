@@ -31,6 +31,15 @@ export type PublicApiLoginResponse = {
 	token_type?: string;
 };
 
+export type PublicApiSignupRequest = {
+	email: string;
+	first_name?: string;
+	last_name?: string;
+	password: string;
+};
+
+export type PublicApiRefreshResponse = PublicApiLoginResponse;
+
 export type PublicApiUser = {
 	available_credits?: number;
 	credit_breakdown?: Record<string, unknown> | null;
@@ -50,6 +59,49 @@ export type PublicApiProfileSetup = {
 	is_complete?: boolean;
 	profile_setup_status?: string;
 	required_steps?: string[];
+	[key: string]: unknown;
+};
+
+export type PublicApiProspectingSource = {
+	description?: string;
+	id?: string;
+	label?: string;
+	name?: string;
+	source?: string;
+	[key: string]: unknown;
+};
+
+export type PublicApiProspectingSourcesResponse =
+	| PublicApiProspectingSource[]
+	| {
+			sources?: PublicApiProspectingSource[];
+			[key: string]: unknown;
+	  };
+
+export type PublicApiProspectingSearchParams = {
+	city?: string;
+	cursor?: string;
+	dry_run?: boolean;
+	limit?: number;
+	location?: string;
+	max_baths?: number;
+	max_beds?: number;
+	max_price?: number;
+	min_baths?: number;
+	min_beds?: number;
+	min_price?: number;
+	property_type?: string;
+	source: string;
+	state?: string;
+	zip?: string;
+};
+
+export type PublicApiProspectingSearchResponse = {
+	cursor?: string | null;
+	items?: unknown[];
+	leads?: unknown[];
+	results?: unknown[];
+	total?: number;
 	[key: string]: unknown;
 };
 
@@ -205,6 +257,30 @@ export function loginPublicApi(email: string, password: string) {
 	});
 }
 
+export function signupPublicApi(body: PublicApiSignupRequest) {
+	return publicApiFetch<PublicApiLoginResponse>("/api/v1/auth/signup", {
+		body,
+		method: "POST",
+	});
+}
+
+export function logoutPublicApi(token?: string) {
+	return publicApiFetch<{ message?: string; success?: boolean }>(
+		"/api/v1/auth/logout",
+		{
+			method: "POST",
+			token,
+		},
+	);
+}
+
+export function refreshPublicApi(refreshToken: string) {
+	return publicApiFetch<PublicApiRefreshResponse>("/api/v1/auth/refresh", {
+		body: { refresh_token: refreshToken },
+		method: "POST",
+	});
+}
+
 export function getCurrentUserProfile(token?: string) {
 	return publicApiFetch<PublicApiUser>("/api/v1/auth/me", { token });
 }
@@ -213,6 +289,39 @@ export function getProfileSetup(token?: string) {
 	return publicApiFetch<PublicApiProfileSetup>("/api/v1/auth/profile-setup", {
 		token,
 	});
+}
+
+export function updateProfileSetup(body: unknown, token?: string) {
+	return publicApiFetch<PublicApiProfileSetup>("/api/v1/auth/profile-setup", {
+		body,
+		method: "PUT",
+		token,
+	});
+}
+
+export function getProspectingSources(token?: string) {
+	return publicApiFetch<PublicApiProspectingSourcesResponse>(
+		"/api/v1/prospecting/sources",
+		{ token },
+	);
+}
+
+export function searchProspecting(
+	params: PublicApiProspectingSearchParams,
+	token?: string,
+) {
+	const search = new URLSearchParams();
+	for (const [key, value] of Object.entries(params)) {
+		if (value === undefined || value === null || value === "") {
+			continue;
+		}
+		search.set(key, String(value));
+	}
+
+	return publicApiFetch<PublicApiProspectingSearchResponse>(
+		`/api/v1/prospecting/search?${search.toString()}`,
+		{ token },
+	);
 }
 
 export function getPublicApiSupportLabel(error: unknown) {

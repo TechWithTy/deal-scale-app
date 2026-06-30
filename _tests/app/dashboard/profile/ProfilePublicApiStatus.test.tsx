@@ -8,6 +8,11 @@ const profileHookMock = vi.hoisted(() => ({
 }));
 
 vi.mock("@/hooks/usePublicApiProfile", () => profileHookMock);
+vi.mock("next-auth/react", () => ({
+	useSession: () => ({
+		data: { publicApi: { accessToken: "token-123" } },
+	}),
+}));
 
 describe("ProfilePublicApiStatus", () => {
 	beforeEach(() => {
@@ -48,7 +53,7 @@ describe("ProfilePublicApiStatus", () => {
 		expect(screen.getByText("HTTP 500")).toBeTruthy();
 	});
 
-	it("renders a public API sign-in form for auth failures", () => {
+	it("renders a session recovery message for auth failures", () => {
 		profileHookMock.usePublicApiProfile.mockReturnValue({
 			error: "Not authenticated",
 			errorKind: "auth",
@@ -62,8 +67,10 @@ describe("ProfilePublicApiStatus", () => {
 		render(<ProfilePublicApiStatus />);
 
 		expect(screen.getByText("Session required")).toBeTruthy();
-		expect(screen.getByLabelText("Public API email")).toBeTruthy();
-		expect(screen.getByLabelText("Public API password")).toBeTruthy();
-		expect(screen.getByRole("button", { name: "Connect API" })).toBeTruthy();
+		expect(
+			screen.getByText(
+				"Sign in again to establish a public API-backed session.",
+			),
+		).toBeTruthy();
 	});
 });

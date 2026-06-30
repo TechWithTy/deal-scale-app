@@ -149,8 +149,6 @@ export const columns: ColumnDef<TeamMember>[] = [
 	},
 	{
 		id: "actions",
-		cell: ({ row }) => (
-			<CellAction currentUserRole={"admin"} data={row.original} />
-		),
+		cell: ({ row }) => <CellAction data={row.original} />,
 	},
 ];

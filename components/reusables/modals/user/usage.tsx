@@ -12,10 +12,13 @@ import { useSession } from "next-auth/react";
 import type React from "react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
+import { CreditActivityPanel } from "./usage/CreditActivityPanel";
 import PricingComparisonCard from "./usage/PricingComparisonCard";
+import { PublicApiCreditPurchasePanel } from "./usage/PublicApiCreditPurchasePanel";
 import UsageModalActions from "./usage/UsageModalActions";
 import UsageProgressBar from "./usage/UsageProgressBar";
 import UsageSummary from "./usage/UsageSummarySidebar";
+import { useUsageData } from "./usage/useUsageData";
 
 export interface UsageData {
 	subscription: UserProfileSubscription;
@@ -58,7 +61,7 @@ const AiUsageModal: React.FC = () => {
 		planDetails?: string;
 	};
 
-	const subscriptionData: UserProfileSubscription = useMemo(() => {
+	const fallbackSubscription: UserProfileSubscription = useMemo(() => {
 		const subs = (
 			session?.user as { subscription?: SubscriptionShape } | undefined
 		)?.subscription;
@@ -102,12 +105,18 @@ const AiUsageModal: React.FC = () => {
 			planDetails: subs.planDetails ?? defaultSubscription.planDetails,
 		};
 	}, [session]);
+	const { data: liveSubscriptionData, source } = useUsageData(
+		fallbackSubscription,
+		session?.publicApi?.accessToken,
+	);
+	const subscriptionData = liveSubscriptionData ?? fallbackSubscription;
 
 	if (!isUsageModalOpen) return null;
 
 	const { aiCredits, name, price } = subscriptionData;
 	const { allotted, used } = aiCredits;
 	const isFreePlan = name === "None" || price === "$0";
+	const isLiveUsage = source === "live";
 
 	const handleViewPlans = () => {
 		setActiveTab("upgrade");
@@ -169,6 +178,11 @@ const AiUsageModal: React.FC = () => {
 								{/* Left Column: Subscription Summary */}
 								<div>
 									<UsageSummary subscription={subscriptionData} />
+									<p className="mt-3 text-muted-foreground text-xs">
+										{isLiveUsage
+											? "Usage synced from the public API."
+											: "Showing fallback usage until public API credits are available."}
+									</p>
 								</div>
 
 								{/* Right Column: Circular Progress */}
@@ -180,6 +194,7 @@ const AiUsageModal: React.FC = () => {
 									/>
 								</div>
 							</div>
+							<CreditActivityPanel token={session?.publicApi?.accessToken} />
 
 							{/* Actions */}
 							<UsageModalActions
@@ -192,7 +207,8 @@ const AiUsageModal: React.FC = () => {
 						</TabsContent>
 
 						{/* Upgrade Tab */}
-						<TabsContent value="upgrade" className="min-h-[400px]">
+						<TabsContent value="upgrade" className="min-h-[400px] space-y-6">
+							<PublicApiCreditPurchasePanel />
 							<PricingComparisonCard
 								currentPlanId={name}
 								onSelectPlan={handleSelectPlan}

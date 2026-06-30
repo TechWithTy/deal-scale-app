@@ -8,16 +8,16 @@ import {
 	DialogTitle,
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { usePublicApiAdminLogs } from "@/hooks/usePublicApiAdminLogs";
 import { formatAdminRole } from "@/lib/admin/roles";
 import {
-	type AdminActivityEvent,
 	type AdminDirectoryUser,
 	getAdminActivityLog,
 	getAdminDirectoryUser,
 } from "@/lib/admin/user-directory";
 import { useImpersonationStore } from "@/lib/stores/impersonationStore";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import AdjustCreditsModal from "./AdjustCreditsModal";
 
@@ -25,6 +25,7 @@ export interface AdminUserDetailModalProps {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
 	userId: string | null;
+	token?: string;
 	initialCreditsOpen?: boolean;
 	openCreditsModal?: boolean;
 }
@@ -33,15 +34,25 @@ export default function AdminUserDetailModal({
 	open,
 	onOpenChange,
 	userId,
+	token,
 	initialCreditsOpen,
 	openCreditsModal = false,
 }: AdminUserDetailModalProps) {
 	const [user, setUser] = useState<AdminDirectoryUser | null>(null);
-	const [logs, setLogs] = useState<AdminActivityEvent[]>([]);
 	const [loading, setLoading] = useState(false);
 	const [creditsOpen, setCreditsOpen] = useState(false);
 	const { startImpersonation } = useImpersonationStore();
 	const router = useRouter();
+	const fallbackLogs = useMemo(
+		() => (userId ? getAdminActivityLog(userId) : []),
+		[userId],
+	);
+	const adminLogs = usePublicApiAdminLogs(
+		userId ?? "",
+		fallbackLogs,
+		token,
+		open,
+	);
 
 	useEffect(() => {
 		if (!open || !userId) return;
@@ -50,10 +61,8 @@ export default function AdminUserDetailModal({
 			setLoading(true);
 			try {
 				const detail = getAdminDirectoryUser(userId);
-				const activity = getAdminActivityLog(userId);
 				if (alive) {
 					setUser(detail);
-					setLogs(activity);
 				}
 			} finally {
 				if (alive) setLoading(false);
@@ -184,13 +193,13 @@ export default function AdminUserDetailModal({
 							</TabsList>
 							<TabsContent value="activity">
 								<div className="rounded-md border">
-									{logs.length === 0 ? (
+									{adminLogs.logs.length === 0 ? (
 										<div className="p-4 text-muted-foreground text-sm">
 											No activity.
 										</div>
 									) : (
 										<ul className="divide-y">
-											{logs.map((e) => (
+											{adminLogs.logs.map((e) => (
 												<li key={e.id} className="p-3 text-sm">
 													<div className="text-muted-foreground">
 														{new Date(e.at).toLocaleString()}
@@ -201,6 +210,11 @@ export default function AdminUserDetailModal({
 										</ul>
 									)}
 								</div>
+								<p className="mt-2 text-muted-foreground text-xs">
+									{adminLogs.source === "live"
+										? "Activity synced from the public API."
+										: "Showing fallback activity."}
+								</p>
 							</TabsContent>
 							<TabsContent value="profile">
 								<div className="rounded-md border p-4 text-sm">
@@ -227,6 +241,7 @@ export default function AdminUserDetailModal({
 						open={creditsOpen}
 						onOpenChange={setCreditsOpen}
 						userId={user.id}
+						token={token}
 						onSuccess={(delta, type) => {
 							if (!user.credits) return;
 							const bucket = user.credits[

@@ -20,6 +20,7 @@ import { useEffect, useState } from "react";
 import { BillingToggle } from "./BillingToggle";
 import { OneTimeCard } from "./OneTimeCard";
 import { PricingTabs } from "./PricingTabs";
+import { PublicApiCreditPurchasePanel } from "./PublicApiCreditPurchasePanel";
 import { SubscriptionTierCard } from "./SubscriptionTierCard";
 import { SuccessBasedCard } from "./SuccessBasedCard";
 
@@ -242,17 +243,20 @@ export function UpgradeModalMain({
 
 					{/* One-Time Tiers */}
 					{activeCategory === "oneTime" && (
-						<div className="mb-6 grid grid-cols-1 gap-6 md:grid-cols-2">
-							{pricingTiers.oneTime.map((tier) => (
-								<OneTimeCard
-									key={tier.id}
-									tier={tier}
-									onSelect={() => {
-										setSelectedTierId(tier.id);
-										handlePayment();
-									}}
-								/>
-							))}
+						<div className="mb-6 space-y-6">
+							<PublicApiCreditPurchasePanel />
+							<div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+								{pricingTiers.oneTime.map((tier) => (
+									<OneTimeCard
+										key={tier.id}
+										tier={tier}
+										onSelect={() => {
+											setSelectedTierId(tier.id);
+											handlePayment();
+										}}
+									/>
+								))}
+							</div>
 						</div>
 					)}
 

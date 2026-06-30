@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { adjustAdminUserCredits } from "@/lib/api/public-api-dashboard";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 
@@ -16,6 +17,7 @@ export interface AdjustCreditsModalProps {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
 	userId: string;
+	token?: string;
 	onSuccess?: (delta: number, type: string) => void;
 }
 
@@ -29,6 +31,7 @@ export default function AdjustCreditsModal({
 	open,
 	onOpenChange,
 	userId,
+	token,
 	onSuccess,
 }: AdjustCreditsModalProps) {
 	const { register, handleSubmit, reset } = useForm<FormValues>({
@@ -39,9 +42,19 @@ export default function AdjustCreditsModal({
 	const onSubmit = async (values: FormValues) => {
 		setBusy(true);
 		try {
-			// Mock API call
-			await new Promise((r) => setTimeout(r, 600));
-			// In real impl: await fetch(`/api/v1/admin/users/${userId}/adjust-credits`, { method: 'POST', body: JSON.stringify(values) })
+			if (token) {
+				await adjustAdminUserCredits(
+					userId,
+					{
+						amount: values.amount,
+						credit_type: values.type,
+						reason: values.reason,
+					},
+					token,
+				);
+			} else {
+				await new Promise((resolve) => setTimeout(resolve, 600));
+			}
 			if (onSuccess) onSuccess(values.amount, values.type);
 			// rudimentary feedback
 			if (typeof window !== "undefined") {

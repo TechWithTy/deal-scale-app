@@ -2,11 +2,14 @@
 
 import LeadMainModal from "@/components/reusables/modals/user/lead/LeadModalMain";
 import SkipTraceModalMain from "@/components/reusables/modals/user/skipTrace/SkipTraceModalMain";
+import { usePublicApiCampaigns } from "@/hooks/usePublicApiCampaigns";
 import { Button } from "@/components/ui/button";
+import { usePublicApiCampaignStatus } from "@/hooks/usePublicApiCampaignStatus";
 import { useCampaignStore } from "@/lib/stores/campaigns";
 import type { CallCampaign } from "@/types/_dashboard/campaign";
 import type { DirectMailCampaign } from "external/shadcn-table/src/examples/DirectMail/utils/mock";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useSession } from "next-auth/react";
 import * as React from "react";
 import { shallow } from "zustand/shallow";
 import CallCampaignsDemoTable from "external/shadcn-table/src/examples/call-campaigns-demo-table";
@@ -27,6 +30,7 @@ export default function CampaignCallTablePage({
 	type ParentTab = "calls" | "text" | "linkedin" | "facebook" | "directMail";
 
 	const router = useRouter();
+	const { data: session } = useSession();
 	const pathname = usePathname();
 	const searchParams = useSearchParams();
 	const searchParamsString = searchParams?.toString() ?? "";
@@ -149,6 +153,13 @@ export default function CampaignCallTablePage({
 	const [isLeadModalOpen, setIsLeadModalOpen] = React.useState(false);
 	const [isSkipTraceOpen, setIsSkipTraceOpen] = React.useState(false);
 	const [isCampaignModalOpen, setIsCampaignModalOpen] = React.useState(false);
+	const publicApiCampaigns = usePublicApiCampaigns(
+		session?.publicApi?.accessToken,
+	);
+	const publicApiStatus = usePublicApiCampaignStatus(
+		currentCampaignIdParam,
+		session?.publicApi?.accessToken,
+	);
 	const [skipTraceInit, setSkipTraceInit] = React.useState<
 		{ type: "list"; file?: File } | { type: "single" } | undefined
 	>(undefined);
@@ -166,6 +177,8 @@ export default function CampaignCallTablePage({
 	}, []);
 
 	useCampaignTourModal(openCampaignModal);
+	const displayedCallCampaigns =
+		publicApiCampaigns.campaigns ?? memoizedCallCampaigns;
 
 	return (
 		// ! Use full width with min-w-0 to prevent forcing layout wider than sidebar
@@ -206,6 +219,23 @@ export default function CampaignCallTablePage({
 				</Button>
 			</div>
 
+			{currentCampaignIdParam ? (
+				<div className="mb-3 rounded-md border border-border bg-background px-3 py-2 text-muted-foreground text-xs">
+					{publicApiStatus.source === "live"
+						? `Public API status${publicApiStatus.status ? `: ${publicApiStatus.status}` : ""}`
+						: publicApiStatus.source === "error"
+							? `Public API status unavailable: ${publicApiStatus.error}`
+							: publicApiStatus.source === "missing_token"
+								? "Public API status unavailable until a public API session token exists."
+								: "Public API status pending."}
+				</div>
+			) : null}
+			{publicApiCampaigns.status ? (
+				<div className="mb-3 rounded-md border border-border bg-background px-3 py-2 text-muted-foreground text-xs">
+					{publicApiCampaigns.status}
+				</div>
+			) : null}
+
 			{/* Render tables directly; avoid creating an extra scroll container that breaks sticky */}
 			{tab === "calls" && (
 				<CallCampaignsDemoTable
@@ -213,7 +243,7 @@ export default function CampaignCallTablePage({
 					onNavigate={handleTabChange}
 					campaignId={currentCampaignIdParam}
 					onCampaignSelect={handleCampaignSelect}
-					initialCampaigns={memoizedCallCampaigns}
+					initialCampaigns={displayedCallCampaigns}
 				/>
 			)}
 			{tab === "text" && (

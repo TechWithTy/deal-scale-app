@@ -35,6 +35,8 @@ const EMPTY_LEAD_LIST_FILTERS: LeadListFilterState = {
 };
 
 export interface LeadsDemoTableProps {
+	apiRows?: DemoRow[] | null;
+	apiStatus?: React.ReactNode;
 	/** Called when user wants to add a lead */
 	onOpenLeadModal?: (opts?: { initialListMode?: "select" | "create" }) => void;
 	/** Called when user wants to open Skip Trace. Provide optional init payload. */
@@ -46,6 +48,8 @@ export interface LeadsDemoTableProps {
 }
 
 export default function LeadsDemoTable({
+	apiRows,
+	apiStatus,
 	onOpenLeadModal,
 	onOpenSkipTrace,
 	onOpenCreateList,
@@ -64,8 +68,8 @@ export default function LeadsDemoTable({
 		React.useState<LeadListFilterState>(EMPTY_LEAD_LIST_FILTERS);
 
 	React.useEffect(() => {
-		setData(makeData(100));
-	}, []);
+		setData(apiRows?.length ? apiRows : makeData(100));
+	}, [apiRows]);
 
 	const filtered = React.useMemo(() => {
 		if (!query.trim()) return data;
@@ -173,6 +177,9 @@ export default function LeadsDemoTable({
 						Manage lead data, run A/B tests, download lists, and launch
 						campaigns with advanced sorting and search.
 					</p>
+					{apiStatus ? (
+						<div className="text-muted-foreground text-xs">{apiStatus}</div>
+					) : null}
 				</div>
 				<button
 					type="button"

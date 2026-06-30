@@ -20,6 +20,12 @@ declare module "next-auth" {
 	 */
 	interface Session {
 		impersonator?: ImpersonationIdentity | null;
+		publicApi?: {
+			accessToken?: string;
+			expiresAt?: number;
+			refreshToken?: string;
+			tokenType?: string;
+		};
 		user: {
 			id?: string;
 			role?: UserRole;
@@ -57,6 +63,12 @@ declare module "next-auth" {
 			personaId?: QuickStartPersonaId;
 			goalId?: QuickStartGoalId;
 		};
+		publicApi?: {
+			accessToken?: string;
+			expiresAt?: number;
+			refreshToken?: string;
+			tokenType?: string;
+		};
 	}
 }
 
@@ -64,6 +76,12 @@ declare module "next-auth/jwt" {
 	/** Returned by the `jwt` callback and `getToken`, when using JWT sessions */
 	interface JWT extends NextAuthJWT {
 		impersonator?: ImpersonationIdentity | null;
+		publicApi?: {
+			accessToken?: string;
+			expiresAt?: number;
+			refreshToken?: string;
+			tokenType?: string;
+		};
 		role?: UserRole;
 		tier?: UserTier;
 		permissions?: string[];

@@ -10,6 +10,11 @@ import {
 	ensureValidTier,
 	type SubscriptionTier,
 } from "@/constants/subscription/tiers";
+import { IS_DEV_TEST_MODE } from "@/constants/testingMode";
+import {
+	getCurrentUserProfileServer,
+	loginPublicApiServer,
+} from "@/lib/api/public-api-server";
 import {
 	deriveQuickStartDefaults,
 	mergeQuotaOverrides,
@@ -124,6 +129,7 @@ function mergeMatrix(
 }
 
 type ExtendedJWT = JWT & {
+		publicApi?: PublicApiSessionTokens;
         role?: UserRole;
         tier?: SubscriptionTier;
         permissions?: string[];
@@ -141,6 +147,7 @@ type ExtendedJWT = JWT & {
 
 type ExtendedUserLike = {
         id?: string;
+		publicApi?: PublicApiSessionTokens;
         role?: string;
         tier?: SubscriptionTier;
         permissions?: string[];
@@ -159,6 +166,7 @@ type ExtendedUserLike = {
 
 type SessionUserLike = {
         id?: string;
+		publicApi?: PublicApiSessionTokens;
         role?: UserRole;
         tier?: SubscriptionTier;
         permissions?: string[];
@@ -173,6 +181,13 @@ type SessionUserLike = {
 		quickStartDefaults?: QuickStartDefaults;
         name?: string | null;
         email?: string | null;
+};
+
+type PublicApiSessionTokens = {
+	accessToken?: string;
+	expiresAt?: number;
+	refreshToken?: string;
+	tokenType?: string;
 };
 
 function applyExtendedUserToToken(
@@ -200,6 +215,9 @@ function applyExtendedUserToToken(
         if (userData.id) {
                 token.sub = userData.id;
         }
+		if (userData.publicApi) {
+			token.publicApi = userData.publicApi;
+		}
 }
 
 function applyTokenToSessionUser(
@@ -227,6 +245,45 @@ function applyTokenToSessionUser(
         if (typeof token.sub === "string" && token.sub) {
                 sessionUser.id = token.sub;
         }
+}
+
+function getPublicApiExpiresAt(expiresIn?: number) {
+	if (!expiresIn || !Number.isFinite(expiresIn)) {
+		return undefined;
+	}
+	return Date.now() + expiresIn * 1000;
+}
+
+async function authorizeWithPublicApi(email: string, password: string) {
+	const login = await loginPublicApiServer(email, password);
+	const publicApi: PublicApiSessionTokens = {
+		accessToken: login.access_token,
+		expiresAt: getPublicApiExpiresAt(login.expires_in),
+		refreshToken: login.refresh_token,
+		tokenType: login.token_type,
+	};
+	let profile:
+		| Awaited<ReturnType<typeof getCurrentUserProfileServer>>
+		| undefined;
+
+	try {
+		profile = await getCurrentUserProfileServer(login.access_token);
+	} catch {
+		profile = undefined;
+	}
+
+	return {
+		email: profile?.email ?? email,
+		id: profile?.id ?? email,
+		isFreeTier: false,
+		name:
+			[profile?.first_name, profile?.last_name].filter(Boolean).join(" ") ||
+			profile?.email ||
+			email,
+		publicApi,
+		role: "member",
+		tier: "Starter",
+	} as NextAuthUser;
 }
 
 const authConfig = {
@@ -300,6 +357,20 @@ const authConfig = {
 
 				// Check if this is a custom demo user
 				const isCustomUser = credentials?.isCustomUser === "true";
+				if (!isCustomUser && process.env.NODE_ENV !== "test") {
+					try {
+						return await authorizeWithPublicApi(email, password);
+					} catch (error) {
+						if (!IS_DEV_TEST_MODE) {
+							console.error("Public API sign-in failed:", error);
+							return null;
+						}
+						console.warn(
+							"Public API sign-in failed; falling back to demo credentials.",
+							error,
+						);
+					}
+				}
 				let user: User | undefined;
 
 				if (isCustomUser && credentials?.customUserData) {
@@ -569,7 +640,7 @@ const authConfig = {
 				extendedToken.impersonator = null;
 			}
 
-			if (trigger === "update" && session) {
+				if (trigger === "update" && session) {
 				const update = session as {
 					user?: ExtendedUserLike;
 					impersonation?: { 
@@ -611,6 +682,7 @@ const authConfig = {
 					extendedToken,
 				);
 				session.impersonator = extendedToken.impersonator ?? null;
+				session.publicApi = extendedToken.publicApi;
 			}
 			return session;
 		},

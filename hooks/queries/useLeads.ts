@@ -18,7 +18,13 @@
  * ```
  */
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+	deleteLead,
+	getLeadLists,
+	updateLead,
+} from "@/lib/api/public-api-core-resources";
+import { normalizePublicApiLeadLists } from "@/lib/leads/public-api-lead-normalizers";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 /**
  * Lead filter options
@@ -53,26 +59,59 @@ interface LeadsResponse {
 	pageSize: number;
 }
 
+type LeadQueryOptions = {
+	token?: string;
+};
+
+function toPublicApiParams(filters: LeadFilters) {
+	return {
+		limit: filters.pageSize,
+		page: filters.page,
+		q: filters.search,
+		sort_by: filters.sortBy,
+		sort_order: filters.sortOrder,
+		status: filters.status,
+	};
+}
+
+function normalizeLeadRow(lead: unknown): Lead {
+	const record =
+		lead && typeof lead === "object" ? (lead as Record<string, unknown>) : {};
+	return {
+		created_at:
+			typeof record.lastUpdate === "string"
+				? record.lastUpdate
+				: new Date().toISOString(),
+		id: typeof record.id === "string" ? record.id : "public-api-lead",
+		name:
+			typeof record.name === "string" && record.name.trim()
+				? record.name
+				: "Public API Lead",
+		status:
+			typeof record.status === "string" && record.status.trim()
+				? record.status
+				: "New Lead",
+	};
+}
+
 /**
  * Fetches leads from the API
  */
-async function fetchLeads(filters: LeadFilters = {}): Promise<LeadsResponse> {
-	const params = new URLSearchParams();
+async function fetchLeads(
+	filters: LeadFilters = {},
+	options: LeadQueryOptions = {},
+): Promise<LeadsResponse> {
+	const rows = normalizePublicApiLeadLists(
+		await getLeadLists(toPublicApiParams(filters), options.token),
+	);
+	const data = rows.flatMap((row) => row.leads.map(normalizeLeadRow));
 
-	if (filters.page) params.append("page", filters.page.toString());
-	if (filters.pageSize) params.append("pageSize", filters.pageSize.toString());
-	if (filters.status) params.append("status", filters.status);
-	if (filters.search) params.append("search", filters.search);
-	if (filters.sortBy) params.append("sortBy", filters.sortBy);
-	if (filters.sortOrder) params.append("sortOrder", filters.sortOrder);
-
-	const response = await fetch(`/api/leads?${params.toString()}`);
-
-	if (!response.ok) {
-		throw new Error("Failed to fetch leads");
-	}
-
-	return response.json();
+	return {
+		data,
+		page: filters.page ?? 1,
+		pageSize: filters.pageSize ?? data.length,
+		total: data.length,
+	};
 }
 
 /**
@@ -81,10 +120,13 @@ async function fetchLeads(filters: LeadFilters = {}): Promise<LeadsResponse> {
  * @param filters - Filter options for leads query
  * @returns React Query result with leads data
  */
-export function useLeads(filters: LeadFilters = {}) {
+export function useLeads(
+	filters: LeadFilters = {},
+	options: LeadQueryOptions = {},
+) {
 	return useQuery({
-		queryKey: ["leads", filters],
-		queryFn: () => fetchLeads(filters),
+		queryKey: ["leads", filters, options.token ?? null],
+		queryFn: () => fetchLeads(filters, options),
 		staleTime: 5 * 60 * 1000, // 5 minutes
 		gcTime: 10 * 60 * 1000, // 10 minutes
 		// Enable query only if needed (optional)
@@ -95,23 +137,12 @@ export function useLeads(filters: LeadFilters = {}) {
 /**
  * Hook to update a lead with optimistic updates
  */
-export function useUpdateLead() {
+export function useUpdateLead(options: LeadQueryOptions = {}) {
 	const queryClient = useQueryClient();
 
 	return useMutation({
-		mutationFn: async ({ id, data }: { id: string; data: Partial<Lead> }) => {
-			const response = await fetch(`/api/leads/${id}`, {
-				method: "PATCH",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify(data),
-			});
-
-			if (!response.ok) {
-				throw new Error("Failed to update lead");
-			}
-
-			return response.json();
-		},
+		mutationFn: ({ id, data }: { id: string; data: Partial<Lead> }) =>
+			updateLead(id, data, options.token),
 		// Optimistic update: immediately update the UI before the server responds
 		onMutate: async ({ id, data }) => {
 			// Cancel outgoing refetches
@@ -149,21 +180,11 @@ export function useUpdateLead() {
 /**
  * Hook to delete a lead
  */
-export function useDeleteLead() {
+export function useDeleteLead(options: LeadQueryOptions = {}) {
 	const queryClient = useQueryClient();
 
 	return useMutation({
-		mutationFn: async (id: string) => {
-			const response = await fetch(`/api/leads/${id}`, {
-				method: "DELETE",
-			});
-
-			if (!response.ok) {
-				throw new Error("Failed to delete lead");
-			}
-
-			return response.json();
-		},
+		mutationFn: (id: string) => deleteLead(id, options.token),
 		onSuccess: () => {
 			// Invalidate and refetch
 			queryClient.invalidateQueries({ queryKey: ["leads"] });
@@ -175,13 +196,16 @@ export function useDeleteLead() {
  * Hook to prefetch the next page of leads
  * Useful for pagination - prefetch before user clicks "next"
  */
-export function usePrefetchLeads(filters: LeadFilters = {}) {
+export function usePrefetchLeads(
+	filters: LeadFilters = {},
+	options: LeadQueryOptions = {},
+) {
 	const queryClient = useQueryClient();
 
 	return () => {
 		queryClient.prefetchQuery({
-			queryKey: ["leads", filters],
-			queryFn: () => fetchLeads(filters),
+			queryKey: ["leads", filters, options.token ?? null],
+			queryFn: () => fetchLeads(filters, options),
 			staleTime: 5 * 60 * 1000,
 		});
 	};

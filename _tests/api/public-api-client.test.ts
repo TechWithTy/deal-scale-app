@@ -1,10 +1,13 @@
 import {
 	PublicApiError,
 	getCurrentUserProfile,
+	getProspectingSources,
+	logoutPublicApi,
 	getPublicApiSupportLabel,
 	isProviderUnavailable,
 	loginPublicApi,
 	publicApiFetch,
+	searchProspecting,
 } from "@/lib/api/public-api-client";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -52,6 +55,62 @@ describe("public API client", () => {
 			email: "user@example.com",
 			password: "password",
 		});
+	});
+
+	it("logs out through the public API auth endpoint with a bearer token", async () => {
+		vi.stubGlobal(
+			"fetch",
+			vi.fn(async () => {
+				return new Response(JSON.stringify({ success: true }), {
+					status: 200,
+				});
+			}),
+		);
+
+		await logoutPublicApi("token-123");
+
+		const [pathname, init] = vi.mocked(fetch).mock.calls[0];
+		const headers = init?.headers as Headers;
+		expect(pathname).toBe("/api/v1/auth/logout");
+		expect(init?.method).toBe("POST");
+		expect(headers.get("Authorization")).toBe("Bearer token-123");
+	});
+
+	it("builds prospecting search query parameters", async () => {
+		vi.stubGlobal(
+			"fetch",
+			vi.fn(async () => {
+				return new Response(JSON.stringify({ results: [] }), {
+					status: 200,
+				});
+			}),
+		);
+
+		await searchProspecting(
+			{ dry_run: true, limit: 25, source: "cashbuyers", state: "TX" },
+			"token-123",
+		);
+
+		const [pathname] = vi.mocked(fetch).mock.calls[0];
+		expect(String(pathname)).toBe(
+			"/api/v1/prospecting/search?dry_run=true&limit=25&source=cashbuyers&state=TX",
+		);
+	});
+
+	it("loads prospecting sources", async () => {
+		vi.stubGlobal(
+			"fetch",
+			vi.fn(async () => {
+				return new Response(JSON.stringify({ sources: [] }), {
+					status: 200,
+				});
+			}),
+		);
+
+		await getProspectingSources("token-123");
+
+		const [pathname] = vi.mocked(fetch).mock.calls[0];
+		expect(pathname).toBe("/api/v1/prospecting/sources");
 	});
 
 	it("turns FastAPI error envelopes into supportable errors", async () => {

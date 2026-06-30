@@ -7,6 +7,10 @@ import {
 	buildLeadDetailPath,
 	fetchLeadDetail,
 } from "@/lib/server/leads/leadListService";
+import {
+	fetchPublicApiLeadDetail,
+	fetchPublicApiLeadList,
+} from "@/lib/server/leads/publicApiLeadDetails";
 import type { LeadList, LeadTypeGlobal } from "@/types/_dashboard/leads";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
@@ -23,7 +27,7 @@ export async function generateMetadata(
 	props: LeadDetailPageProps,
 ): Promise<Metadata> {
 	const { params } = props;
-	const payload = await fetchLeadDetail(params.leadId, params.individualLeadId);
+	const payload = await resolveLeadPayload(params);
 	if (!payload) {
 		return { title: "Lead not found" };
 	}
@@ -45,7 +49,7 @@ export default async function LeadDetailPage({
 	params,
 	searchParams,
 }: LeadDetailPageProps) {
-	const payload = await fetchLeadDetail(params.leadId, params.individualLeadId);
+	const payload = await resolveLeadPayload(params);
 	if (!payload) {
 		notFound();
 	}
@@ -75,6 +79,20 @@ export default async function LeadDetailPage({
 			</div>
 		</PageContainer>
 	);
+}
+
+async function resolveLeadPayload(params: LeadDetailPageProps["params"]) {
+	const localPayload = await fetchLeadDetail(
+		params.leadId,
+		params.individualLeadId,
+	);
+	if (localPayload) return localPayload;
+	const [list, lead] = await Promise.all([
+		fetchPublicApiLeadList(params.leadId),
+		fetchPublicApiLeadDetail(params.individualLeadId),
+	]);
+	if (!list || !lead) return null;
+	return { lead, list };
 }
 
 function buildBreadcrumbs(list: LeadList, listId: string, leadName: string) {

@@ -43,6 +43,7 @@ interface CellActionProps {
 	onUnsuspendUser?: (user: AdminUser) => void;
 	onBanUser?: (user: AdminUser) => void;
 	onImpersonate?: (user: AdminUser) => void;
+	onRetryProvisioning?: (user: AdminUser) => void;
 }
 
 export function CellAction({
@@ -55,6 +56,7 @@ export function CellAction({
 	onUnsuspendUser,
 	onBanUser,
 	onImpersonate,
+	onRetryProvisioning,
 }: CellActionProps) {
 	const [confirmRetry, setConfirmRetry] = useState(false);
 
@@ -69,7 +71,7 @@ export function CellAction({
 						<AlertDialogCancel>Cancel</AlertDialogCancel>
 						<AlertDialogAction
 							onClick={() => {
-								// TODO: call /api/v1/admin/users/{userId}/retry-provisioning
+								onRetryProvisioning?.(user);
 								setConfirmRetry(false);
 							}}
 						>

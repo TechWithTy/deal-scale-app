@@ -16,7 +16,7 @@
 - Failed: `2`
 - Skipped: `0`
 - Controlled client errors: `104`
-- Expected provider/service unavailable responses: `7`
+- Expected provider/service unavaailable responses: `7`
 - Successful responses: `60`
 - Cleanup: passed
   - API keys revoked: `1`

@@ -11,10 +11,15 @@ import {
 	calculateCampaignCost,
 	getEstimatedCredits,
 } from "@/lib/utils/campaignCostCalculator";
+import {
+	launchPublicApiCampaign,
+	persistPublicApiCampaignId,
+} from "@/lib/api/public-api-campaign-launch";
 import type { CallCampaign } from "@/types/_dashboard/campaign";
 import type { EmailCampaign } from "@/types/goHighLevel/email";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { DirectMailCampaign } from "external/shadcn-table/src/examples/DirectMail/utils/mock";
+import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import React, {
 	useCallback,
@@ -188,6 +193,8 @@ const CampaignModalMain: FC<CampaignModalMainProps> = ({
 	const registerLaunchedCampaign = useCampaignStore(
 		(state) => state.registerLaunchedCampaign,
 	);
+	const { data: session } = useSession();
+	const publicApiToken = session?.publicApi?.accessToken;
 
 	const router = useRouter();
 
@@ -1149,6 +1156,37 @@ const CampaignModalMain: FC<CampaignModalMainProps> = ({
 
 			registerPayload();
 
+			if (publicApiToken) {
+				void launchPublicApiCampaign({
+					areaMode,
+					campaignName: normalizedName,
+					endDate,
+					estimatedCredits,
+					leadCount: safeLeadCount,
+					localCampaignId: campaignId,
+					primaryChannel,
+					selectedLeadListAId,
+					selectedLeadListId,
+					startDate,
+					token: publicApiToken,
+				})
+					.then((response) => {
+						if (
+							response &&
+							typeof response === "object" &&
+							"campaign_id" in response &&
+							typeof response.campaign_id === "string"
+						) {
+							persistPublicApiCampaignId(campaignId, response.campaign_id);
+						}
+					})
+					.catch((error) => {
+					campaignWarnLog("public-api-launch-failed", {
+						message: error instanceof Error ? error.message : String(error),
+					});
+				});
+			}
+
 			const params = new URLSearchParams({
 				type: campaignType,
 				campaignId,
@@ -1244,6 +1282,7 @@ const CampaignModalMain: FC<CampaignModalMainProps> = ({
 		startDate,
 		endDate,
 		registerLaunchedCampaign,
+		publicApiToken,
 	]);
 
 	const handleCreateAbTest = useCallback(

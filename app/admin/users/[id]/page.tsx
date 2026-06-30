@@ -2,28 +2,35 @@
 import AdjustCreditsModal from "@/components/admin/AdjustCreditsModal";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { usePublicApiAdminLogs } from "@/hooks/usePublicApiAdminLogs";
 import { formatAdminRole } from "@/lib/admin/roles";
 import {
-	type AdminActivityEvent,
 	type AdminDirectoryUser,
 	getAdminActivityLog,
 	getAdminDirectoryUser,
 } from "@/lib/admin/user-directory";
 import { useImpersonationStore } from "@/lib/stores/impersonationStore";
+import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 export default function AdminUserDetailPage() {
 	const params = useParams();
 	const userId = String(params?.id ?? "");
 	const [user, setUser] = useState<AdminDirectoryUser | null>(null);
-	const [logs, setLogs] = useState<AdminActivityEvent[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [creditsOpen, setCreditsOpen] = useState(false);
+	const { data: session } = useSession();
 	const { startImpersonation } = useImpersonationStore();
 	const router = useRouter();
+	const fallbackLogs = useMemo(() => getAdminActivityLog(userId), [userId]);
+	const adminLogs = usePublicApiAdminLogs(
+		userId,
+		fallbackLogs,
+		session?.publicApi?.accessToken,
+	);
 
 	useEffect(() => {
 		let alive = true;
@@ -31,10 +38,8 @@ export default function AdminUserDetailPage() {
 			setLoading(true);
 			try {
 				const detail = getAdminDirectoryUser(userId);
-				const activity = getAdminActivityLog(userId);
 				if (alive) {
 					setUser(detail);
-					setLogs(activity);
 				}
 			} finally {
 				if (alive) setLoading(false);
@@ -158,13 +163,13 @@ export default function AdminUserDetailPage() {
 						</TabsList>
 						<TabsContent value="activity">
 							<div className="rounded-md border">
-								{logs.length === 0 ? (
+								{adminLogs.logs.length === 0 ? (
 									<div className="p-4 text-muted-foreground text-sm">
 										No activity.
 									</div>
 								) : (
 									<ul className="divide-y">
-										{logs.map((e) => (
+										{adminLogs.logs.map((e) => (
 											<li key={e.id} className="p-3 text-sm">
 												<div className="text-muted-foreground">
 													{new Date(e.at).toLocaleString()}
@@ -175,6 +180,11 @@ export default function AdminUserDetailPage() {
 									</ul>
 								)}
 							</div>
+							<p className="mt-2 text-muted-foreground text-xs">
+								{adminLogs.source === "live"
+									? "Activity synced from the public API."
+									: "Showing fallback activity."}
+							</p>
 						</TabsContent>
 						<TabsContent value="profile">
 							<div className="rounded-md border p-4 text-sm">
@@ -203,6 +213,7 @@ export default function AdminUserDetailPage() {
 					open={creditsOpen}
 					onOpenChange={setCreditsOpen}
 					userId={user.id}
+					token={session?.publicApi?.accessToken}
 					onSuccess={(delta, type) => {
 						if (!user.credits) return;
 						const bucket = user.credits[type as keyof typeof user.credits] as {

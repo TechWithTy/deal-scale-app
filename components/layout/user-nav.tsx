@@ -15,7 +15,8 @@ import {
 import { useModalStore } from "@/lib/stores/dashboard";
 import { useSessionStore } from "@/lib/stores/user/useSessionStore";
 import { useUserProfileStore } from "@/lib/stores/user/userProfile";
-import { signOut } from "next-auth/react"; // Still needed for logging out
+import { logoutPublicApi } from "@/lib/api/public-api-client";
+import { signOut, useSession } from "next-auth/react"; // Still needed for logging out
 import { useRouter } from "next/navigation";
 import React from "react";
 import { toast } from "sonner";
@@ -24,6 +25,7 @@ void React;
 
 export function UserNav() {
 	const router = useRouter();
+	const { data: session } = useSession();
 	const sessionUser = useSessionStore((state) => state.user);
 	const { userProfile } = useUserProfileStore();
 	const {
@@ -58,6 +60,20 @@ export function UserNav() {
 		} catch (error) {
 			console.error("Error opening billing portal:", error);
 			toast.error("Failed to open billing portal. Please try again.");
+		}
+	};
+
+	const handleLogout = async () => {
+		const token = session?.publicApi?.accessToken;
+
+		try {
+			if (token) {
+				await logoutPublicApi(token);
+			}
+		} catch (error) {
+			console.warn("Public API logout failed; continuing local sign-out.", error);
+		} finally {
+			await signOut();
 		}
 	};
 
@@ -147,7 +163,7 @@ export function UserNav() {
 					</DropdownMenuItem>
 				</DropdownMenuGroup>
 				<DropdownMenuSeparator />
-				<DropdownMenuItem className="cursor-pointer" onClick={() => signOut()}>
+				<DropdownMenuItem className="cursor-pointer" onClick={handleLogout}>
 					Log out
 					<DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
 				</DropdownMenuItem>

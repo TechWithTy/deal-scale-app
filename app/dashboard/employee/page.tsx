@@ -5,6 +5,7 @@ import { Breadcrumbs } from "@/components/breadcrumbs";
 import PageContainer from "@/components/layout/page-container";
 import EmployeeKanbanTable from "@/components/tables/employee-tables/EmployeeKanbanTable";
 import InviteEmployeeModal from "@/components/tables/employee-tables/InviteEmployeeModal";
+import { TeamWorkspacePanel } from "@/components/tables/employee-tables/TeamWorkspacePanel";
 import { columns } from "@/components/tables/employee-tables/columns";
 import { buttonVariants } from "@/components/ui/button";
 import { Button } from "@/components/ui/button";
@@ -13,70 +14,44 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { mockUserProfile } from "@/constants/_faker/profile/userProfile";
+import { mockTeamMembers } from "@/constants/_faker/profile/team/members";
+import { usePublicApiTeamMembers } from "@/hooks/usePublicApiTeamMembers";
 import { cn } from "@/lib/_utils";
-import type { TeamMember, UserProfile } from "@/types/userProfile";
+import type { TeamMember } from "@/types/userProfile";
 import type { Table as TanstackTable } from "@tanstack/react-table";
 import TeamActivityFeed from "external/activity-graph/components/TeamActivityFeed";
 import { DataTableViewOptions } from "external/shadcn-table/src/components/data-table/data-table-view-options";
 import { Plus } from "lucide-react";
-import Link from "next/link";
-import { useEffect, useState } from "react"; // Import useState and useEffect for state management
-import { z } from "zod";
+import { useSession } from "next-auth/react";
+import { useEffect, useMemo, useState } from "react";
 
 const breadcrumbItems = [
 	{ title: "Dashboard", link: "/dashboard" },
 	{ title: "Employee", link: "/dashboard/employee" },
 ];
 
-// Simulate server-side data fetching (or you can use getServerSideProps for actual fetching)
-async function fetchEmployees(page: number, pageLimit: number) {
-	const offset = (page - 1) * pageLimit;
-	const res = await fetch(
-		`https://api.slingacademy.com/v1/sample-data/users?offset=${offset}&limit=${pageLimit}`,
-	);
-	// Validate the API response to avoid accessing properties on unknown
-	const SlingUsersSchema = z.object({ total_users: z.number() }).passthrough();
-	const raw = await res.json().catch(() => ({}));
-	const parsed = SlingUsersSchema.safeParse(raw);
-	const totalUsers = parsed.success ? parsed.data.total_users : 0;
-	// mockUserProfile is now UserProfile | undefined; use directly
-	const profile: UserProfile | undefined = mockUserProfile;
-	return {
-		totalUsers,
-		employees: profile?.teamMembers ?? [],
-		pageCount: Math.ceil(totalUsers / pageLimit),
-	};
-}
-
 export default function EmployeePage({
 	searchParams,
 }: {
 	searchParams: { [key: string]: string | string[] | undefined };
 }) {
-	const [totalUsers, setTotalUsers] = useState(0); // Total users state
-	const [employees, setEmployees] = useState<TeamMember[]>([]); // Employees state
-	const [pageCount, setPageCount] = useState(0); // Page count state
 	const [search, setSearch] = useState("");
 	const [inviteOpen, setInviteOpen] = useState(false);
+	const { data: session } = useSession();
+	const fallbackMembers = useMemo(() => mockTeamMembers, []);
+	const teamMembers = usePublicApiTeamMembers(
+		fallbackMembers,
+		session?.publicApi?.accessToken,
+	);
 
 	const page = Number(searchParams.page) || 1;
 	const pageLimit = Number(searchParams.limit) || 10;
-
-	useEffect(() => {
-		// Fetch employees when component mounts or searchParams changes
-		const loadEmployees = async () => {
-			const { totalUsers, employees, pageCount } = await fetchEmployees(
-				page,
-				pageLimit,
-			);
-			setTotalUsers(totalUsers);
-			setEmployees(employees);
-			setPageCount(pageCount);
-		};
-
-		loadEmployees();
-	}, [page, pageLimit]);
+	const totalUsers = teamMembers.members.length;
+	const pageCount = Math.max(1, Math.ceil(totalUsers / pageLimit));
+	const employees = useMemo(() => {
+		const start = (page - 1) * pageLimit;
+		return teamMembers.members.slice(start, start + pageLimit);
+	}, [page, pageLimit, teamMembers.members]);
 
 	useEffect(() => {
 		const openInvite = () => setInviteOpen(true);
@@ -100,7 +75,7 @@ export default function EmployeePage({
 					<div className="w-full text-center sm:w-auto sm:text-left">
 						<Heading
 							title={`Employee (${totalUsers})`}
-							description="Manage employees (Server side table functionalities.)"
+							description="Manage employees and team access."
 						/>
 					</div>
 
@@ -125,7 +100,21 @@ export default function EmployeePage({
 				{/* Team Credits Banner */}
 				<TeamCreditsBanner />
 
-				<InviteEmployeeModal open={inviteOpen} onOpenChange={setInviteOpen} />
+				<InviteEmployeeModal
+					open={inviteOpen}
+					onOpenChange={setInviteOpen}
+					token={session?.publicApi?.accessToken}
+				/>
+				<div className="text-muted-foreground text-xs">
+					{teamMembers.source === "live"
+						? "Team members synced from public API."
+						: teamMembers.source === "error"
+							? `Using fallback team members: ${teamMembers.error}`
+							: teamMembers.source === "fallback"
+								? "Using fallback team members because the public API response was empty."
+								: "Using fallback team members until a public API token exists."}
+					{teamMembers.isLoading ? " Loading..." : ""}
+				</div>
 
 				{/* Tabs: Employees (table) | Activity (line graph) */}
 				<Tabs defaultValue="employees">
@@ -186,7 +175,8 @@ export default function EmployeePage({
 					</TabsContent>
 
 					<TabsContent value="activity">
-						<div className="mt-3" data-tour="employee-activity">
+						<div className="mt-3 space-y-4" data-tour="employee-activity">
+							<TeamWorkspacePanel token={session?.publicApi?.accessToken} />
 							<TeamActivityFeed
 								permissions={{ ViewReports: true, ManageTeam: true }}
 							/>

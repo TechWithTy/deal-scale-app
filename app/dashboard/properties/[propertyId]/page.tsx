@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
+import { auth } from "@/auth";
 
 // Dynamic imports for client components
 const PropertyHeaderWrapper = dynamic(
@@ -22,6 +23,8 @@ import {
 	formatPropertyDetails,
 	getPrimaryImage,
 } from "@/lib/utils/propertyUtils";
+import { getPropertyServer } from "@/lib/api/public-api-core-resources-server";
+import { normalizePublicApiProperty } from "@/lib/properties/public-api-property-normalizer";
 import type { Property } from "@/types/_dashboard/property";
 import { isRealtorProperty } from "@/types/_dashboard/property";
 const PageContainer = dynamic(
@@ -88,6 +91,15 @@ const AmortizationCalculatorCard = getCalculatorComponent("amortization");
 // Async function to fetch property data
 async function fetchProperty(id: string): Promise<Property | null> {
 	try {
+		const session = await auth();
+		const token = session?.publicApi?.accessToken;
+		if (token) {
+			const publicProperty = normalizePublicApiProperty(
+				await getPropertyServer(id, token),
+			);
+			if (publicProperty) return publicProperty;
+		}
+
 		// First try to get the base URL from environment variables
 		const baseUrl =
 			process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";

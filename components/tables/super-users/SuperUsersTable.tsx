@@ -4,25 +4,20 @@ import AdminUserDetailModal from "@/components/admin/AdminUserDetailModal";
 import EditProfileModal from "@/components/admin/EditProfileModal";
 import ResetPasswordModal from "@/components/admin/ResetPasswordModal";
 import SuspendUserModal from "@/components/admin/SuspendUserModal";
-import {
-	AlertDialog,
-	AlertDialogAction,
-	AlertDialogCancel,
-	AlertDialogContent,
-	AlertDialogFooter,
-	AlertDialogHeader,
-	AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { usePublicApiAdminUsers } from "@/hooks/usePublicApiAdminUsers";
+import { retryAdminUserProvisioning } from "@/lib/api/public-api-dashboard";
 import { listAdminUsers } from "@/lib/admin/user-directory";
 import { useImpersonationStore } from "@/lib/stores/impersonationStore";
 import { DataTable } from "external/shadcn-table/src/components/data-table/data-table";
 import { DataTableViewOptions } from "external/shadcn-table/src/components/data-table/data-table-view-options";
 import { useDataTable } from "external/shadcn-table/src/hooks/use-data-table";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
+import { BanUserDialog } from "./BanUserDialog";
 import { adminUserColumns } from "./columns";
 import type { AdminUser } from "./types";
 
@@ -47,12 +42,18 @@ export default function SuperUsersTable() {
 	const [banUser, setBanUser] = useState<AdminUser | null>(null);
 	const [isBanConfirmOpen, setIsBanConfirmOpen] = useState(false);
 	const [banEmail, setBanEmail] = useState("");
+	const { data: session } = useSession();
 	const startImpersonation = useImpersonationStore(
 		(state) => state.startImpersonation,
 	);
 	const router = useRouter();
+	const fallbackUsers = useMemo(() => DIRECTORY_USERS, []);
+	const adminUsers = usePublicApiAdminUsers(
+		fallbackUsers,
+		session?.publicApi?.accessToken,
+	);
 
-	const tableData = useMemo(() => DIRECTORY_USERS, []);
+	const tableData = useMemo(() => adminUsers.users, [adminUsers.users]);
 
 	const table = useDataTable<AdminUser>({
 		data: tableData,
@@ -90,6 +91,23 @@ export default function SuperUsersTable() {
 				console.log("User unsuspended:", user.id);
 				// Update the user status in the table
 			},
+			onRetryProvisioning: async (user: AdminUser) => {
+				const token = session?.publicApi?.accessToken;
+				if (!token) {
+					toast.info("Public API token unavailable; retry provisioning skipped.");
+					return;
+				}
+				try {
+					await retryAdminUserProvisioning(user.id, token);
+					toast.success(`Provisioning retry queued for ${user.email}`);
+				} catch (error) {
+					toast.error(
+						error instanceof Error
+							? error.message
+							: "Unable to retry provisioning",
+					);
+				}
+			},
 			onBanUser: (user: AdminUser) => {
 				setBanUser(user);
 				setIsBanConfirmOpen(true);
@@ -116,18 +134,12 @@ export default function SuperUsersTable() {
 		},
 	});
 
-	const onSearch = () => {
+	const onSearch = async () => {
 		const normalized = query.trim().toLowerCase();
 		if (!normalized) return;
 
-		const match = DIRECTORY_USERS.find((user) => {
-			const email = user.email.toLowerCase();
-			if (email === normalized) return true;
-			const name = `${user.firstName ?? ""} ${user.lastName ?? ""}`
-				.trim()
-				.toLowerCase();
-			return name.includes(normalized);
-		});
+		const results = await adminUsers.search(normalized);
+		const match = results.find((user) => user.email.toLowerCase() === normalized);
 
 		if (match) {
 			setSelectedUserId(match.id);
@@ -136,7 +148,9 @@ export default function SuperUsersTable() {
 			return;
 		}
 
-		toast.info("No matching user found in mock directory");
+		if (results.length === 0) {
+			toast.info("No matching user found");
+		}
 	};
 
 	return (
@@ -150,10 +164,17 @@ export default function SuperUsersTable() {
 						className="h-9 w-[280px]"
 					/>
 					<Button size="sm" onClick={onSearch}>
-						Search
+						{adminUsers.isLoading ? "Searching..." : "Search"}
 					</Button>
 				</div>
 				<DataTableViewOptions table={table.table} />
+			</div>
+			<div className="text-muted-foreground text-xs">
+				{adminUsers.source === "live"
+					? "Admin users synced from public API."
+					: adminUsers.source === "error"
+						? `Using fallback admin users: ${adminUsers.error}`
+						: "Using fallback admin users until a public API token exists."}
 			</div>
 
 			<DataTable
@@ -168,6 +189,7 @@ export default function SuperUsersTable() {
 				open={isModalOpen}
 				onOpenChange={setIsModalOpen}
 				userId={selectedUserId}
+				token={session?.publicApi?.accessToken}
 				openCreditsModal={openCreditsModal}
 			/>
 			<EditProfileModal
@@ -201,52 +223,20 @@ export default function SuperUsersTable() {
 					// Update the user status in the table if desired
 				}}
 			/>
-			<AlertDialog open={isBanConfirmOpen} onOpenChange={setIsBanConfirmOpen}>
-				<AlertDialogContent>
-					<AlertDialogHeader>
-						<AlertDialogTitle>Ban User</AlertDialogTitle>
-					</AlertDialogHeader>
-					<div className="py-4">
-						<p className="text-muted-foreground text-sm">
-							Are you sure you want to ban{" "}
-							<strong>
-								{banUser?.firstName} {banUser?.lastName}
-							</strong>{" "}
-							({banUser?.email})?
-						</p>
-						<p className="mt-2 text-muted-foreground text-sm">
-							This action is <strong>irreversible</strong> and will permanently
-							block the user from accessing the platform.
-						</p>
-						<p className="mt-2 text-muted-foreground text-sm">
-							To confirm, please type the user's email address:
-						</p>
-						<Input
-							className="mt-2"
-							placeholder="User email address"
-							value={banEmail}
-							onChange={(e) => setBanEmail(e.target.value)}
-						/>
-					</div>
-					<AlertDialogFooter>
-						<AlertDialogCancel>Cancel</AlertDialogCancel>
-						<AlertDialogAction
-							className="bg-red-600 hover:bg-red-700"
-							disabled={banEmail !== banUser?.email}
-							onClick={() => {
-								if (banUser) {
-									// In a real implementation, you would call the ban API
-									console.log("User banned:", banUser.id);
-									// Update the user status in the table
-									setIsBanConfirmOpen(false);
-								}
-							}}
-						>
-							Ban User
-						</AlertDialogAction>
-					</AlertDialogFooter>
-				</AlertDialogContent>
-			</AlertDialog>
+			<BanUserDialog
+				emailConfirmation={banEmail}
+				onEmailConfirmationChange={setBanEmail}
+				onOpenChange={setIsBanConfirmOpen}
+				open={isBanConfirmOpen}
+				user={banUser}
+				onConfirm={() => {
+					if (banUser) {
+						// In a real implementation, you would call the ban API
+						console.log("User banned:", banUser.id);
+						setIsBanConfirmOpen(false);
+					}
+				}}
+			/>
 		</div>
 	);
 }

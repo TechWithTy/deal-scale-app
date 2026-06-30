@@ -9,42 +9,47 @@ import {
 	DropdownMenuLabel,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Switch } from "@/components/ui/switch"; // Assuming you have a Switch component
+import { deleteTeamMember } from "@/lib/api/public-api-dashboard";
+import { TEAM_MEMBER_DELETED_EVENT } from "@/lib/team/member-events";
 import type { TeamMember } from "@/types/userProfile";
 import { Edit, MoreHorizontal, Trash } from "lucide-react";
+import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { toast } from "sonner";
 
 interface CellActionProps {
 	data: TeamMember;
-	currentUserRole: "admin" | "member"; // Role of the current user
 }
 
-export const CellAction: React.FC<CellActionProps> = ({
-	data,
-	currentUserRole,
-}) => {
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export const CellAction: React.FC<CellActionProps> = ({ data }) => {
 	const [loading, setLoading] = useState(false);
 	const [open, setOpen] = useState(false);
-	const [permissions, setPermissions] = useState(data.permissions); // Manage permissions locally
-
 	const router = useRouter();
+	const { data: session } = useSession();
 
 	const onConfirm = async () => {
-		// Handle deletion confirmation here
-	};
-
-	const togglePermission = (permissionKey: keyof typeof permissions) => {
-		// Only admins can toggle permissions
-		if (currentUserRole === "admin") {
-			setPermissions((prevPermissions) => ({
-				...prevPermissions,
-				[permissionKey]: !prevPermissions[permissionKey],
-			}));
-
-			// You would also make an API call here to persist the changes
-			// Example: await api.updatePermissions(data.id, updatedPermissions);
+		const token = session?.publicApi?.accessToken;
+		if (!token) {
+			toast.error("Public API login required to delete a team member.");
+			return;
+		}
+		setLoading(true);
+		try {
+			await deleteTeamMember(String(data.id), token);
+			window.dispatchEvent(
+				new CustomEvent(TEAM_MEMBER_DELETED_EVENT, {
+					detail: String(data.id),
+				}),
+			);
+			setOpen(false);
+			toast.success("Team member removed");
+		} catch (error) {
+			toast.error(
+				error instanceof Error ? error.message : "Unable to remove team member",
+			);
+		} finally {
+			setLoading(false);
 		}
 	};
 
@@ -91,35 +96,6 @@ export const CellAction: React.FC<CellActionProps> = ({
 					>
 						<Trash className="mr-2 h-4 w-4" /> Delete
 					</DropdownMenuItem>
-
-					{/* Render permission toggles if current user is an admin */}
-					{currentUserRole === "admin" && (
-						<>
-							<DropdownMenuLabel className="mt-2">
-								UserPermissions
-							</DropdownMenuLabel>
-							{Object.keys(permissions).map((key) => (
-								<DropdownMenuItem
-									key={key}
-									asChild
-									onClick={(e) => e.stopPropagation()}
-								>
-									<div className="flex items-center justify-between">
-										<span className="capitalize">
-											{key.replace(/can/g, "")}
-										</span>
-										<Switch
-											checked={permissions[key as keyof typeof permissions]}
-											onClick={(e) => e.stopPropagation()}
-											onCheckedChange={() =>
-												togglePermission(key as keyof typeof permissions)
-											}
-										/>
-									</div>
-								</DropdownMenuItem>
-							))}
-						</>
-					)}
 				</DropdownMenuContent>
 			</DropdownMenu>
 		</>
