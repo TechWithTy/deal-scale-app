@@ -4,8 +4,12 @@ import { getCampaigns } from "@/lib/api/public-api-core-resources";
 import type { CallCampaign } from "@/types/_dashboard/campaign";
 import { useEffect, useState } from "react";
 
+export type PublicApiCampaignRow = CallCampaign & {
+	publicApiCampaignType: string;
+};
+
 type CampaignState = {
-	campaigns: CallCampaign[] | null;
+	campaigns: PublicApiCampaignRow[] | null;
 	status: string | null;
 	source: "error" | "fallback_mock" | "live" | "loading" | "missing_token";
 };
@@ -35,7 +39,7 @@ function number(value: unknown, fallback = 0) {
 	return Number.isFinite(parsed) ? parsed : fallback;
 }
 
-function normalizeCampaign(item: unknown, index: number): CallCampaign {
+function normalizeCampaign(item: unknown, index: number): PublicApiCampaignRow {
 	const record = asRecord(item);
 	const stats = asRecord(record.stats ?? record.metrics);
 	const status = text(record.status, "pending") as CallCampaign["status"];
@@ -57,6 +61,10 @@ function normalizeCampaign(item: unknown, index: number): CallCampaign {
 		inQueue: number(stats.in_queue ?? stats.inQueue),
 		leads: number(record.lead_count ?? stats.leads ?? record.target_count),
 		name: text(record.name, `Public API Campaign ${index + 1}`),
+		publicApiCampaignType: text(
+			record.campaign_type ?? record.type ?? record.channel,
+			"mixed",
+		).toLowerCase(),
 		receiverNumber: "",
 		startDate: text(
 			record.started_at ?? record.created_at,

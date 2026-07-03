@@ -2,7 +2,10 @@
 
 import LeadMainModal from "@/components/reusables/modals/user/lead/LeadModalMain";
 import SkipTraceModalMain from "@/components/reusables/modals/user/skipTrace/SkipTraceModalMain";
-import { usePublicApiCampaigns } from "@/hooks/usePublicApiCampaigns";
+import {
+	type PublicApiCampaignRow,
+	usePublicApiCampaigns,
+} from "@/hooks/usePublicApiCampaigns";
 import { Button } from "@/components/ui/button";
 import { usePublicApiCampaignStatus } from "@/hooks/usePublicApiCampaignStatus";
 import { useCampaignStore } from "@/lib/stores/campaigns";
@@ -18,6 +21,40 @@ import DirectMailCampaignsDemoTable from "external/shadcn-table/src/examples/dir
 import SocialCampaignsDemoTable from "external/shadcn-table/src/examples/social-campaigns-demo-table";
 import TextCampaignsDemoTable from "external/shadcn-table/src/examples/text-campaigns-demo-table";
 import { useCampaignTourModal } from "./useCampaignTourModal";
+
+function isPublicCampaignType(
+	campaign: PublicApiCampaignRow,
+	types: string[],
+) {
+	return types.includes(campaign.publicApiCampaignType);
+}
+
+function toDirectMailCampaign(
+	campaign: PublicApiCampaignRow,
+): DirectMailCampaign {
+	const now = new Date().toISOString();
+	const leadCount = Math.max(0, campaign.leads ?? 0);
+	const deliveredCount =
+		campaign.status === "completed" || campaign.status === "delivered"
+			? leadCount
+			: 0;
+
+	return {
+		...campaign,
+		addressVerified: false,
+		cost: 0,
+		deliveredCount,
+		expectedDeliveryAt: campaign.endDate ?? campaign.startDate ?? now,
+		failedCount: campaign.status === "failed" ? leadCount : 0,
+		lastEventAt: campaign.updatedAt ?? campaign.startDate ?? now,
+		leadsDetails: [],
+		mailSize: "6x9",
+		mailType: "postcard",
+		returnedCount: 0,
+		status: campaign.status === "paused" ? "paused" : campaign.status,
+		template: { id: `${campaign.id}-template`, name: "Public API Campaign" },
+	};
+}
 
 export default function CampaignCallTablePage({
 	urlParams,
@@ -177,8 +214,34 @@ export default function CampaignCallTablePage({
 	}, []);
 
 	useCampaignTourModal(openCampaignModal);
-	const displayedCallCampaigns =
-		publicApiCampaigns.campaigns ?? memoizedCallCampaigns;
+	const publicApiRows = publicApiCampaigns.campaigns ?? [];
+	const displayedCallCampaigns = publicApiRows.length
+		? publicApiRows.filter((campaign) =>
+				isPublicCampaignType(campaign, ["voice", "call", "calls", "mixed"]),
+			)
+		: memoizedCallCampaigns;
+	const displayedTextCampaigns = publicApiRows.length
+		? publicApiRows.filter((campaign) =>
+				isPublicCampaignType(campaign, ["sms", "text", "mixed"]),
+			)
+		: memoizedTextCampaigns;
+	const displayedSocialCampaigns = publicApiRows.length
+		? publicApiRows.filter((campaign) =>
+				isPublicCampaignType(campaign, [
+					"social",
+					"facebook",
+					"linkedin",
+					"mixed",
+				]),
+			)
+		: memoizedSocialCampaigns;
+	const displayedDirectMailCampaigns = publicApiRows.length
+		? publicApiRows
+				.filter((campaign) =>
+					isPublicCampaignType(campaign, ["direct", "direct_mail"]),
+				)
+				.map(toDirectMailCampaign)
+		: memoizedDirectMailCampaigns;
 
 	return (
 		// ! Use full width with min-w-0 to prevent forcing layout wider than sidebar
@@ -252,7 +315,7 @@ export default function CampaignCallTablePage({
 					onNavigate={handleTabChange}
 					campaignId={currentCampaignIdParam}
 					onCampaignSelect={handleCampaignSelect}
-					initialCampaigns={memoizedTextCampaigns}
+					initialCampaigns={displayedTextCampaigns}
 				/>
 			)}
 			{(tab === "linkedin" || tab === "facebook") && (
@@ -261,7 +324,7 @@ export default function CampaignCallTablePage({
 					onNavigate={handleTabChange}
 					campaignId={currentCampaignIdParam}
 					onCampaignSelect={handleCampaignSelect}
-					initialCampaigns={memoizedSocialCampaigns}
+					initialCampaigns={displayedSocialCampaigns}
 				/>
 			)}
 			{tab === "directMail" && (
@@ -270,7 +333,7 @@ export default function CampaignCallTablePage({
 					onNavigate={handleTabChange}
 					campaignId={currentCampaignIdParam}
 					onCampaignSelect={handleCampaignSelect}
-					initialCampaigns={memoizedDirectMailCampaigns}
+					initialCampaigns={displayedDirectMailCampaigns}
 				/>
 			)}
 			{/* Modals */}
