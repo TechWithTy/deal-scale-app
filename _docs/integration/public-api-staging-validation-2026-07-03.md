@@ -44,6 +44,7 @@ Report:
 - Lead creation modal existing-list selection now uses public API lead lists when a session JWT is available, with local/store mock lists retained only as fallback.
 - Campaign channel customization lead-list selector now uses the same public API lead-list source instead of the standalone fake lead-list API.
 - Skip Trace upload and single-contact flows now prefer public API lead lists for existing-list selection and fall back to static mock names when no public API session exists.
+- Lead Manager now prefers public API lead-list lead rows for the table, count, campaign filters, and export when a session JWT is available, with the local lead store retained as fallback.
 - This wiring uses normal frontend JWT auth (`Authorization: Bearer <user token>`), not a static Deal Scale API key.
 
 ## Cleanup And Redaction

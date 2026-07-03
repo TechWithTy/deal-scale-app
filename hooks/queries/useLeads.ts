@@ -24,6 +24,7 @@ import {
 	updateLead,
 } from "@/lib/api/public-api-core-resources";
 import { normalizePublicApiLeadLists } from "@/lib/leads/public-api-lead-normalizers";
+import type { LeadTypeGlobal } from "@/types/_dashboard/leads";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 /**
@@ -41,13 +42,7 @@ export interface LeadFilters {
 /**
  * Lead data structure (adjust to match your actual type)
  */
-export interface Lead {
-	id: string;
-	name: string;
-	status: string;
-	created_at: string;
-	// Add more fields as needed
-}
+export type Lead = LeadTypeGlobal;
 
 /**
  * Response structure from the leads API
@@ -74,26 +69,6 @@ function toPublicApiParams(filters: LeadFilters) {
 	};
 }
 
-function normalizeLeadRow(lead: unknown): Lead {
-	const record =
-		lead && typeof lead === "object" ? (lead as Record<string, unknown>) : {};
-	return {
-		created_at:
-			typeof record.lastUpdate === "string"
-				? record.lastUpdate
-				: new Date().toISOString(),
-		id: typeof record.id === "string" ? record.id : "public-api-lead",
-		name:
-			typeof record.name === "string" && record.name.trim()
-				? record.name
-				: "Public API Lead",
-		status:
-			typeof record.status === "string" && record.status.trim()
-				? record.status
-				: "New Lead",
-	};
-}
-
 /**
  * Fetches leads from the API
  */
@@ -104,7 +79,7 @@ async function fetchLeads(
 	const rows = normalizePublicApiLeadLists(
 		await getLeadLists(toPublicApiParams(filters), options.token),
 	);
-	const data = rows.flatMap((row) => row.leads.map(normalizeLeadRow));
+	const data = rows.flatMap((row) => row.leads);
 
 	return {
 		data,
@@ -127,6 +102,7 @@ export function useLeads(
 	return useQuery({
 		queryKey: ["leads", filters, options.token ?? null],
 		queryFn: () => fetchLeads(filters, options),
+		enabled: Boolean(options.token),
 		staleTime: 5 * 60 * 1000, // 5 minutes
 		gcTime: 10 * 60 * 1000, // 10 minutes
 		// Enable query only if needed (optional)
