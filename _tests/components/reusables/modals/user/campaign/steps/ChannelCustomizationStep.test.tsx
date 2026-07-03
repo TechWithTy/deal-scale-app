@@ -1,7 +1,7 @@
 import React from "react";
 import { cleanup, render, screen } from "@testing-library/react";
 import { useForm } from "react-hook-form";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { z } from "zod";
 
 import {
@@ -11,6 +11,10 @@ import {
 import { useCampaignCreationStore } from "@/lib/stores/campaignCreation";
 
 type FormValues = z.infer<typeof FormSchema>;
+
+vi.mock("next-auth/react", () => ({
+	useSession: () => ({ data: null }),
+}));
 
 function TestHarness() {
 	const form = useForm<FormValues>({

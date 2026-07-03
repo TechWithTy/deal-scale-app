@@ -39,6 +39,13 @@ Report:
 - Controlled client errors: `105`
 - Expected provider unavailable responses: `8`
 
+## Frontend Wiring Added After Validation
+
+- Lead creation modal existing-list selection now uses public API lead lists when a session JWT is available, with local/store mock lists retained only as fallback.
+- Campaign channel customization lead-list selector now uses the same public API lead-list source instead of the standalone fake lead-list API.
+- Skip Trace upload and single-contact flows now prefer public API lead lists for existing-list selection and fall back to static mock names when no public API session exists.
+- This wiring uses normal frontend JWT auth (`Authorization: Bearer <user token>`), not a static Deal Scale API key.
+
 ## Cleanup And Redaction
 
 - API keys revoked: `1`
@@ -53,3 +60,4 @@ Report:
 - Keep treating `PROVIDER_NOT_CONFIGURED`, `PROVIDER_UNAVAILABLE`, and `SERVICE_UNAVAILABLE` as controlled unavailable states when returned by optional providers.
 - Update any remaining frontend docs, env examples, or scripts that still reference `https://api.staging.dealscale.io`.
 - BE-22 authenticated staging smoke is now passing, so the previous analytics aggregate staging blocker is no longer reproduced in this validation.
+- Remaining visible mock-only areas should only be converted when their backend contracts are confirmed, including campaign evaluation runs, saved searches/templates, workflow export execution, voice/knowledge asset management, and account/security mutations.

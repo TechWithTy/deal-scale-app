@@ -4,9 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { LEAD_LISTS_MOCK } from "@/constants/dashboard/leadLists.mock";
+import { usePublicApiLeadLists } from "@/hooks/usePublicApiLeadLists";
 import { useSkipTraceStore } from "@/lib/stores/user/skip_trace/skipTraceStore";
 import { useUserProfileStore } from "@/lib/stores/user/userProfile";
 import type { InputField } from "@/types/skip-trace/enrichment";
+import { useSession } from "next-auth/react";
 import type React from "react";
 import { useEffect, useMemo, useState } from "react";
 import { EnrichmentStep } from "../steps/EnrichmentStep";
@@ -62,8 +64,28 @@ const SingleTraceFlow: React.FC<SingleTraceFlowProps> = ({
 	>("any");
 	const [skipExistingContacts, setSkipExistingContacts] = useState(true);
 
+	const { data: session } = useSession();
+	const publicApiLeadLists = usePublicApiLeadLists(
+		session?.publicApi?.accessToken,
+	);
 	const { userProfile } = useUserProfileStore();
 	const { reset, setUserInput } = useSkipTraceStore();
+	const fallbackSelectableLists = useMemo<ListItem[]>(() => {
+		const publicLists = (publicApiLeadLists.rows ?? []).map((list) => ({
+			count: list.records,
+			id: list.id,
+			name: list.list,
+		}));
+		const seen = new Set(publicLists.map((list) => list.id));
+		const mockLists = LEAD_LISTS_MOCK.filter((list) => !seen.has(list.id)).map(
+			(list) => ({
+				count: 0,
+				id: list.id,
+				name: list.name,
+			}),
+		);
+		return [...publicLists, ...mockLists];
+	}, [publicApiLeadLists.rows]);
 
 	useEffect(() => {
 		reset();
@@ -393,9 +415,12 @@ const SingleTraceFlow: React.FC<SingleTraceFlowProps> = ({
 						<div className="space-y-2">
 							{(
 								availableLists ??
-								(availableListNames ?? LEAD_LISTS_MOCK.map((l) => l.name)).map(
-									(name, i) => ({ name, count: 0, id: String(i) }),
-								)
+								availableListNames?.map((name, i) => ({
+									count: 0,
+									id: name || String(i),
+									name,
+								})) ??
+								fallbackSelectableLists
 							).map((l: ListItem, idx) => {
 								const id = l.id ?? l.name ?? String(idx);
 								const count = l.count ?? 0;

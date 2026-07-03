@@ -1,7 +1,3 @@
-import type { FC } from "react";
-import { useCallback, useEffect, useState } from "react";
-import { useInView } from "react-intersection-observer";
-
 import {
 	FormControl,
 	FormItem,
@@ -15,9 +11,10 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import type { LeadList } from "@/constants/_faker/_api/mockLeadListApi";
-import { fetchFakeLeadLists } from "@/constants/_faker/_api/mockLeadListApi";
-import { Loader2 } from "lucide-react";
+import { LEAD_LISTS_MOCK } from "@/constants/dashboard/leadLists.mock";
+import { usePublicApiLeadLists } from "@/hooks/usePublicApiLeadLists";
+import { useSession } from "next-auth/react";
+import { type FC, useMemo } from "react";
 
 interface LeadListSelectorProps {
 	value: string;
@@ -25,53 +22,37 @@ interface LeadListSelectorProps {
 	disabled?: boolean;
 }
 
+type LeadListOption = {
+	id: string;
+	listName: string;
+	records: number;
+};
+
 const LeadListSelector: FC<LeadListSelectorProps> = ({
 	value,
 	onChange,
 	disabled = false,
 }) => {
-	const { ref, inView } = useInView({
-		threshold: 0,
-		// * Trigger loading when the user is 200px away from the bottom
-		rootMargin: "200px 0px",
-	});
-
-	const [items, setItems] = useState<LeadList[]>([]);
-	const [page, setPage] = useState(0);
-	const [hasMore, setHasMore] = useState(true);
-	const [loading, setLoading] = useState(false);
-
-	const loadMoreLeadLists = useCallback(async () => {
-		if (loading || !hasMore) return;
-		setLoading(true);
-		const nextPage = page + 1;
-		const { items: newItems, hasMore: newHasMore } =
-			await fetchFakeLeadLists(nextPage);
-		setItems((prev) => [...prev, ...newItems]);
-		setPage(nextPage);
-		setHasMore(newHasMore);
-		setLoading(false);
-	}, [loading, hasMore, page]);
-
-	useEffect(() => {
-		// * Initial load
-		const init = async () => {
-			setLoading(true);
-			const { items: newItems, hasMore: newHasMore } =
-				await fetchFakeLeadLists(0);
-			setItems(newItems);
-			setPage(0);
-			setHasMore(newHasMore);
-			setLoading(false);
-		};
-		init();
-	}, []);
-
-	useEffect(() => {
-		if (inView && hasMore) {
-			loadMoreLeadLists();
-		}
-	}, [inView, hasMore, loadMoreLeadLists]);
+	const { data: session } = useSession();
+	const publicApiLeadLists = usePublicApiLeadLists(
+		session?.publicApi?.accessToken,
+	);
+	const items = useMemo<LeadListOption[]>(() => {
+		const publicLists = (publicApiLeadLists.rows ?? []).map((list) => ({
+			id: list.id,
+			listName: list.list,
+			records: list.records,
+		}));
+		const seen = new Set(publicLists.map((list) => list.id));
+		const fallbackLists = LEAD_LISTS_MOCK.filter(
+			(list) => !seen.has(list.id),
+		).map((list) => ({
+			id: list.id,
+			listName: list.name,
+			records: 0,
+		}));
+		return [...publicLists, ...fallbackLists];
+	}, [publicApiLeadLists.rows]);
 
 	const handleValueChange = (selectedValue: string) => {
 		const selectedItem = items.find((item) => item.id === selectedValue);
@@ -104,11 +85,6 @@ const LeadListSelector: FC<LeadListSelectorProps> = ({
 							{list.listName}
 						</SelectItem>
 					))}
-					{hasMore && (
-						<div ref={ref} className="flex items-center justify-center p-2">
-							<Loader2 className="h-4 w-4 animate-spin" />
-						</div>
-					)}
 				</SelectContent>
 			</Select>
 			<FormMessage />

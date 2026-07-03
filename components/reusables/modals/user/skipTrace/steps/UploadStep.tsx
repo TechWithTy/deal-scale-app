@@ -1,9 +1,11 @@
 "use client";
 
 import { LEAD_LISTS_MOCK } from "@/constants/dashboard/leadLists.mock";
+import { usePublicApiLeadLists } from "@/hooks/usePublicApiLeadLists";
+import { useSession } from "next-auth/react";
 import Papa, { type ParseResult } from "papaparse";
 import type React from "react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 interface CsvRow {
 	[key: string]: string;
@@ -20,12 +22,30 @@ interface UploadStepProps {
 }
 
 const UploadStep: React.FC<UploadStepProps> = ({ onFileSelect, onBack }) => {
+	const { data: session } = useSession();
+	const publicApiLeadLists = usePublicApiLeadLists(
+		session?.publicApi?.accessToken,
+	);
 	const [listMode, setListMode] = useState<"create" | "select">("create");
 	const [listName, setListName] = useState("");
 	const [selectedListId, setSelectedListId] = useState("");
 	const [file, setFile] = useState<File | null>(null);
 	const [error, setError] = useState("");
 	const [isLoading, setIsLoading] = useState(false);
+	const existingLists = useMemo(() => {
+		const publicLists = (publicApiLeadLists.rows ?? []).map((list) => ({
+			id: list.id,
+			name: list.list,
+		}));
+		const seen = new Set(publicLists.map((list) => list.id));
+		return [
+			...publicLists,
+			...LEAD_LISTS_MOCK.filter((list) => !seen.has(list.id)).map((list) => ({
+				id: list.id,
+				name: list.name,
+			})),
+		];
+	}, [publicApiLeadLists.rows]);
 
 	const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const selectedFile = e.target.files?.[0];
@@ -82,8 +102,7 @@ const UploadStep: React.FC<UploadStepProps> = ({ onFileSelect, onBack }) => {
 					const effectiveListName =
 						listMode === "create"
 							? listName.trim()
-							: LEAD_LISTS_MOCK.find((l) => l.id === selectedListId)?.name ||
-								"";
+							: existingLists.find((l) => l.id === selectedListId)?.name || "";
 					onFileSelect(
 						file,
 						results.meta.fields,
@@ -168,7 +187,7 @@ const UploadStep: React.FC<UploadStepProps> = ({ onFileSelect, onBack }) => {
 							aria-invalid={!selectedListId}
 						>
 							<option value="">Select a list...</option>
-							{LEAD_LISTS_MOCK.map((l) => (
+							{existingLists.map((l) => (
 								<option key={l.id} value={l.id}>
 									{l.name}
 								</option>

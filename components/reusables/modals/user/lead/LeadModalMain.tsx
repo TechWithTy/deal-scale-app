@@ -4,12 +4,14 @@ import { downloadLeadCsvTemplate } from "@/components/quickstart/utils/downloadL
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { LEAD_LISTS_MOCK } from "@/constants/dashboard/leadLists.mock";
+import { usePublicApiLeadLists } from "@/hooks/usePublicApiLeadLists";
 import {
 	calculateLeadStatistics,
 	parseCsvToLeads,
 } from "@/lib/stores/_utils/csvParser";
 import { useLeadListStore } from "@/lib/stores/leadList";
 import { Download, Upload } from "lucide-react";
+import { useSession } from "next-auth/react";
 import Papa from "papaparse";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -82,6 +84,10 @@ function LeadMainModal({
 	const [costDetails, setCostDetails] = useState(INITIAL_COST_DETAILS);
 	const [csvContent, setCsvContent] = useState<string>("");
 	const launchToastIdRef = useRef<string | number | null>(null);
+	const { data: session } = useSession();
+	const publicApiLeadLists = usePublicApiLeadLists(
+		session?.publicApi?.accessToken,
+	);
 
 	// Get the lead list store
 	const addLeadList = useLeadListStore((state) => state.addLeadList);
@@ -95,11 +101,20 @@ function LeadMainModal({
 		const storeLists = leadLists.map((list) => ({
 			id: list.id,
 			name: list.listName ?? "Lead List",
+			records: list.records ?? list.leads?.length ?? 0,
 		}));
-		const seen = new Set(storeLists.map((list) => list.id));
+		const publicLists = (publicApiLeadLists.rows ?? []).map((list) => ({
+			id: list.id,
+			name: list.list,
+			records: list.records,
+		}));
+		const seen = new Set([
+			...publicLists.map((list) => list.id),
+			...storeLists.map((list) => list.id),
+		]);
 		const fallbackLists = LEAD_LISTS_MOCK.filter((mock) => !seen.has(mock.id));
-		return [...storeLists, ...fallbackLists];
-	}, [leadLists]);
+		return [...publicLists, ...storeLists, ...fallbackLists];
+	}, [leadLists, publicApiLeadLists.rows]);
 
 	const launchCampaignIfPossible = useCallback(
 		(payload: {
@@ -665,12 +680,18 @@ function LeadMainModal({
 			selectedListId
 		) {
 			const existingList = leadLists.find((list) => list.id === selectedListId);
+			const publicList = publicApiLeadLists.rows?.find(
+				(list) => list.id === selectedListId,
+			);
 			const fallbackList = LEAD_LISTS_MOCK.find(
 				(list) => list.id === selectedListId,
 			);
 			const leadListName =
-				existingList?.listName ?? fallbackList?.name ?? "Selected Lead List";
-			const leadCountValue = existingList?.records ?? 0;
+				publicList?.list ??
+				existingList?.listName ??
+				fallbackList?.name ??
+				"Selected Lead List";
+			const leadCountValue = publicList?.records ?? existingList?.records ?? 0;
 			const launched = launchCampaignIfPossible({
 				leadListId: selectedListId,
 				leadListName,

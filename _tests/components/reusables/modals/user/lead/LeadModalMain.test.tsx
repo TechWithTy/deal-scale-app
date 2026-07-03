@@ -20,6 +20,10 @@ vi.mock("@/lib/stores/leadList", () => ({
                 selector({ addLeadList: vi.fn(), leadLists: [] }),
 }));
 
+vi.mock("next-auth/react", () => ({
+        useSession: () => ({ data: null }),
+}));
+
 vi.mock("papaparse", () => ({
         __esModule: true,
         default: {
