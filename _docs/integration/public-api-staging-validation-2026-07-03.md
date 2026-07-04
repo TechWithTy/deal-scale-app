@@ -46,6 +46,7 @@ Report:
 - Skip Trace upload and single-contact flows now prefer public API lead lists for existing-list selection and fall back to static mock names when no public API session exists.
 - Lead Manager now prefers public API lead-list lead rows for the table, count, campaign filters, and export when a session JWT is available, with the local lead store retained as fallback.
 - Campaign tables now preserve the public API `campaign_type`, route live campaign rows into Calls, Text, Social, and Direct Mail tabs, and keep generated table rows as fallback/extras.
+- Security API Keys now use `/api/v1/api-keys/scopes`, `/api/v1/api-keys/`, and `DELETE /api/v1/api-keys/{key_id}` with session JWT auth; raw keys are shown only immediately after create.
 - This wiring uses normal frontend JWT auth (`Authorization: Bearer <user token>`), not a static Deal Scale API key.
 
 ## Cleanup And Redaction

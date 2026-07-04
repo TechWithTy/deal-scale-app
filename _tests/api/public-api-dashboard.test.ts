@@ -11,6 +11,12 @@ import {
 	updateCartItem,
 	updateTeamMember,
 } from "@/lib/api/public-api-dashboard";
+import {
+	createApiKey,
+	getApiKeyScopes,
+	listApiKeys,
+	revokeApiKey,
+} from "@/lib/api/public-api-api-keys";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 function mockOkFetch() {
@@ -100,6 +106,28 @@ describe("public API dashboard wrappers", () => {
 		);
 		expect(vi.mocked(fetch).mock.calls[3][0]).toBe(
 			"/api/v1/cart/items/item%2F1",
+		);
+	});
+
+	it("manages user API keys with bearer auth", async () => {
+		mockOkFetch();
+
+		await getApiKeyScopes("token-123");
+		await listApiKeys("token-123");
+		await createApiKey({ name: "Production", scopes: ["read:profile"] }, "token-123");
+		await revokeApiKey("key/1", "token-123");
+
+		const calls = vi.mocked(fetch).mock.calls;
+		expect(calls.map(([path]) => path)).toEqual([
+			"/api/v1/api-keys/scopes",
+			"/api/v1/api-keys/",
+			"/api/v1/api-keys/",
+			"/api/v1/api-keys/key%2F1",
+		]);
+		expect(calls[2][1]?.method).toBe("POST");
+		expect(calls[3][1]?.method).toBe("DELETE");
+		expect((calls[0][1]?.headers as Headers).get("Authorization")).toBe(
+			"Bearer token-123",
 		);
 	});
 });
