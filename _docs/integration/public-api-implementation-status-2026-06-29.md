@@ -44,7 +44,7 @@ Last updated: 2026-07-03
   - Local campaign IDs are mapped to returned public campaign IDs.
   - Selected campaign status polls `/api/v1/campaigns/{campaign_id}/status`.
   - Update/cancel/delete wrappers exist; UI action replacement remains guarded by
-    current table ownership and BE-22 fixture coverage.
+    current table action ownership and user-flow mapping.
 - Admin users are partially migrated:
   - `/admin/users` search uses `/api/v1/admin/users/search` with fallback directory data.
   - Credit adjustment uses `/api/v1/admin/users/{user_id}/adjust-credits`.
@@ -193,7 +193,8 @@ Status values:
 
 - `done`: frontend route uses the public API path for the intended behavior.
 - `phase1_wired`: route consumes the completed Phase 1/core-resource contract
-  and keeps fallback behavior for missing token, empty data, or BE-22 fixture gaps.
+  and keeps fallback behavior for missing token, empty data, or endpoint-specific
+  fixture gaps.
 - `partial`: public API path is wired, but fallback or adjacent UI work remains.
 - `fallback_mock`: public API call exists but runtime is using mock data due missing token/config.
 - `blocked_backend_contract`: frontend cannot complete without a clarified or new backend contract.
