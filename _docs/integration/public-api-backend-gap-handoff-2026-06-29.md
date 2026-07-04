@@ -20,10 +20,12 @@ the normal 250-line source-file limit.
 - Phase 1 OpenAPI updates are documented and merged.
 - `check_if_email_exists` / Reacher operations docs are merged and deployed.
 
-Important caveat: `BE-22` is still open. The full persona fixture matrix and
-authenticated staging smoke/cleanup evidence are outstanding, so Phase 1 route
-wiring can proceed but the full backend gap register must not be treated as
-closed.
+Update 2026-07-03: `BE-22` authenticated staging smoke/cleanup evidence is now
+available and passed against backend commit `777d322`. Frontend also reran the
+full public API E2E suite against `https://staging.api.dealscale.io` with
+`173/173` passed and `0` skipped. The full backend gap register must still not
+be treated as closed because later phases remain contract/product-mapping
+blocked.
 
 ## Handoff outcome
 
@@ -64,9 +66,9 @@ does not need to wait for every phase to finish.
 | `BE-19` | P2 | Deal room / kanban | Deal-room and kanban routes | Confirm public API ownership and add deal, stage, board, column, card, ordering, and concurrency contracts. |
 | `BE-20` | P2 | Quickstart orchestration | `/dashboard/quickstart` | Define stable outputs/IDs between profile, prospecting, saved lists, campaign launch, and CRM sync steps. |
 | `BE-21` | P1 | Contract consistency | All migrated surfaces | Standardize pagination, errors, timestamps, enum casing, idempotency, and success envelopes. |
-| `BE-22` | P1 | Authenticated contract fixtures | Frontend E2E and CI | Supply scoped test users/data that return successful team/admin/provider responses, not only controlled auth/provider errors. |
+| `BE-22` | P1 | Authenticated contract fixtures | Frontend E2E and CI | Verified on staging for current BE-22 scope. Keep fixture maintenance and cleanup coverage in CI as future endpoint families are added. |
 | `BE-23` | P2 | Profile/settings persistence | `/dashboard/profile`, quickstart profile steps | Define canonical profile/business/settings read/update contracts beyond onboarding status. |
-| `BE-24` | P2 | Account security/privacy | Security modal, session activity, account deletion | Add session list/revoke, security activity, privacy export/delete, and notification-security preference ownership or remove unsupported UI. |
+| `BE-24` | P2 | Account security/privacy | Security modal, session activity, account deletion | API key scopes/list/create/revoke are consumed by frontend. Add session list/revoke, security activity, privacy export/delete, and notification-security preference ownership or remove unsupported UI. |
 | `BE-25` | P2 | Saved user assets | Saved searches, campaign templates, workflows | Add organization/user-scoped CRUD, stable IDs, versioning, and ownership for assets currently stored locally. |
 | `BE-26` | P2 | Knowledge assets | Sales scripts, email knowledge, voice/voicemail assets | Define upload/list/status/delete contracts, storage limits, processing states, and provider linkage. |
 | `BE-27` | P2 | Notifications/preferences | Notification panels and profile preferences | Define notification feed/read state and persisted delivery/preference contracts. |
@@ -378,7 +380,16 @@ one unrestricted profile object.
 
 ### Security and privacy
 
-For `BE-24`, decide support for:
+Frontend has consumed the API key portion of account security:
+
+```http
+GET    /api/v1/api-keys/scopes
+GET    /api/v1/api-keys/
+POST   /api/v1/api-keys/
+DELETE /api/v1/api-keys/{key_id}
+```
+
+Remaining `BE-24` support decisions:
 
 ```http
 GET    /api/v1/auth/sessions
@@ -500,8 +511,10 @@ Required stable codes include:
 
 ## Authenticated fixtures and testability
 
-`BE-22` is required because a controlled error proves routing but does not prove
-the successful contract consumed by the frontend.
+`BE-22` was required because a controlled error proves routing but does not prove
+the successful contract consumed by the frontend. The current BE-22 staging
+handoff is now verified, but the same rule applies to future endpoint families
+added under later phases.
 
 Backend should provide CI-safe users for:
 
@@ -519,7 +532,7 @@ and impersonation sessions.
 
 ## Backend implementation plan
 
-### Phase 0 - Contract freeze and test foundation
+### Phase 0 - Contract freeze and test foundation - current staging pass
 
 Gap IDs: `BE-21`, `BE-22`
 
@@ -532,7 +545,15 @@ Backend tasks:
 4. Create authenticated success fixtures and cleanup utilities.
 5. Add contract snapshots or schema tests to CI.
 
-Acceptance gate:
+Current status:
+
+- BE-22 authenticated smoke run passed on staging:
+  <https://github.com/Deal-Scale/deal-scale-backend-autoscaling/actions/runs/28676622557>
+- Backend commit under validation: `777d322`.
+- Frontend full public API E2E passed `173/173`, `0` skipped, with cleanup
+  verified against `https://staging.api.dealscale.io`.
+
+Acceptance gate for future contract families:
 
 - OpenAPI generation has no empty response schema for a frontend-owned operation.
 - CI can exercise successful team, admin, cart, campaign, analytics, and provider
@@ -554,9 +575,9 @@ Backend delivery status:
 
 Remaining caveat:
 
-- `BE-22` authenticated persona fixtures and staging smoke/cleanup evidence are
-  still outstanding. Frontend can wire routes but should keep fallback/error
-  handling until those fixtures exist.
+- BE-22 staging evidence is available for the current scope. Frontend still
+  keeps fallback/error handling for missing tokens, empty data, and later-phase
+  endpoint families that do not yet have typed success fixtures.
 
 Frontend now unblocked:
 
@@ -780,6 +801,9 @@ Frontend acceptance after each handoff:
 - `/api/v1/team/activity`
 - `/api/v1/payments/pricing/tiers`
 - `/api/v1/payments/checkout`
+- `/api/v1/api-keys/scopes`
+- `/api/v1/api-keys/`
+- `/api/v1/api-keys/{key_id}`
 
 ## Existing endpoints still blocked from final UI ownership
 
@@ -800,6 +824,8 @@ they should not be reported as entirely missing endpoints.
 ## Frontend validation completed
 
 - Production public API smoke rerun: `173/173` passed.
+- Staging public API smoke rerun: `173/173` passed, `0` skipped, cleanup
+  verified against `https://staging.api.dealscale.io`.
 - Final focused frontend integration run: `30/30` passed.
 - Targeted Vitest coverage added for:
   - public API client/server wrappers
@@ -813,6 +839,7 @@ they should not be reported as entirely missing endpoints.
   - team public API member adapter
   - team organization/invitation/activity adapters
   - payment pricing and secure checkout URL adapter
+  - security API key scopes/list/create/revoke wrappers
 - TypeScript check passed after the current frontend wiring.
 
 ## Payments implementation boundary

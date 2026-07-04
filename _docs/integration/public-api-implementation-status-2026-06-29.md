@@ -5,20 +5,24 @@ Next.js API routes to the deployed Deal Scale public API.
 
 ## Current progress snapshot
 
-Last updated: 2026-06-30
+Last updated: 2026-07-03
 
 - Public API full smoke rerun completed against production: `173/173` passed.
 - Backend Phase 1/core-resource handoff received for BE-01 through BE-04.
   Frontend route wiring is now proceeding against those completed contracts.
+- Staging BE-22 authenticated smoke/cleanup evidence is now available and
+  passed against backend commit `777d322`.
+- Frontend full public API E2E against staging passed `173/173` with `0`
+  skipped operations against `https://staging.api.dealscale.io`.
 - Backend release evidence:
   - Latest merge: `b7c807c5843184b1aa3e981ec295e803c684eab0`
   - Latest master workflow passed, including production blue/green cutover.
   - Production health smoke passed: `https://api.dealscale.io/api/v1/health`
   - Phase 1 OpenAPI updates are documented and merged.
   - `check_if_email_exists` / Reacher operations docs are merged and deployed.
-- Caveat: BE-22 full persona fixture matrix plus authenticated staging
-  smoke/cleanup evidence remain outstanding, so Phase 1 route wiring can proceed
-  but the remaining backend gap register is not closed.
+- Caveat: BE-22 staging smoke is no longer a blocker, but the remaining backend
+  gap register is not closed; several app surfaces still need endpoint
+  ownership, typed response fields, or product mapping.
 - Frontend session strategy is in place: NextAuth remains the app session layer and stores public API tokens on `session.publicApi`.
 - Auth/profile/logout are migrated:
   - Login attempts public API auth when enabled, with existing local/demo fallback preserved.
@@ -60,6 +64,12 @@ Last updated: 2026-06-30
   - Legacy `/api/plans` and `/api/payments/session` probes were removed from
     plan/payment helpers.
   - Subscription/cart checkout remains pending until cart ownership and product semantics are confirmed.
+- Account security is partially migrated:
+  - API key scope/list/create/revoke uses `/api/v1/api-keys/*` with the session
+    JWT.
+  - Raw keys are only shown immediately after creation.
+  - Session list/revoke, security activity, data export, account deletion, and
+    privacy preferences remain backend-contract blocked.
 - Backend handoff for unresolved contracts: [public-api-backend-gap-handoff-2026-06-29.md](./public-api-backend-gap-handoff-2026-06-29.md)
 
 ## Current remaining gaps
@@ -85,9 +95,9 @@ These are the current blockers after the latest frontend commits:
 | `BE-19` Deal room / kanban | blocked_backend_contract | Backend ownership and deal/board/card/concurrency contracts are not defined. | Deal room and kanban remain local/store-backed. |
 | `BE-20` Quickstart orchestration | partial | Profile, prospecting, and campaign pieces are wired, but durable cross-step IDs/resume state are not fully defined. | Quickstart can use wired downstream adapters but should not claim server-backed orchestration completion. |
 | `BE-21` Contract consistency | ongoing_backend_requirement | Pagination, envelopes, enum casing, idempotency, timestamps, and success envelopes still need consistent enforcement across future endpoints. | Frontend adapters normalize common variants and branch on stable `error.code`. |
-| `BE-22` Authenticated fixtures | blocked_backend_contract | Persona fixture matrix and authenticated staging smoke/cleanup evidence remain outstanding. | Fallback/error states stay in migrated screens; CI cannot assert every success-path UI contract yet. |
+| `BE-22` Authenticated fixtures | frontend_verified | Staging BE-22 authenticated smoke passed, and frontend full public API E2E passed `173/173` with cleanup verified. | Keep normal fallback/error states, but do not treat BE-22 as the active blocker for already-confirmed Phase 1 wiring. |
 | `BE-23` Profile/settings persistence | blocked_backend_contract | Profile/setup endpoint does not yet cover full personal, business, settings, OAuth, and notification preferences. | Profile status is wired; broader settings persistence remains local/fallback. |
-| `BE-24` Account security/privacy | blocked_backend_contract | Session list/revoke, security activity, data export, account deletion, and privacy flows are not defined. | Security/privacy UI should remain disabled/fallback until contracts exist. |
+| `BE-24` Account security/privacy | partial | API key management is wired. Session list/revoke, security activity, data export, account deletion, and privacy flows are still not defined. | API key UI uses public API. Other security/privacy tabs remain fallback or disabled until contracts exist. |
 | `BE-25` Saved user assets | blocked_backend_contract | Saved searches, campaign templates, and workflows need scoped CRUD/versioning contracts. | Existing asset experiences remain local/store-backed. |
 | `BE-26` Knowledge assets | blocked_backend_contract | Upload/list/status/delete contracts, storage limits, processing states, and provider linkage are missing. | Knowledge/script/voice asset managers remain local/provider-specific. |
 | `BE-27` Notifications/preferences | blocked_backend_contract | Notification feed/read state and delivery preference contracts are not defined. | Notification center/preferences remain local/fallback. |
@@ -116,6 +126,7 @@ These are the current blockers after the latest frontend commits:
 - [x] Wire team organization settings, invite list, invite acceptance, delete member, and activity UI.
 - [ ] Wire team identity/profile and permission editing after those fields are exposed by the backend.
 - [x] Wire custom credit pricing and secure checkout to `payments` wrappers.
+- [x] Wire security API key scopes/list/create/revoke to `api-keys` wrappers.
 - [ ] Wire subscription products and cart lifecycle UI to `cart` wrappers.
 - [ ] Wire messaging, enrichment, integrations, and VAPI surfaces after endpoint-to-screen ownership and configured-provider prerequisites are confirmed.
 
@@ -135,6 +146,7 @@ These are the current blockers after the latest frontend commits:
 | Admin users | Public API search/action/log overlays with mock fallback | `/api/v1/admin/users/*` | partial | Search, logs, adjust credits, and retry provisioning are wired; public impersonation is session-contract blocked. |
 | Team | Public API organization/member/invitation/activity UI | `/api/v1/team/*` | partial | Confirmed operations are wired; member list lacks identity fields and update supports only role/status. |
 | Payments / cart | Public API custom-credit checkout and pricing tiers | `/api/v1/payments/*`, `/api/v1/cart*` | partial | Credit tiers, plan helper pricing, and checkout are live through public API payment wrappers; subscription products, cart state, and billing management remain pending. |
+| Security API keys | Public API scopes/list/create/revoke with no mock secrets | `/api/v1/api-keys/scopes`, `/api/v1/api-keys/`, `/api/v1/api-keys/{key_id}` | done | Security API Keys tab uses session JWT auth; full key material is displayed/copyable only immediately after creation. |
 | Messaging | Provider-specific local flows and placeholders | `/api/v1/messaging/*`, `/api/v1/twilio/*`, `/api/v1/sendblue/*` | blocked_product_mapping | Backend must confirm which endpoint owns each chat/campaign action and provider prerequisites. |
 | Enrichment | Tool-specific UI and fixtures | `/api/v1/enrich/*` | blocked_product_mapping | Backend/product must map enrichment operations to existing tool surfaces and configured-provider requirements. |
 | Integrations | Connection UI and provider status cards | `/api/v1/integrations/ghl/calendar/*`, `/api/v1/credentials/*` | blocked_product_mapping | Shared provider error handling exists; canonical connection/status operations are not assigned to the current webhook-oriented UI. |
@@ -146,6 +158,7 @@ These are the current blockers after the latest frontend commits:
 | --- | --- | --- | --- |
 | `/dashboard` | aggregate/profile/activity/credits | partial | Usage modal uses balance, history, stats, and expiring-credit APIs; unrelated aggregate cards still need endpoint ownership. |
 | `/dashboard/profile` | auth/profile | done | Profile status uses session public API token. |
+| Security modal API Keys tab | account/security | done | Lists scopes and keys, creates keys, and revokes keys through `/api/v1/api-keys/*` with the session public API token. |
 | `/forgot-password` | auth/password reset | done | Sends reset email requests through `/api/v1/auth/reset-password`. |
 | `/reset-password` | auth/password reset | done | Completes reset tokens through `/api/v1/auth/set-password`. |
 | `/dashboard/lead-list` | prospecting/cashbuyers | phase1_wired | Loads `/api/v1/lead-lists` plus `/api/v1/cashbuyers` when authenticated; fallback rows remain for empty/error states. |
@@ -201,6 +214,9 @@ Status values:
 - Production API baseline remains `173/173` from the completed full smoke run.
 - Phase 2 password reset wiring: `_tests/api/public-api-client.test.ts`
   `14/14` passed.
+- Security API Keys wiring: `_tests/api/public-api-dashboard.test.ts` and
+  `_tests/api/public-api-client.test.ts` `20/20` passed.
+- TypeScript: `pnpm typecheck` passed after API Keys wiring.
 
 ## Remaining frontend boundary
 
