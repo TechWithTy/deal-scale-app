@@ -1,6 +1,7 @@
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { ProfileStepper } from "@/components/forms/steppers/profile-form/ProfileStepperMain";
 import PageContainer from "@/components/layout/page-container";
+import { PublicApiNotificationPreferencesPanel } from "@/components/notifications/PublicApiNotificationPreferencesPanel";
 import { ProfilePublicApiStatus } from "./ProfilePublicApiStatus";
 
 const breadcrumbItems = [
@@ -13,6 +14,7 @@ export default function page() {
 			<div className="space-y-4" data-tour="profile-page">
 				<Breadcrumbs items={breadcrumbItems} />
 				<ProfilePublicApiStatus />
+				<PublicApiNotificationPreferencesPanel />
 				<ProfileStepper />
 			</div>
 		</PageContainer>

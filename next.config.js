@@ -79,6 +79,7 @@ if (isProd && !disablePwa) {
 /** @type {import('next').NextConfig} */
 const nextConfig = {
 	// Essential configurations
+	distDir: process.env.NEXT_DIST_DIR || ".next",
 	output: "standalone",
 	transpilePackages: ["shadcn-table"],
 	eslint: { ignoreDuringBuilds: true },

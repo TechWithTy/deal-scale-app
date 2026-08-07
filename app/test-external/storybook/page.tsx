@@ -244,7 +244,7 @@ export default function StorybookExternalPage() {
 				<CloneModal
 					open={cloneOpen}
 					onClose={() => setCloneOpen(false)}
-					onSave={(blob) => {
+					onSave={(blob: Blob) => {
 						// For demo purposes, just close on save.
 						console.log("Saved audio blob:", blob);
 						setCloneOpen(false);

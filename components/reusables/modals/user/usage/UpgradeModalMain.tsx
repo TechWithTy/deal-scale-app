@@ -21,6 +21,7 @@ import { BillingToggle } from "./BillingToggle";
 import { OneTimeCard } from "./OneTimeCard";
 import { PricingTabs } from "./PricingTabs";
 import { PublicApiCreditPurchasePanel } from "./PublicApiCreditPurchasePanel";
+import { PublicApiCartPanel } from "./PublicApiCartPanel";
 import { SubscriptionTierCard } from "./SubscriptionTierCard";
 import { SuccessBasedCard } from "./SuccessBasedCard";
 
@@ -210,7 +211,9 @@ export function UpgradeModalMain({
 
 					{/* Subscription Tiers */}
 					{activeCategory === "subscription" && (
-						<div className="mb-6 grid grid-cols-1 gap-6 md:grid-cols-3">
+						<div className="mb-6 space-y-6">
+							<PublicApiCartPanel />
+							<div className="grid grid-cols-1 gap-6 md:grid-cols-3">
 							{pricingTiers.subscription.map((tier) => (
 								<SubscriptionTierCard
 									key={tier.id}
@@ -222,6 +225,7 @@ export function UpgradeModalMain({
 									discountCode={discountCode}
 								/>
 							))}
+							</div>
 						</div>
 					)}
 

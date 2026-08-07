@@ -13,6 +13,7 @@ const CheckIcon = ({ className }: { className?: string }) => {
 			stroke="currentColor"
 			className={cn("h-6 w-6 ", className)}
 		>
+			<title>Completed</title>
 			<path d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
 		</svg>
 	);
@@ -26,6 +27,7 @@ const CheckFilled = ({ className }: { className?: string }) => {
 			fill="currentColor"
 			className={cn("h-6 w-6 ", className)}
 		>
+			<title>Completed</title>
 			<path
 				fillRule="evenodd"
 				d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12Zm13.36-1.814a.75.75 0 1 0-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 0 0-1.06 1.06l2.25 2.25a.75.75 0 0 0 1.14-.094l3.75-5.25Z"
@@ -54,7 +56,7 @@ const LoaderCore = ({
 
 				return (
 					<motion.div
-						key={index}
+						key={loadingState.text}
 						className={cn("mb-4 flex gap-2 text-left")}
 						initial={{ opacity: 0, y: -(value * 40) }}
 						animate={{ opacity: opacity, y: -(value * 40) }}
@@ -107,7 +109,7 @@ export const MultiStepLoader = ({
 			setCurrentState(0);
 			return;
 		}
-		const timeout = setTimeout(() => {
+		const interval = setInterval(() => {
 			setCurrentState((prevState) =>
 				loop
 					? prevState === loadingStates.length - 1
@@ -117,8 +119,8 @@ export const MultiStepLoader = ({
 			);
 		}, duration);
 
-		return () => clearTimeout(timeout);
-	}, [currentState, loading, loop, loadingStates.length, duration]);
+		return () => clearInterval(interval);
+	}, [loading, loop, loadingStates.length, duration]);
 	return (
 		<AnimatePresence mode="wait">
 			{loading && (

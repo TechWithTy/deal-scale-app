@@ -270,7 +270,7 @@ describe("SubmoduleChatShell tours", () => {
 			'import { AppTourProvider } from "@/components/tour/AppTourProvider";',
 		);
 		expect(authenticatedShellSource).toMatch(
-			/<AppTourProvider>\s*<OfflineBanner \/>/,
+			/<AppTourProviderRoot>\s*<OfflineBanner \/>/,
 		);
 		expect(source).not.toContain("<AppTourProvider>");
 		expect(source).toMatch(

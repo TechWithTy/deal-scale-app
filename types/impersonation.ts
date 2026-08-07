@@ -39,9 +39,24 @@ export interface ImpersonationSessionUserSnapshot {
 	isFreeTier?: boolean;
 }
 
+export interface ImpersonationPublicApiTokens {
+	accessToken: string;
+	expiresAt?: number;
+	refreshToken?: string;
+	sessionId?: string;
+	tokenType?: string;
+}
+
+export interface ImpersonationRestoreState {
+	publicApi: ImpersonationPublicApiTokens;
+	user: ImpersonationSessionUserSnapshot;
+}
+
 export interface ImpersonationSessionPayload {
 	impersonator: ImpersonationIdentity;
 	impersonatedUser: ImpersonationIdentity;
 	impersonatedUserData: ImpersonationSessionUserSnapshot;
 	impersonatorUserData: ImpersonationSessionUserSnapshot;
+	publicApi?: ImpersonationPublicApiTokens;
+	sessionId?: string;
 }

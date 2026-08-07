@@ -4,10 +4,12 @@ import {
 } from "@/lib/admin/impersonation-service";
 import {
 	identitySchema,
+	impersonationRestoreResponseSchema,
 	impersonationResponseSchema,
 } from "@/lib/impersonation/session-schemas";
 import type {
 	ImpersonationIdentity,
+	ImpersonationPublicApiTokens,
 	ImpersonationSessionPayload,
 	ImpersonationSessionUserSnapshot,
 } from "@/types/impersonation";
@@ -20,7 +22,9 @@ async function triggerSessionUpdate(update: {
 	impersonation?: {
 		impersonator?: ImpersonationIdentity | null;
 		impersonatedUser?: ImpersonationIdentity | null;
+		restore?: { user?: ImpersonationSessionUserSnapshot } | null;
 	};
+	publicApi?: ImpersonationPublicApiTokens;
 	user?: ImpersonationSessionUserSnapshot | null;
 }) {
 	if (typeof window === "undefined") return;
@@ -127,7 +131,9 @@ export const useImpersonationStore = create<ImpersonationState>(
 				impersonation: {
 					impersonator: parsed.data.impersonator,
 					impersonatedUser: parsed.data.impersonatedUser,
+					restore: { user: parsed.data.impersonatorUserData },
 				},
+				publicApi: parsed.data.publicApi,
 				user: parsed.data.impersonatedUserData,
 			});
 
@@ -147,7 +153,11 @@ export const useImpersonationStore = create<ImpersonationState>(
 			const { originalUserData } = get();
 			console.log("=== IMPERSONATION STOP STORE DEBUG ===");
 
-			await stopImpersonationSession();
+			const restorePayload = await stopImpersonationSession();
+			const restored = impersonationRestoreResponseSchema.safeParse(restorePayload);
+			if (restorePayload && !restored.success) {
+				throw new Error("Invalid impersonation restore payload");
+			}
 
 			set((state) => {
 				console.log("Impersonation state in store:", {
@@ -210,15 +220,21 @@ export const useImpersonationStore = create<ImpersonationState>(
 				impersonation: {
 					impersonator: null;
 					impersonatedUser: null;
+					restore: null;
 				};
+				publicApi?: ImpersonationPublicApiTokens;
 				user?: ImpersonationSessionUserSnapshot;
 			} = {
 				impersonation: {
 					impersonator: null,
 					impersonatedUser: null,
+					restore: null,
 				},
 			};
-			if (originalUserData) {
+			if (restored.success) {
+				sessionUpdate.publicApi = restored.data.publicApi;
+				sessionUpdate.user = restored.data.user;
+			} else if (originalUserData) {
 				sessionUpdate.user = originalUserData;
 			}
 

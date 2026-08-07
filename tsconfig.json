@@ -1,80 +1,109 @@
 {
-	"compilerOptions": {
-		"target": "es6",
-		"lib": ["dom", "dom.iterable", "esnext"],
-		"allowJs": true,
-		"skipLibCheck": true, // This helps skip errors from node_modules types
-		"strict": true,
-		"noEmit": true,
-		"esModuleInterop": true,
-		"module": "esnext", // Supports ES modules
-		"moduleResolution": "node", // Use Node.js module resolution
-		"resolveJsonModule": true,
-		"isolatedModules": true,
-		"jsx": "preserve",
-                "types": ["vitest/globals", "node"],
-		"incremental": true,
-		"plugins": [
-			{
-				"name": "next"
-			}
-		],
-		"baseUrl": ".",
-		"paths": {
-			"@/*": ["./*"],
-			"@root/*": ["./*"],
-			"@app/*": ["app/*"],
-			"@ssf/*": ["types/external/any-module.d.ts"],
-			"external/*": ["types/external/any-module.d.ts"],
-			"@/external/*": ["types/external/any-module.d.ts"],
-			"@external/dynamic-hero": ["external/dynamic-hero/src/index.ts"],
-			"@external/dynamic-hero/*": ["external/dynamic-hero/src/*"],
-			"@/store/*": ["lib/stores/*"],
-			"@/store/user": ["lib/stores/userStore"]
-		}
-	},
-	"include": [
-		"next-env.d.ts",
-		"global.d.ts",
-		"types/**/*.d.ts",
-		"app/**/*.ts",
-		"app/**/*.tsx",
-		"components/**/*.ts",
-		"components/**/*.tsx",
-		"hooks/**/*.ts",
-		"hooks/**/*.tsx",
-		"lib/**/*.ts",
-		"lib/**/*.tsx",
-		"api/**/*.ts",
-		"api/**/*.tsx",
-		"actions/**/*.ts",
-		"actions/**/*.tsx",
-		"constants/**/*.ts",
-		"constants/**/*.tsx",
-		"utils/**/*.ts",
-		"utils/**/*.tsx",
-		"middleware.ts",
-		"auth.ts",
-		"auth.config.ts",
-		".next/types/**/*.ts"
-	],
-	"exclude": [
-		"node_modules",
-		"external/**",
-		"packages/**",
-		"scripts/**",
-		"tools/**",
-		"tests/**",
-		"_tests/**",
-		"app/test-external/**",
-		"**/_tests/**",
-		"**/__tests__/**",
-		"**/*.test.ts",
-		"**/*.test.tsx",
-		"**/*.spec.ts",
-		"**/*.spec.tsx",
-		"tmp_*",
-		"dist",
-		".next/cache"
-	]
+  "compilerOptions": {
+    "target": "es6",
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
+    "allowJs": true,
+    "skipLibCheck": true, // This helps skip errors from node_modules types
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext", // Supports ES modules
+    "moduleResolution": "node", // Use Node.js module resolution
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "types": [
+      "vitest/globals",
+      "node"
+    ],
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "baseUrl": ".",
+    "paths": {
+      "@/*": [
+        "./*"
+      ],
+      "@root/*": [
+        "./*"
+      ],
+      "@app/*": [
+        "app/*"
+      ],
+      "@ssf/*": [
+        "types/external/any-module.d.ts"
+      ],
+      "external/*": [
+        "types/external/any-module.d.ts"
+      ],
+      "@/external/*": [
+        "types/external/any-module.d.ts"
+      ],
+      "@external/dynamic-hero": [
+        "external/dynamic-hero/src/index.ts"
+      ],
+      "@external/dynamic-hero/*": [
+        "external/dynamic-hero/src/*"
+      ],
+      "@/store/*": [
+        "lib/stores/*"
+      ],
+      "@/store/user": [
+        "lib/stores/userStore"
+      ]
+    }
+  },
+  "include": [
+    "next-env.d.ts",
+    "global.d.ts",
+    "types/**/*.d.ts",
+    "app/**/*.ts",
+    "app/**/*.tsx",
+    "components/**/*.ts",
+    "components/**/*.tsx",
+    "hooks/**/*.ts",
+    "hooks/**/*.tsx",
+    "lib/**/*.ts",
+    "lib/**/*.tsx",
+    "api/**/*.ts",
+    "api/**/*.tsx",
+    "actions/**/*.ts",
+    "actions/**/*.tsx",
+    "constants/**/*.ts",
+    "constants/**/*.tsx",
+    "utils/**/*.ts",
+    "utils/**/*.tsx",
+    "middleware.ts",
+    "auth.ts",
+    "auth.config.ts",
+    ".next/types/**/*.ts",
+    ".next-release-validation/types/**/*.ts",
+    ".next-release-final/types/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "external/**",
+    "packages/**",
+    "scripts/**",
+    "tools/**",
+    "tests/**",
+    "_tests/**",
+    "app/test-external/**",
+    "**/_tests/**",
+    "**/__tests__/**",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.spec.ts",
+    "**/*.spec.tsx",
+    "tmp_*",
+    "dist",
+    ".next/cache"
+  ]
 }

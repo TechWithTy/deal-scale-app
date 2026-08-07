@@ -7,20 +7,58 @@ import {
 	DropdownMenuContent,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+	listNotifications,
+	markAllNotificationsRead,
+} from "@/lib/api/public-api-notifications";
+import { toAppNotification } from "@/lib/notifications/public-api-notification-normalizers";
 import { useNotificationsStore } from "@/lib/stores/notificationsStore";
 import { Bell } from "lucide-react";
-import { useEffect, useRef } from "react";
+import { useSession } from "next-auth/react";
+import { useCallback, useEffect, useRef } from "react";
 
 export default function NotificationsDropdown() {
+	const { data: session } = useSession();
+	const token = session?.publicApi?.accessToken;
 	const notifications = useNotificationsStore((s) => s.notifications);
 	const add = useNotificationsStore((s) => s.add);
 	const hasUnread = useNotificationsStore((s) => s.hasUnread());
 	const markAllRead = useNotificationsStore((s) => s.markAllRead);
+	const setNotifications = useNotificationsStore((s) => s.setNotifications);
 
-	// Seed a couple demo notifications for first-time view (guarded against StrictMode double-invoke)
+	const hydratedRef = useRef(false);
+	useEffect(() => {
+		if (!token || hydratedRef.current) return;
+		hydratedRef.current = true;
+		void listNotifications({ limit: 25 }, token)
+			.then((payload) => {
+				setNotifications((payload.items ?? []).map(toAppNotification));
+			})
+			.catch((error) => {
+				hydratedRef.current = false;
+				console.warn("[Notifications] Failed to load public API feed.", error);
+			});
+	}, [token, setNotifications]);
+
+	const handleOpenChange = useCallback(
+		(open: boolean) => {
+			if (!open) return;
+			markAllRead();
+			if (token) {
+				void markAllNotificationsRead(undefined, token).catch((error) => {
+					console.warn(
+						"[Notifications] Failed to mark public API feed read.",
+						error,
+					);
+				});
+			}
+		},
+		[token, markAllRead],
+	);
+
 	const seededRef = useRef(false);
 	useEffect(() => {
-		if (seededRef.current) return;
+		if (token || seededRef.current) return;
 		if (
 			typeof window !== "undefined" &&
 			sessionStorage.getItem("ds-notifs-seeded") === "true"
@@ -36,82 +74,20 @@ export default function NotificationsDropdown() {
 			add({
 				title: "Welcome to Deal Scale",
 				description: "You're all set!",
-				icon: "✨",
+				icon: "i",
 				colorHsl: "46 100% 50%",
 			});
 			add({
 				title: "Leads imported",
 				description: "42 new leads added",
-				icon: "📥",
+				icon: "+",
 				colorHsl: "200 85% 45%",
 			});
-			// Approval demo
-			add({
-				title: "Approve campaign launch?",
-				description: "Starter plan, 42 leads, SMS + Email",
-				icon: "🚀",
-				colorHsl: "142 76% 36%",
-				action: {
-					approveLabel: "Approve",
-					denyLabel: "Deny",
-					onApprove: () => console.log("Campaign approved"),
-					onDeny: () => console.log("Campaign denied"),
-				},
-			} as any);
-			// Credit offer notification
-			const dueDate = new Date();
-			dueDate.setDate(dueDate.getDate() + 30);
-			const dueDateStr = dueDate.toLocaleDateString("en-US", {
-				month: "short",
-				day: "numeric",
-				year: "numeric",
-			});
-
-			add({
-				title: "Credit Offer from Top Leader",
-				description: (
-					<div className="space-y-1.5">
-						<div className="break-words text-sm leading-relaxed">
-							100 AI credits • 5% monthly • Net 30
-						</div>
-						<div className="text-muted-foreground text-xs">
-							Due: {dueDateStr}
-						</div>
-						<a
-							href="https://dealscale.io/credit-terms"
-							target="_blank"
-							rel="noopener noreferrer"
-							className="inline-flex items-center text-primary text-xs hover:underline"
-							onClick={(e) => e.stopPropagation()}
-						>
-							View terms & conditions →
-						</a>
-					</div>
-				) as any,
-				icon: "💳",
-				colorHsl: "280 70% 50%",
-				action: {
-					approveLabel: "Accept Offer",
-					denyLabel: "Decline",
-					onApprove: () => {
-						console.log("Credit offer accepted");
-						// Show success notification
-						add({
-							title: "Credit offer accepted!",
-							description: "100 AI credits added to your account",
-							icon: "✅",
-							colorHsl: "142 76% 36%",
-						});
-					},
-					onDeny: () => console.log("Credit offer declined"),
-				},
-			} as any);
 		}
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, []);
+	}, [add, notifications.length, token]);
 
 	return (
-		<DropdownMenu onOpenChange={(open) => open && markAllRead()}>
+		<DropdownMenu onOpenChange={handleOpenChange}>
 			<DropdownMenuTrigger asChild>
 				<Button
 					variant="outline"

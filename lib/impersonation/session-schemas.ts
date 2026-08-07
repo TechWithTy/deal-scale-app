@@ -60,4 +60,25 @@ export const impersonationResponseSchema = z.object({
 	impersonator: identitySchema,
 	impersonatedUserData: sessionUserSchema,
 	impersonatorUserData: sessionUserSchema,
+	publicApi: z
+		.object({
+			accessToken: z.string().min(1),
+			expiresAt: z.number().optional(),
+			refreshToken: z.string().min(1).optional(),
+			sessionId: z.string().min(1).optional(),
+			tokenType: z.string().min(1).optional(),
+		})
+		.optional(),
+	sessionId: z.string().min(1).optional(),
+});
+
+export const impersonationRestoreResponseSchema = z.object({
+	publicApi: z.object({
+		accessToken: z.string().min(1),
+		expiresAt: z.number().optional(),
+		refreshToken: z.string().min(1).optional(),
+		sessionId: z.string().min(1).optional(),
+		tokenType: z.string().min(1).optional(),
+	}),
+	user: sessionUserSchema,
 });

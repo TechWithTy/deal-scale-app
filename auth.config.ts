@@ -1,7 +1,10 @@
 import type { NextAuthConfig } from "next-auth";
 import type { User as NextAuthUser } from "next-auth";
 import type { JWT } from "next-auth/jwt";
-import type { ImpersonationIdentity } from "@/types/impersonation";
+import type {
+	ImpersonationIdentity,
+	ImpersonationRestoreState,
+} from "@/types/impersonation";
 import type { QuickStartDefaults } from "@/types/userProfile";
 import Credentials from "next-auth/providers/credentials";
 import { getUserByEmail } from "@/lib/mock-db";
@@ -30,7 +33,7 @@ import type {
 	UserQuotas,
 	UserRole,
 } from "@/types/user";
-import type { ImpersonationSessionPayload } from "@/types/impersonation";
+import type { ImpersonationSessionUserSnapshot } from "@/types/impersonation";
 
 const VALID_ROLES: UserRole[] = [
         "admin",
@@ -143,6 +146,7 @@ type ExtendedJWT = JWT & {
         demoConfig?: DemoConfig;
 		quickStartDefaults?: QuickStartDefaults;
         impersonator?: ImpersonationIdentity | null;
+		impersonationRestore?: ImpersonationRestoreState | null;
 };
 
 type ExtendedUserLike = {
@@ -187,6 +191,7 @@ type PublicApiSessionTokens = {
 	accessToken?: string;
 	expiresAt?: number;
 	refreshToken?: string;
+	sessionId?: string;
 	tokenType?: string;
 };
 
@@ -260,6 +265,7 @@ async function authorizeWithPublicApi(email: string, password: string) {
 		accessToken: login.access_token,
 		expiresAt: getPublicApiExpiresAt(login.expires_in),
 		refreshToken: login.refresh_token,
+		sessionId: login.session_id,
 		tokenType: login.token_type,
 	};
 	let profile:
@@ -643,15 +649,33 @@ const authConfig = {
 				if (trigger === "update" && session) {
 				const update = session as {
 					user?: ExtendedUserLike;
+					publicApi?: PublicApiSessionTokens;
 					impersonation?: { 
 						impersonator?: ImpersonationIdentity | null;
 						impersonatedUser?: ImpersonationIdentity | null;
+						restore?: { user?: ImpersonationSessionUserSnapshot } | null;
 					};
 				};
 				if (update.user) {
 					applyExtendedUserToToken(extendedToken, update.user);
 				}
 				if (Object.prototype.hasOwnProperty.call(update, "impersonation")) {
+					if (
+						update.impersonation?.restore?.user &&
+						extendedToken.publicApi?.accessToken
+					) {
+						const originalPublicApi = extendedToken.publicApi;
+						extendedToken.impersonationRestore = {
+							publicApi: {
+								accessToken: originalPublicApi.accessToken!,
+								expiresAt: originalPublicApi.expiresAt,
+								refreshToken: originalPublicApi.refreshToken,
+								sessionId: originalPublicApi.sessionId,
+								tokenType: originalPublicApi.tokenType,
+							},
+							user: update.impersonation.restore.user,
+						};
+					}
 					// Update user data when impersonating
 					if (update.impersonation?.impersonatedUser) {
 						const impersonatedUser = update.impersonation.impersonatedUser;
@@ -669,6 +693,12 @@ const authConfig = {
 						}
 					}
 					extendedToken.impersonator = update.impersonation?.impersonator ?? null;
+					if (update.impersonation?.restore === null) {
+						extendedToken.impersonationRestore = null;
+					}
+				}
+				if (update.publicApi) {
+					extendedToken.publicApi = update.publicApi;
 				}
 			}
 

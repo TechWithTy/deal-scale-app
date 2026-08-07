@@ -1,6 +1,21 @@
 # Public API Remaining Follow-Up - 2026-06-29
 
-## Full E2E Status
+Update 2026-08-06: this report is historical. Backend production deploy run
+`31128423643` succeeded, production health passed, and Matrix v13 reported
+`104/104` passed, `0` failed, `0` skipped, and `cleanup_failed: 0`. Backend docs
+were reconciled in commit `324881c` (`docs: reconcile backend BE closure
+status`). No new backend deploy is required for that documentation-only commit.
+
+Current remaining work is not backend BE endpoint work:
+
+- frontend wiring, especially `BE-07` NextAuth impersonation exchange/restore;
+- frontend adapters/routes for delivered contracts;
+- provider operations/configuration for real Twilio, SendBlue, VAPI,
+  enrichment, and knowledge processing;
+- future product evolution for richer permissions or provider-specific
+  processing beyond current contracts.
+
+## Historical Full E2E Status
 
 - API base URL: `https://api.dealscale.io`
 - Generated at: `2026-06-29T19:48:24.170Z`
@@ -13,7 +28,8 @@
 - API keys revoked during cleanup: `1`
 - Cart cleanup: passed
 - Logout: passed
-- Command exit status: failed as expected while endpoint failures remain
+- Command exit status: failed as expected at the time while endpoint failures
+  remained
 
 Run the complete suite with:
 
@@ -21,9 +37,11 @@ Run the complete suite with:
 pnpm test:e2e:public-api-full
 ```
 
-## Backend Failures
+## Historical Backend Failures
 
-The following operations returned `500 SERVER_ERROR`:
+The following operations returned `500 SERVER_ERROR` in the 2026-06-29 report.
+They are superseded by Matrix v13 unless a newer smoke run reopens a specific
+failure:
 
 | Method | Endpoint | Observed issue |
 | --- | --- | --- |
@@ -39,16 +57,17 @@ The following operations returned `500 SERVER_ERROR`:
 | `POST` | `/api/v1/messaging/facebook/comment-to-dm` | Generic unexpected server error |
 | `POST` | `/api/v1/messaging/linkedin/send` | Generic unexpected server error |
 
-The following operation exceeded the E2E request timeout:
+The following operation exceeded the E2E request timeout in the historical run:
 
 | Method | Endpoint | Failure |
 | --- | --- | --- |
 | `POST` | `/api/v1/enrich/sherlock_username` | Aborted after `30,000 ms` |
 
-## Response Contract Issues
+## Historical Response Contract Issues
 
 Several operations return `200` while their response message describes an
-application failure. These should return an appropriate `4xx` or `5xx` envelope:
+application failure in the historical report. These should only be treated as
+current work if reproduced after Matrix v13:
 
 - `POST /api/v1/testers/apply`: `Internal error processing application`
 - `POST /api/v1/cart/items/{item_id}`: `Item not found in cart`
@@ -57,7 +76,9 @@ application failure. These should return an appropriate `4xx` or `5xx` envelope:
 
 ## Provider Configuration
 
-The following remain expected controlled states:
+Provider configuration remains a separate operations/product concern, not a
+missing backend BE endpoint. Controlled provider-unavailable states should use
+stable error codes. Historical expected controlled states included:
 
 - GHL Google Calendar OAuth: `503 PROVIDER_NOT_CONFIGURED`
 - USPS address verification: `503 PROVIDER_NOT_CONFIGURED`
@@ -78,11 +99,11 @@ The full E2E runner now:
 - Aborts individual requests after 30 seconds.
 - Exits nonzero for endpoint failures, skipped operations, or cleanup failures.
 
-Production does not expose a public account-deletion endpoint. When reusable
-test credentials are not configured, signup-based runs leave the temporary user
-and domain records without deletion APIs, such as affiliate applications.
+Production exposes an asynchronous account-deletion request endpoint. It does
+not immediately hard-delete an account, so signup-based test cleanup must not
+treat an accepted deletion request as synchronous teardown.
 
-Recommended backend support:
+Recommended support for future smoke coverage:
 
 - Add an authenticated test-account teardown endpoint restricted to nonproduction
   environments, or provide a scheduled cleanup job keyed by an E2E run ID.

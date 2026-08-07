@@ -1,6 +1,11 @@
 import type { SavedWorkflow } from "@/types/userProfile";
 import { v4 as uuidv4 } from "uuid";
 import { create } from "zustand";
+import {
+	syncCreateWorkflowTemplate,
+	syncDeleteWorkflowTemplate,
+	syncUpdateWorkflowTemplate,
+} from "../savedAssetsPublicApiSync";
 import { useUserProfileStore } from "../userProfile";
 
 interface SavedWorkflowsState {
@@ -9,7 +14,7 @@ interface SavedWorkflowsState {
 		name: string;
 		description?: string;
 		platform: "n8n" | "make" | "kestra";
-		workflowConfig: any;
+		workflowConfig: unknown;
 		aiPrompt?: string;
 		generatedByAI?: boolean;
 		monetization?: {
@@ -68,6 +73,8 @@ export const useSavedWorkflowsStore = create<SavedWorkflowsState>(() => ({
 			},
 		];
 		useUserProfileStore.getState().updateUserProfile({ savedWorkflows: next });
+		const created = next.find((workflow) => workflow.id === id);
+		if (created) syncCreateWorkflowTemplate(created);
 		return id;
 	},
 
@@ -84,6 +91,7 @@ export const useSavedWorkflowsStore = create<SavedWorkflowsState>(() => ({
 				: w,
 		);
 		useUserProfileStore.getState().updateUserProfile({ savedWorkflows: next });
+		syncUpdateWorkflowTemplate(id, patch);
 	},
 
 	deleteWorkflow: (id) => {
@@ -91,6 +99,7 @@ export const useSavedWorkflowsStore = create<SavedWorkflowsState>(() => ({
 			useUserProfileStore.getState().userProfile?.savedWorkflows ?? [];
 		const next = current.filter((w) => w.id !== id);
 		useUserProfileStore.getState().updateUserProfile({ savedWorkflows: next });
+		syncDeleteWorkflowTemplate(id);
 	},
 
 	exportToPlatform: (id, platform) => {
@@ -125,5 +134,7 @@ export const useSavedWorkflowsStore = create<SavedWorkflowsState>(() => ({
 				: w,
 		);
 		useUserProfileStore.getState().updateUserProfile({ savedWorkflows: next });
+		const updated = next.find((workflow) => workflow.id === id);
+		if (updated) syncUpdateWorkflowTemplate(id, updated);
 	},
 }));

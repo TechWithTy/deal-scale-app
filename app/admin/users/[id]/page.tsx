@@ -3,24 +3,22 @@ import AdjustCreditsModal from "@/components/admin/AdjustCreditsModal";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { usePublicApiAdminLogs } from "@/hooks/usePublicApiAdminLogs";
+import { usePublicApiAdminUserDetail } from "@/hooks/usePublicApiAdminUserDetail";
 import { formatAdminRole } from "@/lib/admin/roles";
 import {
 	type AdminDirectoryUser,
 	getAdminActivityLog,
-	getAdminDirectoryUser,
 } from "@/lib/admin/user-directory";
 import { useImpersonationStore } from "@/lib/stores/impersonationStore";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useParams } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
 export default function AdminUserDetailPage() {
 	const params = useParams();
 	const userId = String(params?.id ?? "");
-	const [user, setUser] = useState<AdminDirectoryUser | null>(null);
-	const [loading, setLoading] = useState(true);
 	const [creditsOpen, setCreditsOpen] = useState(false);
 	const { data: session } = useSession();
 	const { startImpersonation } = useImpersonationStore();
@@ -31,25 +29,10 @@ export default function AdminUserDetailPage() {
 		fallbackLogs,
 		session?.publicApi?.accessToken,
 	);
-
-	useEffect(() => {
-		let alive = true;
-		const load = async () => {
-			setLoading(true);
-			try {
-				const detail = getAdminDirectoryUser(userId);
-				if (alive) {
-					setUser(detail);
-				}
-			} finally {
-				if (alive) setLoading(false);
-			}
-		};
-		load();
-		return () => {
-			alive = false;
-		};
-	}, [userId]);
+	const { loading, source, user, setUser } = usePublicApiAdminUserDetail(
+		userId,
+		session?.publicApi?.accessToken,
+	);
 
 	const remaining = (allotted: number, used: number) =>
 		Math.max(0, allotted - used);
@@ -195,6 +178,10 @@ export default function AdminUserDetailPage() {
 								<div>
 									<span className="text-muted-foreground">Status:</span>{" "}
 									{user.status}
+								</div>
+								<div>
+									<span className="text-muted-foreground">Source:</span>{" "}
+									{source === "live" ? "Public API" : "Fallback directory"}
 								</div>
 							</div>
 						</TabsContent>

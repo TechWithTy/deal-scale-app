@@ -7,10 +7,10 @@
 import LeadMainModal from "@/components/reusables/modals/user/lead/LeadModalMain";
 import SkipTraceModalMain from "@/components/reusables/modals/user/skipTrace/SkipTraceModalMain";
 import { usePublicApiLeadLists } from "@/hooks/usePublicApiLeadLists";
-import { useSession } from "next-auth/react";
 import LeadsDemoTable, {
 	type LeadsDemoTableProps,
 } from "external/shadcn-table/src/examples/Lead/LeadsDemoTable";
+import { useSession } from "next-auth/react";
 import * as React from "react";
 
 /** Minimal init payload kept local so external module stays decoupled */

@@ -20,6 +20,10 @@ vi.mock("next/navigation", () => ({
 	}),
 }));
 
+vi.mock("next-auth/react", () => ({
+	useSession: () => ({ data: null, status: "unauthenticated" }),
+}));
+
 vi.mock("@/components/ui/dialog", () => ({
 	Dialog: ({ children }: { children: React.ReactNode }) => (
 		<div>{children}</div>

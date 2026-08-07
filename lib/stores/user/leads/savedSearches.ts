@@ -1,6 +1,11 @@
 import type { SavedSearch } from "@/types/userProfile";
 import { v4 as uuidv4 } from "uuid";
 import { create } from "zustand";
+import {
+	syncCreateSavedSearch,
+	syncDeleteSavedSearch,
+	syncUpdateSavedSearch,
+} from "../savedAssetsPublicApiSync";
 import { useUserProfileStore } from "../userProfile";
 
 interface SavedSearchesState {
@@ -38,6 +43,8 @@ export const useSavedSearchesStore = create<SavedSearchesState>(() => ({
 			},
 		];
 		useUserProfileStore.getState().updateUserProfile({ savedSearches: next });
+		const created = next.find((search) => search.id === id);
+		if (created) syncCreateSavedSearch(created);
 		return id;
 	},
 
@@ -54,6 +61,7 @@ export const useSavedSearchesStore = create<SavedSearchesState>(() => ({
 				: s,
 		);
 		useUserProfileStore.getState().updateUserProfile({ savedSearches: next });
+		syncUpdateSavedSearch(id, patch);
 	},
 
 	deleteSavedSearch: (id) => {
@@ -61,6 +69,7 @@ export const useSavedSearchesStore = create<SavedSearchesState>(() => ({
 			useUserProfileStore.getState().userProfile?.savedSearches ?? [];
 		const next = current.filter((s) => s.id !== id);
 		useUserProfileStore.getState().updateUserProfile({ savedSearches: next });
+		syncDeleteSavedSearch(id);
 	},
 
 	runSavedSearch: (id) => {

@@ -1,35 +1,52 @@
 # Public API Backend Gap Handoff - 2026-06-29
 
-This is the authoritative backend handoff for completing frontend migration from
+This file is the historical backend gap handoff for frontend migration from
 local fixtures, demo stores, provider-specific calls, and local Next.js API routes
 to the Deal Scale public API.
 
-The frontend previously reached its safe implementation boundary. Backend has
-now delivered Phase 1/core-resource updates for `BE-01` through `BE-04`, so
-frontend can consume cashbuyers, lead lists/details, property detail, and
-campaign lifecycle contracts. Every remaining open item below requires a
-backend endpoint, response field, environment capability, authenticated fixture,
-or explicit backend/product ownership decision. This file intentionally exceeds
-the normal 250-line source-file limit.
+Update 2026-08-06: backend BE endpoint work is no longer the active blocker.
+Backend docs were reconciled in commit `324881c` (`docs: reconcile backend BE
+closure status`). Production backend deploy run `31128423643` already succeeded,
+production health passed, and Matrix v13 reported `104/104` passed, `0` failed,
+`0` skipped, and `cleanup_failed: 0`.
 
-## Phase 1 release evidence
+The remaining work is frontend wiring, frontend session bridging, provider
+operations/configuration, and future product evolution. Keep the detailed
+contract notes below as implementation context, but do not treat them as a list
+of missing backend BE endpoints unless a new product scope explicitly reopens
+one.
+
+## Backend Release Evidence
 
 - Latest merge: `b7c807c5843184b1aa3e981ec295e803c684eab0`
 - Latest master workflow passed, including production blue/green.
 - Production health smoke passed: `https://api.dealscale.io/api/v1/health`
 - Phase 1 OpenAPI updates are documented and merged.
 - `check_if_email_exists` / Reacher operations docs are merged and deployed.
+- Production deploy run `31128423643` succeeded and production health passed.
+- Matrix v13 passed `104/104` with no failures, skips, or cleanup failures.
+- Backend docs were reconciled in commit `324881c`.
 
 Update 2026-07-03: `BE-22` authenticated staging smoke/cleanup evidence is now
 available and passed against backend commit `777d322`. Frontend also reran the
 full public API E2E suite against `https://staging.api.dealscale.io` with
-`173/173` passed and `0` skipped. The full backend gap register must still not
-be treated as closed because later phases remain contract/product-mapping
-blocked.
+`173/173` passed and `0` skipped.
 
 ## Handoff outcome
 
-Backend should work the gap IDs in phase order and deliver:
+Backend endpoint delivery is closed for the BE gap sequence tracked here. No new
+backend deploy is required for documentation-only commit `324881c`.
+
+Remaining owners:
+
+1. Frontend: wire delivered contracts into routes, stores, and adapters.
+2. Frontend: implement `BE-07` NextAuth impersonation exchange/restore routes.
+3. Operations/provider owners: configure real Twilio, SendBlue, VAPI,
+   enrichment, and knowledge-processing providers.
+4. Product: define richer permissions, provider-specific processing, deal-room,
+   kanban, or analytics behavior only when those become active product scope.
+
+Historical backend handoffs used the following acceptance shape:
 
 1. an updated OpenAPI document with concrete request/response models;
 2. authenticated test data that exercises successful responses;
@@ -38,8 +55,17 @@ Backend should work the gap IDs in phase order and deliver:
 5. contract tests plus production smoke coverage;
 6. a short release note mapping each completed gap ID to deployed endpoints.
 
-Frontend can resume route wiring as each phase passes its acceptance gate. It
-does not need to wait for every phase to finish.
+Frontend can continue route wiring without waiting on additional backend BE
+endpoint work.
+
+## Remaining Non-Backend Work
+
+| Area | Owner | Status | Remaining work |
+| --- | --- | --- | --- |
+| `BE-07` admin impersonation | Frontend | frontend_bridge_pending | Implement `/api/auth/impersonation/exchange` and `/api/auth/impersonation/restore` so the backend impersonation token can install and restore a NextAuth browser session. |
+| Delivered contracts | Frontend | wiring_remaining | Continue replacing local/fallback stores and local Next.js routes with the public API wrappers already available. |
+| Provider-backed operations | Operations / provider configuration | config_required | Configure real Twilio, SendBlue, VAPI, enrichment, and knowledge-processing providers for success-path behavior beyond controlled unavailable states. |
+| Richer permissions and provider workflows | Product / future backend scope | future_product_evolution | Reopen backend work only if product wants richer permission editing, provider-specific processing, deal-room/kanban persistence, or analytics beyond the current delivered contracts. |
 
 ## Complete gap register
 
@@ -49,29 +75,29 @@ does not need to wait for every phase to finish.
 | `BE-02` | P0 | Saved lead lists and lead detail | Lead-list and individual-lead slugs, `/dashboard/lead`, quickstart | Delivered in Phase 1. Frontend can consume saved-list, list-row, lead-detail, stable ID, and pagination contracts. |
 | `BE-03` | P0 | Property detail | `/dashboard/properties/[propertyId]`, market leads | Delivered in Phase 1. Frontend can consume the public property-detail contract. |
 | `BE-04` | P1 | Campaign lifecycle | `/dashboard/campaigns`, quickstart, campaign activity | Delivered in Phase 1. Frontend can consume campaign list/detail/update/cancel/status contracts. |
-| `BE-05` | P1 | Admin user detail | `/admin/users/[id]`, admin detail modal | Add `GET /api/v1/admin/users/{user_id}`. Search is not a reliable detail contract. |
-| `BE-06` | P1 | Admin lifecycle actions | Admin ban/suspend/access/edit/reset-password UI | Define supported admin mutations and add endpoints or remove those capabilities from product scope. |
-| `BE-07` | P1 | Admin impersonation session bridge | `/admin/users`, `/admin/users/[id]`, impersonation banner | Define how the five-minute impersonation JWT becomes/restores a NextAuth-compatible frontend session and how `session_id` is ended. |
-| `BE-08` | P1 | Team member identity | `/dashboard/employee`, `/dashboard/employee/[employeeId]` | Add email/display name to `TeamMemberPublic`; IDs/role/status are insufficient to render members. |
-| `BE-09` | P1 | Team permissions/profile mutation | Employee editor | Confirm role/status-only scope or add typed profile and permission fields to member read/update models. |
-| `BE-10` | P1 | Team invitation lifecycle | Employee invitation management | Confirm whether revoke/resend endpoints are required and return stable status transitions. |
-| `BE-11` | P1 | Subscription/cart ownership | Upgrade and plan-purchase flows | Define subscription SKU checkout, existing-cart merge/replace behavior, billing portal ownership, and checkout terminal states. |
-| `BE-12` | P1 | Password reset delivery | `/forgot-password`, `/reset-password` | Existing reset/set endpoints need verified email delivery, frontend reset URL format, token TTL, anti-enumeration behavior, and session invalidation tests. |
-| `BE-13` | P2 | Dashboard analytics | `/dashboard`, `/dashboard/charts` | Map dashboard cards/charts to analytics metric keys and provide typed aggregate/stream response examples. |
-| `BE-14` | P2 | Messaging ownership | `/dashboard/chat`, campaign messaging | Map Twilio, Sendblue, direct-mail, and VAPI chat operations to product actions; define thread/message schemas and pagination. |
-| `BE-15` | P2 | Enrichment ownership | Lead/profile enrichment surfaces | Map each enrichment tool to UI actions, synchronous/asynchronous behavior, job status, normalized results, and credit usage. |
-| `BE-16` | P2 | Credentials/integrations | `/dashboard/connections`, profile OAuth | Define provider catalog/status, credential CRUD ownership, GHL calendar flow, reconnect/disconnect behavior, and safe display fields. |
-| `BE-17` | P2 | VAPI/voice contracts | `/dashboard/agents`, chat, voice clone | Replace generic `VapiRequest`/`VapiResponse` objects with typed assistant/call/chat/phone/voice models and pagination. |
-| `BE-18` | P2 | Webhooks/feeds | `/dashboard/connections` | Current UI manages incoming/outgoing webhooks and activity feeds, but no canonical CRUD/test/delivery-log contract is assigned. |
-| `BE-19` | P2 | Deal room / kanban | Deal-room and kanban routes | Confirm public API ownership and add deal, stage, board, column, card, ordering, and concurrency contracts. |
-| `BE-20` | P2 | Quickstart orchestration | `/dashboard/quickstart` | Define stable outputs/IDs between profile, prospecting, saved lists, campaign launch, and CRM sync steps. |
-| `BE-21` | P1 | Contract consistency | All migrated surfaces | Standardize pagination, errors, timestamps, enum casing, idempotency, and success envelopes. |
-| `BE-22` | P1 | Authenticated contract fixtures | Frontend E2E and CI | Verified on staging for current BE-22 scope. Keep fixture maintenance and cleanup coverage in CI as future endpoint families are added. |
-| `BE-23` | P2 | Profile/settings persistence | `/dashboard/profile`, quickstart profile steps | Define canonical profile/business/settings read/update contracts beyond onboarding status. |
-| `BE-24` | P2 | Account security/privacy | Security modal, session activity, account deletion | API key scopes/list/create/revoke are consumed by frontend. Add session list/revoke, security activity, privacy export/delete, and notification-security preference ownership or remove unsupported UI. |
-| `BE-25` | P2 | Saved user assets | Saved searches, campaign templates, workflows | Add organization/user-scoped CRUD, stable IDs, versioning, and ownership for assets currently stored locally. |
-| `BE-26` | P2 | Knowledge assets | Sales scripts, email knowledge, voice/voicemail assets | Define upload/list/status/delete contracts, storage limits, processing states, and provider linkage. |
-| `BE-27` | P2 | Notifications/preferences | Notification panels and profile preferences | Define notification feed/read state and persisted delivery/preference contracts. |
+| `BE-05` | P1 | Admin user detail | `/admin/users/[id]`, admin detail modal | Delivered. Frontend wired `GET /api/v1/admin/users/{user_id}` into the detail page/modal with fallback for legacy-only fields. |
+| `BE-06` | P1 | Admin lifecycle actions | Admin ban/suspend/access/edit/reset-password UI | Delivered as supported/unsupported lifecycle metadata plus wired supported actions. Unsupported product actions should remain guarded in frontend unless product scope changes. |
+| `BE-07` | P1 | Admin impersonation session bridge | `/admin/users`, `/admin/users/[id]`, impersonation banner | Backend start/end contract is delivered. Remaining work is frontend NextAuth exchange/restore route implementation. |
+| `BE-08` | P1 | Team member identity | `/dashboard/employee`, `/dashboard/employee/[employeeId]` | Backend endpoint work closed by Matrix v13. Frontend should wire delivered member identity fields where present and keep fallback only for unsupported legacy fields. |
+| `BE-09` | P1 | Team permissions/profile mutation | Employee editor | Backend endpoint work closed by Matrix v13. Frontend should only send supported role/status/profile fields; richer permission editing is future product scope. |
+| `BE-10` | P1 | Team invitation lifecycle | Employee invitation management | Delivered create/list/accept behavior is wired. Resend/revoke should be treated as future product scope unless explicitly reopened. |
+| `BE-11` | P1 | Subscription/cart ownership | Upgrade and plan-purchase flows | Backend BE endpoint work closed by Matrix v13. Remaining work is frontend cart/subscription UI wiring and checkout-state handling against delivered contracts. |
+| `BE-12` | P1 | Password reset delivery | `/forgot-password`, `/reset-password` | Frontend reset/set forms are wired. Remaining work is operational verification and monitoring of production email/security behavior, not a missing endpoint. |
+| `BE-13` | P2 | Dashboard analytics | `/dashboard`, `/dashboard/charts` | Backend BE endpoint work closed by Matrix v13. Remaining work is frontend metric-to-screen adapter wiring and any future product metric expansion. |
+| `BE-14` | P2 | Messaging ownership | `/dashboard/chat`, campaign messaging | Backend BE endpoint work closed by Matrix v13. Remaining work is frontend mapping plus real Twilio/SendBlue/direct-mail/VAPI provider configuration. |
+| `BE-15` | P2 | Enrichment ownership | Lead/profile enrichment surfaces | Backend BE endpoint work closed by Matrix v13. Remaining work is frontend adapter wiring and provider success-path configuration. |
+| `BE-16` | P2 | Credentials/integrations | `/dashboard/connections`, profile OAuth | Backend BE endpoint work closed by Matrix v13. Remaining work is frontend route ownership and provider connection configuration. |
+| `BE-17` | P2 | VAPI/voice contracts | `/dashboard/agents`, chat, voice clone | Backend BE endpoint work closed by Matrix v13. Remaining work is frontend adapter wiring plus VAPI/voice provider configuration. |
+| `BE-18` | P2 | Webhooks/feeds | `/dashboard/connections` | Backend BE endpoint work closed by Matrix v13. Remaining work is frontend mapping for current connections UI and future product decisions for richer feed management. |
+| `BE-19` | P2 | Deal room / kanban | Deal-room and kanban routes | Backend BE endpoint work closed by Matrix v13 for current scope. Persisted deal-room/kanban behavior remains future product evolution unless reopened. |
+| `BE-20` | P2 | Quickstart orchestration | `/dashboard/quickstart` | Backend BE endpoint work closed by Matrix v13. Remaining work is frontend cross-step wiring and future durable resume-state evolution if product requires it. |
+| `BE-21` | P1 | Contract consistency | All migrated surfaces | Passed current Matrix v13 scope. Continue enforcing contract consistency for future endpoint families. |
+| `BE-22` | P1 | Authenticated contract fixtures | Frontend E2E and CI | Verified. Matrix v13 passed `104/104` with cleanup success; keep fixture maintenance in CI. |
+| `BE-23` | P2 | Profile/settings persistence | `/dashboard/profile`, quickstart profile steps | Backend BE endpoint work closed by Matrix v13. Remaining work is frontend settings/profile adapter wiring; richer settings are future product scope. |
+| `BE-24` | P2 | Account security/privacy | Security modal, session activity, account deletion | Delivered and wired. Account deletion remains an asynchronous request contract, not immediate hard deletion. |
+| `BE-25` | P2 | Saved user assets | Saved searches, campaign templates, workflows | Delivered and wired with scoped CRUD/versioning endpoints plus local fallback. |
+| `BE-26` | P2 | Knowledge assets | Sales scripts, email knowledge, voice/voicemail assets | Lifecycle contract delivered and wrappers exist. Remaining work is provider/storage configuration and richer frontend content/audio persistence. |
+| `BE-27` | P2 | Notifications/preferences | Notification panels and profile preferences | Delivered. Notification feed/read state is wired; preference wrappers are available for remaining profile UI wiring. |
 
 ## Cashbuyers contract delivered for frontend consumption
 
@@ -180,14 +206,18 @@ List/detail fields required by the current table and activity UI:
 - workflow/execution reference without exposing provider secrets
 - pagination and filter support for status/type/date
 
-Backend must also confirm whether direct-mail statistics are the canonical
-campaign-statistics contract or provider-specific data.
+Historical note: direct-mail statistics may still need product-level mapping if
+the frontend promotes provider-specific stats into canonical campaign reporting.
 
 ## Admin contract
 
+Status 2026-08-06: backend admin endpoint work is delivered for the current BE
+scope. The remaining admin work is frontend session bridging and guarded UI
+treatment for unsupported lifecycle actions.
+
 ### User detail and lifecycle
 
-`BE-05` requires a dedicated detail response with:
+`BE-05` delivered a dedicated detail response with:
 
 - identity and verification state
 - role/scopes/status
@@ -197,7 +227,8 @@ campaign-statistics contract or provider-specific data.
 - created/last-login timestamps
 - tester/tier flags only if they remain product features
 
-For `BE-06`, explicitly mark each existing UI action supported or unsupported:
+For `BE-06`, supported actions are wired where backend exposes them. Existing UI
+actions that remain unsupported should stay guarded unless product reopens them:
 
 - suspend/unsuspend
 - ban/unban
@@ -210,13 +241,16 @@ Unsupported actions should not receive placeholder success responses.
 
 ### Impersonation
 
-The OpenAPI schema returns `token`, `expires_in`, `expires_at`, and `session_id`.
-That is not yet sufficient for the app session layer. For `BE-07`, choose one:
+The backend start response now returns the impersonation token/session metadata
+and advertises the NextAuth bridge endpoints. The remaining `BE-07` work is
+frontend-only:
 
-1. Backend bridge: exchange impersonation token for a normal app session and
-   preserve the admin restore session server-side.
-2. NextAuth bridge: document a frontend server endpoint that stores the original
-   admin token, installs the impersonation token, and restores safely.
+1. Implement `/api/auth/impersonation/exchange`.
+2. Implement `/api/auth/impersonation/restore`.
+3. Store the original admin session/token safely.
+4. Install the impersonated session into NextAuth.
+5. Restore or terminate predictably on expiry, browser refresh, and explicit
+   stop.
 
 Required behavior:
 
@@ -229,7 +263,11 @@ Required behavior:
 
 ## Team contract
 
-For `BE-08`, extend `TeamMemberPublic` with at least:
+Status 2026-08-06: backend endpoint work is closed for current team scope. The
+frontend should wire delivered identity/profile fields where available. Richer
+permission editing remains future product scope unless explicitly reopened.
+
+Historical minimum identity shape:
 
 ```json
 {
@@ -244,11 +282,11 @@ For `BE-08`, extend `TeamMemberPublic` with at least:
 }
 ```
 
-For `BE-09`, either declare role/status-only management final or add a typed
-permission model. Do not accept identity/permission fields and silently discard
-them.
+For `BE-09`, frontend should not send fields outside the delivered update model.
+Do not add fake successful profile/permission mutations.
 
-For `BE-10`, decide whether pending invitations support:
+For `BE-10`, create/list/accept are delivered and wired. Pending invitation
+resend/revoke remains future product scope unless explicitly reopened:
 
 ```http
 POST /api/v1/team/invites/{invite_id}/resend
@@ -280,7 +318,7 @@ POST /api/v1/auth/set-password
 Therefore `BE-12` is primarily a delivery and security verification gap, not an
 endpoint naming gap.
 
-Backend must confirm:
+Production verification should confirm:
 
 - reset email URL includes both required `email` and `token` values;
 - token TTL and single-use behavior;
@@ -293,7 +331,9 @@ Backend must confirm:
 
 ## Dashboard analytics contract
 
-For `BE-13`, publish a metric catalog mapping frontend cards/charts to:
+Status 2026-08-06: backend BE endpoint work is closed for current analytics
+scope. Remaining work is frontend adapter wiring and future product metric
+expansion. Historical metric catalog expectations:
 
 - metric key
 - unit and display precision
@@ -308,6 +348,11 @@ credits, and team activity. Streaming reconnect/cursor behavior must be defined.
 
 ## Provider and integration contract
 
+Status 2026-08-06: backend BE endpoint work is closed for current provider
+scope. Remaining work is frontend action mapping plus real provider
+configuration for Twilio, SendBlue, VAPI, enrichment, direct mail, and knowledge
+processing success paths.
+
 The frontend client already recognizes:
 
 - `PROVIDER_NOT_CONFIGURED`
@@ -315,7 +360,7 @@ The frontend client already recognizes:
 - `SERVICE_UNAVAILABLE`
 - validation, auth, forbidden, not-found, and server failures
 
-For `BE-14` through `BE-18`, backend/product must publish an operation map:
+Historical operation map used for provider-facing wiring:
 
 | Frontend action | Canonical endpoint | Required provider | Success model | Unavailable behavior |
 | --- | --- | --- | --- | --- |
@@ -342,8 +387,9 @@ Requirements:
 
 ## Deal room, kanban, and quickstart contract
 
-For `BE-19`, decide whether deal room and kanban are persisted backend products.
-If yes, provide:
+Status 2026-08-06: backend BE endpoint work is closed for current scope.
+Persisted deal-room/kanban behavior and richer quickstart resume state are
+future product evolution unless reopened. Historical persistence expectations:
 
 - deal list/detail with stable IDs and ownership;
 - board/column/card schemas;
@@ -352,9 +398,9 @@ If yes, provide:
 - activity/comments/attachments if supported;
 - archive/delete semantics and authorization.
 
-For `BE-20`, define the identifiers passed between quickstart steps. A completed
-step must return durable IDs that the next step can consume; display labels or
-local array indexes are insufficient.
+For `BE-20`, frontend should wire delivered downstream IDs where available.
+Future durable resume-state work should preserve the rule that completed steps
+return durable IDs that the next step can consume.
 
 ## Secondary persistence contracts
 
@@ -380,18 +426,14 @@ one unrestricted profile object.
 
 ### Security and privacy
 
-Frontend has consumed the API key portion of account security:
+Frontend has consumed account security and privacy operations for the current
+scope:
 
 ```http
 GET    /api/v1/api-keys/scopes
 GET    /api/v1/api-keys/
 POST   /api/v1/api-keys/
 DELETE /api/v1/api-keys/{key_id}
-```
-
-Remaining `BE-24` support decisions:
-
-```http
 GET    /api/v1/auth/sessions
 DELETE /api/v1/auth/sessions/{session_id}
 DELETE /api/v1/auth/sessions
@@ -401,11 +443,18 @@ DELETE /api/v1/account
 ```
 
 Account deletion needs re-authentication, explicit state transitions, retention
-policy, organization-owner safeguards, and asynchronous completion status.
+policy, organization-owner safeguards, and asynchronous completion status. The
+current frontend treats it as an asynchronous request contract, not immediate
+hard deletion.
 
 ### Saved assets and knowledge
 
-For `BE-25` and `BE-26`, provide scoped CRUD and stable IDs for:
+`BE-25` scoped CRUD/versioning is delivered and wired for saved searches,
+campaign templates, and workflow templates. `BE-26` knowledge lifecycle
+wrappers exist. Remaining work is provider/storage configuration and richer
+frontend persistence for content/audio bytes.
+
+Historical resource set:
 
 - saved lead searches
 - campaign templates
@@ -414,13 +463,16 @@ For `BE-25` and `BE-26`, provide scoped CRUD and stable IDs for:
 - email/knowledge documents
 - voice clones and voicemail recordings
 
-Uploads require MIME/size limits, malware scanning, processing status, signed
-upload/download behavior, and delete/retention semantics. Templates/workflows
-require schema versions so saved data remains loadable after UI changes.
+Uploads still require configured provider behavior for MIME/size limits, malware
+scanning, processing status, signed upload/download behavior, and
+delete/retention semantics. Templates/workflows require schema versions so saved
+data remains loadable after UI changes.
 
 ### Notifications
 
-For `BE-27`, define:
+`BE-27` notification feed/read state is delivered and wired for the header
+dropdown. Preference wrappers are available for remaining profile UI wiring.
+Historical notification requirements:
 
 - notification list with pagination;
 - unread count;
@@ -530,7 +582,11 @@ Fixtures must be resettable and isolated from production customer data. Mutating
 smoke tests need deterministic cleanup for campaigns, invites, carts, credentials,
 and impersonation sessions.
 
-## Backend implementation plan
+## Historical backend implementation plan
+
+Status 2026-08-06: this plan is retained for traceability. Backend BE endpoint
+delivery is complete for the current scope; frontend wiring and provider
+configuration are the active workstreams.
 
 ### Phase 0 - Contract freeze and test foundation - current staging pass
 
@@ -587,11 +643,11 @@ Frontend now unblocked:
 - `/dashboard/properties/[propertyId]`
 - campaign table and quickstart lead/campaign steps
 
-### Phase 2 - Admin, team, and account lifecycle
+### Phase 2 - Admin, team, and account lifecycle - backend delivered
 
 Gap IDs: `BE-05` through `BE-10`, `BE-12`
 
-Backend tasks:
+Historical backend tasks:
 
 1. Add admin user detail and supported lifecycle mutations.
 2. Finalize the impersonation-to-session exchange and restore flow.
@@ -606,18 +662,18 @@ Acceptance gate:
 - Team list contains renderable identity and mutations return the updated member.
 - Reset request is anti-enumeration safe and reset completion invalidates sessions.
 
-Frontend unblocked:
+Frontend now responsible for:
 
 - complete admin user detail/actions
-- public API impersonation banner/session
-- team table/edit without identity fixtures
-- complete forgot/reset password flow
+- public API impersonation banner/session through the NextAuth exchange/restore bridge
+- team table/edit adapters using the delivered fields
+- complete forgot/reset password operational verification in UI flows
 
-### Phase 3 - Commerce and analytics
+### Phase 3 - Commerce and analytics - backend delivered for current scope
 
 Gap IDs: `BE-11`, `BE-13`
 
-Backend tasks:
+Historical backend tasks:
 
 1. Decide direct checkout versus cart checkout for subscription SKUs.
 2. Define cart merge/replace behavior and billing portal ownership.
@@ -633,18 +689,18 @@ Acceptance gate:
 - Dashboard cards and charts have documented metric keys, units, and no-data
   behavior.
 
-Frontend unblocked:
+Frontend/provider work:
 
 - subscription upgrade and cart lifecycle
 - billing management
 - `/dashboard` aggregate cards
 - `/dashboard/charts`
 
-### Phase 4 - Providers, messaging, enrichment, and voice
+### Phase 4 - Providers, messaging, enrichment, and voice - backend delivered for current scope
 
 Gap IDs: `BE-14` through `BE-18`
 
-Backend/product tasks:
+Historical backend/product tasks:
 
 1. Approve the frontend operation map.
 2. Replace generic provider models with typed resources.
@@ -660,7 +716,7 @@ Acceptance gate:
 - No provider secret appears in browser payloads or logs.
 - Pagination and polling/retry behavior are documented and tested.
 
-Frontend unblocked:
+Frontend/provider work:
 
 - `/dashboard/chat`
 - `/dashboard/connections`
@@ -669,11 +725,11 @@ Frontend unblocked:
 - VAPI assistants/calls/chat/phone numbers
 - voice clone and provider setup states
 
-### Phase 5 - Deal workspace and quickstart completion
+### Phase 5 - Deal workspace and quickstart completion - future product evolution
 
 Gap IDs: `BE-19`, `BE-20`
 
-Backend/product tasks:
+Historical backend/product tasks:
 
 1. Decide backend ownership for deal room and kanban.
 2. Implement agreed deal/board/card contracts and concurrency handling.
@@ -685,18 +741,18 @@ Acceptance gate:
 - Deal/kanban state persists across sessions and concurrent updates are safe.
 - Quickstart can resume from server state and every downstream ID resolves.
 
-Frontend unblocked:
+Future frontend/product work:
 
 - `/dashboard/deal-room`
 - `/dashboard/deal-room/[dealId]`
 - `/dashboard/kanban`
 - complete `/dashboard/quickstart`
 
-### Phase 6 - Secondary persistence and account completeness
+### Phase 6 - Secondary persistence and account completeness - mostly delivered
 
 Gap IDs: `BE-23` through `BE-27`
 
-Backend/product tasks:
+Historical backend/product tasks:
 
 1. Define profile, organization, and settings ownership.
 2. Implement supported session/security/privacy operations.
@@ -712,7 +768,7 @@ Acceptance gate:
 - Upload processing failures are typed and retryable.
 - Notification unread/read state is consistent across sessions.
 
-Frontend unblocked:
+Frontend/provider work:
 
 - complete profile/settings forms
 - security, privacy, and session UI
@@ -720,10 +776,10 @@ Frontend unblocked:
 - knowledge/script/voice asset managers
 - notification center and persisted preferences
 
-## Definition of done for each gap
+## Definition of done for future reopened backend gaps
 
-A gap is not complete merely because a route returns a controlled response. Mark
-the gap complete only when:
+For new or reopened backend gaps, do not mark a gap complete merely because a
+route returns a controlled response. Mark the gap complete only when:
 
 - endpoint and HTTP method are final;
 - request and response schemas are concrete in OpenAPI;
@@ -737,9 +793,9 @@ the gap complete only when:
 - smoke tests include a successful response, not only an expected error;
 - release notes name the gap ID and deployment commit.
 
-## Backend-to-frontend delivery checklist
+## Backend-to-frontend delivery checklist for future reopened work
 
-For each phase, backend should hand off:
+For future backend phases, backend should hand off:
 
 - [ ] Deployed commit SHA and workflow URL.
 - [ ] Updated OpenAPI JSON.
@@ -790,8 +846,11 @@ Frontend acceptance after each handoff:
 - `/api/v1/campaigns/`
 - `/api/v1/campaigns/{campaign_id}/status`
 - `/api/v1/admin/users/search`
+- `/api/v1/admin/users/{user_id}`
 - `/api/v1/admin/users/{user_id}/adjust-credits`
 - `/api/v1/admin/users/{user_id}/retry-provisioning`
+- `/api/v1/admin/users/{user_id}/impersonate`
+- `/api/v1/admin/users/{user_id}/end-impersonation`
 - `/api/v1/admin/users/{user_id}/logs`
 - `/api/v1/team/organization`
 - `/api/v1/team/members`
@@ -804,22 +863,40 @@ Frontend acceptance after each handoff:
 - `/api/v1/api-keys/scopes`
 - `/api/v1/api-keys/`
 - `/api/v1/api-keys/{key_id}`
+- `/api/v1/auth/sessions`
+- `/api/v1/auth/sessions/{session_id}`
+- `/api/v1/auth/security-activity`
+- `/api/v1/account/data-export`
+- `/api/v1/account`
+- `/api/v1/saved-searches`
+- `/api/v1/campaign-templates`
+- `/api/v1/workflow-templates`
+- `/api/v1/knowledge-assets`
+- `/api/v1/knowledge-assets/{asset_id}`
+- `/api/v1/knowledge-assets/{asset_id}/process`
+- `/api/v1/knowledge-assets/{asset_id}/download-url`
+- `/api/v1/notifications`
+- `/api/v1/notifications/unread-count`
+- `/api/v1/notifications/{notification_id}/read`
+- `/api/v1/notifications/read-all`
+- `/api/v1/notification-preferences`
 
-## Existing endpoints still blocked from final UI ownership
+## Remaining frontend/provider work for existing endpoint families
 
-These routes exist in OpenAPI. Their blocker is described by the matching gap ID;
-they should not be reported as entirely missing endpoints.
+These routes exist in OpenAPI or have delivered contracts. Their remaining work
+should not be reported as missing backend BE endpoints.
 
-| Existing endpoint family | Gap ID | Remaining blocker |
+| Existing endpoint family | Gap ID | Remaining owner/work |
 | --- | --- | --- |
-| `/api/v1/auth/reset-password`, `/api/v1/auth/set-password` | `BE-12` | Production email/link/security verification |
-| Admin impersonate/end-impersonation | `BE-07` | NextAuth session install/restore contract |
-| `/api/v1/cart*` and `/api/v1/cart/products` | `BE-11` | Subscription/cart ownership and state machine |
-| `/api/v1/analytics/*` | `BE-13` | Metric-to-screen catalog and typed examples |
-| Twilio, Sendblue, direct-mail, VAPI chat | `BE-14` | Canonical messaging action ownership |
-| `/api/v1/enrich/*`, `/api/v1/ai/enrich/*` | `BE-15` | Tool-to-UI map and normalized/job results |
-| `/api/v1/credentials/*`, GHL calendar OAuth | `BE-16` | Connection lifecycle and safe provider model |
-| `/api/v1/vapi/*`, `/api/v1/voice/clone` | `BE-17` | Typed resource schemas and provider prerequisites |
+| `/api/v1/auth/reset-password`, `/api/v1/auth/set-password` | `BE-12` | Frontend/ops production email-link verification, anti-enumeration UX checks, and session invalidation evidence. |
+| Admin impersonate/end-impersonation | `BE-07` | Frontend NextAuth exchange/restore route handlers and browser session installation. |
+| `/api/v1/cart*` and `/api/v1/cart/products` | `BE-11` | Frontend subscription/cart lifecycle UI and checkout-state handling. |
+| `/api/v1/analytics/*` | `BE-13` | Frontend metric-to-screen adapter wiring; future product metric expansion if needed. |
+| Twilio, SendBlue, direct-mail, VAPI chat | `BE-14` | Frontend action mapping plus real provider configuration for success paths. |
+| `/api/v1/enrich/*`, `/api/v1/ai/enrich/*` | `BE-15` | Frontend adapters and provider configuration for normalized/job result success paths. |
+| `/api/v1/credentials/*`, GHL calendar OAuth | `BE-16` | Frontend connection lifecycle UI and provider configuration. |
+| `/api/v1/vapi/*`, `/api/v1/voice/clone` | `BE-17` | Frontend adapter wiring plus VAPI/voice provider configuration. |
+| `/api/v1/knowledge-assets/*` | `BE-26` | Provider/storage configuration and frontend persistence for rich text/audio/file bytes. |
 
 ## Frontend validation completed
 
@@ -858,8 +935,9 @@ The following remain intentionally unwired:
 - cart quantity, removal, clear, and checkout-status UI
 - billing portal/session management
 
-Backend confirmation is needed before those flows can safely replace the current
-static subscription and external pricing behavior.
+Frontend checkout/cart wiring should verify the delivered contract behavior
+before those flows replace the current static subscription and external pricing
+behavior.
 
 For `BE-11`, the checkout state machine should at minimum define:
 
@@ -871,9 +949,10 @@ For `BE-11`, the checkout state machine should at minimum define:
 - `expired`
 - `failed`
 
-Backend must specify whether `/api/v1/cart/checkout` returns a redirect URL,
-client secret, or provider-specific next action; how webhook completion updates
-the cart/order/subscription; and whether a successful checkout clears the cart.
+Frontend should consume the delivered `/api/v1/cart/checkout` response shape
+directly, including whether it returns a redirect URL, client secret, or
+provider-specific next action; how webhook completion updates the
+cart/order/subscription; and whether a successful checkout clears the cart.
 Repeated checkout requests for the same cart must not create duplicate charges.
 
 ## Frontend implementation completed before handoff

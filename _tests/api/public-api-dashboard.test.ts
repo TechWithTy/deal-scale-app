@@ -1,7 +1,14 @@
 import {
+	createApiKey,
+	getApiKeyScopes,
+	listApiKeys,
+	revokeApiKey,
+} from "@/lib/api/public-api-api-keys";
+import {
 	addCartItem,
 	createCampaign,
 	createPaymentCheckout,
+	getAdminUserDetail,
 	getCampaignStatus,
 	getCreditsBalance,
 	getCreditsHistory,
@@ -11,12 +18,6 @@ import {
 	updateCartItem,
 	updateTeamMember,
 } from "@/lib/api/public-api-dashboard";
-import {
-	createApiKey,
-	getApiKeyScopes,
-	listApiKeys,
-	revokeApiKey,
-} from "@/lib/api/public-api-api-keys";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 function mockOkFetch() {
@@ -91,6 +92,7 @@ describe("public API dashboard wrappers", () => {
 		mockOkFetch();
 
 		await getCampaignStatus("campaign/1", "token-123");
+		await getAdminUserDetail("user/1", "token-123");
 		await updateTeamMember("member/1", { role: "manager" }, "token-123");
 		await retryAdminUserProvisioning("user/1", "token-123");
 		await updateCartItem("item/1", { quantity: 2 }, "token-123");
@@ -99,12 +101,15 @@ describe("public API dashboard wrappers", () => {
 			"/api/v1/campaigns/campaign%2F1/status",
 		);
 		expect(vi.mocked(fetch).mock.calls[1][0]).toBe(
-			"/api/v1/team/members/member%2F1",
+			"/api/v1/admin/users/user%2F1",
 		);
 		expect(vi.mocked(fetch).mock.calls[2][0]).toBe(
-			"/api/v1/admin/users/user%2F1/retry-provisioning",
+			"/api/v1/team/members/member%2F1",
 		);
 		expect(vi.mocked(fetch).mock.calls[3][0]).toBe(
+			"/api/v1/admin/users/user%2F1/retry-provisioning",
+		);
+		expect(vi.mocked(fetch).mock.calls[4][0]).toBe(
 			"/api/v1/cart/items/item%2F1",
 		);
 	});
@@ -114,7 +119,10 @@ describe("public API dashboard wrappers", () => {
 
 		await getApiKeyScopes("token-123");
 		await listApiKeys("token-123");
-		await createApiKey({ name: "Production", scopes: ["read:profile"] }, "token-123");
+		await createApiKey(
+			{ name: "Production", scopes: ["read:profile"] },
+			"token-123",
+		);
 		await revokeApiKey("key/1", "token-123");
 
 		const calls = vi.mocked(fetch).mock.calls;

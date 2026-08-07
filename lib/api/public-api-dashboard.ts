@@ -130,6 +130,13 @@ export function searchAdminUsers(params?: QueryParams, token?: string) {
 	);
 }
 
+export function getAdminUserDetail(userId: string, token?: string) {
+	return publicApiFetch<unknown>(
+		`/api/v1/admin/users/${encodeURIComponent(userId)}`,
+		withToken(token),
+	);
+}
+
 export function adjustAdminUserCredits(
 	userId: string,
 	body: unknown,
@@ -155,9 +162,13 @@ export function impersonateAdminUser(userId: string, token?: string) {
 	);
 }
 
-export function endAdminUserImpersonation(userId: string, token?: string) {
+export function endAdminUserImpersonation(
+	userId: string,
+	sessionId: string,
+	token?: string,
+) {
 	return publicApiFetch<unknown>(
-		`/api/v1/admin/users/${encodeURIComponent(userId)}/end-impersonation`,
+		`/api/v1/admin/users/${encodeURIComponent(userId)}/end-impersonation?session_id=${encodeURIComponent(sessionId)}`,
 		{ method: "POST", token },
 	);
 }

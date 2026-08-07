@@ -54,6 +54,7 @@ export type AppNotification = {
 
 type NotificationsState = {
 	notifications: AppNotification[];
+	setNotifications: (notifications: AppNotification[]) => void;
 	add: (n: Omit<AppNotification, "id" | "createdAt">) => AppNotification;
 	addMany: (count?: number) => void;
 	dismiss: (id: string) => void;
@@ -81,6 +82,7 @@ type NotificationsState = {
 export const useNotificationsStore = create<NotificationsState>((set, get) => ({
 	notifications: [],
 	_actions: {},
+	setNotifications: (notifications) => set({ notifications }),
 	addMany: (count = 5) => {
 		const icons = ["✨", "📥", "🔔", "📧", "📈", "⚙️", "🛠️", "🚀"];
 		const colors = [

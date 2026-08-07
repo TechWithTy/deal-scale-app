@@ -1,6 +1,7 @@
 import {
 	extractPublicApiAdminLogs,
 	extractPublicApiAdminUsers,
+	mapPublicApiAdminDirectoryUser,
 	mapPublicApiAdminUser,
 } from "@/lib/admin/public-api-admin-users";
 import { describe, expect, it } from "vitest";
@@ -55,6 +56,57 @@ describe("public API admin user adapter", () => {
 			"two@example.com",
 		]);
 		expect(users[0]?.firstName).toBe("One");
+	});
+
+	it("maps admin detail responses to directory users", () => {
+		const detail = mapPublicApiAdminDirectoryUser({
+			credit_balances: {
+				ai: {
+					available_credits: 75,
+					reserved_credits: 5,
+					total_purchased: 100,
+					total_used: 20,
+				},
+				lead: {
+					available_credits: 40,
+					total_purchased: 50,
+					total_used: 10,
+				},
+				skip_trace: {
+					available_credits: 8,
+					total_purchased: 10,
+					total_used: 2,
+				},
+			},
+			display_name: "Live Detail",
+			email: "live@example.com",
+			first_name: "Live",
+			id: "live-1",
+			last_name: "Detail",
+			roles: ["super_admin"],
+			scopes: ["admin", "credits:manage"],
+			status: "inactive",
+			subscription_tier: "Enterprise",
+			tester_flags: {
+				is_beta_tester: true,
+				is_pilot_tester: false,
+			},
+		});
+
+		expect(detail).toMatchObject({
+			credits: {
+				ai: { allotted: 100, used: 20 },
+				leads: { allotted: 50, used: 10 },
+				skipTraces: { allotted: 10, used: 2 },
+			},
+			email: "live@example.com",
+			isBetaTester: true,
+			name: "Live Detail",
+			permissionList: ["admin", "credits:manage"],
+			role: "platform_admin",
+			status: "disabled",
+			tier: "Enterprise",
+		});
 	});
 });
 

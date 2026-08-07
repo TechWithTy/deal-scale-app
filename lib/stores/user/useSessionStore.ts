@@ -13,6 +13,7 @@ type ExtendedSession = Session & {
 
 interface SessionState {
 	user: SessionUser | null;
+	publicApi: Session["publicApi"] | null;
 	impersonator: ImpersonationIdentity | null;
 	setFromSession: (session: Session | null) => void;
 	setSessionUser: (user: SessionUser | null) => void;
@@ -23,14 +24,16 @@ interface SessionState {
 export const useSessionStore = create<SessionState>()(
 	withAnalytics<SessionState>("session", (set) => ({
 		user: null,
+		publicApi: null,
 		impersonator: null,
 		setFromSession: (session) =>
 			set({
 				user: session?.user ?? null,
+				publicApi: session?.publicApi ?? null,
 				impersonator: (session as ExtendedSession | null)?.impersonator ?? null,
 			}),
 		setSessionUser: (user) => set({ user }),
 		setImpersonator: (impersonator) => set({ impersonator }),
-		clear: () => set({ user: null, impersonator: null }),
+		clear: () => set({ user: null, publicApi: null, impersonator: null }),
 	})),
 );

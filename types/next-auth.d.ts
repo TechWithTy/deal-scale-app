@@ -1,4 +1,7 @@
-import type { ImpersonationIdentity } from "@/types/impersonation";
+import type {
+	ImpersonationIdentity,
+	ImpersonationRestoreState,
+} from "@/types/impersonation";
 import type {
 	QuickStartGoalId,
 	QuickStartPersonaId,
@@ -24,6 +27,7 @@ declare module "next-auth" {
 			accessToken?: string;
 			expiresAt?: number;
 			refreshToken?: string;
+			sessionId?: string;
 			tokenType?: string;
 		};
 		user: {
@@ -67,6 +71,7 @@ declare module "next-auth" {
 			accessToken?: string;
 			expiresAt?: number;
 			refreshToken?: string;
+			sessionId?: string;
 			tokenType?: string;
 		};
 	}
@@ -76,10 +81,12 @@ declare module "next-auth/jwt" {
 	/** Returned by the `jwt` callback and `getToken`, when using JWT sessions */
 	interface JWT extends NextAuthJWT {
 		impersonator?: ImpersonationIdentity | null;
+		impersonationRestore?: ImpersonationRestoreState | null;
 		publicApi?: {
 			accessToken?: string;
 			expiresAt?: number;
 			refreshToken?: string;
+			sessionId?: string;
 			tokenType?: string;
 		};
 		role?: UserRole;

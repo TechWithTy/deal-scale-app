@@ -60,7 +60,8 @@ export const CodeBlock = ({
 					<div className="flex overflow-x-auto">
 						{tabs.map((tab, index) => (
 							<button
-								key={index}
+								key={tab.name}
+								type="button"
 								onClick={() => setActiveTab(index)}
 								className={`!py-2 px-3 font-sans text-xs transition-colors ${
 									activeTab === index
@@ -77,6 +78,7 @@ export const CodeBlock = ({
 					<div className="flex items-center justify-between py-2">
 						<div className="text-xs text-zinc-400">{filename}</div>
 						<button
+							type="button"
 							onClick={copyToClipboard}
 							className="flex items-center gap-1 font-sans text-xs text-zinc-400 transition-colors hover:text-zinc-200"
 						>

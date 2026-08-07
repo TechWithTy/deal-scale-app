@@ -126,6 +126,7 @@ const CollisionMechanism = React.forwardRef<
 	const [beamKey, setBeamKey] = useState(0);
 	const [cycleCollisionDetected, setCycleCollisionDetected] = useState(false);
 
+	// biome-ignore lint/correctness/useExhaustiveDependencies: refs do not trigger renders; the interval reads their current DOM nodes.
 	useEffect(() => {
 		const checkCollision = () => {
 			if (

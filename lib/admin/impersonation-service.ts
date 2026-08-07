@@ -1,12 +1,14 @@
 import {
 	identitySchema,
 	impersonationResponseSchema,
+	impersonationRestoreResponseSchema,
 	sessionUserSchema,
 } from "@/lib/impersonation/session-schemas";
 import { getUserById, users } from "@/lib/mock-db";
 import type {
 	ImpersonationSessionPayload,
 	ImpersonationSessionUserSnapshot,
+	ImpersonationRestoreState,
 } from "@/types/impersonation";
 import type { User, UserRole } from "@/types/user";
 import { z } from "zod";
@@ -17,7 +19,8 @@ const START_SCHEMA = z.object({
 
 const responseSchema = impersonationResponseSchema;
 
-const ROUTE = "/api/admin/impersonation";
+const EXCHANGE_ROUTE = "/api/auth/impersonation/exchange";
+const RESTORE_ROUTE = "/api/auth/impersonation/restore";
 
 const ALLOWED_IMPERSONATOR_ROLES = new Set<UserRole>([
 	"platform_admin",
@@ -91,12 +94,6 @@ function buildMockPayload(userId: string): ImpersonationSessionPayload {
 	} satisfies ImpersonationSessionPayload;
 }
 
-function isMissingRouteResponse(response: Response): boolean {
-	const contentType = response.headers.get("content-type") ?? "";
-	const isJson = contentType.toLowerCase().includes("application/json");
-	return response.status === 404 && !isJson;
-}
-
 async function parseJson(response: Response) {
 	try {
 		return await response.json();
@@ -129,7 +126,7 @@ export async function startImpersonationSession(
 
 	let response: Response;
 	try {
-		response = await fetch(ROUTE, {
+		response = await fetch(EXCHANGE_ROUTE, {
 			method: "POST",
 			credentials: "include",
 			headers: { "Content-Type": "application/json" },
@@ -137,21 +134,13 @@ export async function startImpersonationSession(
 			body: JSON.stringify(parsed.data),
 		});
 	} catch (error) {
-		console.warn(
-			"Failed to reach impersonation API; using mock data instead.",
-			error,
+		throw buildError(
+			error instanceof Error ? error.message : "",
+			"Failed to start impersonation session",
 		);
-		return buildMockPayload(parsed.data.userId);
 	}
 
 	if (!response.ok) {
-		if (isMissingRouteResponse(response)) {
-			console.warn(
-				"Impersonation API route missing; falling back to mock implementation.",
-			);
-			return buildMockPayload(parsed.data.userId);
-		}
-
 		const body = await parseJson(response);
 		const message = typeof body?.error === "string" ? body.error : "";
 		throw buildError(message, "Failed to start impersonation session");
@@ -166,37 +155,33 @@ export async function startImpersonationSession(
 	return validated.data satisfies ImpersonationSessionPayload;
 }
 
-export async function stopImpersonationSession(): Promise<void> {
+export async function stopImpersonationSession(): Promise<ImpersonationRestoreState | null> {
 	if (shouldUseMock()) {
-		return;
+		return null;
 	}
 
+	let response: Response;
 	try {
-		const response = await fetch(ROUTE, {
-			method: "DELETE",
+		response = await fetch(RESTORE_ROUTE, {
+			method: "POST",
 			credentials: "include",
 			cache: "no-store",
 		});
 
-		if (!response.ok && response.status !== 204) {
-			if (isMissingRouteResponse(response)) {
-				console.warn(
-					"Impersonation API route missing during stop; mock cleanup assumed.",
-				);
-				return;
-			}
-
-			const body = await parseJson(response);
-			const message = typeof body?.error === "string" ? body.error : "";
-			throw buildError(message, "Failed to stop impersonation session");
-		}
 	} catch (error) {
-		if (shouldUseMock()) {
-			return;
-		}
-		console.warn(
-			"Failed to reach impersonation API when stopping; assuming mock cleanup.",
-			error,
+		throw buildError(
+			error instanceof Error ? error.message : "",
+			"Failed to stop impersonation session",
 		);
 	}
+	if (!response.ok) {
+		const body = await parseJson(response);
+		const message = typeof body?.error === "string" ? body.error : "";
+		throw buildError(message, "Failed to stop impersonation session");
+	}
+	const validated = impersonationRestoreResponseSchema.safeParse(
+		await parseJson(response),
+	);
+	if (!validated.success) throw new Error("Invalid impersonation restore payload");
+	return validated.data;
 }

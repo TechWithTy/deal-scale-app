@@ -35,7 +35,7 @@ export const metadata: Metadata = {
 
 export default async function RoiCalculatorPage({
 	searchParams,
-}: RoiCalculatorPageProps = {}) {
+}: RoiCalculatorPageProps) {
 	const session = await auth();
 
 	if (requiresAuthentication(searchParams?.auth) && !session) {

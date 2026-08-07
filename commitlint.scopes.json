@@ -33,6 +33,7 @@
   "api-v1",
   "api-voices",
   "auth",
+  "auth-accept-invite",
   "auth-forgot-password",
   "auth-login",
   "auth-reset-password",

@@ -59,7 +59,7 @@ describe("impersonation service", () => {
 		const payload = await startImpersonationSession({ userId: "2" });
 
 		expect(fetchMock).toHaveBeenCalledWith(
-			"/api/admin/impersonation",
+			"/api/auth/impersonation/exchange",
 			expect.objectContaining({
 				method: "POST",
 				body: JSON.stringify({ userId: "2" }),
@@ -82,30 +82,29 @@ describe("impersonation service", () => {
                 ).rejects.toThrow(/Failed to start impersonation session: User not found/i);
         });
 
-        it("falls back to mock data when the API request fails", async () => {
-                const fetchMock = vi.fn().mockRejectedValue(new Error("network down"));
-                vi.stubGlobal("fetch", fetchMock);
-                const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+	it("does not fall back to mock data when the bridge request fails", async () => {
+		const fetchMock = vi.fn().mockRejectedValue(new Error("network down"));
+		vi.stubGlobal("fetch", fetchMock);
 
-                const payload = await startImpersonationSession({ userId: "2" });
+		await expect(startImpersonationSession({ userId: "2" })).rejects.toThrow(
+			/Failed to start impersonation session: network down/i,
+		);
+	});
 
-                expect(fetchMock).toHaveBeenCalled();
-                expect(payload.impersonatedUser.id).toBe("2");
-                expect(payload.impersonatedUserData.permissions).toContain("leads:read");
+	it("calls the restore endpoint when stopping impersonation", async () => {
+		const responseBody = {
+			publicApi: { accessToken: "admin-token", sessionId: "admin-session" },
+			user: toSnapshot("4"),
+		};
+		const fetchMock = vi
+			.fn()
+			.mockResolvedValue(new Response(JSON.stringify(responseBody), { status: 200 }));
+		vi.stubGlobal("fetch", fetchMock);
 
-                warnSpy.mockRestore();
-        });
-
-        it("calls the DELETE endpoint when stopping impersonation", async () => {
-                const fetchMock = vi
-                        .fn()
-                        .mockResolvedValue(new Response(null, { status: 204 }));
-                vi.stubGlobal("fetch", fetchMock);
-
-		await expect(stopImpersonationSession()).resolves.toBeUndefined();
+		await expect(stopImpersonationSession()).resolves.toEqual(responseBody);
 		expect(fetchMock).toHaveBeenCalledWith(
-			"/api/admin/impersonation",
-			expect.objectContaining({ method: "DELETE" }),
+			"/api/auth/impersonation/restore",
+			expect.objectContaining({ method: "POST" }),
 		);
 	});
 });

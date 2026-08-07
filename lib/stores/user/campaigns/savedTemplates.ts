@@ -1,6 +1,11 @@
 import type { SavedCampaignTemplate } from "@/types/userProfile";
 import { v4 as uuidv4 } from "uuid";
 import { create } from "zustand";
+import {
+	syncCreateCampaignTemplate,
+	syncDeleteCampaignTemplate,
+	syncUpdateCampaignTemplate,
+} from "../savedAssetsPublicApiSync";
 import { useUserProfileStore } from "../userProfile";
 
 interface SavedCampaignTemplatesState {
@@ -58,6 +63,8 @@ export const useSavedCampaignTemplatesStore =
 			useUserProfileStore
 				.getState()
 				.updateUserProfile({ savedCampaignTemplates: next });
+			const created = next.find((template) => template.id === id);
+			if (created) syncCreateCampaignTemplate(created);
 			return id;
 		},
 
@@ -77,6 +84,7 @@ export const useSavedCampaignTemplatesStore =
 			useUserProfileStore
 				.getState()
 				.updateUserProfile({ savedCampaignTemplates: next });
+			syncUpdateCampaignTemplate(id, patch);
 		},
 
 		deleteTemplate: (id) => {
@@ -87,6 +95,7 @@ export const useSavedCampaignTemplatesStore =
 			useUserProfileStore
 				.getState()
 				.updateUserProfile({ savedCampaignTemplates: next });
+			syncDeleteCampaignTemplate(id);
 		},
 
 		applyTemplate: (id) => {

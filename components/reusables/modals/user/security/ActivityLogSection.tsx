@@ -19,94 +19,17 @@ import {
 	Shield,
 } from "lucide-react";
 import { useState } from "react";
-
-interface ActivityLog {
-	id: string;
-	type:
-		| "login"
-		| "logout"
-		| "password_change"
-		| "2fa_enabled"
-		| "2fa_disabled"
-		| "api_key_created"
-		| "settings_changed";
-	description: string;
-	timestamp: string;
-	ip: string;
-	location: string;
-	device: string;
-	status: "success" | "failed" | "warning";
-}
+import {
+	type ActivityLogView,
+	usePublicApiSecurityActivity,
+} from "./usePublicApiAccountSecurity";
 
 const ActivityLogSection: React.FC = () => {
 	const [searchQuery, setSearchQuery] = useState("");
 	const [filterType, setFilterType] = useState<string>("all");
+	const { isLoading, logs, statusMessage } = usePublicApiSecurityActivity();
 
-	// Mock activity logs
-	const [logs] = useState<ActivityLog[]>([
-		{
-			id: "1",
-			type: "login",
-			description: "Successful login from Chrome on Windows",
-			timestamp: "2025-11-06 14:30:00",
-			ip: "192.168.1.1",
-			location: "New York, US",
-			device: "Desktop",
-			status: "success",
-		},
-		{
-			id: "2",
-			type: "password_change",
-			description: "Password changed successfully",
-			timestamp: "2025-11-05 10:15:00",
-			ip: "192.168.1.1",
-			location: "New York, US",
-			device: "Desktop",
-			status: "success",
-		},
-		{
-			id: "3",
-			type: "2fa_enabled",
-			description: "Two-factor authentication enabled via authenticator app",
-			timestamp: "2025-11-04 16:45:00",
-			ip: "192.168.1.1",
-			location: "New York, US",
-			device: "Desktop",
-			status: "success",
-		},
-		{
-			id: "4",
-			type: "login",
-			description: "Failed login attempt - incorrect password",
-			timestamp: "2025-11-03 22:30:00",
-			ip: "203.0.113.42",
-			location: "Unknown",
-			device: "Unknown",
-			status: "failed",
-		},
-		{
-			id: "5",
-			type: "api_key_created",
-			description: "New API key created: Production API",
-			timestamp: "2025-11-02 09:20:00",
-			ip: "192.168.1.1",
-			location: "New York, US",
-			device: "Desktop",
-			status: "success",
-		},
-		{
-			id: "6",
-			type: "settings_changed",
-			description: "Email notification preferences updated",
-			timestamp: "2025-11-01 13:10:00",
-			ip: "192.168.1.2",
-			location: "San Francisco, US",
-			device: "Mobile",
-			status: "success",
-		},
-	]);
-
-	const getActivityIcon = (type: ActivityLog["type"]) => {
+	const getActivityIcon = (type: ActivityLogView["type"]) => {
 		switch (type) {
 			case "login":
 				return <LogIn className="h-4 w-4" />;
@@ -126,7 +49,7 @@ const ActivityLogSection: React.FC = () => {
 		}
 	};
 
-	const getStatusColor = (status: ActivityLog["status"]) => {
+	const getStatusColor = (status: ActivityLogView["status"]) => {
 		switch (status) {
 			case "success":
 				return "text-green-600 bg-green-100 dark:text-green-300 dark:bg-green-900/30";
@@ -228,6 +151,12 @@ const ActivityLogSection: React.FC = () => {
 					<option value="settings_changed">Settings</option>
 				</select>
 			</div>
+
+			{statusMessage && (
+				<div className="rounded-lg border border-gray-200 bg-gray-50 p-4 text-gray-700 text-sm dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300">
+					{isLoading ? "Loading security activity..." : statusMessage}
+				</div>
+			)}
 
 			{/* Activity Timeline */}
 			<div className="space-y-2">

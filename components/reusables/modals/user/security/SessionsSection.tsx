@@ -13,55 +13,22 @@ import {
 	Smartphone,
 	Tablet,
 } from "lucide-react";
-import { useState } from "react";
-import { toast } from "sonner";
-
-interface Session {
-	id: string;
-	device: "desktop" | "mobile" | "tablet";
-	browser: "chrome" | "firefox" | "safari" | "other";
-	os: string;
-	location: string;
-	ip: string;
-	lastActive: string;
-	isCurrent: boolean;
-}
+import {
+	type SessionView,
+	usePublicApiSessions,
+} from "./usePublicApiAccountSecurity";
 
 const SessionsSection: React.FC = () => {
-	const [sessions, setSessions] = useState<Session[]>([
-		{
-			id: "1",
-			device: "desktop",
-			browser: "chrome",
-			os: "Windows 11",
-			location: "New York, US",
-			ip: "192.168.1.1",
-			lastActive: "Active now",
-			isCurrent: true,
-		},
-		{
-			id: "2",
-			device: "mobile",
-			browser: "safari",
-			os: "iOS 17",
-			location: "San Francisco, US",
-			ip: "192.168.1.2",
-			lastActive: "2 hours ago",
-			isCurrent: false,
-		},
-		{
-			id: "3",
-			device: "tablet",
-			browser: "chrome",
-			os: "Android 14",
-			location: "Los Angeles, US",
-			ip: "192.168.1.3",
-			lastActive: "1 day ago",
-			isCurrent: false,
-		},
-	]);
+	const {
+		isLoading,
+		isMutating,
+		revokeAllOtherSessions,
+		revokeSession,
+		sessions,
+		statusMessage,
+	} = usePublicApiSessions();
 
-	const getDeviceIcon = (device: Session["device"]) => {
+	const getDeviceIcon = (device: SessionView["device"]) => {
 		switch (device) {
 			case "desktop":
 				return <Monitor className="h-5 w-5" />;
@@ -72,19 +39,9 @@ const SessionsSection: React.FC = () => {
 		}
 	};
 
-	const getBrowserIcon = (browser: Session["browser"]) => {
+	const getBrowserIcon = (browser: SessionView["browser"]) => {
 		// Using Globe icon as generic browser icon since brand icons don't exist in lucide-react
 		return <Globe className="h-4 w-4" />;
-	};
-
-	const revokeSession = (sessionId: string) => {
-		setSessions(sessions.filter((s) => s.id !== sessionId));
-		toast.success("Session revoked successfully");
-	};
-
-	const revokeAllOtherSessions = () => {
-		setSessions(sessions.filter((s) => s.isCurrent));
-		toast.success("All other sessions have been revoked");
 	};
 
 	return (
@@ -100,13 +57,24 @@ const SessionsSection: React.FC = () => {
 						sessions
 					</p>
 				</div>
-				{sessions.filter((s) => !s.isCurrent).length > 0 && (
-					<Button variant="outline" onClick={revokeAllOtherSessions}>
-						<LogOut className="mr-2 h-4 w-4" />
-						Revoke All Others
-					</Button>
-				)}
+				{sessions.some((session) => session.isCurrent) &&
+					sessions.some((session) => !session.isCurrent) && (
+						<Button
+							variant="outline"
+							onClick={revokeAllOtherSessions}
+							disabled={isMutating}
+						>
+							<LogOut className="mr-2 h-4 w-4" />
+							Revoke All Others
+						</Button>
+					)}
 			</div>
+
+			{statusMessage && (
+				<div className="rounded-lg border border-gray-200 bg-gray-50 p-4 text-gray-700 text-sm dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300">
+					{isLoading ? "Loading active sessions..." : statusMessage}
+				</div>
+			)}
 
 			{/* Warning for multiple sessions */}
 			{sessions.length > 2 && (
@@ -190,6 +158,7 @@ const SessionsSection: React.FC = () => {
 									variant="ghost"
 									size="sm"
 									onClick={() => revokeSession(session.id)}
+									disabled={isMutating}
 								>
 									<LogOut className="h-4 w-4 text-red-500" />
 								</Button>

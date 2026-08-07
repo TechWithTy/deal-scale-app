@@ -18,10 +18,13 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { usePublicApiPrivacyActions } from "./usePublicApiAccountSecurity";
 
 const DataPrivacySection: React.FC = () => {
 	const [showDeleteForm, setShowDeleteForm] = useState(false);
 	const [deleteConfirmation, setDeleteConfirmation] = useState("");
+	const { isMutating, requestAccountDeletion, requestDataExport, token } =
+		usePublicApiPrivacyActions();
 	const [privacySettings, setPrivacySettings] = useState({
 		shareAnalytics: true,
 		marketingEmails: false,
@@ -31,61 +34,45 @@ const DataPrivacySection: React.FC = () => {
 
 	const dataCategories = [
 		{
-			id: "profile",
+			exportType: "profile",
 			name: "Profile Data",
-			size: "2.4 MB",
 			description: "Personal information and account details",
 		},
 		{
-			id: "leads",
-			name: "Leads",
-			size: "156 MB",
-			description: "All lead records and associated data",
-		},
-		{
-			id: "campaigns",
-			name: "Campaigns",
-			size: "45 MB",
-			description: "Campaign history and analytics",
-		},
-		{
-			id: "skiptraces",
-			name: "Skip Traces",
-			size: "78 MB",
-			description: "Skip trace results and enrichment data",
-		},
-		{
-			id: "activity",
+			exportType: "activity",
 			name: "Activity Logs",
-			size: "12 MB",
 			description: "Account activity and security logs",
 		},
-	];
+		{
+			exportType: "billing",
+			name: "Billing Data",
+			description: "Billing history and account transactions",
+		},
+	] as const;
 
-	const handleExportData = (category: string) => {
-		toast.success(
-			`Exporting ${category}... You'll receive an email when ready`,
-		);
+	const handleExportData = async (
+		exportType: (typeof dataCategories)[number]["exportType"],
+	) => {
+		await requestDataExport(exportType);
 	};
 
-	const handleExportAllData = () => {
-		toast.success(
-			"Preparing complete data export... This may take a few minutes",
-		);
+	const handleExportAllData = async () => {
+		await requestDataExport("full_account");
 	};
 
-	const handleDeleteAccount = () => {
+	const handleDeleteAccount = async () => {
 		if (deleteConfirmation !== "DELETE") {
 			toast.error('Please type "DELETE" to confirm');
 			return;
 		}
 
-		// TODO: Implement actual account deletion
-		toast.success(
-			"Account deletion request submitted. You'll receive an email confirmation.",
-		);
-		setShowDeleteForm(false);
-		setDeleteConfirmation("");
+		try {
+			await requestAccountDeletion();
+			setShowDeleteForm(false);
+			setDeleteConfirmation("");
+		} catch {
+			// Toast is handled in the hook.
+		}
 	};
 
 	return (
@@ -218,7 +205,7 @@ const DataPrivacySection: React.FC = () => {
 					<h4 className="font-semibold text-gray-900 dark:text-white">
 						Export Your Data
 					</h4>
-					<Button onClick={handleExportAllData}>
+					<Button onClick={handleExportAllData} disabled={!token || isMutating}>
 						<Download className="mr-2 h-4 w-4" />
 						Export All
 					</Button>
@@ -231,7 +218,7 @@ const DataPrivacySection: React.FC = () => {
 				<div className="space-y-2">
 					{dataCategories.map((category) => (
 						<div
-							key={category.id}
+							key={category.exportType}
 							className="flex items-center justify-between rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800"
 						>
 							<div className="flex items-center gap-3">
@@ -241,14 +228,15 @@ const DataPrivacySection: React.FC = () => {
 										{category.name}
 									</p>
 									<p className="text-gray-600 text-xs dark:text-gray-400">
-										{category.description} • {category.size}
+										{category.description}
 									</p>
 								</div>
 							</div>
 							<Button
 								variant="outline"
 								size="sm"
-								onClick={() => handleExportData(category.name)}
+								onClick={() => handleExportData(category.exportType)}
+								disabled={!token || isMutating}
 							>
 								<Download className="mr-2 h-3 w-3" />
 								Export
@@ -265,8 +253,8 @@ const DataPrivacySection: React.FC = () => {
 								Export Processing Time
 							</p>
 							<p className="mt-1 text-blue-800 text-sm dark:text-blue-200">
-								Large exports may take up to 24 hours. You'll receive an email
-								with a download link when ready.
+								Large exports may take up to 24 hours. The public API creates an
+								async request that is made available after processing.
 							</p>
 						</div>
 					</div>
@@ -282,14 +270,19 @@ const DataPrivacySection: React.FC = () => {
 							Delete Account
 						</h4>
 						<p className="mt-1 text-gray-600 text-sm dark:text-gray-400">
-							Permanently delete your account and all associated data. This
-							action cannot be undone.
+							Request deletion for your account and associated data. The public
+							API processes deletion asynchronously after the request is
+							accepted.
 						</p>
 					</div>
 				</div>
 
 				{!showDeleteForm ? (
-					<Button variant="destructive" onClick={() => setShowDeleteForm(true)}>
+					<Button
+						variant="destructive"
+						onClick={() => setShowDeleteForm(true)}
+						disabled={!token || isMutating}
+					>
 						<Trash2 className="mr-2 h-4 w-4" />
 						Delete My Account
 					</Button>
@@ -304,17 +297,21 @@ const DataPrivacySection: React.FC = () => {
 									All your leads, campaigns, and skip traces will be permanently
 									deleted
 								</li>
-								<li>Your subscription will be cancelled immediately</li>
-								<li>This action is irreversible and cannot be undone</li>
-								<li>You will not be able to recover any data after deletion</li>
+								<li>Your account remains active while verification is pending</li>
+								<li>The deletion request is processed asynchronously</li>
+								<li>You will receive follow-up confirmation for the request</li>
 							</ul>
 						</div>
 
 						<div className="space-y-2">
-							<label className="block font-medium text-red-900 text-sm dark:text-red-100">
+							<label
+								htmlFor="account-deletion-confirmation"
+								className="block font-medium text-red-900 text-sm dark:text-red-100"
+							>
 								Type <strong>DELETE</strong> to confirm:
 							</label>
 							<Input
+								id="account-deletion-confirmation"
 								type="text"
 								value={deleteConfirmation}
 								onChange={(e) => setDeleteConfirmation(e.target.value)}
@@ -336,10 +333,10 @@ const DataPrivacySection: React.FC = () => {
 							<Button
 								variant="destructive"
 								onClick={handleDeleteAccount}
-								disabled={deleteConfirmation !== "DELETE"}
+								disabled={deleteConfirmation !== "DELETE" || isMutating}
 							>
 								<Trash2 className="mr-2 h-4 w-4" />
-								Permanently Delete Account
+								Request Account Deletion
 							</Button>
 						</div>
 					</div>

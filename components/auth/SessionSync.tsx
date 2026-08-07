@@ -1,19 +1,20 @@
 "use client";
 
-import { useImpersonationStore } from "@/lib/stores/impersonationStore";
-import { useSessionStore } from "@/lib/stores/user/useSessionStore";
-import { useUserProfileStore } from "@/lib/stores/user/userProfile";
-import { useUserStore } from "@/lib/stores/userStore";
+import { MockUserProfile } from "@/constants/_faker/profile/userProfile";
 import {
 	deriveQuickStartDefaults,
 	resolveDemoLogoUrl,
 } from "@/lib/demo/normalizeDemoPayload";
-import { MockUserProfile } from "@/constants/_faker/profile/userProfile";
-import { useSession } from "next-auth/react";
-import { useEffect } from "react";
-import type { Session } from "next-auth";
+import { useImpersonationStore } from "@/lib/stores/impersonationStore";
+import { hydrateSavedAssetsFromPublicApi } from "@/lib/stores/user/savedAssetsPublicApiHydration";
+import { useSessionStore } from "@/lib/stores/user/useSessionStore";
+import { useUserProfileStore } from "@/lib/stores/user/userProfile";
+import { useUserStore } from "@/lib/stores/userStore";
 import type { UserProfile } from "@/types/userProfile";
 import type { UserProfileSubscription } from "@/types/userProfile/subscriptions";
+import type { Session } from "next-auth";
+import { useSession } from "next-auth/react";
+import { useEffect } from "react";
 
 const cloneProfileTemplate = (): UserProfile | null => {
 	if (!MockUserProfile) {
@@ -143,6 +144,9 @@ export default function SessionSync() {
 	const hydrateImpersonation = useImpersonationStore(
 		(state) => state.hydrateFromSession,
 	);
+	const stopImpersonation = useImpersonationStore(
+		(state) => state.stopImpersonation,
+	);
 	const { setFromSession, clear } = useSessionStore((state) => ({
 		setFromSession: state.setFromSession,
 		clear: state.clear,
@@ -161,6 +165,17 @@ export default function SessionSync() {
 			if (profile) {
 				try {
 					setUserProfile(profile);
+					const publicApiToken = session?.publicApi?.accessToken;
+					if (publicApiToken) {
+						void hydrateSavedAssetsFromPublicApi(publicApiToken).catch(
+							(error) => {
+								console.warn(
+									"[SessionSync] Failed to hydrate saved assets from public API.",
+									error,
+								);
+							},
+						);
+					}
 				} catch (error) {
 					if (
 						error instanceof DOMException &&
@@ -191,6 +206,14 @@ export default function SessionSync() {
 		setUserProfile,
 		resetUserProfile,
 	]);
+
+	useEffect(() => {
+		const expiresAt = session?.publicApi?.expiresAt;
+		if (!session?.impersonator || !expiresAt || expiresAt > Date.now()) {
+			return;
+		}
+		void stopImpersonation();
+	}, [session?.impersonator, session?.publicApi?.expiresAt, stopImpersonation]);
 
 	return null;
 }

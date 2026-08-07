@@ -52,14 +52,14 @@ function createInMemoryListService(totalCount = 240): ListService {
 			demoCache.listNames = names;
 			return names;
 		},
-		async createList(name, items) {
+		async createList(name: string, items: DrawerItem[]) {
 			// Implement API call
 			console.log("createList", { name, count: items.length });
 			return {
 				listId: `${name.toLowerCase().replace(/\s+/g, "-")}-${Date.now()}`,
 			};
 		},
-		async addToList(listId, items) {
+		async addToList(listId: string, items: DrawerItem[]) {
 			// Implement API call
 			console.log("addToList", { listId, count: items.length });
 		},
@@ -87,9 +87,10 @@ export default function DrawerTestPage() {
 	const [open, setOpen] = useState(false);
 	const listService = useMemo(() => createInMemoryListService(240), []);
 
-	const loadMore = useCallback<
-		NonNullable<Parameters<typeof DrawerFlow>[0]["loadMore"]>
-	>(async (args) => listService.loadMore(args), [listService]);
+	const loadMore = useCallback(
+		async (args: LoadMoreArgs) => listService.loadMore(args),
+		[listService],
+	);
 
 	return (
 		<div className="space-y-4 p-8">

@@ -112,8 +112,12 @@ describe("impersonation store", () => {
                                 name: "Admin",
                                 email: "admin@example.com",
                         },
-                        impersonatedUserData: impersonatedSnapshot,
-                        impersonatorUserData: impersonatorSnapshot,
+			impersonatedUserData: impersonatedSnapshot,
+			impersonatorUserData: impersonatorSnapshot,
+			publicApi: {
+				accessToken: "impersonated-token",
+				sessionId: "impersonated-session",
+			},
                 };
 
                 const serviceMock = vi
@@ -133,9 +137,11 @@ describe("impersonation store", () => {
                                 method: "PATCH",
                                 body: JSON.stringify({
                                         impersonation: {
-                                                impersonator: responseBody.impersonator,
-                                                impersonatedUser: responseBody.impersonatedUser,
-                                        },
+							impersonator: responseBody.impersonator,
+							impersonatedUser: responseBody.impersonatedUser,
+							restore: { user: responseBody.impersonatorUserData },
+						},
+						publicApi: responseBody.publicApi,
                                         user: responseBody.impersonatedUserData,
                                 }),
                         }),
@@ -161,9 +167,12 @@ describe("impersonation store", () => {
                         originalUserData: impersonatorSnapshot,
                 });
 
-                const serviceMock = vi
-                        .spyOn(impersonationService, "stopImpersonationSession")
-                        .mockResolvedValue();
+		const serviceMock = vi
+			.spyOn(impersonationService, "stopImpersonationSession")
+			.mockResolvedValue({
+				publicApi: { accessToken: "admin-token", sessionId: "admin-session" },
+				user: impersonatorSnapshot,
+			});
 
                 await expect(
                         useImpersonationStore.getState().stopImpersonation(),
@@ -176,9 +185,11 @@ describe("impersonation store", () => {
                                 method: "PATCH",
                                 body: JSON.stringify({
                                         impersonation: {
-                                                impersonator: null,
-                                                impersonatedUser: null,
-                                        },
+							impersonator: null,
+							impersonatedUser: null,
+							restore: null,
+						},
+						publicApi: { accessToken: "admin-token", sessionId: "admin-session" },
                                         user: impersonatorSnapshot,
                                 }),
                         }),

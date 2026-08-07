@@ -1,4 +1,8 @@
 import { mockUserProfile } from "@/constants/_faker/profile/userProfile";
+import {
+	syncCreateSavedSearch,
+	syncDeleteSavedSearch,
+} from "@/lib/stores/user/savedAssetsPublicApiSync";
 import type { MapFormSchemaType } from "@/types/_dashboard/maps";
 import type { SavedSearch } from "@/types/userProfile";
 import { create } from "zustand";
@@ -70,12 +74,14 @@ export const useLeadSearchStore = create<LeadSearchState>((set, get) => ({
 			priority: false,
 		};
 		set({ savedSearches: [newSearch, ...savedSearches] });
+		syncCreateSavedSearch(newSearch);
 	},
 
 	deleteSavedSearch: (id) => {
 		set((state) => ({
 			savedSearches: state.savedSearches.filter((s) => s.id !== id),
 		}));
+		syncDeleteSavedSearch(id);
 	},
 
 	selectSavedSearch: (search) => {

@@ -9,11 +9,11 @@ import {
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { usePublicApiAdminLogs } from "@/hooks/usePublicApiAdminLogs";
+import { usePublicApiAdminUserDetail } from "@/hooks/usePublicApiAdminUserDetail";
 import { formatAdminRole } from "@/lib/admin/roles";
 import {
 	type AdminDirectoryUser,
 	getAdminActivityLog,
-	getAdminDirectoryUser,
 } from "@/lib/admin/user-directory";
 import { useImpersonationStore } from "@/lib/stores/impersonationStore";
 import { useRouter } from "next/navigation";
@@ -38,8 +38,6 @@ export default function AdminUserDetailModal({
 	initialCreditsOpen,
 	openCreditsModal = false,
 }: AdminUserDetailModalProps) {
-	const [user, setUser] = useState<AdminDirectoryUser | null>(null);
-	const [loading, setLoading] = useState(false);
 	const [creditsOpen, setCreditsOpen] = useState(false);
 	const { startImpersonation } = useImpersonationStore();
 	const router = useRouter();
@@ -53,26 +51,11 @@ export default function AdminUserDetailModal({
 		token,
 		open,
 	);
-
-	useEffect(() => {
-		if (!open || !userId) return;
-		let alive = true;
-		const run = async () => {
-			setLoading(true);
-			try {
-				const detail = getAdminDirectoryUser(userId);
-				if (alive) {
-					setUser(detail);
-				}
-			} finally {
-				if (alive) setLoading(false);
-			}
-		};
-		run();
-		return () => {
-			alive = false;
-		};
-	}, [open, userId]);
+	const { loading, source, user, setUser } = usePublicApiAdminUserDetail(
+		userId,
+		token,
+		open,
+	);
 
 	// If requested, open the credits sub-modal shortly after loading user
 	useEffect(() => {
@@ -225,6 +208,10 @@ export default function AdminUserDetailModal({
 									<div>
 										<span className="text-muted-foreground">Status:</span>{" "}
 										{user.status}
+									</div>
+									<div>
+										<span className="text-muted-foreground">Source:</span>{" "}
+										{source === "live" ? "Public API" : "Fallback directory"}
 									</div>
 								</div>
 							</TabsContent>

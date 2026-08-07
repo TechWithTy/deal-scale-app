@@ -28,6 +28,7 @@ export type PublicApiLoginResponse = {
 	access_token: string;
 	expires_in?: number;
 	refresh_token?: string;
+	session_id?: string;
 	token_type?: string;
 };
 

@@ -31,6 +31,11 @@ vi.mock("next/navigation", () => ({
         useSearchParams: () => new URLSearchParams() as unknown as ReadonlyURLSearchParams,
 }));
 
+vi.mock("next-auth/react", () => ({
+	SessionProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+	useSession: () => ({ data: null, status: "unauthenticated" }),
+}));
+
 vi.mock("@/components/quickstart/QuickStartHeader", () => ({
         __esModule: true,
         default: () => null,
@@ -168,13 +173,14 @@ function createMockCampaignTable(testId: string) {
         }) {
                 const table = React.useMemo(
                         () => ({
-                                getRowModel: () => ({
+								getRowModel: () => ({
                                         rows: initialCampaigns.map((campaign, index) => ({
                                                 id: `row-${index}`,
                                                 original: campaign,
                                         })),
-                                }),
-                                setRowSelection: vi.fn(),
+								}),
+								getState: () => ({ rowSelection: {} }),
+								setRowSelection: vi.fn(),
                         }),
                         [initialCampaigns],
                 );

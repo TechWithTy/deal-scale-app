@@ -67,10 +67,6 @@ export const LIVE_COPY = resolveHeroCopy(
 			benefit: "Automate borrower conversations",
 			time: "5",
 			hope: "Keep borrowers engaged before competitors get there first.",
-			headline: V6_SCHEMA.template
-				.replace("{problem}", TEMPLATE_PROBLEM)
-				.replace("{solution}", TEMPLATE_SOLUTION)
-				.replace("{fear}", TEMPLATE_FEAR),
 		},
 		rotations: {
 			problems: V6_SCHEMA.persona.problems,
