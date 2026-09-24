@@ -35,15 +35,21 @@ contracts, tests, Yarn lockfile, documentation, and V3-local configuration.
    tracked V3 directory, add the standalone repository as a submodule at
    `deal_scale_v3`, and add/update `.gitmodules`.
 4. Update parent CI/CD and deployment configuration so workflows that build V3
-   explicitly check out submodules and run from the submodule directory.
-5. Validate both checkout modes: a clean parent clone with
-   `--recurse-submodules`, and a standalone clone of
-   `deal_scale_v3.0`.
+   initialize V3 by path and run from the submodule directory.
+5. Validate both checkout modes: a clean parent clone with path-scoped V3
+   submodule initialization, and a standalone clone of `deal_scale_v3.0`.
+   In the parent checkout, run `git submodule sync --recursive -- deal_scale_v3`
+   and `git submodule update --init --recursive -- deal_scale_v3`.
+   Confirm `deal_scale_v3` resolves to the pinned standalone commit
+   `d7fedab028661fc533abdcc35b265afbbdd7dae0`.
 6. Open a parent migration PR and leave the standalone repository's initial
    commit independently reviewable.
 
 ## Safety and rollback
 
+- The orphaned gitlinks at `.windsurf`, `_docs/front_end_best_practices`, and
+  `scripts` predate this migration and are outside its scope; do not invent
+  `.gitmodules` mappings or repair them here.
 - Do not stage or delete the current dirty local worktree.
 - Do not copy secrets, `.env` files, build output, dependency directories, or
   generated reports into the standalone repository.
@@ -60,5 +66,6 @@ contracts, tests, Yarn lockfile, documentation, and V3-local configuration.
 - The parent migration branch contains only the intended submodule/gitmodules,
   CI/deployment adjustments, and migration documentation.
 - Parent and standalone focused checks pass.
-- A fresh recursive parent checkout resolves the exact submodule commit.
+- A clean parent checkout using the path-scoped sync and update commands above
+  resolves `deal_scale_v3` to the pinned standalone commit.
 - No unrelated dirty-worktree files are included.

@@ -18,6 +18,7 @@
 - Do not stage, reset, delete, or rewrite the user’s dirty local checkout. All migration commits are created on the remote migration branch through GitHub’s Git Data API.
 - Verify the standalone repository before creating the parent gitlink commit.
 - Preserve the existing parent submodule entry for `external/interactive-avatar-nextjs-demo`.
+- The orphaned gitlinks at `.windsurf`, `_docs/front_end_best_practices`, and `scripts` predate this migration and are outside scope; do not invent `.gitmodules` mappings or repair them.
 - Keep the migration reversible: the parent migration PR is the rollback boundary; the old V3 content remains available in the parent history.
 - Record test limitations explicitly when remote Actions or local dependency state prevents a complete run.
 
@@ -75,9 +76,9 @@
 - `.gitmodules`
 - Parent CI/deployment workflows
 
-- [ ] Verify `git submodule sync --recursive` and `git submodule update --init --recursive` resolve the configured URL and pinned standalone SHA.
+- [ ] In a clean parent checkout, run `git submodule sync --recursive -- deal_scale_v3` and `git submodule update --init --recursive -- deal_scale_v3`; verify the configured URL and that the V3 path resolves to pinned standalone SHA `d7fedab028661fc533abdcc35b265afbbdd7dae0`.
 - [ ] Verify a clean recursive checkout exposes the V3 app at the same filesystem path expected by parent documentation and tooling.
-- [ ] Re-read parent workflows and confirm no workflow assumes V3 is a normal tracked directory without initializing submodules. If a workflow needs the submodule, add `submodules: recursive` to its checkout step in the migration commit; do not modify unrelated deployment jobs.
+- [ ] Re-read parent workflows and confirm no workflow assumes V3 is a normal tracked directory without initializing submodules. If a workflow needs V3, initialize `deal_scale_v3` with the path-scoped sync and update commands above; do not modify unrelated deployment jobs.
 - [ ] Validate that the parent application’s existing workflows remain unchanged when they do not consume V3.
 - [ ] Re-run parent-side tree/configuration checks and the standalone focused checks after the gitlink is created.
 - [ ] Document any check that cannot run because the local checkout is intentionally dirty or because the GitHub API cannot execute local commands.
@@ -101,7 +102,7 @@
 - Git correctness: parent path must be a gitlink at mode 160000 and point at an existing standalone commit.
 - Workflow correctness: standalone Actions must run from the standalone root; parent Actions must not silently omit required submodules.
 - Safety: no dirty local files, secrets, caches, generated output, or unrelated parent changes may enter either repository.
-- Reproducibility: a fresh recursive parent checkout and a fresh standalone checkout must resolve the same V3 source.
+- Reproducibility: a clean parent checkout with path-scoped V3 initialization and a fresh standalone checkout must resolve the same V3 source.
 
 ---
 
