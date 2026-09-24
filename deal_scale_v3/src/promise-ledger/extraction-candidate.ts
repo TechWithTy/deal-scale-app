@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-const MAX_SOURCE_SPAN_LENGTH = 4_000;
+export const MAX_SOURCE_SPAN_LENGTH = 4_000;
 
 export const extractionCandidateSchema = z
   .object({
