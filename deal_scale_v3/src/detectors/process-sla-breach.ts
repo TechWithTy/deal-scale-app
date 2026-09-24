@@ -78,7 +78,7 @@ export const detectProcessSlaBreaches = (rawInput: ProcessSlaBreachInput): Proce
   const input = processSlaBreachInputSchema.parse(rawInput);
   return input.obligations
     .filter((obligation) => obligation.workspaceId === input.workspaceId)
-    .flatMap((obligation) => {
+    .flatMap((obligation): ProcessSlaFinding[] => {
       const events = input.events
         .filter(
           (event) =>
