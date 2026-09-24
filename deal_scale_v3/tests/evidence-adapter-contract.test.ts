@@ -89,6 +89,21 @@ describe("evidence adapter contracts", () => {
     ).toThrow();
   });
 
+  it.each([
+    "October 5, 2026 Z",
+    "2026-10-05Z",
+    "2026-02-30T12:00:00Z",
+  ])("rejects malformed timestamps at the shared contract boundary: %s", (timestamp) => {
+    expect(() => connectionHealthSchema.parse({
+      workspaceId,
+      connectionId: "crm-connection",
+      provider: "mock-crm",
+      status: "healthy",
+      checkedAt: timestamp,
+      message: null,
+    })).toThrow();
+  });
+
   it("derives stable idempotency keys from the source identity tuple", () => {
     const sameKey = createEvidenceIdempotencyKey({
       workspaceId,
@@ -130,6 +145,31 @@ describe("evidence adapter contracts", () => {
 
     expect(page.items[0]?.externalId).toBe("deal-001");
     expect(page.nextCursor).toBe("cursor-2");
+  });
+
+  it("rejects CRM evidence from a communications adapter", async () => {
+    const communications = createMockCommunicationsAdapter([{
+      ...firstPage,
+      items: [{
+        ...crmEvent,
+        connectionId: "communications-connection",
+        provider: "mock-crm",
+        sourceType: "crm",
+        idempotencyKey: createEvidenceIdempotencyKey({
+          workspaceId,
+          connectionId: "communications-connection",
+          provider: "mock-crm",
+          externalId: crmEvent.externalId,
+        }),
+      }],
+    }]);
+
+    await expect(communications.readPage({
+      workspaceId,
+      connectionId: "communications-connection",
+      cursor: null,
+      limit: 50,
+    })).rejects.toThrow("provider");
   });
 
   it("applies page limits and rejects unknown cursors instead of silently ending history", async () => {
