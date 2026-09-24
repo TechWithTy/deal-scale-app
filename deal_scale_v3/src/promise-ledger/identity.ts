@@ -23,8 +23,15 @@ function stableSerialize(value: unknown): string {
 }
 
 function candidateFingerprint(candidate: unknown): string {
+  const promise = candidate as Record<string, unknown>;
+  const stableIdentity = {
+    maker: promise.maker,
+    action: promise.action,
+    dueWindow: promise.dueWindow,
+    expectedFulfillmentEvent: promise.expectedFulfillmentEvent,
+  };
   let hash = 2_166_136_261;
-  for (const character of stableSerialize(candidate)) {
+  for (const character of stableSerialize(stableIdentity)) {
     hash = Math.imul(hash ^ character.charCodeAt(0), 16_777_619);
   }
   return (hash >>> 0).toString(16);
@@ -33,8 +40,7 @@ function candidateFingerprint(candidate: unknown): string {
 export function createPromiseExternalId(
   source: PromiseSourceIdentity,
   candidate: unknown,
-  chunkIndex: number,
 ): string {
-  return `promise:${createSourceIdentityKey(source)}:chunk-${chunkIndex}:${candidateFingerprint(candidate)}`;
+  return `promise:${createSourceIdentityKey(source)}:${candidateFingerprint(candidate)}`;
 }
 
