@@ -1,7 +1,8 @@
+import { MAX_SOURCE_SPAN_LENGTH } from "./extraction-candidate";
 import { createSourceIdentityKey } from "./identity";
 import type { PromiseEvidence } from "./extractor";
 
-const MAX_EVIDENCE_EXCERPT_LENGTH = 4_000;
+const MAX_EVIDENCE_EXCERPT_LENGTH = MAX_SOURCE_SPAN_LENGTH;
 const EVIDENCE_CONTEXT_LENGTH = 2_000;
 
 interface SourceSpan {
@@ -11,9 +12,11 @@ interface SourceSpan {
 
 function excerptForSourceSpan(evidence: PromiseEvidence, sourceSpan: SourceSpan): string {
   const content = evidence.content;
+  const lowerBound = Math.max(0, sourceSpan.end - MAX_EVIDENCE_EXCERPT_LENGTH);
+  const upperBound = sourceSpan.start;
   const start = Math.max(
-    0,
-    Math.min(sourceSpan.start - EVIDENCE_CONTEXT_LENGTH, content.length - MAX_EVIDENCE_EXCERPT_LENGTH),
+    lowerBound,
+    Math.min(sourceSpan.start - EVIDENCE_CONTEXT_LENGTH, upperBound),
   );
   return content.slice(start, start + MAX_EVIDENCE_EXCERPT_LENGTH);
 }
