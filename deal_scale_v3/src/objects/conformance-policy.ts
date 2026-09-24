@@ -1,6 +1,6 @@
 import { defineObject } from "twenty-sdk/define";
 
-import { commonFields } from "src/assurance/fields";
+import { assuranceFieldsFor } from "src/assurance/fields";
 import { ASSURANCE_OBJECTS } from "src/assurance/identifiers";
 
 export default defineObject({
@@ -11,5 +11,5 @@ export default defineObject({
   labelPlural: "Conformance Policies",
   description: "Versioned policy used to evaluate seller-journey conformance.",
   icon: "IconScale",
-  fields: commonFields(ASSURANCE_OBJECTS.conformancePolicy),
+  fields: assuranceFieldsFor("conformancePolicy"),
 });

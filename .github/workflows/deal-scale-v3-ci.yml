@@ -1,4 +1,4 @@
-name: CI
+name: Deal Scale v3 CI
 
 on:
   push:
@@ -13,8 +13,12 @@ env:
   TWENTY_VERSION: latest
 
 concurrency:
-  group: ci-${{ github.ref }}
+  group: deal-scale-v3-ci-${{ github.ref }}
   cancel-in-progress: true
+
+defaults:
+  run:
+    working-directory: deal_scale_v3
 
 jobs:
   test:
@@ -35,8 +39,9 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version-file: '.nvmrc'
+          node-version-file: deal_scale_v3/.nvmrc
           cache: yarn
+          cache-dependency-path: deal_scale_v3/yarn.lock
 
       - name: Install dependencies
         run: yarn install --immutable

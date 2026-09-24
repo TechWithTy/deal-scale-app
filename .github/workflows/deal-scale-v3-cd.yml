@@ -1,4 +1,4 @@
-name: CD
+name: Deal Scale v3 CD
 
 on:
   push:
@@ -14,8 +14,12 @@ env:
   TWENTY_DEPLOY_URL: http://localhost:2020
 
 concurrency:
-  group: cd-${{ github.ref }}
+  group: deal-scale-v3-cd-${{ github.ref }}
   cancel-in-progress: true
+
+defaults:
+  run:
+    working-directory: deal_scale_v3
 
 jobs:
   deploy-and-install:
@@ -34,9 +38,11 @@ jobs:
         with:
           api-url: ${{ env.TWENTY_DEPLOY_URL }}
           api-key: ${{ secrets.TWENTY_DEPLOY_API_KEY }}
+          app-path: deal_scale_v3
 
       - name: Install
         uses: twentyhq/twenty/.github/actions/install-twenty-app@main
         with:
           api-url: ${{ env.TWENTY_DEPLOY_URL }}
           api-key: ${{ secrets.TWENTY_DEPLOY_API_KEY }}
+          app-path: deal_scale_v3
