@@ -107,14 +107,20 @@ const extractionMetadataSchema = z
   })
   .strict();
 
-const promiseFields = {
+const promiseCandidateFields = {
   maker: makerSchema,
   action: actionSchema,
   dueWindow: dueWindowSchema,
-  evidenceReferences: z.array(evidenceReferenceSchema).min(1),
   expectedFulfillmentEvent: expectedFulfillmentEventSchema,
-  extractionMetadata: extractionMetadataSchema,
   confidence: z.number().finite().min(0).max(1),
+};
+
+export const promiseCandidateSchema = z.object(promiseCandidateFields).strict();
+
+const promiseFields = {
+  ...promiseCandidateFields,
+  evidenceReferences: z.array(evidenceReferenceSchema).min(1),
+  extractionMetadata: extractionMetadataSchema,
   extractionStatus: z.enum(["candidate", "accepted", "rejected"]),
 };
 
@@ -172,4 +178,3 @@ export const PROMISE_LEDGER_FIXTURES = {
     extractionStatus: "accepted",
   },
 } as const;
-
