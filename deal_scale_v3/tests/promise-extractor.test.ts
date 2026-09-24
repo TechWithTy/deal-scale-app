@@ -4,66 +4,16 @@ import {
   MAX_PROMPT_CONTENT_LENGTH,
   MAX_PROMPT_LENGTH,
   extractPromisesFromEvidence,
-  type PromiseEvidence,
   type PromiseExtractionProvider,
   type PromiseLedgerStore,
 } from "../src/promise-ledger/extractor";
-
-const workspaceId = "00000000-0000-4000-8000-000000000001";
-
-const evidence: PromiseEvidence = {
-  workspaceId,
-  opportunityReferenceId: "opp-001",
-  sourceType: "communications",
-  sourceRecordId: "message-001",
-  contentType: "message",
-  content: "I will send revised pricing by Wednesday.",
-  locator: "communications://message/message-001",
-  observedAt: "2026-10-05T14:58:00.123456Z",
-};
-
-const candidate = {
-  maker: { role: "seller" as const, identityRef: "seller-001" },
-  action: {
-    type: "send" as const,
-    description: "Send revised pricing to the buyer",
-    target: "buyer-001",
-  },
-  dueWindow: { kind: "point" as const, dueAt: "2026-10-07T17:00:00-06:00" },
-  expectedFulfillmentEvent: {
-    type: "crm_task_completed",
-    acceptableVariants: ["email_sent", "document_delivered"],
-  },
-  confidence: 0.96,
-};
-
-function createStore() {
-  const promises: unknown[] = [];
-  const failures: unknown[] = [];
-  const store: PromiseLedgerStore = {
-    upsertPromise: async (record) => promises.push(record),
-    recordFailure: async (failure) => failures.push(failure),
-  };
-  return { store, promises, failures };
-}
-
-function createProvider(outputs: unknown[], prompts: string[]) {
-  const provider: PromiseExtractionProvider = {
-    model: "promise-extractor-test",
-    promptVersion: "promise-extraction.v1",
-    extract: async ({ prompt }) => {
-      prompts.push(prompt);
-      return outputs.shift();
-    },
-  };
-  return provider;
-}
+import { candidate, createProvider, createStore, evidence, workspaceId } from "./promise-extractor-fixtures";
 
 describe("structured promise extraction pipeline", () => {
   it("persists validated promises with evidence and model version metadata", async () => {
     const { store, promises } = createStore();
     const prompts: string[] = [];
-    const provider = createProvider([{ kind: "promise", candidate }], prompts);
+    const provider = createProvider([{ kind: "promise", candidates: [candidate] }], prompts);
 
     const result = await extractPromisesFromEvidence({
       evidence: [evidence],
@@ -105,6 +55,56 @@ describe("structured promise extraction pipeline", () => {
     expect(promises).toHaveLength(0);
   });
 
+  it("persists every candidate returned for one communication with distinct source-aware IDs", async () => {
+    const { store, promises } = createStore();
+    const secondCandidate = {
+      ...candidate,
+      action: { ...candidate.action, description: "Send the implementation timeline to the buyer" },
+    };
+
+    const result = await extractPromisesFromEvidence({
+      evidence: [evidence],
+      provider: createProvider([{ kind: "promise", candidates: [candidate, secondCandidate] }], []),
+      store,
+    });
+
+    expect(result).toMatchObject({ processed: 1, persisted: 2, failed: 0 });
+    expect(new Set(promises.map((promise) => (promise as { externalId: string }).externalId)).size).toBe(2);
+    expect(promises[0]).toMatchObject({
+      externalId: expect.stringContaining("communications-connection"),
+    });
+    expect(promises[0]).toMatchObject({
+      externalId: expect.stringContaining("mock-communications"),
+    });
+  });
+
+  it("processes later bounded chunks so late commitments are not discarded", async () => {
+    const { store, promises } = createStore();
+    const prompts: string[] = [];
+    const lateCommitment = "I will deliver the signed order form tomorrow.";
+    const longEvidence = {
+      ...evidence,
+      content: "x".repeat(MAX_PROMPT_CONTENT_LENGTH) + lateCommitment,
+    };
+
+    const result = await extractPromisesFromEvidence({
+      evidence: [longEvidence],
+      provider: createProvider(
+        [
+          { kind: "non_promise" },
+          { kind: "promise", candidates: [candidate] },
+        ],
+        prompts,
+      ),
+      store,
+    });
+
+    expect(result).toMatchObject({ processed: 1, persisted: 1, nonPromises: 1, failed: 0 });
+    expect(prompts).toHaveLength(2);
+    expect(prompts[1]).toContain(lateCommitment);
+    expect(promises).toHaveLength(1);
+  });
+
   it("bounds evidence content before sending it to the provider", async () => {
     const { store } = createStore();
     const prompts: string[] = [];
@@ -144,8 +144,8 @@ describe("structured promise extraction pipeline", () => {
       evidence: [evidence, { ...evidence, sourceRecordId: "message-002" }],
       provider: createProvider(
         [
-          { kind: "promise", candidate: { ...candidate, confidence: 1.1 } },
-          { kind: "promise", candidate },
+          { kind: "promise", candidates: [{ ...candidate, confidence: 1.1 }] },
+          { kind: "promise", candidates: [candidate] },
         ],
         [],
       ),
@@ -160,7 +160,7 @@ describe("structured promise extraction pipeline", () => {
   it("skips ineligible evidence without calling the provider", async () => {
     const { store, promises } = createStore();
     let calls = 0;
-    const provider = createProvider([{ kind: "promise", candidate }], []);
+    const provider = createProvider([{ kind: "promise", candidates: [candidate] }], []);
     const originalExtract = provider.extract;
     provider.extract = async (input) => {
       calls += 1;
@@ -210,7 +210,7 @@ describe("structured promise extraction pipeline", () => {
         if (calls === 1) {
           throw new Error("provider unavailable");
         }
-        return { kind: "promise", candidate };
+        return { kind: "promise", candidates: [candidate] };
       },
     };
     const store: PromiseLedgerStore = {
@@ -232,3 +232,4 @@ describe("structured promise extraction pipeline", () => {
     expect(failures).toHaveLength(1);
   });
 });
+
