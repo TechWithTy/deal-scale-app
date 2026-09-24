@@ -13,6 +13,7 @@ it("keeps promise IDs stable when candidates reorder or confidence changes", asy
       ...candidate.expectedFulfillmentEvent,
       acceptableVariants: [...candidate.expectedFulfillmentEvent.acceptableVariants].reverse(),
     },
+    dueWindow: { kind: "point" as const, dueAt: "2026-10-07T23:00:00Z" },
   };
 
   await extractPromisesFromEvidence({
@@ -31,6 +32,7 @@ it("keeps promise IDs stable when candidates reorder or confidence changes", asy
             ...candidate,
             confidence: 0.5,
             expectedFulfillmentEvent: secondCandidate.expectedFulfillmentEvent,
+            dueWindow: secondCandidate.dueWindow,
           },
         ],
       }],
