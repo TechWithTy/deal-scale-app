@@ -1,7 +1,7 @@
 import { expect, it } from "vitest";
 
 import { extractPromisesFromEvidence, type PromiseLedgerStore } from "../src/promise-ledger/extractor";
-import { candidate, createProvider, evidence } from "./promise-extractor-fixtures";
+import { createProvider, evidence, extractionCandidate } from "./promise-extractor-fixtures";
 
 it("records persistence failures with source identity and a persistence code", async () => {
   const failures: unknown[] = [];
@@ -14,7 +14,7 @@ it("records persistence failures with source identity and a persistence code", a
 
   const result = await extractPromisesFromEvidence({
     evidence: [evidence],
-    provider: createProvider([{ kind: "promise", candidates: [candidate] }], []),
+    provider: createProvider([{ kind: "promise", candidates: [extractionCandidate()] }], []),
     store,
   });
 
