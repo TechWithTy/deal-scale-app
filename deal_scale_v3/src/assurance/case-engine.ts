@@ -266,7 +266,9 @@ export const transitionAssuranceCase = (
     return { ok: false, reason: "invalid_transition", from: current.caseStatus, to, allowed };
   }
 
-  const occurredAt = options.occurredAt ? z.coerce.date().parse(options.occurredAt) : new Date();
+  const occurredAt = options.occurredAt
+    ? z.coerce.date().parse(options.occurredAt)
+    : current.observedAt;
   const auditEvent: AuditEvent = {
     id: deterministicUuidV4(
       `audit|${current.id}|${current.auditHistory.length}|${current.caseStatus}|${to}|${options.actorId}|${occurredAt.toISOString()}`,

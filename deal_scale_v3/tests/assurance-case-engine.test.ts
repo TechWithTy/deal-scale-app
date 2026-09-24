@@ -163,4 +163,18 @@ describe("assurance case engine", () => {
       allowed: ["closed"],
     });
   });
+
+  it("uses the case observation time for deterministic default audit events", () => {
+    const assembled = assembleAssuranceCase(candidate(), {
+      opportunityReferenceId: "opportunity-001",
+      actualEvidence: [evidence()],
+      observedAt: "2026-09-24T12:02:00.000Z",
+    });
+    if (assembled.kind !== "case") throw new Error("expected case");
+
+    const first = transitionAssuranceCase(assembled.case, "accepted", { actorId: "manager-001" });
+    const second = transitionAssuranceCase(assembled.case, "accepted", { actorId: "manager-001" });
+
+    expect(first).toEqual(second);
+  });
 });
