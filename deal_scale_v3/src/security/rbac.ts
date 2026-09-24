@@ -79,11 +79,14 @@ export const canAccessWorkspaceRecord = ({
   actorWorkspaceId,
   recordWorkspaceId,
   role,
+  objectName,
 }: {
   actorWorkspaceId: string;
   recordWorkspaceId: string;
   role: AssuranceRole;
+  objectName: AssuranceObjectName;
 }) =>
   actorWorkspaceId === recordWorkspaceId && RBAC_MATRIX[role].permissions.some(
-    (permission) => permission.canReadObjectRecords,
+    (permission) =>
+      permission.objectName === objectName && permission.canReadObjectRecords,
   );

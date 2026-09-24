@@ -35,6 +35,7 @@ describe("workspace RBAC boundaries", () => {
         actorWorkspaceId: "workspace-a",
         recordWorkspaceId: "workspace-b",
         role: "reviewer",
+        objectName: "assuranceCase",
       }),
     ).toBe(false);
     expect(
@@ -42,6 +43,26 @@ describe("workspace RBAC boundaries", () => {
         actorWorkspaceId: "workspace-a",
         recordWorkspaceId: "workspace-a",
         role: "reviewer",
+        objectName: "assuranceCase",
+      }),
+    ).toBe(true);
+  });
+
+  it("checks read access for the requested object instead of any object", () => {
+    expect(
+      canAccessWorkspaceRecord({
+        actorWorkspaceId: "workspace-a",
+        recordWorkspaceId: "workspace-a",
+        role: "evidenceIntegration",
+        objectName: "assuranceCase",
+      }),
+    ).toBe(false);
+    expect(
+      canAccessWorkspaceRecord({
+        actorWorkspaceId: "workspace-a",
+        recordWorkspaceId: "workspace-a",
+        role: "evidenceIntegration",
+        objectName: "event",
       }),
     ).toBe(true);
   });
