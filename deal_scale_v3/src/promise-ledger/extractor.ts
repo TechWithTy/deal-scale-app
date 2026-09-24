@@ -100,14 +100,14 @@ function isEligibleEvidence(evidence: PromiseEvidence): boolean {
   );
 }
 
-function toEvidenceReference(evidence: PromiseEvidence) {
+function toEvidenceReference(evidence: PromiseEvidence, chunkIndex: number) {
   return {
-    evidenceId: createSourceIdentityKey({
+    evidenceId: `${createSourceIdentityKey({
       workspaceId: evidence.workspaceId,
       connectionId: evidence.connectionId,
       provider: evidence.provider,
       sourceRecordId: evidence.sourceRecordId,
-    }),
+    })}:chunk-${chunkIndex}`,
     sourceType: evidence.sourceType,
     sourceRecordId: evidence.sourceRecordId,
     locator: evidence.locator,
@@ -163,7 +163,7 @@ export async function extractPromisesFromEvidence(
             const candidate = promiseCandidateSchema.parse(rawCandidate);
             const extractionOutput = promiseExtractionOutputSchema.parse({
               ...candidate,
-              evidenceReferences: [toEvidenceReference(evidence)],
+              evidenceReferences: [toEvidenceReference(chunk, chunkIndex)],
               extractionMetadata: {
                 model: options.provider.model,
                 promptVersion: options.provider.promptVersion,
@@ -182,7 +182,6 @@ export async function extractPromisesFromEvidence(
                   sourceRecordId: evidence.sourceRecordId,
                 },
                 rawCandidate,
-                candidateIndex,
                 chunkIndex,
               ),
               workspaceId: evidence.workspaceId,
