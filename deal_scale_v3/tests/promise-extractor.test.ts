@@ -42,6 +42,7 @@ describe("structured promise extraction pipeline", () => {
     });
     expect(prompts[0]).toContain(evidence.content);
     expect(prompts[0]).toContain(evidence.observedAt);
+    expect(prompts[0]).toContain(evidence.timezone);
     expect(prompts[0]).toContain("seller/seller-001");
   });
 
