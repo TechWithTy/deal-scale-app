@@ -61,6 +61,7 @@ export type CanonicalAssuranceCase = z.output<typeof assuranceCaseSchema> & {
 
 export type CaseAssemblyOptions = {
   opportunityReferenceId: string;
+  opportunityReferenceWorkspaceId: string;
   actualEvidence?: readonly EvidenceObservationInput[];
   expectedEvidence?: readonly EvidenceExpectation[];
   observedAt?: string | Date;
@@ -141,7 +142,8 @@ const compareCandidates = (left: CanonicalDetectorCandidate, right: CanonicalDet
   if (left.recordVersion !== right.recordVersion) return right.recordVersion - left.recordVersion;
   const observedDifference = right.observedAt.getTime() - left.observedAt.getTime();
   if (observedDifference !== 0) return observedDifference;
-  return candidateFingerprint(left).localeCompare(candidateFingerprint(right));
+  const fingerprintDifference = candidateFingerprint(left).localeCompare(candidateFingerprint(right));
+  return fingerprintDifference !== 0 ? fingerprintDifference : left.id.localeCompare(right.id);
 };
 
 export const dedupeDetectorCandidates = (
@@ -168,12 +170,30 @@ export const dedupeDetectorCandidates = (
       `${left.workspaceId}|${left.externalId}`.localeCompare(`${right.workspaceId}|${right.externalId}`),
     ),
     duplicates: duplicates.sort((left, right) =>
-      `${left.workspaceId}|${left.externalId}|${left.recordVersion}`.localeCompare(
-        `${right.workspaceId}|${right.externalId}|${right.recordVersion}`,
+      `${left.workspaceId}|${left.externalId}|${left.recordVersion}|${left.id}`.localeCompare(
+        `${right.workspaceId}|${right.externalId}|${right.recordVersion}|${right.id}`,
       ),
     ),
   };
 };
+
+const evidenceFingerprint = (observation: EvidenceObservation) =>
+  JSON.stringify({
+    workspaceId: observation.workspaceId,
+    externalId: observation.externalId,
+    sourceVersion: observation.sourceVersion,
+    recordVersion: observation.recordVersion,
+    name: observation.name,
+    provenanceState: observation.provenanceState,
+    provenanceRef: observation.provenanceRef,
+    observedAt: observation.observedAt.toISOString(),
+    eventId: observation.eventId,
+    evidenceType: observation.evidenceType,
+    contentHash: observation.contentHash,
+  });
+
+const compareEvidence = (left: EvidenceObservation, right: EvidenceObservation) =>
+  evidenceFingerprint(left).localeCompare(evidenceFingerprint(right));
 
 const assessEvidence = (
   expected: readonly EvidenceExpectation[],
@@ -181,7 +201,9 @@ const assessEvidence = (
   workspaceId: string,
 ): EvidenceAssessment => {
   const parsed = input.map((item) => evidenceObservationSchema.parse(item));
-  const actual = parsed.filter((item) => item.workspaceId === workspaceId);
+  const actual = parsed
+    .filter((item) => item.workspaceId === workspaceId)
+    .sort(compareEvidence);
   const excludedTenantEvidenceCount = parsed.length - actual.length;
   const matches = (expectation: EvidenceExpectation, observation: EvidenceObservation) =>
     expectation.evidenceType === observation.evidenceType &&
@@ -200,6 +222,9 @@ export const assembleAssuranceCase = (
   options: CaseAssemblyOptions,
 ): CaseAssemblyResult => {
   const candidateBase = canonicalizeDetectorCandidate(input);
+  if (candidateBase.workspaceId !== options.opportunityReferenceWorkspaceId) {
+    throw new Error("opportunityReferenceWorkspaceId must match candidate workspaceId");
+  }
   const expectedEvidence = parseExpectedEvidence(options.expectedEvidence ?? candidateBase.expectedEvidence);
   const candidate = { ...candidateBase, expectedEvidence };
   const evidence = assessEvidence(expectedEvidence, options.actualEvidence ?? [], candidate.workspaceId);
@@ -214,7 +239,7 @@ export const assembleAssuranceCase = (
   );
   const evidenceReferences = evidence.actual.map((item) => ({
     ...evidenceReferenceSchema.parse({ ...item, assuranceCaseId: caseId }),
-    id: deterministicUuidV4(`evidence-reference|${caseId}|${item.contentHash}|${item.provenanceRef}`),
+    id: deterministicUuidV4(`evidence-reference|${caseId}|${evidenceFingerprint(item)}`),
   }));
   const auditHistory: AuditEvent[] = [
     {
@@ -232,7 +257,7 @@ export const assembleAssuranceCase = (
     workspaceId: candidate.workspaceId,
     provenanceState: "inferred",
     provenanceRef: `case-engine://${candidate.provenanceRef}`,
-    sourceVersion: "case-engine/v1",
+    sourceVersion: candidate.sourceVersion,
     recordVersion: candidate.recordVersion,
     observedAt,
     opportunityReferenceId: options.opportunityReferenceId,
@@ -251,7 +276,14 @@ export const assembleAssuranceCase = (
 export const assembleAssuranceCases = (
   inputs: readonly DetectorCandidateInput[],
   options: CaseAssemblyOptions,
-) => dedupeDetectorCandidates(inputs).candidates.map((candidate) => assembleAssuranceCase(candidate, options));
+) => {
+  const candidates = dedupeDetectorCandidates(inputs).candidates;
+  if (candidates.some((candidate) => candidate.workspaceId !== options.opportunityReferenceWorkspaceId)) {
+    throw new Error("opportunityReferenceWorkspaceId must match every candidate workspaceId");
+  }
+
+  return candidates.map((candidate) => assembleAssuranceCase(candidate, options));
+};
 
 export const isValidCaseTransition = (from: CaseStatus, to: CaseStatus) =>
   VALID_REVIEW_TRANSITIONS[from]?.includes(to) ?? false;

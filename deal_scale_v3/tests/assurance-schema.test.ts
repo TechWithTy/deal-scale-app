@@ -55,5 +55,25 @@ describe("P0 assurance schema", () => {
     expect(evidenceReferenceSchema.shape).toHaveProperty("sellerEventId");
     expect(evidenceReferenceSchema.shape).not.toHaveProperty("eventId");
   });
+
+  it("keeps the detector candidate eventId contract required and nullable", () => {
+    expect(
+      detectorCandidateSchema.parse({
+        ...ASSURANCE_FIXTURES.assuranceCase,
+        conformancePolicyId: "policy-001",
+        eventId: null,
+        detectorType: "pricing-promise",
+        confidence: 0.91,
+      }).eventId,
+    ).toBeNull();
+    expect(() =>
+      detectorCandidateSchema.parse({
+        ...ASSURANCE_FIXTURES.assuranceCase,
+        conformancePolicyId: "policy-001",
+        detectorType: "pricing-promise",
+        confidence: 0.91,
+      }),
+    ).toThrow();
+  });
 });
 

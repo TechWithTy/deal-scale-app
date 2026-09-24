@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   assembleAssuranceCase,
+  assembleAssuranceCases,
   canonicalizeDetectorCandidate,
   dedupeDetectorCandidates,
   transitionAssuranceCase,
@@ -22,6 +23,7 @@ const candidate = (overrides: Record<string, unknown> = {}) => ({
   observedAt: "2026-09-24T12:00:00.000Z",
   conformancePolicyId: "policy-001",
   eventId: "event-001",
+  sellerEventId: "event-001",
   detectorType: "pricing-promise",
   confidence: 0.91,
   expectedEvidence: [
@@ -79,9 +81,22 @@ describe("assurance case engine", () => {
     expect(result.duplicates).toHaveLength(1);
   });
 
+  it("uses a total tie-breaker for equal-rank candidates regardless of input order", () => {
+    const candidateA = candidate({ id: "00000000-0000-4000-8000-000000000001" });
+    const candidateB = candidate({ id: "00000000-0000-4000-8000-000000000002" });
+
+    const forward = dedupeDetectorCandidates([candidateB, candidateA]);
+    const reversed = dedupeDetectorCandidates([candidateA, candidateB]);
+
+    expect(forward).toEqual(reversed);
+    expect(forward.candidates[0].id).toBe(candidateA.id);
+    expect(forward.duplicates.map((item) => item.id)).toEqual([candidateB.id]);
+  });
+
   it("assembles a canonical open case with expected and actual provenance", () => {
     const result = assembleAssuranceCase(candidate(), {
       opportunityReferenceId: "opportunity-001",
+      opportunityReferenceWorkspaceId: workspaceA,
       actualEvidence: [evidence()],
       observedAt: "2026-09-24T12:02:00.000Z",
     });
@@ -93,6 +108,7 @@ describe("assurance case engine", () => {
     expect(result.evidence.missing).toEqual([]);
     expect(result.case.expectedEvidence[0].provenanceRef).toBe("crm://call/call-001");
     expect(result.case.evidenceReferences[0].provenanceRef).toBe("crm://call/call-001");
+    expect(result.case.sourceVersion).toBe("detector-v1");
     for (const id of [result.case.id, result.case.evidenceReferences[0].id, result.case.auditHistory[0].id]) {
       expect(id).toMatch(
         /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
@@ -100,9 +116,45 @@ describe("assurance case engine", () => {
     }
   });
 
+  it("sorts evidence canonically and gives distinct stable identities to same-content records", () => {
+    const firstEvidence = evidence({ externalId: "evidence-001", recordVersion: 1 });
+    const sourceVersionVariant = evidence({ sourceVersion: "crm-v4", externalId: "evidence-001", recordVersion: 1 });
+    const externalIdVariant = evidence({ sourceVersion: "crm-v3", externalId: "evidence-002", recordVersion: 1 });
+    const recordVersionVariant = evidence({ sourceVersion: "crm-v3", externalId: "evidence-001", recordVersion: 2 });
+    const options = {
+      opportunityReferenceId: "opportunity-001",
+      opportunityReferenceWorkspaceId: workspaceA,
+      actualEvidence: [firstEvidence, sourceVersionVariant, externalIdVariant, recordVersionVariant],
+    };
+
+    const forward = assembleAssuranceCase(candidate(), options);
+    const reversed = assembleAssuranceCase(candidate(), {
+      ...options,
+      actualEvidence: [recordVersionVariant, externalIdVariant, sourceVersionVariant, firstEvidence],
+    });
+
+    expect(forward.kind).toBe("case");
+    expect(reversed.kind).toBe("case");
+    if (forward.kind !== "case" || reversed.kind !== "case") return;
+
+    expect(forward.case.evidenceReferences).toEqual(reversed.case.evidenceReferences);
+    expect(
+      forward.case.evidenceReferences.map(
+        (item) => `${item.externalId}|${item.sourceVersion}|${item.recordVersion}`,
+      ),
+    ).toEqual([
+      "evidence-001|crm-v3|1",
+      "evidence-001|crm-v3|2",
+      "evidence-001|crm-v4|1",
+      "evidence-002|crm-v3|1",
+    ]);
+    expect(new Set(forward.case.evidenceReferences.map((item) => item.id)).size).toBe(4);
+  });
+
   it("returns insufficient_evidence without creating a review case", () => {
     const result = assembleAssuranceCase(candidate(), {
       opportunityReferenceId: "opportunity-001",
+      opportunityReferenceWorkspaceId: workspaceA,
       actualEvidence: [],
     });
 
@@ -122,6 +174,7 @@ describe("assurance case engine", () => {
   it("does not use cross-tenant evidence to satisfy a candidate", () => {
     const result = assembleAssuranceCase(candidate(), {
       opportunityReferenceId: "opportunity-001",
+      opportunityReferenceWorkspaceId: workspaceA,
       actualEvidence: [evidence({ workspaceId: workspaceB })],
     });
 
@@ -132,9 +185,23 @@ describe("assurance case engine", () => {
     expect(result.evidence.excludedTenantEvidenceCount).toBe(1);
   });
 
+  it("fails closed for a mixed-tenant batch sharing one opportunity reference", () => {
+    expect(() =>
+      assembleAssuranceCases(
+        [candidate(), candidate({ workspaceId: workspaceB })],
+        {
+          opportunityReferenceId: "opportunity-001",
+          opportunityReferenceWorkspaceId: workspaceA,
+          actualEvidence: [evidence()],
+        },
+      ),
+    ).toThrow("opportunityReferenceWorkspaceId");
+  });
+
   it("applies only valid review transitions and appends audit history", () => {
     const assembled = assembleAssuranceCase(candidate(), {
       opportunityReferenceId: "opportunity-001",
+      opportunityReferenceWorkspaceId: workspaceA,
       actualEvidence: [evidence()],
     });
     if (assembled.kind !== "case") throw new Error("expected case");
@@ -167,6 +234,7 @@ describe("assurance case engine", () => {
   it("uses the case observation time for deterministic default audit events", () => {
     const assembled = assembleAssuranceCase(candidate(), {
       opportunityReferenceId: "opportunity-001",
+      opportunityReferenceWorkspaceId: workspaceA,
       actualEvidence: [evidence()],
       observedAt: "2026-09-24T12:02:00.000Z",
     });
