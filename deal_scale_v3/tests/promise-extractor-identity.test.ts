@@ -1,7 +1,13 @@
 import { expect, it } from "vitest";
 
 import { extractPromisesFromEvidence } from "../src/promise-ledger/extractor";
-import { candidate, createProvider, createStore, evidence } from "./promise-extractor-fixtures";
+import {
+  candidate,
+  createProvider,
+  createStore,
+  evidence,
+  extractionCandidate,
+} from "./promise-extractor-fixtures";
 
 it("keeps promise IDs stable when candidates reorder or confidence changes", async () => {
   const firstRun = createStore();
@@ -18,7 +24,10 @@ it("keeps promise IDs stable when candidates reorder or confidence changes", asy
 
   await extractPromisesFromEvidence({
     evidence: [evidence],
-    provider: createProvider([{ kind: "promise", candidates: [candidate, secondCandidate] }], []),
+    provider: createProvider(
+      [{ kind: "promise", candidates: [extractionCandidate(), extractionCandidate(secondCandidate)] }],
+      [],
+    ),
     store: firstRun.store,
   });
   await extractPromisesFromEvidence({
@@ -27,13 +36,17 @@ it("keeps promise IDs stable when candidates reorder or confidence changes", asy
       [{
         kind: "promise",
         candidates: [
-          { ...secondCandidate, confidence: 0.4, expectedFulfillmentEvent: candidate.expectedFulfillmentEvent },
-          {
+          extractionCandidate({
+            ...secondCandidate,
+            confidence: 0.4,
+            expectedFulfillmentEvent: candidate.expectedFulfillmentEvent,
+          }),
+          extractionCandidate({
             ...candidate,
             confidence: 0.5,
             expectedFulfillmentEvent: secondCandidate.expectedFulfillmentEvent,
             dueWindow: secondCandidate.dueWindow,
-          },
+          }),
         ],
       }],
       [],
