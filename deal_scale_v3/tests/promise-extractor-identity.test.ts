@@ -9,6 +9,10 @@ it("keeps promise IDs stable when candidates reorder or confidence changes", asy
   const secondCandidate = {
     ...candidate,
     action: { ...candidate.action, description: "Send the implementation timeline to the buyer" },
+    expectedFulfillmentEvent: {
+      ...candidate.expectedFulfillmentEvent,
+      acceptableVariants: [...candidate.expectedFulfillmentEvent.acceptableVariants].reverse(),
+    },
   };
 
   await extractPromisesFromEvidence({
@@ -17,9 +21,19 @@ it("keeps promise IDs stable when candidates reorder or confidence changes", asy
     store: firstRun.store,
   });
   await extractPromisesFromEvidence({
-    evidence: [evidence],
-    provider: createProvider(
-      [{ kind: "promise", candidates: [{ ...secondCandidate, confidence: 0.4 }, { ...candidate, confidence: 0.5 }] }],
+      evidence: [evidence],
+      provider: createProvider(
+      [{
+        kind: "promise",
+        candidates: [
+          { ...secondCandidate, confidence: 0.4, expectedFulfillmentEvent: candidate.expectedFulfillmentEvent },
+          {
+            ...candidate,
+            confidence: 0.5,
+            expectedFulfillmentEvent: secondCandidate.expectedFulfillmentEvent,
+          },
+        ],
+      }],
       [],
     ),
     store: secondRun.store,
