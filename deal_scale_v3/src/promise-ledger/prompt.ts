@@ -9,6 +9,7 @@ export interface PromisePromptEvidence {
   sourceRecordId: string;
   maker: { role: string; identityRef: string };
   observedAt: string;
+  timezone: string;
   content: string;
 }
 
@@ -21,6 +22,7 @@ export function buildPromiseExtractionPrompt(evidence: PromisePromptEvidence): s
     `Evidence source: ${evidence.sourceType}/${boundedSourceRecordId}`,
     `Evidence maker: ${evidence.maker.role}/${boundedMakerIdentity}`,
     `Evidence observed at: ${evidence.observedAt}`,
+    `Evidence timezone: ${evidence.timezone}`,
     "Evidence content:\n",
   ].join("\n\n");
   const contentLength = Math.max(
