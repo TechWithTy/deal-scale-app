@@ -59,6 +59,50 @@ describe("promise extraction boundaries", () => {
     expect(failures[0]).toMatchObject({ code: "validation-error" });
   });
 
+  it("persists valid siblings when one candidate wrapper is malformed", async () => {
+    const { store, promises, failures } = createStore();
+    const result = await extractPromisesFromEvidence({
+      evidence: [evidence],
+      provider: createProvider(
+        [
+          {
+            kind: "promise",
+            candidates: [
+              { candidate, sourceSpan: { start: -1, end: 4 } },
+              extractionCandidate(),
+            ],
+          },
+        ],
+        [],
+      ),
+      store,
+    });
+
+    expect(result).toMatchObject({ processed: 1, persisted: 1, failed: 1 });
+    expect(promises).toHaveLength(1);
+    expect(failures[0]).toMatchObject({ code: "validation-error" });
+  });
+
+  it("keeps the complete source span in a full-length excerpt", async () => {
+    const { store, promises } = createStore();
+    const content = "x".repeat(5_000) + "y".repeat(MAX_SOURCE_SPAN_LENGTH) + "z".repeat(3_000);
+    const result = await extractPromisesFromEvidence({
+      evidence: [{ ...evidence, content }],
+      provider: createProvider(
+        [{
+          kind: "promise",
+          candidates: [extractionCandidate(candidate, { start: 5_000, end: 9_000 })],
+        }],
+        [],
+      ),
+      store,
+    });
+
+    expect(result).toMatchObject({ persisted: 1, failed: 0 });
+    expect((promises[0] as { evidenceReferences: Array<{ excerpt: string }> })
+      .evidenceReferences[0].excerpt).toBe("y".repeat(MAX_SOURCE_SPAN_LENGTH));
+  });
+
   it("keeps a maximum-sized boundary-spanning commitment in one chunk", async () => {
     const { store, promises } = createStore();
     const content = "x".repeat(9_000) + "y".repeat(MAX_SOURCE_SPAN_LENGTH);
