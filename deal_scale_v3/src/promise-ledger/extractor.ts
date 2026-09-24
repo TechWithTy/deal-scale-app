@@ -33,6 +33,7 @@ export interface PromiseEvidence {
     role: "seller" | "buyer" | "internal" | "unknown";
     identityRef: string;
   };
+  timezone: string;
   sourceRecordId: string;
   contentType: string;
   content: string;
