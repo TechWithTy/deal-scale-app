@@ -13,6 +13,7 @@ export const evidence: PromiseEvidence = {
   connectionId: "communications-connection",
   provider: "mock-communications",
   maker: { role: "seller", identityRef: "seller-001" },
+  timezone: "America/Denver",
   sourceRecordId: "message-001",
   contentType: "message",
   content: "I will send revised pricing by Wednesday.",
