@@ -41,6 +41,8 @@ describe("structured promise extraction pipeline", () => {
       },
     });
     expect(prompts[0]).toContain(evidence.content);
+    expect(prompts[0]).toContain(evidence.observedAt);
+    expect(prompts[0]).toContain("seller/seller-001");
   });
 
   it("does not persist a provider-classified non-promise", async () => {
@@ -84,7 +86,7 @@ describe("structured promise extraction pipeline", () => {
     const lateCommitment = "I will deliver the signed order form tomorrow.";
     const longEvidence = {
       ...evidence,
-      content: "x".repeat(MAX_PROMPT_CONTENT_LENGTH) + lateCommitment,
+      content: "x".repeat(MAX_PROMPT_CONTENT_LENGTH - 20) + lateCommitment,
     };
 
     const result = await extractPromisesFromEvidence({
