@@ -32,7 +32,7 @@ const objectPlurals: Record<AssuranceObjectName, string> = {
   sourceConnection: "sourceConnections",
   sellerIdentity: "sellerIdentities",
   opportunityReference: "opportunityReferences",
-  event: "events",
+  event: "sellerEvents",
   promise: "promises",
   conformancePolicy: "conformancePolicies",
   detectorCandidate: "detectorCandidates",
@@ -139,3 +139,4 @@ export const relationFieldsFor = (objectName: AssuranceObjectName) => {
 
   return [...outgoingRelations, ...incomingRelations];
 };
+

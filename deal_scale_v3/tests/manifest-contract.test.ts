@@ -8,6 +8,7 @@ import {
   type AssuranceObjectName,
 } from "../src/assurance/identifiers";
 import { ASSURANCE_OBJECT_DEFINITIONS } from "../src/assurance/schema";
+import eventObject from "../src/objects/event";
 
 const expectedFields: Record<AssuranceObjectName, string[]> = {
   sourceConnection: ["provider", "connectionStatus"],
@@ -50,6 +51,11 @@ const fieldsByObject = new Map(
 );
 
 describe("assurance object manifest contracts", () => {
+  it("uses a non-reserved Twenty API name for the Event object", () => {
+    expect(eventObject.config.nameSingular).toBe("sellerEvent");
+    expect(eventObject.config.namePlural).toBe("sellerEvents");
+  });
+
   it("maps every contract domain field into object metadata", () => {
     for (const objectName of ASSURANCE_OBJECT_DEFINITIONS) {
       const fields = fieldsByObject.get(objectName) ?? [];
@@ -97,3 +103,4 @@ function objectNameForId(objectId: string): AssuranceObjectName {
   if (!objectName) throw new Error(`Unknown assurance object ID: ${objectId}`);
   return objectName;
 }
+
