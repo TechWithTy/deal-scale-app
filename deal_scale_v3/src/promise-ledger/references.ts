@@ -4,18 +4,24 @@ import type { PromiseEvidence } from "./extractor";
 const MAX_EVIDENCE_EXCERPT_LENGTH = 4_000;
 const EVIDENCE_CONTEXT_LENGTH = 2_000;
 
-function excerptForCandidate(evidence: PromiseEvidence, candidate: unknown): string {
-  const action = (candidate as { action?: { description?: string } }).action?.description;
+interface SourceSpan {
+  start: number;
+  end: number;
+}
+
+function excerptForSourceSpan(evidence: PromiseEvidence, sourceSpan: SourceSpan): string {
   const content = evidence.content;
-  const matchIndex = action ? content.toLocaleLowerCase().indexOf(action.toLocaleLowerCase()) : -1;
-  const start = matchIndex < 0 ? 0 : Math.max(0, matchIndex - EVIDENCE_CONTEXT_LENGTH);
+  const start = Math.max(
+    0,
+    Math.min(sourceSpan.start - EVIDENCE_CONTEXT_LENGTH, content.length - MAX_EVIDENCE_EXCERPT_LENGTH),
+  );
   return content.slice(start, start + MAX_EVIDENCE_EXCERPT_LENGTH);
 }
 
 export function toEvidenceReference(
   evidence: PromiseEvidence,
   offset: number,
-  candidate: unknown,
+  sourceSpan: SourceSpan,
 ) {
   return {
     evidenceId: `${createSourceIdentityKey({
@@ -27,7 +33,7 @@ export function toEvidenceReference(
     sourceType: evidence.sourceType,
     sourceRecordId: evidence.sourceRecordId,
     locator: `${evidence.locator}${evidence.locator.includes("?") ? "&" : "?"}chunkOffset=${offset}`,
-    excerpt: excerptForCandidate(evidence, candidate),
+    excerpt: excerptForSourceSpan(evidence, sourceSpan),
     observedAt: evidence.observedAt,
   };
 }
