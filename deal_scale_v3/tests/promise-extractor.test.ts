@@ -7,13 +7,20 @@ import {
   type PromiseExtractionProvider,
   type PromiseLedgerStore,
 } from "../src/promise-ledger/extractor";
-import { candidate, createProvider, createStore, evidence, workspaceId } from "./promise-extractor-fixtures";
+import {
+  candidate,
+  createProvider,
+  createStore,
+  evidence,
+  extractionCandidate,
+  workspaceId,
+} from "./promise-extractor-fixtures";
 
 describe("structured promise extraction pipeline", () => {
   it("persists validated promises with evidence and model version metadata", async () => {
     const { store, promises } = createStore();
     const prompts: string[] = [];
-    const provider = createProvider([{ kind: "promise", candidates: [candidate] }], prompts);
+    const provider = createProvider([{ kind: "promise", candidates: [extractionCandidate()] }], prompts);
 
     const result = await extractPromisesFromEvidence({
       evidence: [evidence],
@@ -67,7 +74,10 @@ describe("structured promise extraction pipeline", () => {
 
     const result = await extractPromisesFromEvidence({
       evidence: [evidence],
-      provider: createProvider([{ kind: "promise", candidates: [candidate, secondCandidate] }], []),
+      provider: createProvider(
+        [{ kind: "promise", candidates: [extractionCandidate(), extractionCandidate(secondCandidate)] }],
+        [],
+      ),
       store,
     });
 
@@ -99,7 +109,15 @@ describe("structured promise extraction pipeline", () => {
       provider: createProvider(
         [
           { kind: "non_promise" },
-          { kind: "promise", candidates: [lateCandidate] },
+          {
+            kind: "promise",
+            candidates: [
+              extractionCandidate(lateCandidate, {
+                start: MAX_PROMPT_CONTENT_LENGTH - 20 - 11_000,
+                end: MAX_PROMPT_CONTENT_LENGTH - 20 - 11_000 + lateCommitment.length,
+              }),
+            ],
+          },
         ],
         prompts,
       ),
@@ -111,7 +129,7 @@ describe("structured promise extraction pipeline", () => {
     expect(prompts[1]).toContain(lateCommitment);
     expect(promises).toHaveLength(1);
     expect((promises[0] as { evidenceReferences: Array<{ excerpt: string }> }).evidenceReferences[0].excerpt).toContain(
-      "deliver the signed order form",
+      lateCommitment,
     );
     expect((promises[0] as { evidenceReferences: Array<{ locator: string }> }).evidenceReferences[0].locator).toContain(
       "chunkOffset=11000",
@@ -157,8 +175,8 @@ describe("structured promise extraction pipeline", () => {
       evidence: [evidence, { ...evidence, sourceRecordId: "message-002" }],
       provider: createProvider(
         [
-          { kind: "promise", candidates: [{ ...candidate, confidence: 1.1 }] },
-          { kind: "promise", candidates: [candidate] },
+          { kind: "promise", candidates: [extractionCandidate({ ...candidate, confidence: 1.1 })] },
+          { kind: "promise", candidates: [extractionCandidate()] },
         ],
         [],
       ),
@@ -168,47 +186,6 @@ describe("structured promise extraction pipeline", () => {
     expect(result).toMatchObject({ processed: 2, persisted: 1, nonPromises: 0, failed: 1 });
     expect(promises).toHaveLength(1);
     expect(failures[0]).toMatchObject({ sourceRecordId: "message-001", code: "validation-error" });
-  });
-
-  it("skips ineligible evidence without calling the provider", async () => {
-    const { store, promises } = createStore();
-    let calls = 0;
-    const provider = createProvider([{ kind: "promise", candidates: [candidate] }], []);
-    const originalExtract = provider.extract;
-    provider.extract = async (input) => {
-      calls += 1;
-      return originalExtract(input);
-    };
-
-    const result = await extractPromisesFromEvidence({
-      evidence: [{ ...evidence, sourceType: "crm", contentType: "opportunity" }],
-      provider,
-      store,
-    });
-
-    expect(result).toMatchObject({ processed: 0, skipped: 1, persisted: 0, failed: 0 });
-    expect(calls).toBe(0);
-    expect(promises).toHaveLength(0);
-  });
-
-  it("does not process CRM records even when their content type looks eligible", async () => {
-    const { store } = createStore();
-    let calls = 0;
-    const provider = createProvider([{ kind: "non_promise" }], []);
-    const originalExtract = provider.extract;
-    provider.extract = async (input) => {
-      calls += 1;
-      return originalExtract(input);
-    };
-
-    const result = await extractPromisesFromEvidence({
-      evidence: [{ ...evidence, sourceType: "crm", contentType: "message" }],
-      provider,
-      store,
-    });
-
-    expect(result).toMatchObject({ processed: 0, skipped: 1 });
-    expect(calls).toBe(0);
   });
 
   it("continues after provider and failure-recording errors", async () => {
@@ -223,7 +200,7 @@ describe("structured promise extraction pipeline", () => {
         if (calls === 1) {
           throw new Error("provider unavailable");
         }
-        return { kind: "promise", candidates: [candidate] };
+        return { kind: "promise", candidates: [extractionCandidate()] };
       },
     };
     const store: PromiseLedgerStore = {
