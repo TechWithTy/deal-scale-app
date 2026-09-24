@@ -24,11 +24,21 @@ function stableSerialize(value: unknown): string {
 
 function candidateFingerprint(candidate: unknown): string {
   const promise = candidate as Record<string, unknown>;
+  const expectedFulfillmentEvent = promise.expectedFulfillmentEvent as
+    | Record<string, unknown>
+    | undefined;
   const stableIdentity = {
     maker: promise.maker,
     action: promise.action,
     dueWindow: promise.dueWindow,
-    expectedFulfillmentEvent: promise.expectedFulfillmentEvent,
+    expectedFulfillmentEvent: expectedFulfillmentEvent
+      ? {
+          ...expectedFulfillmentEvent,
+          acceptableVariants: Array.isArray(expectedFulfillmentEvent.acceptableVariants)
+            ? [...expectedFulfillmentEvent.acceptableVariants].sort()
+            : expectedFulfillmentEvent.acceptableVariants,
+        }
+      : expectedFulfillmentEvent,
   };
   let hash = 2_166_136_261;
   for (const character of stableSerialize(stableIdentity)) {
