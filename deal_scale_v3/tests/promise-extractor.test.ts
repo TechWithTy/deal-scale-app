@@ -103,6 +103,9 @@ describe("structured promise extraction pipeline", () => {
     expect(prompts).toHaveLength(2);
     expect(prompts[1]).toContain(lateCommitment);
     expect(promises).toHaveLength(1);
+    expect((promises[0] as { evidenceReferences: Array<{ locator: string }> }).evidenceReferences[0].locator).toContain(
+      "chunkOffset=11000",
+    );
   });
 
   it("bounds evidence content before sending it to the provider", async () => {
