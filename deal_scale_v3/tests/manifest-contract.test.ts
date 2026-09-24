@@ -8,6 +8,7 @@ import {
   type AssuranceObjectName,
 } from "../src/assurance/identifiers";
 import { ASSURANCE_OBJECT_DEFINITIONS } from "../src/assurance/schema";
+import eventObject from "../src/objects/event";
 
 const expectedFields: Record<AssuranceObjectName, string[]> = {
   sourceConnection: ["provider", "connectionStatus"],
@@ -23,7 +24,7 @@ const expectedFields: Record<AssuranceObjectName, string[]> = {
   conformancePolicy: ["policyVersion", "policyStatus", "ruleSet"],
   detectorCandidate: [
     "conformancePolicy",
-    "event",
+    "sellerEvent",
     "detectorType",
     "confidence",
   ],
@@ -32,7 +33,12 @@ const expectedFields: Record<AssuranceObjectName, string[]> = {
     "detectorCandidate",
     "caseStatus",
   ],
-  evidenceReference: ["assuranceCase", "event", "evidenceType", "contentHash"],
+  evidenceReference: [
+    "assuranceCase",
+    "sellerEvent",
+    "evidenceType",
+    "contentHash",
+  ],
   managerDisposition: ["assuranceCase", "disposition", "decidedBy"],
   outcome: [
     "assuranceCase",
@@ -50,6 +56,29 @@ const fieldsByObject = new Map(
 );
 
 describe("assurance object manifest contracts", () => {
+  it("uses a non-reserved Twenty API name for the Event object", () => {
+    expect(eventObject.config.nameSingular).toBe("sellerEvent");
+    expect(eventObject.config.namePlural).toBe("sellerEvents");
+  });
+
+  it("uses Twenty-compatible values for every select option", () => {
+    for (const fields of fieldsByObject.values()) {
+      for (const field of fields) {
+        if (field.type !== FieldType.SELECT) continue;
+
+        for (const option of field.options ?? []) {
+          expect(option.value).toMatch(/^[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)*$/);
+        }
+      }
+    }
+  });
+
+  it("avoids Twenty-reserved names for event relation fields", () => {
+    for (const fields of fieldsByObject.values()) {
+      expect(fields.some((field) => field.name === "event")).toBe(false);
+    }
+  });
+
   it("maps every contract domain field into object metadata", () => {
     for (const objectName of ASSURANCE_OBJECT_DEFINITIONS) {
       const fields = fieldsByObject.get(objectName) ?? [];
@@ -97,3 +126,4 @@ function objectNameForId(objectId: string): AssuranceObjectName {
   if (!objectName) throw new Error(`Unknown assurance object ID: ${objectId}`);
   return objectName;
 }
+

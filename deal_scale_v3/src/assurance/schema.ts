@@ -1,8 +1,15 @@
 import { z } from "zod";
 
+import { fromTwentySelectValue } from "src/assurance/common-fields";
 import { ASSURANCE_OBJECTS, type AssuranceObjectName } from "src/assurance/identifiers";
 
-const provenanceState = z.enum(["observed", "inferred"]);
+const canonicalSelect = <const T extends readonly [string, ...string[]]>(values: T) =>
+  z.preprocess(
+    (value) => (typeof value === "string" ? fromTwentySelectValue(value) : value),
+    z.enum(values),
+  );
+
+const provenanceState = canonicalSelect(["observed", "inferred"]);
 
 export const assuranceEntitySchema = z.object({
   name: z.string().min(1),
@@ -17,7 +24,7 @@ export const assuranceEntitySchema = z.object({
 
 export const sourceConnectionSchema = assuranceEntitySchema.extend({
   provider: z.string().min(1),
-  connectionStatus: z.enum(["active", "paused", "revoked"]),
+  connectionStatus: canonicalSelect(["active", "paused", "revoked"]),
 });
 
 export const sellerIdentitySchema = assuranceEntitySchema.extend({
@@ -47,13 +54,13 @@ export const promiseSchema = assuranceEntitySchema.extend({
 
 export const conformancePolicySchema = assuranceEntitySchema.extend({
   policyVersion: z.string().min(1),
-  policyStatus: z.enum(["draft", "active", "retired"]),
+  policyStatus: canonicalSelect(["draft", "active", "retired"]),
   ruleSet: z.record(z.string(), z.unknown()),
 });
 
 export const detectorCandidateSchema = assuranceEntitySchema.extend({
   conformancePolicyId: z.string().min(1),
-  eventId: z.string().min(1).nullable(),
+  sellerEventId: z.string().min(1).nullable(),
   detectorType: z.string().min(1),
   confidence: z.number().min(0).max(1),
 });
@@ -61,19 +68,19 @@ export const detectorCandidateSchema = assuranceEntitySchema.extend({
 export const assuranceCaseSchema = assuranceEntitySchema.extend({
   opportunityReferenceId: z.string().min(1),
   detectorCandidateId: z.string().min(1),
-  caseStatus: z.enum(["open", "accepted", "rejected", "closed"]),
+  caseStatus: canonicalSelect(["open", "accepted", "rejected", "closed"]),
 });
 
 export const evidenceReferenceSchema = assuranceEntitySchema.extend({
   assuranceCaseId: z.string().min(1),
-  eventId: z.string().min(1).nullable(),
+  sellerEventId: z.string().min(1).nullable(),
   evidenceType: z.string().min(1),
   contentHash: z.string().min(1),
 });
 
 export const managerDispositionSchema = assuranceEntitySchema.extend({
   assuranceCaseId: z.string().min(1),
-  disposition: z.enum(["confirm", "dismiss", "needs-review"]),
+  disposition: canonicalSelect(["confirm", "dismiss", "needs-review"]),
   decidedBy: z.string().min(1),
 });
 
@@ -147,3 +154,4 @@ export const ASSURANCE_OBJECT_IDS = ASSURANCE_OBJECT_DEFINITIONS.reduce(
   (ids, name) => ({ ...ids, [name]: ASSURANCE_OBJECTS[name] }),
   {} as Record<AssuranceObjectName, string>,
 );
+

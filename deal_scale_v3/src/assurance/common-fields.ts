@@ -2,11 +2,17 @@ import { FieldType } from "twenty-sdk/define";
 
 import { fieldId, nameFieldId } from "src/assurance/identifiers";
 
+export const toTwentySelectValue = (value: string) =>
+  value.replace(/-/g, "_").toUpperCase();
+
+export const fromTwentySelectValue = (value: string) =>
+  value.toLowerCase().replace(/_/g, "-");
+
 export const selectOptions = (values: string[]) =>
   values.map((value, position) => ({
     position,
     label: value,
-    value,
+    value: toTwentySelectValue(value),
     color: (position % 2 === 0 ? "blue" : "green") as "blue" | "green",
   }));
 
@@ -72,3 +78,4 @@ export const commonFields = (objectId: string) => [
     label: "Observed At",
   },
 ];
+
