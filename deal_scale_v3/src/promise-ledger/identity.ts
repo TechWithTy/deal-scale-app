@@ -27,10 +27,31 @@ function candidateFingerprint(candidate: unknown): string {
   const expectedFulfillmentEvent = promise.expectedFulfillmentEvent as
     | Record<string, unknown>
     | undefined;
+  const dueWindow = promise.dueWindow as Record<string, unknown> | undefined;
+  const canonicalDueWindow = dueWindow
+    ? {
+        ...dueWindow,
+        ...(dueWindow.kind === "point" && typeof dueWindow.dueAt === "string"
+          ? { dueAt: canonicalTimestamp(dueWindow.dueAt) }
+          : {}),
+        ...(dueWindow.kind === "range"
+          ? {
+              startsAt:
+                typeof dueWindow.startsAt === "string"
+                  ? canonicalTimestamp(dueWindow.startsAt)
+                  : dueWindow.startsAt,
+              endsAt:
+                typeof dueWindow.endsAt === "string"
+                  ? canonicalTimestamp(dueWindow.endsAt)
+                  : dueWindow.endsAt,
+            }
+          : {}),
+      }
+    : dueWindow;
   const stableIdentity = {
     maker: promise.maker,
     action: promise.action,
-    dueWindow: promise.dueWindow,
+    dueWindow: canonicalDueWindow,
     expectedFulfillmentEvent: expectedFulfillmentEvent
       ? {
           ...expectedFulfillmentEvent,
@@ -45,6 +66,11 @@ function candidateFingerprint(candidate: unknown): string {
     hash = Math.imul(hash ^ character.charCodeAt(0), 16_777_619);
   }
   return (hash >>> 0).toString(16);
+}
+
+function canonicalTimestamp(value: string): string {
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? value : parsed.toISOString();
 }
 
 export function createPromiseExternalId(
