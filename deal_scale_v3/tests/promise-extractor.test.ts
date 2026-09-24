@@ -84,6 +84,10 @@ describe("structured promise extraction pipeline", () => {
     const { store, promises } = createStore();
     const prompts: string[] = [];
     const lateCommitment = "I will deliver the signed order form tomorrow.";
+    const lateCandidate = {
+      ...candidate,
+      action: { ...candidate.action, description: "deliver the signed order form" },
+    };
     const longEvidence = {
       ...evidence,
       content: "x".repeat(MAX_PROMPT_CONTENT_LENGTH - 20) + lateCommitment,
@@ -94,7 +98,7 @@ describe("structured promise extraction pipeline", () => {
       provider: createProvider(
         [
           { kind: "non_promise" },
-          { kind: "promise", candidates: [candidate] },
+          { kind: "promise", candidates: [lateCandidate] },
         ],
         prompts,
       ),
@@ -105,6 +109,9 @@ describe("structured promise extraction pipeline", () => {
     expect(prompts).toHaveLength(2);
     expect(prompts[1]).toContain(lateCommitment);
     expect(promises).toHaveLength(1);
+    expect((promises[0] as { evidenceReferences: Array<{ excerpt: string }> }).evidenceReferences[0].excerpt).toContain(
+      "deliver the signed order form",
+    );
     expect((promises[0] as { evidenceReferences: Array<{ locator: string }> }).evidenceReferences[0].locator).toContain(
       "chunkOffset=11000",
     );
