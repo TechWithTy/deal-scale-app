@@ -56,6 +56,10 @@ const objectPluralLabels: Record<AssuranceObjectName, string> = {
   outcome: "Outcomes",
 };
 
+const relationFieldNames: Partial<Record<AssuranceObjectName, string>> = {
+  event: "sellerEvent",
+};
+
 const relationSpecs: readonly RelationSpec[] = [
   ["sellerIdentity", "sourceConnection", 100, 200, false],
   ["opportunityReference", "sellerIdentity", 100, 200, false],
@@ -114,7 +118,7 @@ export const relationFieldsFor = (objectName: AssuranceObjectName) => {
       relationField({
         objectId: ASSURANCE_OBJECTS[from],
         slot,
-        name: to,
+        name: relationFieldNames[to] ?? to,
         label: objectLabels[to],
         targetObjectId: ASSURANCE_OBJECTS[to],
         targetFieldId: fieldId(ASSURANCE_OBJECTS[to], targetSlot),

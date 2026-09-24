@@ -24,7 +24,7 @@ const expectedFields: Record<AssuranceObjectName, string[]> = {
   conformancePolicy: ["policyVersion", "policyStatus", "ruleSet"],
   detectorCandidate: [
     "conformancePolicy",
-    "event",
+    "sellerEvent",
     "detectorType",
     "confidence",
   ],
@@ -33,7 +33,12 @@ const expectedFields: Record<AssuranceObjectName, string[]> = {
     "detectorCandidate",
     "caseStatus",
   ],
-  evidenceReference: ["assuranceCase", "event", "evidenceType", "contentHash"],
+  evidenceReference: [
+    "assuranceCase",
+    "sellerEvent",
+    "evidenceType",
+    "contentHash",
+  ],
   managerDisposition: ["assuranceCase", "disposition", "decidedBy"],
   outcome: [
     "assuranceCase",
@@ -65,6 +70,12 @@ describe("assurance object manifest contracts", () => {
           expect(option.value).toMatch(/^[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)*$/);
         }
       }
+    }
+  });
+
+  it("avoids Twenty-reserved names for event relation fields", () => {
+    for (const fields of fieldsByObject.values()) {
+      expect(fields.some((field) => field.name === "event")).toBe(false);
     }
   });
 
