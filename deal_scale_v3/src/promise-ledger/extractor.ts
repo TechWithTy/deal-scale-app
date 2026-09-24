@@ -9,6 +9,7 @@ import {
 import { createPromiseExternalId } from "./identity";
 import {
   assertSourceSpanWithinEvidence,
+  MAX_SOURCE_SPAN_LENGTH,
   extractionCandidateSchema,
 } from "./extraction-candidate";
 import {
@@ -17,8 +18,9 @@ import {
 } from "./prompt";
 import { toEvidenceReference } from "./references";
 
+export { MAX_SOURCE_SPAN_LENGTH } from "./extraction-candidate";
 export { buildPromiseExtractionPrompt, MAX_PROMPT_CONTENT_LENGTH, MAX_PROMPT_LENGTH } from "./prompt";
-const PROMPT_CHUNK_OVERLAP_LENGTH = 1_000;
+const PROMPT_CHUNK_OVERLAP_LENGTH = MAX_SOURCE_SPAN_LENGTH;
 
 const eligibleContentTypes = new Set(["message", "email", "transcript", "call"]);
 
