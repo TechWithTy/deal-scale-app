@@ -60,7 +60,7 @@ export const conformancePolicySchema = assuranceEntitySchema.extend({
 
 export const detectorCandidateSchema = assuranceEntitySchema.extend({
   conformancePolicyId: z.string().min(1),
-  eventId: z.string().min(1).nullable(),
+  sellerEventId: z.string().min(1).nullable(),
   detectorType: z.string().min(1),
   confidence: z.number().min(0).max(1),
 });
@@ -73,7 +73,7 @@ export const assuranceCaseSchema = assuranceEntitySchema.extend({
 
 export const evidenceReferenceSchema = assuranceEntitySchema.extend({
   assuranceCaseId: z.string().min(1),
-  eventId: z.string().min(1).nullable(),
+  sellerEventId: z.string().min(1).nullable(),
   evidenceType: z.string().min(1),
   contentHash: z.string().min(1),
 });

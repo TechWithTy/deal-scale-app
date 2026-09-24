@@ -6,6 +6,8 @@ import {
   ASSURANCE_OBJECT_IDS,
   ASSURANCE_RELATIONS,
   assuranceCaseSchema,
+  detectorCandidateSchema,
+  evidenceReferenceSchema,
   sourceConnectionSchema,
 } from "../src/assurance/schema";
 
@@ -45,6 +47,13 @@ describe("P0 assurance schema", () => {
 
     expect(parsed.provenanceState).toBe("observed");
     expect(parsed.connectionStatus).toBe("active");
+  });
+
+  it("aligns Event relation properties with the installed Twenty field name", () => {
+    expect(detectorCandidateSchema.shape).toHaveProperty("sellerEventId");
+    expect(detectorCandidateSchema.shape).not.toHaveProperty("eventId");
+    expect(evidenceReferenceSchema.shape).toHaveProperty("sellerEventId");
+    expect(evidenceReferenceSchema.shape).not.toHaveProperty("eventId");
   });
 });
 
