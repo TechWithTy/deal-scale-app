@@ -67,5 +67,19 @@ describe("Promise Ledger v1 contract", () => {
     expect(blankResult.success).toBe(false);
     expect(timestampResult.success).toBe(false);
   });
+
+  it("accepts ISO timestamps with fractional seconds beyond millisecond precision", () => {
+    const result = promiseExtractionOutputSchema.safeParse({
+      ...validExtractionOutput,
+      evidenceReferences: [
+        {
+          ...PROMISE_LEDGER_FIXTURES.valid.evidenceReferences[0],
+          observedAt: "2026-10-05T14:58:00.123456Z",
+        },
+      ],
+    });
+
+    expect(result.success).toBe(true);
+  });
 });
 
