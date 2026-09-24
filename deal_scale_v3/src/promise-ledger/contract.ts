@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 const ISO_TIMESTAMP_PATTERN =
-  /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.\d{1,3})?(Z|[+-]\d{2}:\d{2})$/;
+  /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.\d+)?(Z|[+-]\d{2}:\d{2})$/;
 
 const isStrictIsoTimestamp = (value: string): boolean => {
   const match = ISO_TIMESTAMP_PATTERN.exec(value);
