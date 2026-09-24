@@ -35,4 +35,16 @@ describe("P0 assurance schema", () => {
       "inferred",
     );
   });
+
+  it("normalizes Twenty select values at the canonical schema boundary", () => {
+    const parsed = sourceConnectionSchema.parse({
+      ...ASSURANCE_FIXTURES.sourceConnection,
+      provenanceState: "OBSERVED",
+      connectionStatus: "ACTIVE",
+    });
+
+    expect(parsed.provenanceState).toBe("observed");
+    expect(parsed.connectionStatus).toBe("active");
+  });
 });
+
