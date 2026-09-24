@@ -50,6 +50,9 @@ jobs:
       - name: Unit tests
         run: yarn test:unit
 
+      - name: Golden smoke contract
+        run: yarn test:smoke
+
       - name: Run integration tests
         run: yarn test
         env:
