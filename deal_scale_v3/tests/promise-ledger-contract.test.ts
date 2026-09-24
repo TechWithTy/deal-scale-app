@@ -6,6 +6,17 @@ import {
   promiseLedgerRecordSchema,
 } from "../src/promise-ledger/contract";
 
+const validExtractionOutput = {
+  maker: PROMISE_LEDGER_FIXTURES.valid.maker,
+  action: PROMISE_LEDGER_FIXTURES.valid.action,
+  dueWindow: PROMISE_LEDGER_FIXTURES.valid.dueWindow,
+  evidenceReferences: PROMISE_LEDGER_FIXTURES.valid.evidenceReferences,
+  expectedFulfillmentEvent: PROMISE_LEDGER_FIXTURES.valid.expectedFulfillmentEvent,
+  extractionMetadata: PROMISE_LEDGER_FIXTURES.valid.extractionMetadata,
+  confidence: PROMISE_LEDGER_FIXTURES.valid.confidence,
+  extractionStatus: PROMISE_LEDGER_FIXTURES.valid.extractionStatus,
+};
+
 describe("Promise Ledger v1 contract", () => {
   it("accepts a reviewable promise with evidence and version metadata", () => {
     const parsed = promiseLedgerRecordSchema.parse(PROMISE_LEDGER_FIXTURES.valid);
@@ -17,7 +28,7 @@ describe("Promise Ledger v1 contract", () => {
 
   it("rejects malformed extraction output instead of allowing it to cross the boundary", () => {
     const result = promiseExtractionOutputSchema.safeParse({
-      ...PROMISE_LEDGER_FIXTURES.valid,
+      ...validExtractionOutput,
       confidence: 1.1,
       evidenceReferences: [],
     });
@@ -39,22 +50,12 @@ describe("Promise Ledger v1 contract", () => {
   });
 
   it("rejects blank required strings and non-ISO timestamps", () => {
-    const validOutput = {
-      maker: PROMISE_LEDGER_FIXTURES.valid.maker,
-      action: PROMISE_LEDGER_FIXTURES.valid.action,
-      dueWindow: PROMISE_LEDGER_FIXTURES.valid.dueWindow,
-      evidenceReferences: PROMISE_LEDGER_FIXTURES.valid.evidenceReferences,
-      expectedFulfillmentEvent: PROMISE_LEDGER_FIXTURES.valid.expectedFulfillmentEvent,
-      extractionMetadata: PROMISE_LEDGER_FIXTURES.valid.extractionMetadata,
-      confidence: PROMISE_LEDGER_FIXTURES.valid.confidence,
-      extractionStatus: PROMISE_LEDGER_FIXTURES.valid.extractionStatus,
-    };
     const blankResult = promiseExtractionOutputSchema.safeParse({
-      ...validOutput,
+      ...validExtractionOutput,
       maker: { role: "seller", identityRef: " " },
     });
     const timestampResult = promiseExtractionOutputSchema.safeParse({
-      ...validOutput,
+      ...validExtractionOutput,
       evidenceReferences: [
         {
           ...PROMISE_LEDGER_FIXTURES.valid.evidenceReferences[0],
