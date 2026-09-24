@@ -10,6 +10,7 @@ import { createPromiseExternalId, createSourceIdentityKey } from "./identity";
 
 export const MAX_PROMPT_CONTENT_LENGTH = 12_000;
 export const MAX_PROMPT_LENGTH = 16_000;
+const PROMPT_CHUNK_OVERLAP_LENGTH = 1_000;
 const MAX_PROMPT_SOURCE_RECORD_ID_LENGTH = 512;
 
 const eligibleContentTypes = new Set(["message", "email", "transcript", "call"]);
@@ -81,15 +82,23 @@ export function buildPromiseExtractionPrompt(evidence: PromiseEvidence): string 
   return `${prefix}${evidence.content.slice(0, contentLength)}`;
 }
 
-function splitEvidence(evidence: PromiseEvidence): PromiseEvidence[] {
-  const chunks: PromiseEvidence[] = [];
-  for (let offset = 0; offset < evidence.content.length; offset += MAX_PROMPT_CONTENT_LENGTH) {
+interface PromiseEvidenceChunk {
+  evidence: PromiseEvidence;
+  offset: number;
+}
+
+function splitEvidence(evidence: PromiseEvidence): PromiseEvidenceChunk[] {
+  const chunks: PromiseEvidenceChunk[] = [];
+  const step = MAX_PROMPT_CONTENT_LENGTH - PROMPT_CHUNK_OVERLAP_LENGTH;
+  for (let offset = 0; offset < evidence.content.length; offset += step) {
+    const end = Math.min(offset + MAX_PROMPT_CONTENT_LENGTH, evidence.content.length);
     chunks.push({
-      ...evidence,
-      content: evidence.content.slice(offset, offset + MAX_PROMPT_CONTENT_LENGTH),
+      evidence: { ...evidence, content: evidence.content.slice(offset, end) },
+      offset,
     });
+    if (end === evidence.content.length) break;
   }
-  return chunks.length > 0 ? chunks : [evidence];
+  return chunks.length > 0 ? chunks : [{ evidence, offset: 0 }];
 }
 
 function isEligibleEvidence(evidence: PromiseEvidence): boolean {
@@ -100,17 +109,17 @@ function isEligibleEvidence(evidence: PromiseEvidence): boolean {
   );
 }
 
-function toEvidenceReference(evidence: PromiseEvidence, chunkIndex: number) {
+function toEvidenceReference(evidence: PromiseEvidence, chunkIndex: number, offset: number) {
   return {
     evidenceId: `${createSourceIdentityKey({
       workspaceId: evidence.workspaceId,
       connectionId: evidence.connectionId,
       provider: evidence.provider,
       sourceRecordId: evidence.sourceRecordId,
-    })}:chunk-${chunkIndex}`,
+    })}:offset-${offset}`,
     sourceType: evidence.sourceType,
     sourceRecordId: evidence.sourceRecordId,
-    locator: evidence.locator,
+    locator: `${evidence.locator}${evidence.locator.includes("?") ? "&" : "?"}chunkOffset=${offset}`,
     excerpt: evidence.content.slice(0, 4_000),
     observedAt: evidence.observedAt,
   };
@@ -148,8 +157,8 @@ export async function extractPromisesFromEvidence(
       try {
         const response = extractionResponseSchema.parse(
           await options.provider.extract({
-            evidence: chunk,
-            prompt: buildPromiseExtractionPrompt(chunk),
+            evidence: chunk.evidence,
+            prompt: buildPromiseExtractionPrompt(chunk.evidence),
           }),
         );
 
@@ -163,7 +172,7 @@ export async function extractPromisesFromEvidence(
             const candidate = promiseCandidateSchema.parse(rawCandidate);
             const extractionOutput = promiseExtractionOutputSchema.parse({
               ...candidate,
-              evidenceReferences: [toEvidenceReference(chunk, chunkIndex)],
+              evidenceReferences: [toEvidenceReference(chunk.evidence, chunkIndex, chunk.offset)],
               extractionMetadata: {
                 model: options.provider.model,
                 promptVersion: options.provider.promptVersion,
@@ -182,7 +191,6 @@ export async function extractPromisesFromEvidence(
                   sourceRecordId: evidence.sourceRecordId,
                 },
                 rawCandidate,
-                chunkIndex,
               ),
               workspaceId: evidence.workspaceId,
               opportunityReferenceId: evidence.opportunityReferenceId,
