@@ -21,7 +21,6 @@ import { toEvidenceReference } from "./references";
 export { MAX_SOURCE_SPAN_LENGTH } from "./extraction-candidate";
 export { buildPromiseExtractionPrompt, MAX_PROMPT_CONTENT_LENGTH, MAX_PROMPT_LENGTH } from "./prompt";
 const PROMPT_CHUNK_OVERLAP_LENGTH = MAX_SOURCE_SPAN_LENGTH;
-
 const eligibleContentTypes = new Set(["message", "email", "transcript", "call"]);
 
 const extractionResponseSchema = z.discriminatedUnion("kind", [
@@ -29,7 +28,7 @@ const extractionResponseSchema = z.discriminatedUnion("kind", [
   z
     .object({
       kind: z.literal("promise"),
-      candidates: z.array(extractionCandidateSchema).min(1),
+      candidates: z.array(z.unknown()).min(1),
     })
     .strict(),
 ]);
@@ -162,15 +161,16 @@ export async function extractPromisesFromEvidence(
 
         for (const [candidateIndex, rawCandidate] of response.candidates.entries()) {
           try {
+            const candidateWrapper = extractionCandidateSchema.parse(rawCandidate);
             assertSourceSpanWithinEvidence(
-              rawCandidate.sourceSpan,
+              candidateWrapper.sourceSpan,
               chunk.evidence.content.length,
             );
-            const candidate = promiseCandidateSchema.parse(rawCandidate.candidate);
+            const candidate = promiseCandidateSchema.parse(candidateWrapper.candidate);
             const extractionOutput = promiseExtractionOutputSchema.parse({
               ...candidate,
               evidenceReferences: [
-                toEvidenceReference(chunk.evidence, chunk.offset, rawCandidate.sourceSpan),
+                toEvidenceReference(chunk.evidence, chunk.offset, candidateWrapper.sourceSpan),
               ],
               extractionMetadata: {
                 model: options.provider.model,
@@ -189,7 +189,7 @@ export async function extractPromisesFromEvidence(
                   provider: evidence.provider,
                   sourceRecordId: evidence.sourceRecordId,
                 },
-                rawCandidate.candidate,
+                candidateWrapper.candidate,
               ),
               workspaceId: evidence.workspaceId,
               opportunityReferenceId: evidence.opportunityReferenceId,
