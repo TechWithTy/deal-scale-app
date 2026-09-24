@@ -56,6 +56,18 @@ describe("assurance object manifest contracts", () => {
     expect(eventObject.config.namePlural).toBe("sellerEvents");
   });
 
+  it("uses Twenty-compatible values for every select option", () => {
+    for (const fields of fieldsByObject.values()) {
+      for (const field of fields) {
+        if (field.type !== FieldType.SELECT) continue;
+
+        for (const option of field.options ?? []) {
+          expect(option.value).toMatch(/^[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)*$/);
+        }
+      }
+    }
+  });
+
   it("maps every contract domain field into object metadata", () => {
     for (const objectName of ASSURANCE_OBJECT_DEFINITIONS) {
       const fields = fieldsByObject.get(objectName) ?? [];

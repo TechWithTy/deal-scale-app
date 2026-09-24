@@ -6,7 +6,7 @@ export const selectOptions = (values: string[]) =>
   values.map((value, position) => ({
     position,
     label: value,
-    value,
+    value: value.replace(/-/g, "_").toUpperCase(),
     color: (position % 2 === 0 ? "blue" : "green") as "blue" | "green",
   }));
 
@@ -72,3 +72,4 @@ export const commonFields = (objectId: string) => [
     label: "Observed At",
   },
 ];
+
