@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   MAX_PROMPT_CONTENT_LENGTH,
   MAX_PROMPT_LENGTH,
+  MAX_SOURCE_SPAN_LENGTH,
   extractPromisesFromEvidence,
   type PromiseExtractionProvider,
   type PromiseLedgerStore,
@@ -95,6 +96,8 @@ describe("structured promise extraction pipeline", () => {
     const { store, promises } = createStore();
     const prompts: string[] = [];
     const lateCommitment = "I will deliver the signed order form tomorrow.";
+    const lateChunkOffset = MAX_PROMPT_CONTENT_LENGTH - MAX_SOURCE_SPAN_LENGTH;
+    const lateSourceOffset = MAX_PROMPT_CONTENT_LENGTH - 20;
     const lateCandidate = {
       ...candidate,
       action: { ...candidate.action, description: "deliver the signed order form" },
@@ -113,8 +116,8 @@ describe("structured promise extraction pipeline", () => {
             kind: "promise",
             candidates: [
               extractionCandidate(lateCandidate, {
-                start: MAX_PROMPT_CONTENT_LENGTH - 20 - 11_000,
-                end: MAX_PROMPT_CONTENT_LENGTH - 20 - 11_000 + lateCommitment.length,
+                start: lateSourceOffset - lateChunkOffset,
+                end: lateSourceOffset - lateChunkOffset + lateCommitment.length,
               }),
             ],
           },
@@ -132,7 +135,7 @@ describe("structured promise extraction pipeline", () => {
       lateCommitment,
     );
     expect((promises[0] as { evidenceReferences: Array<{ locator: string }> }).evidenceReferences[0].locator).toContain(
-      "chunkOffset=11000",
+      `chunkOffset=${lateChunkOffset}`,
     );
   });
 
