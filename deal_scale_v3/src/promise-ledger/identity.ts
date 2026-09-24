@@ -33,9 +33,8 @@ function candidateFingerprint(candidate: unknown): string {
 export function createPromiseExternalId(
   source: PromiseSourceIdentity,
   candidate: unknown,
-  candidateIndex: number,
   chunkIndex: number,
 ): string {
-  return `promise:${createSourceIdentityKey(source)}:chunk-${chunkIndex}:candidate-${candidateIndex}:${candidateFingerprint(candidate)}`;
+  return `promise:${createSourceIdentityKey(source)}:chunk-${chunkIndex}:${candidateFingerprint(candidate)}`;
 }
 
