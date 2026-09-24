@@ -29,10 +29,14 @@ const isoTimestampSchema = z.string().refine(isStrictIsoTimestamp, {
   message: "Timestamp must be a valid ISO-8601 instant with an explicit timezone",
 });
 
+const nonBlankString = z.string().refine((value) => value.trim().length > 0, {
+  message: "Value must not be blank",
+});
+
 const makerSchema = z
   .object({
     role: z.enum(["seller", "buyer", "internal", "unknown"]),
-    identityRef: z.string().min(1),
+    identityRef: nonBlankString,
   })
   .strict();
 
@@ -47,8 +51,8 @@ const actionSchema = z
       "follow_up",
       "custom",
     ]),
-    description: z.string().min(1),
-    target: z.string().min(1).nullable(),
+    description: nonBlankString,
+    target: nonBlankString.nullable(),
   })
   .strict();
 
@@ -79,26 +83,26 @@ const dueWindowSchema = z.discriminatedUnion("kind", [
 
 const evidenceReferenceSchema = z
   .object({
-    evidenceId: z.string().min(1),
+    evidenceId: nonBlankString,
     sourceType: z.enum(["crm", "communications"]),
-    sourceRecordId: z.string().min(1),
-    locator: z.string().min(1),
-    excerpt: z.string().min(1).max(4000).nullable(),
+    sourceRecordId: nonBlankString,
+    locator: nonBlankString,
+    excerpt: nonBlankString.max(4000).nullable(),
     observedAt: isoTimestampSchema,
   })
   .strict();
 
 const expectedFulfillmentEventSchema = z
   .object({
-    type: z.string().min(1),
-    acceptableVariants: z.array(z.string().min(1)).min(1),
+    type: nonBlankString,
+    acceptableVariants: z.array(nonBlankString).min(1),
   })
   .strict();
 
 const extractionMetadataSchema = z
   .object({
-    model: z.string().min(1),
-    promptVersion: z.string().min(1),
+    model: nonBlankString,
+    promptVersion: nonBlankString,
     contractVersion: z.literal("promise.v1"),
   })
   .strict();
@@ -118,10 +122,10 @@ export const promiseExtractionOutputSchema = z.object(promiseFields).strict();
 
 export const promiseLedgerRecordSchema = promiseExtractionOutputSchema
   .extend({
-    name: z.string().min(1),
-    externalId: z.string().min(1),
+    name: nonBlankString,
+    externalId: nonBlankString,
     workspaceId: z.string().uuid(),
-    opportunityReferenceId: z.string().min(1),
+    opportunityReferenceId: nonBlankString,
     recordVersion: z.number().int().positive(),
     extractedAt: isoTimestampSchema,
   })
