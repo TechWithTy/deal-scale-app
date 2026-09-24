@@ -6,11 +6,12 @@ import {
   promiseLedgerRecordSchema,
   type PromiseLedgerRecord,
 } from "./contract";
-import { createPromiseExternalId, createSourceIdentityKey } from "./identity";
+import { createPromiseExternalId } from "./identity";
 import {
   buildPromiseExtractionPrompt,
   MAX_PROMPT_CONTENT_LENGTH,
 } from "./prompt";
+import { toEvidenceReference } from "./references";
 
 export { buildPromiseExtractionPrompt, MAX_PROMPT_CONTENT_LENGTH, MAX_PROMPT_LENGTH } from "./prompt";
 const PROMPT_CHUNK_OVERLAP_LENGTH = 1_000;
@@ -102,22 +103,6 @@ function isEligibleEvidence(evidence: PromiseEvidence): boolean {
   );
 }
 
-function toEvidenceReference(evidence: PromiseEvidence, chunkIndex: number, offset: number) {
-  return {
-    evidenceId: `${createSourceIdentityKey({
-      workspaceId: evidence.workspaceId,
-      connectionId: evidence.connectionId,
-      provider: evidence.provider,
-      sourceRecordId: evidence.sourceRecordId,
-    })}:offset-${offset}`,
-    sourceType: evidence.sourceType,
-    sourceRecordId: evidence.sourceRecordId,
-    locator: `${evidence.locator}${evidence.locator.includes("?") ? "&" : "?"}chunkOffset=${offset}`,
-    excerpt: evidence.content.slice(0, 4_000),
-    observedAt: evidence.observedAt,
-  };
-}
-
 function errorDetails(
   error: unknown,
   codeOverride?: PromiseExtractionFailure["code"],
@@ -168,7 +153,9 @@ export async function extractPromisesFromEvidence(
             const candidate = promiseCandidateSchema.parse(rawCandidate);
             const extractionOutput = promiseExtractionOutputSchema.parse({
               ...candidate,
-              evidenceReferences: [toEvidenceReference(chunk.evidence, chunkIndex, chunk.offset)],
+              evidenceReferences: [
+                toEvidenceReference(chunk.evidence, chunk.offset, rawCandidate),
+              ],
               extractionMetadata: {
                 model: options.provider.model,
                 promptVersion: options.provider.promptVersion,
