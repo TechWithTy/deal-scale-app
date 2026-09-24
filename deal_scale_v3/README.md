@@ -25,6 +25,19 @@ The generated scaffold currently targets Twenty SDK `2.41.0`, uses Yarn `4.13.0`
 and requires Node `24.5.0` or newer within the declared engine range. Docker is
 required for the local Twenty development server.
 
+## P0 assurance schema
+
+The initial domain model is defined as Twenty custom objects in `src/objects/`
+and as Zod contracts plus representative fixtures in `src/assurance/schema.ts`.
+The canonical objects are Source Connection, Seller Identity, Opportunity
+Reference, Event, Promise, Conformance Policy, Detector Candidate, Assurance
+Case, Evidence Reference, Manager Disposition, and Outcome.
+
+Every object carries tenant `workspaceId`, stable `externalId`, provenance
+state (`observed` or `inferred`), provenance reference, source version, record
+version, and observation time. Relationship fields use stable universal
+identifiers and Twenty's `MANY_TO_ONE` relation primitive.
+
 ## Publishing
 
 The `Publish` workflow (`.github/workflows/publish.yml`) publishes the app to npm with provenance using [npm trusted publishing](https://docs.npmjs.com/trusted-publishers). To publish:
