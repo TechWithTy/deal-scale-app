@@ -115,6 +115,15 @@ describe("intent-state divergence detector", () => {
     expect(result.evidence.stateEvidenceIds).toEqual([]);
   });
 
+  it("rejects CRM state from another tenant", () => {
+    expect(() =>
+      detectIntentStateDivergence(offerRequestInterpretation, {
+        ...alignedOfferState,
+        workspaceId: "00000000-0000-4000-8000-000000000002",
+      }),
+    ).toThrow("same tenant");
+  });
+
   it("is deterministic and emits a valid UUID v4 candidate id", () => {
     const first = detectIntentStateDivergence(offerRequestInterpretation, alignedOfferState);
     const second = detectIntentStateDivergence(offerRequestInterpretation, alignedOfferState);

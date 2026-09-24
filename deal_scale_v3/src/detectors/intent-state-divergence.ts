@@ -143,6 +143,12 @@ export const detectIntentStateDivergence = (
 ): IntentStateDivergenceResult => {
   const interpretation = intentInterpretationSchema.parse(rawInterpretation);
   const state = crmEventStateSchema.parse(rawState);
+  if (state.workspaceId !== interpretation.workspaceId) {
+    throw new Error("Intent and CRM state must belong to the same tenant.");
+  }
+  if (interpretation.evidence.some((item) => item.workspaceId !== interpretation.workspaceId)) {
+    throw new Error("Intent evidence must belong to the interpretation tenant.");
+  }
   const relevantEvents = state.events.filter(
     (event) =>
       event.workspaceId === interpretation.workspaceId &&
