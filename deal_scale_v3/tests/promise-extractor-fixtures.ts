@@ -36,6 +36,13 @@ export const candidate = {
   confidence: 0.96,
 };
 
+export function extractionCandidate(
+  candidateValue: unknown = candidate,
+  sourceSpan = { start: 0, end: evidence.content.length },
+) {
+  return { candidate: candidateValue, sourceSpan };
+}
+
 export function createStore() {
   const promises: unknown[] = [];
   const failures: unknown[] = [];
