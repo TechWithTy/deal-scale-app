@@ -7,11 +7,13 @@ import {
   type PromiseLedgerRecord,
 } from "./contract";
 import { createPromiseExternalId, createSourceIdentityKey } from "./identity";
+import {
+  buildPromiseExtractionPrompt,
+  MAX_PROMPT_CONTENT_LENGTH,
+} from "./prompt";
 
-export const MAX_PROMPT_CONTENT_LENGTH = 12_000;
-export const MAX_PROMPT_LENGTH = 16_000;
+export { buildPromiseExtractionPrompt, MAX_PROMPT_CONTENT_LENGTH, MAX_PROMPT_LENGTH } from "./prompt";
 const PROMPT_CHUNK_OVERLAP_LENGTH = 1_000;
-const MAX_PROMPT_SOURCE_RECORD_ID_LENGTH = 512;
 
 const eligibleContentTypes = new Set(["message", "email", "transcript", "call"]);
 
@@ -26,6 +28,10 @@ export interface PromiseEvidence {
   sourceType: "crm" | "communications";
   connectionId: string;
   provider: string;
+  maker: {
+    role: "seller" | "buyer" | "internal" | "unknown";
+    identityRef: string;
+  };
   sourceRecordId: string;
   contentType: string;
   content: string;
@@ -41,8 +47,10 @@ export interface PromiseExtractionProvider {
 
 export interface PromiseExtractionFailure {
   workspaceId: string;
+  connectionId: string;
+  provider: string;
   sourceRecordId: string;
-  code: "validation-error" | "provider-error";
+  code: "validation-error" | "provider-error" | "persistence-error";
   message: string;
   observedAt: string;
 }
@@ -65,21 +73,6 @@ export interface PromiseExtractionResult {
   persisted: number;
   nonPromises: number;
   failed: number;
-}
-
-export function buildPromiseExtractionPrompt(evidence: PromiseEvidence): string {
-  const boundedSourceRecordId = evidence.sourceRecordId.slice(0, MAX_PROMPT_SOURCE_RECORD_ID_LENGTH);
-  const prefix = [
-    "Identify only explicit, time-bound commitments in the evidence.",
-    "Return kind=non_promise when no commitment is present; never decide fulfillment.",
-    `Evidence source: ${evidence.sourceType}/${boundedSourceRecordId}`,
-    "Evidence content:\n",
-  ].join("\n\n");
-  const contentLength = Math.max(
-    0,
-    Math.min(MAX_PROMPT_CONTENT_LENGTH, MAX_PROMPT_LENGTH - prefix.length),
-  );
-  return `${prefix}${evidence.content.slice(0, contentLength)}`;
 }
 
 interface PromiseEvidenceChunk {
@@ -125,9 +118,12 @@ function toEvidenceReference(evidence: PromiseEvidence, chunkIndex: number, offs
   };
 }
 
-function errorDetails(error: unknown): Pick<PromiseExtractionFailure, "code" | "message"> {
+function errorDetails(
+  error: unknown,
+  codeOverride?: PromiseExtractionFailure["code"],
+): Pick<PromiseExtractionFailure, "code" | "message"> {
   return {
-    code: error instanceof z.ZodError ? "validation-error" : "provider-error",
+    code: codeOverride ?? (error instanceof z.ZodError ? "validation-error" : "provider-error"),
     message: error instanceof Error ? error.message : "Unknown extraction failure",
   };
 }
@@ -198,8 +194,19 @@ export async function extractPromisesFromEvidence(
               extractedAt: now(),
             });
 
-            await options.store.upsertPromise(record);
-            result.persisted += 1;
+            try {
+              await options.store.upsertPromise(record);
+              result.persisted += 1;
+            } catch (error) {
+              result.failed += 1;
+              await recordFailure(
+                options.store,
+                evidence,
+                error,
+                `candidate[${candidateIndex}]`,
+                "persistence-error",
+              );
+            }
           } catch (error) {
             result.failed += 1;
             await recordFailure(options.store, evidence, error, `candidate[${candidateIndex}]`);
@@ -220,11 +227,14 @@ async function recordFailure(
   evidence: PromiseEvidence,
   error: unknown,
   context: string,
+  codeOverride?: PromiseExtractionFailure["code"],
 ): Promise<void> {
-  const details = errorDetails(error);
+  const details = errorDetails(error, codeOverride);
   try {
     await store.recordFailure({
       workspaceId: evidence.workspaceId,
+      connectionId: evidence.connectionId,
+      provider: evidence.provider,
       sourceRecordId: evidence.sourceRecordId,
       ...details,
       message: `${context}: ${details.message}`,
