@@ -8,7 +8,23 @@ export const toTwentySelectValue = (value: string) =>
 export const fromTwentySelectValue = (value: string) =>
   value.toLowerCase().replace(/_/g, "-");
 
-export const selectOptions = (values: string[]) =>
+export const canonicalSelect = <const Values extends readonly string[]>(values: Values) => values;
+
+export const ASSURANCE_CASE_STATUS_VALUES = canonicalSelect([
+  "needs-review",
+  "confirmed-failure",
+  "expected-behavior",
+  "insufficient-evidence",
+  "false-positive",
+  "resolved",
+  "outcome",
+] as const);
+
+export const ASSURANCE_URGENCY_VALUES = canonicalSelect(["low", "medium", "high"] as const);
+
+export type AssuranceCaseStatus = (typeof ASSURANCE_CASE_STATUS_VALUES)[number];
+
+export const selectOptions = (values: readonly string[]) =>
   values.map((value, position) => ({
     position,
     label: value,

@@ -2,6 +2,14 @@ import { ASSURANCE_OBJECTS, type AssuranceObjectName } from "src/assurance/ident
 
 export type AssuranceRole = "reviewer" | "manager" | "evidenceIntegration";
 
+export const canTransitionAssuranceCase = ({
+  role,
+}: {
+  role: AssuranceRole;
+  from?: string;
+  to?: string;
+}) => role === "manager";
+
 type Permission = {
   canReadObjectRecords: boolean;
   canUpdateObjectRecords: boolean;
@@ -79,11 +87,14 @@ export const canAccessWorkspaceRecord = ({
   actorWorkspaceId,
   recordWorkspaceId,
   role,
+  objectName,
 }: {
   actorWorkspaceId: string;
   recordWorkspaceId: string;
   role: AssuranceRole;
+  objectName: AssuranceObjectName;
 }) =>
   actorWorkspaceId === recordWorkspaceId && RBAC_MATRIX[role].permissions.some(
-    (permission) => permission.canReadObjectRecords,
+    (permission) =>
+      permission.objectName === objectName && permission.canReadObjectRecords,
   );

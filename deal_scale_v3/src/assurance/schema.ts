@@ -1,6 +1,10 @@
 import { z } from "zod";
 
-import { fromTwentySelectValue } from "src/assurance/common-fields";
+import {
+  ASSURANCE_CASE_STATUS_VALUES,
+  ASSURANCE_URGENCY_VALUES,
+  fromTwentySelectValue,
+} from "src/assurance/common-fields";
 import { ASSURANCE_OBJECTS, type AssuranceObjectName } from "src/assurance/identifiers";
 
 const canonicalSelect = <const T extends readonly [string, ...string[]]>(values: T) =>
@@ -58,18 +62,47 @@ export const conformancePolicySchema = assuranceEntitySchema.extend({
   ruleSet: z.record(z.string(), z.unknown()),
 });
 
+const auditableEvidenceReferenceSchema = z
+  .object({
+    id: z.string().min(1),
+    evidenceType: z.string().min(1),
+    provenanceRef: z.string().min(1),
+    sourceVersion: z.string().min(1),
+  })
+  .passthrough();
+
+export const assuranceCaseProjectionSchema = z.object({
+  sellerIdentityId: z.string().min(1),
+  failureType: z.string().min(1),
+  expectedBehavior: z.string().min(1),
+  actualBehavior: z.string().min(1),
+  exactDivergence: z.string().min(1),
+  evidenceReferences: auditableEvidenceReferenceSchema.array(),
+  actor: z.string().min(1),
+  system: z.string().min(1),
+  deadline: z.coerce.date().nullable(),
+  confidence: z.number().min(0).max(1),
+  urgency: canonicalSelect(["low", "medium", "high"]),
+  recommendedHumanAction: z.string().min(1),
+  detectorVersion: z.string().min(1),
+  policyVersion: z.string().min(1),
+  dedupeKey: z.string().min(1),
+});
+
 export const detectorCandidateSchema = assuranceEntitySchema.extend({
   conformancePolicyId: z.string().min(1),
   sellerEventId: z.string().min(1).nullable(),
   detectorType: z.string().min(1),
   confidence: z.number().min(0).max(1),
-});
+}).extend(assuranceCaseProjectionSchema.partial().shape);
+
+const assuranceCaseStatus = z.enum(ASSURANCE_CASE_STATUS_VALUES);
 
 export const assuranceCaseSchema = assuranceEntitySchema.extend({
   opportunityReferenceId: z.string().min(1),
   detectorCandidateId: z.string().min(1),
-  caseStatus: canonicalSelect(["open", "accepted", "rejected", "closed"]),
-});
+  caseStatus: assuranceCaseStatus,
+}).extend(assuranceCaseProjectionSchema.shape);
 
 export const evidenceReferenceSchema = assuranceEntitySchema.extend({
   assuranceCaseId: z.string().min(1),
@@ -146,7 +179,29 @@ export const ASSURANCE_FIXTURES = {
     observedAt: "2026-09-23T00:02:00.000Z",
     opportunityReferenceId: "opp-001",
     detectorCandidateId: "det-001",
-    caseStatus: "open",
+    caseStatus: "needs-review",
+    sellerIdentityId: "seller-001",
+    failureType: "process_sla_breach",
+    expectedBehavior: "contact lead",
+    actualBehavior: "contacted after deadline",
+    exactDivergence: "deadline exceeded by 30 minutes",
+    evidenceReferences: [
+      {
+        id: "evidence-reference-001",
+        evidenceType: "call-transcript",
+        provenanceRef: "crm://call/call-001",
+        sourceVersion: "crm-v3",
+      },
+    ],
+    actor: "case-engine",
+    system: "deal-scale",
+    deadline: "2026-09-24T12:30:00.000Z",
+    confidence: 0.91,
+    urgency: "high",
+    recommendedHumanAction: "review owner follow-up",
+    detectorVersion: "detector-v1",
+    policyVersion: "v2",
+    dedupeKey: "case:workspace-001:candidate-001:opportunity-001",
   },
 } as const;
 
