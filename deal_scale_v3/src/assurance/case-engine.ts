@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 import { z } from "zod";
 
 import type { AssuranceCaseStatus } from "src/assurance/common-fields";
+import type { OpportunityReferenceAdapter } from "src/assurance/case-store";
 import {
   assuranceCaseProjectionSchema,
   assuranceCaseSchema,
@@ -44,6 +45,8 @@ export type EvidenceAssessment = {
 
 export type AuditEvent = {
   id: string;
+  caseId: string;
+  workspaceId: string;
   action: "assembled" | "transitioned";
   actor: string;
   prior: CaseStatus | null;
@@ -69,10 +72,15 @@ export type CaseAssemblyOptions = {
   opportunityReferenceId: string;
   opportunityReferenceWorkspaceId?: string;
   opportunityReference?: { externalId: string; workspaceId: string };
+  context?: CaseAssemblyContext;
   actualEvidence?: readonly EvidenceObservationInput[];
   expectedEvidence?: readonly EvidenceExpectation[];
   observedAt?: string | Date;
 };
+
+export type CaseAssemblyContext = Readonly<{
+  opportunityReferenceAdapter: OpportunityReferenceAdapter;
+}>;
 
 export type CaseAssemblyResult = {
   kind: "case";
@@ -229,20 +237,27 @@ const assertOpportunityOwnership = (
   candidateWorkspaceId: string,
   options: CaseAssemblyOptions,
 ) => {
-  const assertedWorkspaceIds = [
-    options.opportunityReferenceWorkspaceId,
-    options.opportunityReference?.workspaceId,
-  ].filter((value): value is string => Boolean(value));
-  if (assertedWorkspaceIds.length === 0 || assertedWorkspaceIds.some((id) => id !== candidateWorkspaceId)) {
-    throw new Error("opportunityReferenceWorkspaceId must match candidate workspaceId");
+  const trustedOpportunity = options.context?.opportunityReferenceAdapter.getTrustedOpportunityReference(
+    options.opportunityReferenceId,
+  );
+  if (!trustedOpportunity) {
+    throw new Error("trusted opportunityReferenceId is required");
   }
-  if (options.opportunityReference && options.opportunityReference.externalId !== options.opportunityReferenceId) {
-    throw new Error("opportunityReferenceId must match opportunityReference.externalId");
+  if (
+    trustedOpportunity.workspaceId !== candidateWorkspaceId ||
+    (options.opportunityReferenceWorkspaceId !== undefined &&
+      options.opportunityReferenceWorkspaceId !== trustedOpportunity.workspaceId) ||
+    (options.opportunityReference &&
+      (options.opportunityReference.externalId !== trustedOpportunity.externalId ||
+        options.opportunityReference.workspaceId !== trustedOpportunity.workspaceId))
+  ) {
+    throw new Error("opportunityReferenceWorkspaceId must match candidate workspaceId");
   }
 };
 
 const createAuditEvent = ({
   caseId,
+  workspaceId,
   position,
   action,
   actor,
@@ -251,6 +266,7 @@ const createAuditEvent = ({
   observedAt,
 }: {
   caseId: string;
+  workspaceId: string;
   position: number;
   action: AuditEvent["action"];
   actor: string;
@@ -261,6 +277,8 @@ const createAuditEvent = ({
   id: deterministicUuidV4(
     `audit|${caseId}|${position}|${action}|${actor}|${prior ?? "none"}|${next}|${observedAt.toISOString()}`,
   ),
+  caseId,
+  workspaceId,
   action,
   actor,
   prior,
@@ -297,6 +315,7 @@ export const assembleAssuranceCase = (
   const auditHistory = [
     createAuditEvent({
       caseId,
+      workspaceId: candidate.workspaceId,
       position: 0,
       action: "assembled",
       actor: "case-engine",
@@ -312,7 +331,7 @@ export const assembleAssuranceCase = (
   });
   const baseCase = assuranceCaseSchema.parse({
     name: `${candidate.name} assurance case`,
-    externalId: `case:${candidate.externalId}`,
+    externalId: dedupeKey,
     workspaceId: candidate.workspaceId,
     provenanceState: "inferred",
     provenanceRef: `case-engine://${candidate.provenanceRef}`,
@@ -365,6 +384,7 @@ export const transitionAssuranceCase = (
   }
   const auditEvent = createAuditEvent({
     caseId: current.id,
+    workspaceId: current.workspaceId,
     position: current.auditHistory.length,
     action: "transitioned",
     actor: z.string().min(1).parse(options.actorId),

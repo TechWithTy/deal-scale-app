@@ -2,17 +2,28 @@ import { describe, expect, it } from "vitest";
 
 import {
   VALID_REVIEW_TRANSITIONS,
-  assembleAssuranceCase,
-  assembleAssuranceCases,
+  assembleAssuranceCase as assembleAssuranceCaseRaw,
+  assembleAssuranceCases as assembleAssuranceCasesRaw,
   canonicalizeDetectorCandidate,
   dedupeDetectorCandidates,
+  deterministicUuidV4,
   transitionAssuranceCase,
   type EvidenceObservationInput,
 } from "../src/assurance/case-engine";
-import { createAssuranceCaseStore } from "../src/assurance/case-store";
+import {
+  createAssuranceCaseStore,
+  createOpportunityReferenceAdapter,
+} from "../src/assurance/case-store";
 
 const workspaceA = "00000000-0000-4000-8000-000000000001";
 const workspaceB = "00000000-0000-4000-8000-000000000002";
+const opportunityReferenceAdapter = createOpportunityReferenceAdapter([
+  { externalId: "opportunity-001", workspaceId: workspaceA },
+  { externalId: "opportunity-002", workspaceId: workspaceA },
+  { externalId: "opportunity-b-001", workspaceId: workspaceB },
+  { externalId: "opportunity-owned-by-workspace-b", workspaceId: workspaceB },
+]);
+const trustedCaseContext = { opportunityReferenceAdapter };
 const REQUESTED_CASE_STATUSES = [
   "needs-review",
   "confirmed-failure",
@@ -91,6 +102,16 @@ const evidence = (overrides: Partial<EvidenceObservationInput> = {}): EvidenceOb
   ...overrides,
 });
 
+const assembleAssuranceCase = (
+  input: Parameters<typeof assembleAssuranceCaseRaw>[0],
+  options: Parameters<typeof assembleAssuranceCaseRaw>[1],
+) => assembleAssuranceCaseRaw(input, { ...options, context: trustedCaseContext });
+
+const assembleAssuranceCases = (
+  inputs: Parameters<typeof assembleAssuranceCasesRaw>[0],
+  options: Parameters<typeof assembleAssuranceCasesRaw>[1],
+) => assembleAssuranceCasesRaw(inputs, { ...options, context: trustedCaseContext });
+
 describe("assurance case engine", () => {
   it("canonicalizes candidates with deterministic UUID v4 ids", () => {
     const first = canonicalizeDetectorCandidate(candidate());
@@ -152,7 +173,7 @@ describe("assurance case engine", () => {
     const base = assembleCase(candidate(), "opportunity-001", workspaceA, workspaceA);
     const workspaceVariant = assembleCase(
       candidate({ workspaceId: workspaceB }),
-      "opportunity-001",
+      "opportunity-b-001",
       workspaceB,
       workspaceB,
     );
@@ -170,6 +191,51 @@ describe("assurance case engine", () => {
       );
     }
     expect(new Set([base.dedupeKey, workspaceVariant.dedupeKey, candidateVariant.dedupeKey, opportunityVariant.dedupeKey]).size).toBe(4);
+  });
+
+  it("uses the complete scoped identity for both externalId and dedupeKey", () => {
+    const first = assembleAssuranceCase(candidate(), {
+      opportunityReferenceId: "opportunity-001",
+      opportunityReferenceWorkspaceId: workspaceA,
+      actualEvidence: [evidence()],
+    });
+    const second = assembleAssuranceCase(candidate(), {
+      opportunityReferenceId: "opportunity-002",
+      opportunityReferenceWorkspaceId: workspaceA,
+      actualEvidence: [evidence()],
+    });
+
+    expect(first.case.externalId).toBe(first.case.dedupeKey);
+    expect(second.case.externalId).toBe(second.case.dedupeKey);
+    expect(first.case.externalId).not.toBe(second.case.externalId);
+  });
+
+  it("requires a trusted opportunity relationship instead of caller workspace assertions", () => {
+    expect(() =>
+      assembleAssuranceCaseRaw(candidate(), {
+        opportunityReferenceId: "opportunity-001",
+        opportunityReferenceWorkspaceId: workspaceA,
+        actualEvidence: [evidence()],
+      }),
+    ).toThrow("trusted opportunityReferenceId");
+
+    expect(() =>
+      assembleAssuranceCaseRaw(candidate(), {
+        opportunityReferenceId: "arbitrary-opportunity",
+        opportunityReferenceWorkspaceId: workspaceA,
+        actualEvidence: [evidence()],
+        context: trustedCaseContext,
+      }),
+    ).toThrow("trusted opportunityReferenceId");
+
+    expect(() =>
+      assembleAssuranceCaseRaw(candidate(), {
+        opportunityReferenceId: "opportunity-owned-by-workspace-b",
+        opportunityReferenceWorkspaceId: workspaceA,
+        actualEvidence: [evidence()],
+        context: trustedCaseContext,
+      }),
+    ).toThrow("opportunityReferenceWorkspaceId");
   });
 
   it("assembles a complete auditable case projection", () => {
@@ -500,8 +566,131 @@ describe("assurance case engine", () => {
     const audit = transition.case.auditHistory[1];
     const appended = store.appendAudit(assembled.case.id, audit);
     const repeatedAudit = store.appendAudit(assembled.case.id, audit);
+    const staleUpsert = store.upsert(assembled.case);
 
     expect(repeatedAudit).toEqual(appended);
+    expect(staleUpsert.caseStatus).toBe("confirmed-failure");
+    expect(staleUpsert.auditHistory).toHaveLength(2);
     expect(store.getByDedupeKey(assembled.case.dedupeKey)?.auditHistory).toHaveLength(2);
+  });
+
+  it("preserves append order when audit timestamps are equal", () => {
+    const assembled = assembleAssuranceCase(candidate(), {
+      opportunityReferenceId: "opportunity-001",
+      opportunityReferenceWorkspaceId: workspaceA,
+      actualEvidence: [evidence()],
+      observedAt: "2026-09-24T12:02:00.000Z",
+    });
+    const confirmed = transitionAtRuntime(assembled.case, "confirmed-failure", {
+      actorId: "manager-001",
+      occurredAt: "2026-09-24T12:02:00.000Z",
+      role: "manager",
+    });
+    if (!confirmed.ok || !confirmed.case) throw new Error("expected confirmed-failure transition");
+    const resolved = transitionAtRuntime(confirmed.case, "resolved", {
+      actorId: "manager-002",
+      occurredAt: "2026-09-24T12:02:00.000Z",
+      role: "manager",
+    });
+    if (!resolved.ok || !resolved.case) throw new Error("expected resolved transition");
+
+    const store = createAssuranceCaseStore();
+    store.upsert(assembled.case);
+    const result = store.upsert(resolved.case);
+
+    expect(result.auditHistory.map((event) => event.to)).toEqual([
+      "needs-review",
+      "confirmed-failure",
+      "resolved",
+    ]);
+    expect(result.caseStatus).toBe("resolved");
+  });
+
+  it("preserves append order and status when audit timestamps arrive out of order", () => {
+    const assembled = assembleAssuranceCase(candidate(), {
+      opportunityReferenceId: "opportunity-001",
+      opportunityReferenceWorkspaceId: workspaceA,
+      actualEvidence: [evidence()],
+    });
+    const confirmed = transitionAtRuntime(assembled.case, "confirmed-failure", {
+      actorId: "manager-001",
+      occurredAt: "2026-09-24T12:10:00.000Z",
+      role: "manager",
+    });
+    if (!confirmed.ok || !confirmed.case) throw new Error("expected confirmed-failure transition");
+    const resolved = transitionAtRuntime(confirmed.case, "resolved", {
+      actorId: "manager-002",
+      occurredAt: "2026-09-24T12:11:00.000Z",
+      role: "manager",
+    });
+    if (!resolved.ok || !resolved.case) throw new Error("expected resolved transition");
+
+    const lateArrival = {
+      ...resolved.case.auditHistory[2],
+      observedAt: new Date("2026-09-24T12:05:00.000Z"),
+      occurredAt: new Date("2026-09-24T12:05:00.000Z"),
+    };
+    const incoming = {
+      ...resolved.case,
+      auditHistory: [resolved.case.auditHistory[0], resolved.case.auditHistory[1], lateArrival],
+    };
+    const store = createAssuranceCaseStore();
+    store.upsert(assembled.case);
+    const result = store.upsert(incoming);
+
+    expect(result.auditHistory.map((event) => event.to)).toEqual([
+      "needs-review",
+      "confirmed-failure",
+      "resolved",
+    ]);
+    expect(result.caseStatus).toBe("resolved");
+  });
+
+  it("rejects duplicate audit IDs when their contents differ", () => {
+    const assembled = assembleAssuranceCase(candidate(), {
+      opportunityReferenceId: "opportunity-001",
+      opportunityReferenceWorkspaceId: workspaceA,
+      actualEvidence: [evidence()],
+    });
+    const store = createAssuranceCaseStore();
+    store.upsert(assembled.case);
+    const mismatched = {
+      ...assembled.case,
+      caseStatus: "confirmed-failure" as const,
+      auditHistory: [
+        {
+          ...assembled.case.auditHistory[0],
+          next: "confirmed-failure" as const,
+          to: "confirmed-failure" as const,
+        },
+      ],
+    };
+
+    expect(() => store.upsert(mismatched)).toThrow("different contents");
+    expect(() => store.appendAudit(assembled.case.id, mismatched.auditHistory[0])).toThrow(
+      "different contents",
+    );
+  });
+
+  it("validates audit UUIDs and tenant ownership before storing them", () => {
+    const assembled = assembleAssuranceCase(candidate(), {
+      opportunityReferenceId: "opportunity-001",
+      opportunityReferenceWorkspaceId: workspaceA,
+      actualEvidence: [evidence()],
+    });
+    const store = createAssuranceCaseStore();
+    const invalidId = {
+      ...assembled.case,
+      auditHistory: [{ ...assembled.case.auditHistory[0], id: "not-a-uuid" }],
+    };
+    expect(() => store.upsert(invalidId)).toThrow("UUID v4");
+
+    store.upsert(assembled.case);
+    const foreignEvent = {
+      ...assembled.case.auditHistory[0],
+      id: deterministicUuidV4("foreign-audit-event"),
+      workspaceId: workspaceB,
+    };
+    expect(() => store.appendAudit(assembled.case.id, foreignEvent)).toThrow("workspace");
   });
 });
