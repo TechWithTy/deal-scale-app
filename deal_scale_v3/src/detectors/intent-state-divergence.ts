@@ -192,6 +192,7 @@ export const detectIntentStateDivergence = (
     (event) =>
       event.workspaceId === interpretation.workspaceId &&
       event.opportunityReferenceId === state.opportunityReferenceId &&
+      event.sourceConnectionId === state.sourceConnectionId &&
       event.provenanceState === "observed" &&
       event.observedAt <= state.observedAt && event.occurredAt <= state.observedAt &&
       eventTypes[interpretation.intent === "contradictory_state" ? "contradictory" : intentStateMap[interpretation.intent][0]].some((type) => type === event.eventType),
@@ -218,7 +219,7 @@ export const detectIntentStateDivergence = (
     });
   }
 
-  if (latest.some((item) => item.value === true) && latest.some((item) => item.value === false)) {
+  if (latest.some((item) => item.value !== latest[0]?.value)) {
     return missing("Equally current source-backed field observations disagree.");
   }
   const fieldValue = latest[0]?.value;

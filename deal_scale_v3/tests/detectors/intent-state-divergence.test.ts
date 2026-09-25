@@ -305,6 +305,36 @@ describe("intent-state divergence detector", () => {
     expect(result.evidence.contradictingEvidenceIds).toEqual([]);
   });
 
+  it.each([
+    [true, "aaa-true", "zzz-null"],
+    [false, "aaa-false", "zzz-null"],
+  ] as const)("treats tied null and %s field observations as ambiguous", (value, valueId, nullId) => {
+    const result = detectIntentStateDivergence(callbackRequestInterpretation, {
+      ...callbackMissingState,
+      stateEvidence: [
+        { ...callbackMissingState.stateEvidence[0], evidenceId: valueId, value },
+        { ...callbackMissingState.stateEvidence[0], evidenceId: nullId, value: null },
+      ],
+    });
+
+    expect(result.status).toBe("insufficient_evidence");
+    expect(result.reasonCode).toBe("missing_state_coverage");
+    expect(result.evidence.stateEvidenceIds).toEqual([valueId, nullId]);
+    expect(result.evidence.contradictingEvidenceIds).toEqual([]);
+  });
+
+  it("does not confirm alignment from an event without the declared source connection", () => {
+    const result = detectIntentStateDivergence(offerRequestInterpretation, {
+      ...alignedOfferState,
+      stateEvidence: [],
+      events: [{ ...alignedOfferState.events[0], sourceConnectionId: undefined }],
+    });
+
+    expect(result.status).toBe("insufficient_evidence");
+    expect(result.reasonCode).toBe("missing_state_coverage");
+    expect(result.evidence.stateEvidenceIds).toEqual([]);
+  });
+
   it("does not use field or event observations later than the state snapshot", () => {
     const future = "2026-09-24T12:01:00.000Z";
     const result = detectIntentStateDivergence(offerRequestInterpretation, {
