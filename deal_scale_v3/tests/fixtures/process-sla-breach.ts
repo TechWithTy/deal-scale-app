@@ -36,13 +36,16 @@ export type ProcessSlaConformanceFixture = {
   workspaceId: string;
   sourceConnectionId: string;
   opportunityReferenceId: string;
+  obligationId: string;
+  sourceVersion: string;
+  completionEventTypes: string[];
   policy: {
     policyId: string;
     policyVersion: string;
     trigger: string;
     expectedAction: string;
   };
-  deadline: { dueAt: string; graceWindowMs: number };
+  deadline: { dueAt: string | null; graceWindowMs: number };
   actualEvents: (typeof lateCompletion)[];
   exceptionEvaluation: { evaluated: boolean; matched: boolean; reason: string | null };
   evaluatedAt: string;
@@ -52,6 +55,9 @@ export const conformanceResult = {
   workspaceId,
   sourceConnectionId,
   opportunityReferenceId: "opp-001",
+  obligationId: obligation.externalId,
+  sourceVersion: "twenty-v1",
+  completionEventTypes: ["sla_completed"],
   policy: {
     policyId: "policy-sla",
     policyVersion: "v2",
@@ -62,10 +68,4 @@ export const conformanceResult = {
   actualEvents: [lateCompletion],
   exceptionEvaluation: { evaluated: true, matched: false, reason: null },
   evaluatedAt: "2026-09-24T12:00:00.000Z",
-  // Current detector input keeps the RED tests focused on behavior and result shape.
-  conformancePolicyId: "policy-sla",
-  asOf: "2026-09-24T12:00:00.000Z",
-  slaWindowMs: 0,
-  obligations: [obligation],
-  events: [lateCompletion],
 } satisfies ProcessSlaConformanceFixture & ProcessSlaBreachInput;
