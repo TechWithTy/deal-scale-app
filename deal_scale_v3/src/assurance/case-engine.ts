@@ -202,7 +202,7 @@ const evidenceFingerprint = (observation: EvidenceObservation) =>
     provenanceState: observation.provenanceState,
     provenanceRef: observation.provenanceRef,
     observedAt: observation.observedAt.toISOString(),
-    eventId: observation.eventId,
+    sellerEventId: observation.sellerEventId,
     evidenceType: observation.evidenceType,
     contentHash: observation.contentHash,
   });

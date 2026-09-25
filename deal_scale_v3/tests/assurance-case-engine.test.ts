@@ -61,7 +61,6 @@ const candidate = (overrides: Record<string, unknown> = {}) => ({
   recordVersion: 1,
   observedAt: "2026-09-24T12:00:00.000Z",
   conformancePolicyId: "policy-001",
-  eventId: "event-001",
   sellerEventId: "event-001",
   detectorType: "pricing-promise",
   confidence: 0.91,
@@ -96,7 +95,7 @@ const evidence = (overrides: Partial<EvidenceObservationInput> = {}): EvidenceOb
   sourceVersion: "crm-v3",
   recordVersion: 1,
   observedAt: "2026-09-24T12:01:00.000Z",
-  eventId: "event-001",
+  sellerEventId: "event-001",
   evidenceType: "call-transcript",
   contentHash: "sha256:abc",
   ...overrides,
@@ -253,6 +252,7 @@ describe("assurance case engine", () => {
     expect(result.evidence.missing).toEqual([]);
     expect(result.case.expectedEvidence[0].provenanceRef).toBe("crm://call/call-001");
     expect(result.case.evidenceReferences[0].provenanceRef).toBe("crm://call/call-001");
+    expect(result.case.evidenceReferences[0].sellerEventId).toBe("event-001");
     expect(result.case.sourceVersion).toBe("detector-v1");
     expect(result.case).toMatchObject({
       sellerIdentityId: "seller-001",
@@ -279,19 +279,20 @@ describe("assurance case engine", () => {
 
   it("sorts evidence canonically and gives distinct stable identities to same-content records", () => {
     const firstEvidence = evidence({ externalId: "evidence-001", recordVersion: 1 });
+    const sellerEventVariant = evidence({ sellerEventId: "event-002", externalId: "evidence-001", recordVersion: 1 });
     const sourceVersionVariant = evidence({ sourceVersion: "crm-v4", externalId: "evidence-001", recordVersion: 1 });
     const externalIdVariant = evidence({ sourceVersion: "crm-v3", externalId: "evidence-002", recordVersion: 1 });
     const recordVersionVariant = evidence({ sourceVersion: "crm-v3", externalId: "evidence-001", recordVersion: 2 });
     const options = {
       opportunityReferenceId: "opportunity-001",
       opportunityReferenceWorkspaceId: workspaceA,
-      actualEvidence: [firstEvidence, sourceVersionVariant, externalIdVariant, recordVersionVariant],
+      actualEvidence: [firstEvidence, sellerEventVariant, sourceVersionVariant, externalIdVariant, recordVersionVariant],
     };
 
     const forward = assembleAssuranceCase(candidate(), options);
     const reversed = assembleAssuranceCase(candidate(), {
       ...options,
-      actualEvidence: [recordVersionVariant, externalIdVariant, sourceVersionVariant, firstEvidence],
+      actualEvidence: [recordVersionVariant, externalIdVariant, sourceVersionVariant, sellerEventVariant, firstEvidence],
     });
 
     expect(forward.kind).toBe("case");
@@ -305,11 +306,12 @@ describe("assurance case engine", () => {
       ),
     ).toEqual([
       "evidence-001|crm-v3|1",
+      "evidence-001|crm-v3|1",
       "evidence-001|crm-v3|2",
       "evidence-001|crm-v4|1",
       "evidence-002|crm-v3|1",
     ]);
-    expect(new Set(forward.case.evidenceReferences.map((item) => item.id)).size).toBe(4);
+    expect(new Set(forward.case.evidenceReferences.map((item) => item.id)).size).toBe(5);
   });
 
   it("retains insufficient evidence as an auditable case state", () => {
