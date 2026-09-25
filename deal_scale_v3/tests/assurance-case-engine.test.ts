@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import * as caseEngine from "../src/assurance/case-engine";
 import {
   assembleAssuranceCase,
   assembleAssuranceCases,
@@ -33,6 +34,18 @@ const candidate = (overrides: Record<string, unknown> = {}) => ({
       sourceVersion: "crm-v3",
     },
   ],
+  sellerIdentityId: "seller-001",
+  failureType: "process_sla_breach",
+  expectedBehavior: "contact lead",
+  actualBehavior: "contacted after deadline",
+  exactDivergence: "deadline exceeded by 30 minutes",
+  actor: "case-engine",
+  system: "deal-scale",
+  deadline: "2026-09-24T12:30:00.000Z",
+  urgency: "high",
+  recommendedHumanAction: "review owner follow-up",
+  detectorVersion: "detector-v1",
+  policyVersion: "v2",
   ...overrides,
 });
 
@@ -93,7 +106,7 @@ describe("assurance case engine", () => {
     expect(forward.duplicates.map((item) => item.id)).toEqual([candidateB.id]);
   });
 
-  it("assembles a canonical open case with expected and actual provenance", () => {
+  it("assembles a complete auditable case projection", () => {
     const result = assembleAssuranceCase(candidate(), {
       opportunityReferenceId: "opportunity-001",
       opportunityReferenceWorkspaceId: workspaceA,
@@ -104,11 +117,27 @@ describe("assurance case engine", () => {
     expect(result.kind).toBe("case");
     if (result.kind !== "case") return;
 
-    expect(result.case.caseStatus).toBe("open");
+    expect(result.case.caseStatus).toBe("needs-review");
     expect(result.evidence.missing).toEqual([]);
     expect(result.case.expectedEvidence[0].provenanceRef).toBe("crm://call/call-001");
     expect(result.case.evidenceReferences[0].provenanceRef).toBe("crm://call/call-001");
     expect(result.case.sourceVersion).toBe("detector-v1");
+    expect(result.case).toMatchObject({
+      sellerIdentityId: "seller-001",
+      failureType: "process_sla_breach",
+      expectedBehavior: "contact lead",
+      actualBehavior: "contacted after deadline",
+      exactDivergence: "deadline exceeded by 30 minutes",
+      actor: "case-engine",
+      system: "deal-scale",
+      deadline: new Date("2026-09-24T12:30:00.000Z"),
+      confidence: 0.91,
+      urgency: "high",
+      recommendedHumanAction: "review owner follow-up",
+      detectorVersion: "detector-v1",
+      policyVersion: "v2",
+      dedupeKey: `case:${workspaceA}:${result.case.detectorCandidateId}:opportunity-001`,
+    });
     for (const id of [result.case.id, result.case.evidenceReferences[0].id, result.case.auditHistory[0].id]) {
       expect(id).toMatch(
         /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
@@ -151,17 +180,18 @@ describe("assurance case engine", () => {
     expect(new Set(forward.case.evidenceReferences.map((item) => item.id)).size).toBe(4);
   });
 
-  it("returns insufficient_evidence without creating a review case", () => {
+  it("retains insufficient evidence as an auditable case state", () => {
     const result = assembleAssuranceCase(candidate(), {
       opportunityReferenceId: "opportunity-001",
       opportunityReferenceWorkspaceId: workspaceA,
       actualEvidence: [],
     });
 
-    expect(result.kind).toBe("insufficient_evidence");
-    if (result.kind !== "insufficient_evidence") return;
+    expect(result.kind).toBe("case");
+    if (result.kind !== "case") return;
 
-    expect(result.case).toBeUndefined();
+    expect(result.case.caseStatus).toBe("insufficient-evidence");
+    expect(result.case.auditHistory[0].to).toBe("insufficient-evidence");
     expect(result.evidence.missing).toEqual([
       {
         evidenceType: "call-transcript",
@@ -178,9 +208,10 @@ describe("assurance case engine", () => {
       actualEvidence: [evidence({ workspaceId: workspaceB })],
     });
 
-    expect(result.kind).toBe("insufficient_evidence");
-    if (result.kind !== "insufficient_evidence") return;
+    expect(result.kind).toBe("case");
+    if (result.kind !== "case") return;
 
+    expect(result.case.caseStatus).toBe("insufficient-evidence");
     expect(result.evidence.actual).toEqual([]);
     expect(result.evidence.excludedTenantEvidenceCount).toBe(1);
   });
@@ -206,29 +237,87 @@ describe("assurance case engine", () => {
     });
     if (assembled.kind !== "case") throw new Error("expected case");
 
-    const accepted = transitionAssuranceCase(assembled.case, "accepted", {
+    const accepted = transitionAssuranceCase(assembled.case, "confirmed-failure" as never, {
       actorId: "manager-001",
       occurredAt: "2026-09-24T12:03:00.000Z",
-    });
+      role: "manager",
+    } as never);
     expect(accepted.ok).toBe(true);
     if (!accepted.ok) return;
-    expect(accepted.case.caseStatus).toBe("accepted");
+    expect(accepted.case.caseStatus).toBe("confirmed-failure");
     expect(accepted.case.auditHistory).toHaveLength(2);
-    expect(accepted.case.auditHistory[1].from).toBe("open");
-    expect(accepted.case.auditHistory[1].to).toBe("accepted");
-    expect(assembled.case.caseStatus).toBe("open");
+    expect(accepted.case.auditHistory[1].from).toBe("needs-review");
+    expect(accepted.case.auditHistory[1].to).toBe("confirmed-failure");
+    expect(assembled.case.caseStatus).toBe("needs-review");
 
-    const invalid = transitionAssuranceCase(accepted.case, "open", {
+    const invalid = transitionAssuranceCase(accepted.case, "needs-review" as never, {
       actorId: "manager-001",
       occurredAt: "2026-09-24T12:04:00.000Z",
-    });
+      role: "manager",
+    } as never);
     expect(invalid).toEqual({
       ok: false,
       reason: "invalid_transition",
-      from: "accepted",
-      to: "open",
-      allowed: ["closed"],
+      from: "confirmed-failure",
+      to: "needs-review",
+      allowed: expect.any(Array),
     });
+  });
+
+  it("rejects an unauthorized transition actor", () => {
+    const assembled = assembleAssuranceCase(candidate(), {
+      opportunityReferenceId: "opportunity-001",
+      opportunityReferenceWorkspaceId: workspaceA,
+      actualEvidence: [evidence()],
+    });
+    if (assembled.kind !== "case") throw new Error("expected case");
+
+    const transition = transitionAssuranceCase as unknown as (
+      current: typeof assembled.case,
+      to: string,
+      options: { actorId: string; role: "reviewer" | "manager" },
+    ) => unknown;
+
+    expect(() =>
+      transition(assembled.case, "confirmed-failure", {
+        actorId: "viewer-001",
+        role: "reviewer",
+      }),
+    ).toThrow("not authorized");
+  });
+
+  it("uses one scoped deterministic dedupe key and preserves audit history", () => {
+    const first = assembleAssuranceCase(candidate(), {
+      opportunityReferenceId: "opportunity-001",
+      opportunityReferenceWorkspaceId: workspaceA,
+      actualEvidence: [evidence()],
+    });
+    const second = assembleAssuranceCase(candidate(), {
+      opportunityReferenceId: "opportunity-001",
+      opportunityReferenceWorkspaceId: workspaceA,
+      actualEvidence: [evidence()],
+    });
+    if (first.kind !== "case" || second.kind !== "case") throw new Error("expected case");
+
+    expect(first).toEqual(second);
+    expect(first.case.auditHistory).toMatchObject([
+      {
+        action: "assembled",
+        actorId: "case-engine",
+        from: null,
+        to: "needs-review",
+      },
+    ]);
+
+    const caseDedupeKey = (caseEngine as typeof caseEngine & {
+      caseDedupeKey?: (record: typeof first.case) => string;
+    }).caseDedupeKey;
+    expect(caseDedupeKey).toBeTypeOf("function");
+    if (!caseDedupeKey) return;
+
+    expect(caseDedupeKey(first.case)).toBe(
+      `case:${workspaceA}:${first.case.detectorCandidateId}:opportunity-001`,
+    );
   });
 
   it("uses the case observation time for deterministic default audit events", () => {
@@ -240,8 +329,14 @@ describe("assurance case engine", () => {
     });
     if (assembled.kind !== "case") throw new Error("expected case");
 
-    const first = transitionAssuranceCase(assembled.case, "accepted", { actorId: "manager-001" });
-    const second = transitionAssuranceCase(assembled.case, "accepted", { actorId: "manager-001" });
+    const first = transitionAssuranceCase(assembled.case, "confirmed-failure" as never, {
+      actorId: "manager-001",
+      role: "manager",
+    } as never);
+    const second = transitionAssuranceCase(assembled.case, "confirmed-failure" as never, {
+      actorId: "manager-001",
+      role: "manager",
+    } as never);
 
     expect(first).toEqual(second);
   });

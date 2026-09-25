@@ -10,6 +10,42 @@ import {
   evidenceReferenceSchema,
   sourceConnectionSchema,
 } from "../src/assurance/schema";
+import { assuranceFieldsFor } from "../src/assurance/fields";
+
+const REQUESTED_CASE_STATUSES = [
+  "needs-review",
+  "confirmed-failure",
+  "expected-behavior",
+  "insufficient-evidence",
+  "false-positive",
+  "resolved",
+  "outcome",
+] as const;
+
+const COMPLETE_CASE_FIELDS = {
+  sellerIdentityId: "seller-001",
+  failureType: "process_sla_breach",
+  expectedBehavior: "contact lead",
+  actualBehavior: "contacted after deadline",
+  exactDivergence: "deadline exceeded by 30 minutes",
+  evidenceReferences: [
+    {
+      id: "evidence-reference-001",
+      evidenceType: "call-transcript",
+      provenanceRef: "crm://call/call-001",
+      sourceVersion: "crm-v3",
+    },
+  ],
+  actor: "case-engine",
+  system: "deal-scale",
+  deadline: "2026-09-24T12:30:00.000Z",
+  confidence: 0.91,
+  urgency: "high",
+  recommendedHumanAction: "review owner follow-up",
+  detectorVersion: "detector-v1",
+  policyVersion: "v2",
+  dedupeKey: "case:workspace-001:candidate-001:opportunity-001",
+} as const;
 
 describe("P0 assurance schema", () => {
   it("defines every canonical assurance object with a stable UUID", () => {
@@ -54,6 +90,70 @@ describe("P0 assurance schema", () => {
     expect(detectorCandidateSchema.shape).not.toHaveProperty("eventId");
     expect(evidenceReferenceSchema.shape).toHaveProperty("sellerEventId");
     expect(evidenceReferenceSchema.shape).not.toHaveProperty("eventId");
+  });
+
+  it("accepts every requested assurance case state and rejects legacy states", () => {
+    for (const caseStatus of REQUESTED_CASE_STATUSES) {
+      expect(
+        assuranceCaseSchema.parse({
+          ...ASSURANCE_FIXTURES.assuranceCase,
+          ...COMPLETE_CASE_FIELDS,
+          caseStatus,
+        }).caseStatus,
+      ).toBe(caseStatus);
+    }
+
+    expect(() =>
+      assuranceCaseSchema.parse({
+        ...ASSURANCE_FIXTURES.assuranceCase,
+        ...COMPLETE_CASE_FIELDS,
+        caseStatus: "open",
+      }),
+    ).toThrow();
+  });
+
+  it("preserves every auditable assurance case field in the schema", () => {
+    const parsed = assuranceCaseSchema.parse({
+      ...ASSURANCE_FIXTURES.assuranceCase,
+      ...COMPLETE_CASE_FIELDS,
+      caseStatus: "needs-review",
+    });
+
+    expect(parsed).toMatchObject({
+      ...COMPLETE_CASE_FIELDS,
+      deadline: new Date(COMPLETE_CASE_FIELDS.deadline),
+    });
+    expect(parsed.deadline).toEqual(new Date(COMPLETE_CASE_FIELDS.deadline));
+  });
+
+  it("projects the auditable contract to the Twenty assurance case object", () => {
+    const fields = assuranceFieldsFor("assuranceCase");
+    const fieldNames = fields.map((field) => field.name);
+
+    expect(fieldNames).toEqual(
+      expect.arrayContaining([
+        "caseStatus",
+        "sellerIdentityId",
+        "failureType",
+        "expectedBehavior",
+        "actualBehavior",
+        "exactDivergence",
+        "evidenceReferences",
+        "actor",
+        "system",
+        "deadline",
+        "confidence",
+        "urgency",
+        "recommendedHumanAction",
+        "detectorVersion",
+        "policyVersion",
+        "dedupeKey",
+      ]),
+    );
+
+    expect(fields.find((field) => field.name === "dedupeKey")).toMatchObject({
+      isUnique: true,
+    });
   });
 
   it("keeps the detector candidate eventId contract required and nullable", () => {

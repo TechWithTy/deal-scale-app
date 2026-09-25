@@ -11,7 +11,8 @@ export default defineObject({
   namePlural: "assuranceCases",
   labelSingular: "Assurance Case",
   labelPlural: "Assurance Cases",
-  description: "Auditable case joining a detector candidate to seller evidence.",
+  description:
+    "Auditable case preserving seller context, behavior divergence, evidence, ownership, and review history.",
   icon: "IconBriefcase2",
   fields: assuranceFieldsFor("assuranceCase"),
 });

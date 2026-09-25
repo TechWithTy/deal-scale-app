@@ -1,6 +1,10 @@
 import { FieldType } from "twenty-sdk/define";
 
-import { selectOptions } from "src/assurance/common-fields";
+import {
+  ASSURANCE_CASE_STATUS_VALUES,
+  ASSURANCE_URGENCY_VALUES,
+  selectOptions,
+} from "src/assurance/common-fields";
 import {
   type AssuranceObjectName,
   fieldId,
@@ -93,11 +97,36 @@ export const domainFields: Record<AssuranceObjectName, (objectId: string) => Ass
   ],
   assuranceCase: (objectId) => [
     selectField(objectId, 9, "caseStatus", "Case Status", [
-      "open",
-      "accepted",
-      "rejected",
-      "closed",
+      ...ASSURANCE_CASE_STATUS_VALUES,
     ]),
+    textField(objectId, 10, "sellerIdentityId", "Seller Identity ID"),
+    textField(objectId, 11, "failureType", "Failure Type"),
+    textField(objectId, 12, "expectedBehavior", "Expected Behavior"),
+    textField(objectId, 13, "actualBehavior", "Actual Behavior"),
+    textField(objectId, 14, "exactDivergence", "Exact Divergence"),
+    {
+      universalIdentifier: fieldId(objectId, 15),
+      type: FieldType.RAW_JSON,
+      name: "evidenceReferences",
+      label: "Evidence References",
+    },
+    textField(objectId, 16, "actor", "Actor"),
+    textField(objectId, 17, "system", "System"),
+    dateTimeField(objectId, 18, "deadline", "Deadline", true),
+    {
+      universalIdentifier: fieldId(objectId, 19),
+      type: FieldType.NUMBER,
+      name: "confidence",
+      label: "Confidence",
+    },
+    selectField(objectId, 20, "urgency", "Urgency", [...ASSURANCE_URGENCY_VALUES]),
+    textField(objectId, 21, "recommendedHumanAction", "Recommended Human Action"),
+    textField(objectId, 22, "detectorVersion", "Detector Version"),
+    textField(objectId, 23, "policyVersion", "Policy Version"),
+    {
+      ...textField(objectId, 24, "dedupeKey", "Dedupe Key"),
+      isUnique: true,
+    },
   ],
   evidenceReference: (objectId) => [
     textField(objectId, 9, "evidenceType", "Evidence Type"),
