@@ -75,9 +75,12 @@ const stateEvidence = (field: string, value: boolean, evidenceId: string) => ({
   evidenceId,
   field,
   value,
+  workspaceId,
+  opportunityReferenceId,
   sourceConnectionId: baseMetadata.sourceConnectionId,
   sourceVersion: "crm-v1",
   provenanceRef: `twenty://opportunity/${opportunityReferenceId}/field/${field}`,
+  observedAt: baseMetadata.observedAt,
 });
 
 export const alignedOfferState = {

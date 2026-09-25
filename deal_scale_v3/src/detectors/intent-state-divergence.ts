@@ -18,10 +18,12 @@ const intentEvidenceSchema = metadataSchema.extend({
   evidenceId: z.string().min(1),
   evidenceType: z.string().min(1),
   excerpt: z.string().min(1),
+  opportunityReferenceId: z.string().min(1),
 });
 
 export const intentInterpretationSchema = metadataSchema.extend({
   schemaVersion: z.literal("intent-state-divergence.v1"),
+  opportunityReferenceId: z.string().min(1),
   intent: z.enum([
     "offer_request",
     "callback_request",
@@ -50,12 +52,20 @@ const crmEventSchema = eventSchema.pick({
   opportunityReferenceId: true,
   eventType: true,
   occurredAt: true,
+}).extend({ sourceConnectionId: z.string().min(1).optional() });
+
+const stateEvidenceSchema = metadataSchema.extend({
+  evidenceId: z.string().min(1),
+  opportunityReferenceId: z.string().min(1),
+  field: z.enum(["offerRequested", "callbackRequested", "appointmentAgreed", "contradictory"]),
+  value: z.boolean().nullable(),
 });
 
 export const crmEventStateSchema = metadataSchema.extend({
   schemaVersion: z.literal("crm-event-state.v1"),
   opportunityReferenceId: z.string().min(1),
   crm: crmStateSchema,
+  stateEvidence: z.array(stateEvidenceSchema),
   events: z.array(crmEventSchema),
 });
 
@@ -78,6 +88,7 @@ export const intentStateDivergenceResultSchema = z.object({
     intentEvidenceIds: z.array(z.string()),
     stateEvidenceIds: z.array(z.string()),
     contradictingEvidenceIds: z.array(z.string()),
+    contradictingEvidence: z.array(stateEvidenceSchema),
   }),
   coverage: z.object({
     missingEvidenceTypes: z.array(z.string()),
@@ -106,6 +117,12 @@ const intentStateMap = {
   appointment_agreement: ["appointmentAgreed", "appointment_agreement_state"],
 } as const;
 
+const eventTypes = {
+  offerRequested: ["offer_requested"],
+  callbackRequested: ["callback_requested"],
+  appointmentAgreed: ["appointment_agreed"],
+  contradictory: ["appointment_agreed", "appointment_cancelled", "state_contradicted"],
+} as const;
 const result = (
   interpretation: IntentInterpretation,
   state: CrmEventState,
@@ -118,7 +135,14 @@ const result = (
     ...values.evidence,
   };
   const candidateId = deterministicUuidV4(
-    JSON.stringify({ interpretation, state, status: values.status, reasonCode: values.reasonCode, evidence }),
+    JSON.stringify({
+      workspaceId: interpretation.workspaceId,
+      opportunityReferenceId: interpretation.opportunityReferenceId,
+      intent: interpretation.intent,
+      status: values.status,
+      reasonCode: values.reasonCode,
+      evidenceIds: [...evidence.intentEvidenceIds, ...evidence.stateEvidenceIds].sort(),
+    }),
   );
   return intentStateDivergenceResultSchema.parse({
     ...values,
@@ -146,94 +170,79 @@ export const detectIntentStateDivergence = (
   if (state.workspaceId !== interpretation.workspaceId) {
     throw new Error("Intent and CRM state must belong to the same tenant.");
   }
+  if (state.opportunityReferenceId !== interpretation.opportunityReferenceId) {
+    throw new Error("Intent and CRM state must belong to the same opportunity.");
+  }
   if (interpretation.evidence.some((item) => item.workspaceId !== interpretation.workspaceId)) {
     throw new Error("Intent evidence must belong to the interpretation tenant.");
+  }
+  if (interpretation.evidence.some((item) => item.opportunityReferenceId !== interpretation.opportunityReferenceId)) {
+    throw new Error("Intent evidence must belong to the interpretation opportunity.");
+  }
+  if (interpretation.evidence.some((item) => item.sourceConnectionId !== interpretation.sourceConnectionId)) {
+    throw new Error("Intent evidence must belong to the interpretation source connection.");
+  }
+  if (state.stateEvidence.some((item) => item.workspaceId !== state.workspaceId || item.opportunityReferenceId !== state.opportunityReferenceId)) {
+    throw new Error("State evidence must belong to the state tenant and opportunity.");
+  }
+  if (state.stateEvidence.some((item) => item.sourceConnectionId !== state.sourceConnectionId) || state.events.some((item) => item.sourceConnectionId && item.sourceConnectionId !== state.sourceConnectionId)) {
+    throw new Error("State evidence must belong to the state source connection.");
   }
   const relevantEvents = state.events.filter(
     (event) =>
       event.workspaceId === interpretation.workspaceId &&
-      event.opportunityReferenceId === state.opportunityReferenceId,
-  );
-  const stateEvidenceIds = relevantEvents.map((event) => event.externalId);
-
+      event.opportunityReferenceId === state.opportunityReferenceId &&
+      event.provenanceState === "observed" &&
+      event.observedAt <= state.observedAt && event.occurredAt <= state.observedAt &&
+      eventTypes[interpretation.intent === "contradictory_state" ? "contradictory" : intentStateMap[interpretation.intent][0]].some((type) => type === event.eventType),
+  ).sort((left, right) => left.externalId.localeCompare(right.externalId));
+  const field = interpretation.intent === "contradictory_state" ? "contradictory" : intentStateMap[interpretation.intent][0];
+  const fieldEvidence = state.stateEvidence.filter((item) => item.field === field && item.observedAt <= state.observedAt);
+  const latestTime = Math.max(...fieldEvidence.map((item) => item.observedAt.getTime()));
+  const latest = fieldEvidence.filter((item) => item.observedAt.getTime() === latestTime)
+    .sort((left, right) => left.evidenceId.localeCompare(right.evidenceId));
+  const stateEvidenceIds = [...latest.map((item) => item.evidenceId), ...relevantEvents.map((item) => item.externalId)];
+  const baseEvidence = { stateEvidenceIds, contradictingEvidenceIds: [], contradictingEvidence: [] };
+  const missingEvidenceType = interpretation.intent === "contradictory_state" ? "contradictory_state" : intentStateMap[interpretation.intent][1];
+  const missing = (explanation: string) => result(interpretation, state, {
+    status: "insufficient_evidence", reasonCode: "missing_state_coverage", explanation,
+    coverage: { missingEvidenceTypes: [missingEvidenceType] }, evidence: baseEvidence,
+  });
   if (interpretation.confidence < 0.5) {
     return result(interpretation, state, {
       status: "insufficient_evidence",
       reasonCode: "low_intent_confidence",
       explanation: `Intent confidence ${interpretation.confidence} is below the supported threshold.`,
       coverage: { missingEvidenceTypes: [] },
-      evidence: { stateEvidenceIds, contradictingEvidenceIds: [] },
+      evidence: baseEvidence,
     });
   }
 
-  if (interpretation.intent === "contradictory_state") {
-    const contradictionEvidence = relevantEvents.filter((event) =>
-      ["appointment_agreed", "appointment_cancelled", "state_contradicted"].includes(event.eventType),
-    );
-    if (state.crm.contradictory || contradictionEvidence.length >= 2) {
-      return result(interpretation, state, {
-        status: "aligned",
-        reasonCode: "contradictory_state_confirmed",
-        explanation: "The interpreted contradictory state is confirmed by canonical CRM/event evidence.",
-        coverage: { missingEvidenceTypes: [] },
-        evidence: {
-          stateEvidenceIds,
-          contradictingEvidenceIds: [],
-        },
-      });
-    }
-    return result(interpretation, state, {
-      status: "insufficient_evidence",
-      reasonCode: "missing_state_coverage",
-      explanation: "Canonical contradictory-state evidence is not available.",
-      coverage: { missingEvidenceTypes: ["contradictory_state"] },
-      evidence: { stateEvidenceIds, contradictingEvidenceIds: [] },
-    });
+  if (latest.some((item) => item.value === true) && latest.some((item) => item.value === false)) {
+    return missing("Equally current source-backed field observations disagree.");
   }
-
-  const [field, missingEvidenceType] = intentStateMap[interpretation.intent];
-  const fieldValue = state.crm[field];
-  const matchingEventTypes = {
-    offerRequested: "offer_requested",
-    callbackRequested: "callback_requested",
-    appointmentAgreed: "appointment_agreed",
-  } as const;
-  const matchingEvents = relevantEvents.filter((event) => event.eventType === matchingEventTypes[field]);
-
-  if (fieldValue === true || matchingEvents.length > 0) {
+  const fieldValue = latest[0]?.value;
+  const eventConfirms = interpretation.intent === "contradictory_state"
+    ? new Set(relevantEvents.map((item) => item.eventType)).size >= 2
+    : relevantEvents.length > 0;
+  if (fieldValue === true || (latest.length === 0 && eventConfirms)) {
     return result(interpretation, state, {
       status: "aligned",
-      reasonCode: "intent_aligned",
+      reasonCode: interpretation.intent === "contradictory_state" ? "contradictory_state_confirmed" : "intent_aligned",
       explanation: `The ${interpretation.intent} intent is supported by canonical state.`,
       coverage: { missingEvidenceTypes: [] },
-      evidence: {
-        stateEvidenceIds: [
-          ...(fieldValue === null ? [] : [`crm:${field}`]),
-          ...stateEvidenceIds,
-        ],
-        contradictingEvidenceIds: [],
-      },
+      evidence: baseEvidence,
     });
   }
 
-  if (fieldValue === false) {
+  if (fieldValue === false && interpretation.intent !== "contradictory_state") {
     return result(interpretation, state, {
       status: "divergent",
       reasonCode: "state_contradicts_intent",
       explanation: `Canonical state explicitly contradicts the ${interpretation.intent} intent.`,
       coverage: { missingEvidenceTypes: [] },
-      evidence: {
-        stateEvidenceIds,
-        contradictingEvidenceIds: [`crm:${field}`],
-      },
+      evidence: { ...baseEvidence, contradictingEvidenceIds: latest.map((item) => item.evidenceId), contradictingEvidence: latest },
     });
   }
-
-  return result(interpretation, state, {
-    status: "insufficient_evidence",
-    reasonCode: "missing_state_coverage",
-    explanation: `Canonical state coverage for ${interpretation.intent} is unavailable.`,
-    coverage: { missingEvidenceTypes: [missingEvidenceType] },
-    evidence: { stateEvidenceIds, contradictingEvidenceIds: [] },
-  });
+  return missing(`Canonical state coverage for ${interpretation.intent} is unavailable.`);
 };

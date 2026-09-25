@@ -94,9 +94,14 @@ describe("intent-state divergence detector", () => {
     expect(result.evidence.contradictingEvidenceIds).toEqual([
       callbackMissingState.stateEvidence[0].evidenceId,
     ]);
-    expect(result.evidence).toHaveProperty(
-      "contradictingEvidence",
-      callbackMissingState.stateEvidence,
+    expect(result.evidence.contradictingEvidence).toMatchObject([{
+      evidenceId: "crm-callback-v1",
+      field: "callbackRequested",
+      value: false,
+      provenanceRef: "twenty://opportunity/opp-001/field/callbackRequested",
+    }]);
+    expect(result.evidence.contradictingEvidence[0]?.observedAt).toEqual(
+      new Date("2026-09-24T12:00:00.000Z"),
     );
   });
 
@@ -264,5 +269,75 @@ describe("intent-state divergence detector", () => {
     expect(result.reasonCode).toBe("low_intent_confidence");
     expect(result.confidence).toBe(0.2);
     expect(result.explanation).toContain("0.2");
+  });
+
+  it("uses the newest source-backed field observation", () => {
+    const earlier = {
+      ...callbackMissingState.stateEvidence[0],
+      evidenceId: "crm-callback-earlier",
+      observedAt: "2026-09-24T11:00:00.000Z",
+    };
+    const latest = {
+      ...callbackMissingState.stateEvidence[0],
+      evidenceId: "crm-callback-latest",
+      value: true,
+    };
+    const result = detectIntentStateDivergence(callbackRequestInterpretation, {
+      ...callbackMissingState,
+      stateEvidence: [latest, earlier],
+    });
+
+    expect(result.status).toBe("aligned");
+    expect(result.evidence.stateEvidenceIds).toEqual(["crm-callback-latest"]);
+  });
+
+  it("treats equally current contradictory field observations as missing coverage", () => {
+    const result = detectIntentStateDivergence(callbackRequestInterpretation, {
+      ...callbackMissingState,
+      stateEvidence: [
+        callbackMissingState.stateEvidence[0],
+        { ...callbackMissingState.stateEvidence[0], evidenceId: "crm-callback-true", value: true },
+      ],
+    });
+
+    expect(result.status).toBe("insufficient_evidence");
+    expect(result.reasonCode).toBe("missing_state_coverage");
+    expect(result.evidence.contradictingEvidenceIds).toEqual([]);
+  });
+
+  it("does not use field or event observations later than the state snapshot", () => {
+    const future = "2026-09-24T12:01:00.000Z";
+    const result = detectIntentStateDivergence(offerRequestInterpretation, {
+      ...alignedOfferState,
+      stateEvidence: [{ ...alignedOfferState.stateEvidence[0], observedAt: future }],
+      events: [{ ...alignedOfferState.events[0], observedAt: future }],
+    });
+
+    expect(result.status).toBe("insufficient_evidence");
+    expect(result.evidence.stateEvidenceIds).toEqual([]);
+  });
+
+  it("rejects field evidence from a foreign source connection", () => {
+    expect(() => detectIntentStateDivergence(offerRequestInterpretation, {
+      ...alignedOfferState,
+      stateEvidence: [{
+        ...alignedOfferState.stateEvidence[0],
+        sourceConnectionId: "conn-foreign",
+      }],
+    })).toThrow("State evidence must belong to the state source connection");
+  });
+
+  it("ignores unrelated state fields and snapshots for candidate identity", () => {
+    const original = detectIntentStateDivergence(offerRequestInterpretation, alignedOfferState);
+    const changed = detectIntentStateDivergence(offerRequestInterpretation, {
+      ...alignedOfferState,
+      crm: { ...alignedOfferState.crm, callbackRequested: true },
+      stateEvidence: [
+        ...alignedOfferState.stateEvidence,
+        { ...callbackMissingState.stateEvidence[0], evidenceId: "crm-callback-unrelated" },
+      ],
+    });
+
+    expect(changed).toEqual(original);
   });
 });
