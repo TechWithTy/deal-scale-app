@@ -10,11 +10,9 @@ import {
   createAssuranceInboxModel,
   type AssuranceInboxCase,
 } from "src/assurance/assurance-inbox";
-import { FEATURE_FLAGS } from "src/config/feature-flags";
 
 const MODEL = createAssuranceInboxModel({
   role: "reviewer",
-  featureFlags: { [FEATURE_FLAGS.assuranceInbox]: true },
 });
 
 const styles: Record<string, CSSProperties> = {
@@ -136,6 +134,15 @@ const AssuranceInbox = () => {
     [activeFilter, confidenceFilter, dateFilter, detectorFilter, query, repFilter, sourceFilter],
   );
   const unique = (key: keyof AssuranceInboxCase) => [...new Set(MODEL.cases.map((item) => String(item[key])))];
+  const resetView = () => {
+    setActiveFilter("all");
+    setDetectorFilter("all");
+    setSourceFilter("all");
+    setRepFilter("all");
+    setDateFilter("all");
+    setConfidenceFilter("all");
+    setQuery("");
+  };
 
   return (
     <main style={styles.page}>
@@ -147,7 +154,7 @@ const AssuranceInbox = () => {
         </div>
         <div style={styles.headerActions}>
           <span style={{ ...styles.signal, background: "#eef7f1", color: "#2d8250" }}><IconShield size="14px" /> Read-only review</span>
-          <Button type="button" size="sm" variant="outline" onClick={() => setQuery("")}>
+          <Button type="button" size="sm" variant="outline" onClick={resetView}>
             Reset view
           </Button>
         </div>

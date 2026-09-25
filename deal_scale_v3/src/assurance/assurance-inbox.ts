@@ -213,6 +213,7 @@ export const createAssuranceInboxModel = ({
           actorWorkspaceId,
           recordWorkspaceId: record.workspaceId,
           role,
+          objectName: "assuranceCase",
         }),
       )
     : [];

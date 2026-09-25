@@ -73,7 +73,10 @@ export const SellerJourneysSurface = ({ model = EMPTY_SELLER_JOURNEY_MODEL }: { 
               <div key={milestone.id} style={{ borderLeft: `3px solid ${colors.accent}`, paddingLeft: "14px" }}>
                 <div style={{ alignItems: "center", display: "flex", gap: "8px", justifyContent: "space-between" }}>
                   <strong>{milestone.label}</strong>
-                  <StatusPill label="observed" status="fulfilled" />
+                  <StatusPill
+                    label={milestone.provenanceState === "observed" ? "Observed" : "Inferred"}
+                    status={milestone.provenanceState}
+                  />
                 </div>
                 <div style={{ color: colors.muted, fontSize: "12px", marginTop: "4px" }}>{milestone.eventType} - Occurred: {milestone.occurredAt.toISOString()}</div>
                 <div style={{ color: colors.muted, fontSize: "11px", marginTop: "3px" }}>Source: {milestone.sourceRef} - Observed: {milestone.observedAt.toISOString()}</div>
