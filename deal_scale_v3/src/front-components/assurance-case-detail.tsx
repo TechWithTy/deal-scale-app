@@ -8,22 +8,19 @@ import {
   ASSURANCE_CASE_DETAIL_IDENTIFIERS,
   DISPOSITION_OPTIONS,
   getEvidenceDrawerState,
+  getContextStateLabel,
   getDispositionControlState,
   selectEvidenceId,
   sortEvidenceTimeline,
 } from "src/assurance-case-detail/contract";
 import { ASSURANCE_CASE_DETAIL_PREVIEW } from "src/assurance-case-detail/fixture";
-import { FEATURE_FLAGS, type FeatureFlag } from "src/config/feature-flags";
+import type { FeatureFlag } from "src/config/feature-flags";
 import type { AssuranceRole } from "src/security/rbac";
 
 export type AssuranceCaseDetailProps = {
   role?: AssuranceRole;
   flags?: Partial<Record<FeatureFlag, boolean>>;
 };
-
-const DEFAULT_FLAGS = {
-  [FEATURE_FLAGS.managerDisposition]: true,
-} satisfies Partial<Record<FeatureFlag, boolean>>;
 
 const formatDate = (date: Date) =>
   new Intl.DateTimeFormat("en", {
@@ -41,8 +38,8 @@ const DetailValue = ({ label, value }: { label: string; value: string }) => (
 );
 
 export const AssuranceCaseDetail = ({
-  role = "manager",
-  flags = DEFAULT_FLAGS,
+  role = "reviewer",
+  flags = {} satisfies Partial<Record<FeatureFlag, boolean>>,
 }: AssuranceCaseDetailProps) => {
   const detail = ASSURANCE_CASE_DETAIL_PREVIEW;
   const evidence = useMemo(() => sortEvidenceTimeline(detail.evidence), [detail.evidence]);
@@ -66,6 +63,10 @@ export const AssuranceCaseDetail = ({
         .assurance-case-detail__card { border: 1px solid #e1e4e8; border-radius: 14px; padding: 20px; }
         .assurance-case-detail__card h2 { font-size: 15px; margin: 0 0 16px; }
         .assurance-case-detail__finding { background: #fffaf0; border-color: #f3dfae; }
+        .assurance-case-detail__context { display: grid; gap: 12px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .assurance-case-detail__state { border-radius: 8px; font-size: 12px; line-height: 1.45; padding: 10px 12px; }
+        .assurance-case-detail__state[data-state="confirmed"] { background: #eaf8ef; color: #2d8250; }
+        .assurance-case-detail__state[data-state="missing"] { background: #fff3e8; color: #a45b1f; }
         .assurance-case-detail__finding-title { font-size: 19px; font-weight: 620; margin: 10px 0 8px; }
         .assurance-case-detail__muted { color: #6f7480; font-size: 13px; line-height: 1.55; }
         .assurance-case-detail__values { display: grid; gap: 13px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -89,6 +90,8 @@ export const AssuranceCaseDetail = ({
           .assurance-case-detail__content { display: block; }
           .assurance-case-detail__aside { margin-top: 18px; }
           .assurance-case-detail__drawer[data-state="open"] { background: #fff; box-shadow: -10px 0 28px #1f293726; inset: 0 0 0 auto; max-width: 390px; overflow-y: auto; padding: 18px; position: fixed; width: 88vw; z-index: 20; }
+          .assurance-case-detail__backdrop[data-state="open"] { background: #11182766; inset: 0; position: fixed; z-index: 19; }
+          .assurance-case-detail__context { grid-template-columns: 1fr; }
         }
       `}</style>
       <div className="assurance-case-detail__shell">
@@ -114,6 +117,16 @@ export const AssuranceCaseDetail = ({
               <Tag color="amber" variant="soft">{Math.round(detail.detector.confidence * 100)}% confidence</Tag>
               <div className="assurance-case-detail__finding-title">{detail.detector.findingTitle}</div>
               <p className="assurance-case-detail__muted">{detail.detector.findingSummary}</p>
+              <div className="assurance-case-detail__context" aria-label="Seller and opportunity context">
+                <DetailValue label="Seller context" value={`${detail.context.seller.label} · ${getContextStateLabel(detail.context.seller.status)}`} />
+                <DetailValue label="Opportunity context" value={`${detail.context.opportunity.label} · ${getContextStateLabel(detail.context.opportunity.status)}`} />
+                <DetailValue label="Expected" value={detail.comparison.expected} />
+                <DetailValue label="Actual" value={detail.comparison.actual} />
+              </div>
+              <div className="assurance-case-detail__state" data-state={detail.comparison.state === "missing" ? "missing" : "confirmed"}>
+                {detail.comparison.state === "missing" ? "Missing: expected or actual state is not available." : `${detail.comparison.state === "mismatch" ? "Confirmed mismatch" : "Confirmed match"}: source-backed comparison is available.`}
+              </div>
+              <span className="assurance-case-detail__muted">Missing state remains explicit when either side of the comparison is unavailable.</span>
               <div className="assurance-case-detail__values">
                 <DetailValue label="Recommended action" value={detail.detector.recommendedAction} />
                 <DetailValue label="Policy version" value={detail.detector.sourceVersion} />
@@ -214,6 +227,7 @@ export const AssuranceCaseDetail = ({
                 )}
               </Card>
             </aside>
+            <div aria-label="Evidence drawer backdrop" className="assurance-case-detail__backdrop" data-state={getEvidenceDrawerState(selectedEvidenceId)} />
           </aside>
         </div>
       </div>

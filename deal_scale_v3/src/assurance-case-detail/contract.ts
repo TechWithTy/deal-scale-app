@@ -40,6 +40,15 @@ export type AssuranceCaseDetailPreview = {
   evidence: AssuranceCaseDetailEvidence[];
   disposition: ManagerDispositionRecord;
   persistence: "ui-only";
+  context: {
+    seller: { label: string; status: "confirmed" | "missing" };
+    opportunity: { label: string; status: "confirmed" | "missing" };
+  };
+  comparison: {
+    expected: string;
+    actual: string;
+    state: "match" | "mismatch" | "missing";
+  };
 };
 
 export type DispositionControlState = {
@@ -69,6 +78,9 @@ export const selectEvidenceId = (
 
 export const getEvidenceDrawerState = (selectedEvidenceId: string | null) =>
   selectedEvidenceId ? "open" : "closed";
+
+export const getContextStateLabel = (state: "confirmed" | "missing") =>
+  state === "confirmed" ? "Confirmed" : "Missing";
 
 export const getDispositionControlState = ({
   role,

@@ -1,11 +1,24 @@
 import { describe, expect, it } from "vitest";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
+import { vi } from "vitest";
+
+vi.mock("twenty-ui/primitives/input", () => ({
+  Button: ({ children }: { children?: unknown }) => createElement("button", null, children),
+}));
+vi.mock("twenty-ui/primitives/data-display", () => ({
+  Tag: ({ children }: { children?: unknown }) => createElement("span", null, children),
+  Status: ({ children }: { children?: unknown }) => createElement("span", null, children),
+}));
+vi.mock("twenty-ui/primitives/surfaces", () => ({
+  Card: ({ children }: { children?: unknown }) => createElement("section", null, children),
+}));
 
 import { FEATURE_FLAGS } from "../src/config/feature-flags";
 import {
   ASSURANCE_CASE_DETAIL_IDENTIFIERS,
   getEvidenceDrawerState,
+  getContextStateLabel,
   getDispositionControlState,
   selectEvidenceId,
   sortEvidenceTimeline,
@@ -62,6 +75,20 @@ describe("DS3-S6.04 assurance case detail contracts", () => {
     expect(ASSURANCE_CASE_DETAIL_PREVIEW.persistence).toBe("ui-only");
   });
 
+  it("exposes explicit seller, opportunity, and expected-versus-actual states", () => {
+    expect(ASSURANCE_CASE_DETAIL_PREVIEW.context).toEqual({
+      seller: { label: "Jordan Lee", status: "confirmed" },
+      opportunity: { label: "Northstar renewal", status: "confirmed" },
+    });
+    expect(ASSURANCE_CASE_DETAIL_PREVIEW.comparison).toEqual({
+      expected: "Approved offer: preferred rate through Sep 30",
+      actual: "Seller message: preferred rate through the end of the month",
+      state: "mismatch",
+    });
+    expect(getContextStateLabel("confirmed")).toBe("Confirmed");
+    expect(getContextStateLabel("missing")).toBe("Missing");
+  });
+
   it("renders the case, finding, evidence, provenance, and local disposition landmarks", () => {
     const markup = renderToStaticMarkup(createElement(AssuranceCaseDetail));
 
@@ -71,9 +98,27 @@ describe("DS3-S6.04 assurance case detail contracts", () => {
     expect(markup).toContain("Evidence timeline");
     expect(markup).toContain("Provenance");
     expect(markup).toContain("Disposition");
-    expect(markup).toContain("Unsaved preview");
+    expect(markup).toContain("Seller context");
+    expect(markup).toContain("Opportunity context");
+    expect(markup).toContain("Expected");
+    expect(markup).toContain("Actual");
+    expect(markup).toContain("Confirmed");
+    expect(markup).toContain("Missing");
+    expect(markup).toContain("Evidence drawer backdrop");
+    expect(markup).not.toContain("Unsaved preview");
     expect(markup).not.toContain("CRM pipeline");
     expect(frontComponent.success).toBe(true);
+  });
+
+  it("only enables local disposition when manager role and flag are explicit", () => {
+    const markup = renderToStaticMarkup(
+      createElement(AssuranceCaseDetail, {
+        role: "manager",
+        flags: { [FEATURE_FLAGS.managerDisposition]: true },
+      }),
+    );
+
+    expect(markup).toContain("Unsaved preview");
   });
 
   it("wires the standalone layout widget to the detail component", () => {

@@ -43,6 +43,15 @@ type AssuranceCaseRecord = {
   ownerLabel: string;
   summary: string;
   recommendedAction: string;
+  detectorType: string;
+  detectorLabel: string;
+  repLabel: string;
+  sourceLabel: string;
+  workflowLabel: string;
+  observedAt: string;
+  reviewDate: string;
+  sellerLabel: string;
+  opportunityLabel: string;
 };
 
 export type AssuranceInboxCase = Omit<
@@ -72,6 +81,15 @@ const CASE_RECORDS: AssuranceCaseRecord[] = [
     ownerLabel: "Unassigned",
     summary: "A promised price appears inconsistent with the latest approved offer.",
     recommendedAction: "Compare the promise against the approved offer before the next seller touch.",
+    detectorType: "Pricing promise mismatch",
+    detectorLabel: "Pricing promise mismatch",
+    repLabel: "Unassigned",
+    sourceLabel: "Seller message",
+    workflowLabel: "Seller follow-up",
+    observedAt: "2026-09-24",
+    reviewDate: "2026-09-25",
+    sellerLabel: "Unassigned",
+    opportunityLabel: "Acme expansion",
   },
   {
     id: "case-timing-002",
@@ -90,6 +108,15 @@ const CASE_RECORDS: AssuranceCaseRecord[] = [
     ownerLabel: "Revenue operations",
     summary: "The expected implementation window has not been corroborated by a follow-up event.",
     recommendedAction: "Request a dated implementation confirmation and attach it to the case.",
+    detectorType: "SLA timing risk",
+    detectorLabel: "SLA timing risk",
+    repLabel: "Jordan Lee",
+    sourceLabel: "Seller event",
+    workflowLabel: "Implementation handoff",
+    observedAt: "2026-09-23",
+    reviewDate: "2026-09-26",
+    sellerLabel: "Jordan Lee",
+    opportunityLabel: "Northstar rollout",
   },
   {
     id: "case-approval-003",
@@ -108,6 +135,15 @@ const CASE_RECORDS: AssuranceCaseRecord[] = [
     ownerLabel: "Assurance manager",
     summary: "The approval signal is present, but the final human disposition is still pending.",
     recommendedAction: "Confirm the evidence set and record the manager disposition.",
+    detectorType: "Approval evidence gap",
+    detectorLabel: "Approval evidence gap",
+    repLabel: "Morgan Diaz",
+    sourceLabel: "Approval event",
+    workflowLabel: "Commercial approval",
+    observedAt: "2026-09-22",
+    reviewDate: "2026-09-27",
+    sellerLabel: "Morgan Diaz",
+    opportunityLabel: "Contoso renewal",
   },
 ];
 
@@ -116,6 +152,47 @@ type ViewModelOptions = {
   featureFlags?: Partial<Record<FeatureFlag, boolean>>;
   role: AssuranceRole;
 };
+
+export type AssuranceInboxFilters = {
+  date: string;
+  detector: string;
+  rep: string;
+  source: string;
+  workflow: string;
+  confidence: "all" | "high" | "low";
+};
+
+export const DEFAULT_ASSURANCE_INBOX_FILTERS: AssuranceInboxFilters = {
+  date: "",
+  detector: "",
+  rep: "",
+  source: "",
+  workflow: "",
+  confidence: "all",
+};
+
+export const filterAssuranceInboxCases = (
+  cases: readonly AssuranceInboxCase[],
+  filters: AssuranceInboxFilters,
+) => cases.filter((item) =>
+  (!filters.date || item.reviewDate === filters.date) &&
+  (!filters.detector || item.detectorLabel === filters.detector) &&
+  (!filters.rep || item.repLabel === filters.rep) &&
+  (!filters.source || item.sourceLabel === filters.source) &&
+  (!filters.workflow || item.workflowLabel === filters.workflow) &&
+  (filters.confidence === "all" || (filters.confidence === "high" ? item.confidence >= 0.85 : item.confidence < 0.85)),
+);
+
+export const createAssuranceReviewContext = (item: AssuranceInboxCase) => ({
+  caseId: item.id,
+  title: item.title,
+  reviewDate: item.reviewDate,
+  detector: item.detectorLabel,
+  rep: item.repLabel,
+  source: item.sourceLabel,
+  workflow: item.workflowLabel,
+  confidence: item.confidence,
+});
 
 const canUpdateAssuranceCase = (role: AssuranceRole) =>
   RBAC_MATRIX[role].permissions.some(

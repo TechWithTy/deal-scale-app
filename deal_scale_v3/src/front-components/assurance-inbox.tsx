@@ -55,6 +55,7 @@ const styles: Record<string, CSSProperties> = {
   watch: { background: "#fff8df", color: "#977117" },
   ready: { background: "#eaf8ef", color: "#2d8250" },
   details: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: "12px", borderTop: "1px solid #eef0f3", borderBottom: "1px solid #eef0f3", padding: "14px 0" },
+  context: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: "12px" },
   detailLabel: { color: "#8b95a4", fontSize: "11px", fontWeight: 700, letterSpacing: "0.04em", textTransform: "uppercase" },
   detailValue: { marginTop: "5px", color: "#3f4958", fontSize: "13px" },
   caseBottom: { display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: "12px" },
@@ -96,6 +97,15 @@ const CaseCard = ({ item, onReview }: { item: AssuranceInboxCase; onReview: (id:
           <div style={styles.detailLabel}>Next review</div>
           <div style={styles.detailValue}>{item.nextReviewLabel}</div>
         </div>
+        <div>
+          <div style={styles.detailLabel}>Detector / source</div>
+          <div style={styles.detailValue}>{item.detectorType} · {item.sourceLabel}</div>
+        </div>
+      </div>
+      <div aria-label="Seller and opportunity context" style={styles.context}>
+        <div><div style={styles.detailLabel}>Seller / rep</div><div style={styles.detailValue}>{item.sellerLabel} · {item.repLabel}</div></div>
+        <div><div style={styles.detailLabel}>Opportunity / workflow</div><div style={styles.detailValue}>{item.opportunityLabel} · {item.workflowLabel}</div></div>
+        <div><div style={styles.detailLabel}>Observed</div><div style={styles.detailValue}>{item.observedAt}</div></div>
       </div>
       <div style={styles.caseBottom}>
         <p style={styles.recommendation}><strong>Suggested next step:</strong> {item.recommendedAction}</p>
@@ -109,16 +119,23 @@ const CaseCard = ({ item, onReview }: { item: AssuranceInboxCase; onReview: (id:
 
 const AssuranceInbox = () => {
   const [activeFilter, setActiveFilter] = useState<"all" | AssuranceInboxCase["urgency"]>("all");
+  const [detectorFilter, setDetectorFilter] = useState("all");
+  const [sourceFilter, setSourceFilter] = useState("all");
+  const [repFilter, setRepFilter] = useState("all");
+  const [dateFilter, setDateFilter] = useState("all");
+  const [confidenceFilter, setConfidenceFilter] = useState("all");
   const [query, setQuery] = useState("");
   const [reviewedCaseId, setReviewedCaseId] = useState<string | null>(null);
   const filteredCases = useMemo(
     () => MODEL.cases.filter((item) => {
       const matchesFilter = activeFilter === "all" || item.urgency === activeFilter;
-      const searchText = `${item.title} ${item.summary} ${item.provenanceLabel}`.toLowerCase();
-      return matchesFilter && searchText.includes(query.trim().toLowerCase());
+      const searchText = `${item.title} ${item.summary} ${item.provenanceLabel} ${item.sellerLabel} ${item.opportunityLabel}`.toLowerCase();
+      const confidenceMatch = confidenceFilter === "all" || (confidenceFilter === "high" ? item.confidence >= 0.85 : item.confidence < 0.85);
+      return matchesFilter && confidenceMatch && (dateFilter === "all" || item.reviewDate === dateFilter) && (detectorFilter === "all" || item.detectorType === detectorFilter) && (sourceFilter === "all" || item.sourceLabel === sourceFilter) && (repFilter === "all" || item.repLabel === repFilter) && searchText.includes(query.trim().toLowerCase());
     }),
-    [activeFilter, query],
+    [activeFilter, confidenceFilter, dateFilter, detectorFilter, query, repFilter, sourceFilter],
   );
+  const unique = (key: keyof AssuranceInboxCase) => [...new Set(MODEL.cases.map((item) => String(item[key])))];
 
   return (
     <main style={styles.page}>
@@ -164,6 +181,21 @@ const AssuranceInbox = () => {
               {filter === "all" ? "All cases" : filter}
             </button>
           ))}
+          <select aria-label="Filter by detector" value={detectorFilter} onChange={(event) => setDetectorFilter(event.target.value)}>
+            <option value="all">All detectors</option>{unique("detectorType").map((value) => <option key={value}>{value}</option>)}
+          </select>
+          <select aria-label="Filter by review date" value={dateFilter} onChange={(event) => setDateFilter(event.target.value)}>
+            <option value="all">All review dates</option>{unique("reviewDate").map((value) => <option key={value}>{value}</option>)}
+          </select>
+          <select aria-label="Filter by source" value={sourceFilter} onChange={(event) => setSourceFilter(event.target.value)}>
+            <option value="all">All sources</option>{unique("sourceLabel").map((value) => <option key={value}>{value}</option>)}
+          </select>
+          <select aria-label="Filter by rep" value={repFilter} onChange={(event) => setRepFilter(event.target.value)}>
+            <option value="all">All reps</option>{unique("repLabel").map((value) => <option key={value}>{value}</option>)}
+          </select>
+          <select aria-label="Filter by confidence" value={confidenceFilter} onChange={(event) => setConfidenceFilter(event.target.value)}>
+            <option value="all">All confidence</option><option value="high">High confidence</option><option value="low">Needs corroboration</option>
+          </select>
         </div>
         <label style={{ display: "flex", alignItems: "center", gap: "8px", minWidth: "220px", color: "#788293" }}>
           <IconSearch size="15px" />

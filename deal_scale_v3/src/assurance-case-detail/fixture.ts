@@ -112,4 +112,13 @@ export const ASSURANCE_CASE_DETAIL_PREVIEW: AssuranceCaseDetailPreview = {
   evidence,
   disposition,
   persistence: "ui-only",
+  context: {
+    seller: { label: "Jordan Lee", status: "confirmed" },
+    opportunity: { label: "Northstar renewal", status: "confirmed" },
+  },
+  comparison: {
+    expected: "Approved offer: preferred rate through Sep 30",
+    actual: "Seller message: preferred rate through the end of the month",
+    state: "mismatch",
+  },
 };
