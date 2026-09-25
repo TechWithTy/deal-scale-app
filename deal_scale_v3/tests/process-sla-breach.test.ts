@@ -32,6 +32,17 @@ const withDeadline = (dueAt: string, graceWindowMs: number, actualEvents: (typeo
   obligations: [{ ...obligation, dueAt }],
 });
 
+const withIdentity = (identity: { workspaceId: string; sourceConnectionId: string; opportunityReferenceId: string }) => {
+  const event = { ...lateCompletion, ...identity };
+  return {
+    ...conformanceResult,
+    ...identity,
+    obligations: [{ ...obligation, ...identity }],
+    events: [event],
+    actualEvents: [event],
+  };
+};
+
 describe("process SLA breach detector", () => {
   it("reports a late completion with traceable evidence", () => {
     const [finding] = detectProcessSlaBreaches({ ...baseInput, obligations: [obligation], events: [lateCompletion] });
@@ -68,11 +79,18 @@ describe("process SLA breach detector", () => {
     const [finding] = detectProcessSlaBreaches(conformanceResult);
 
     expect(finding).toMatchObject({
+      policyId: "policy-sla",
       policyVersion: "v2",
       trigger: "lead_assigned",
       expectedAction: "contact_lead",
       deadline: { dueAt: "2026-09-24T10:00:00.000Z", graceWindowMs: 0 },
-      actualEvents: [{ externalId: lateCompletion.externalId }],
+      actualEvents: [{
+        externalId: "event-completed-late",
+        provenanceRef: "twenty://event/event-completed-late",
+        sourceVersion: "twenty-v1",
+        observedAt: "2026-09-24T12:00:00.000Z",
+        occurredAt: "2026-09-24T12:00:00.000Z",
+      }],
       exceptionEvaluation: { evaluated: true, matched: false, reason: null },
     });
   });
@@ -107,6 +125,19 @@ describe("process SLA breach detector", () => {
     expect(detectProcessSlaBreaches(withEvents([onTime, futureLate]))).toEqual([]);
   });
 
+  it("reports a late completion without including future event evidence", () => {
+    const late = { ...lateCompletion, externalId: "event-late", occurredAt: "2026-09-24T11:00:00.000Z" };
+    const future = { ...lateCompletion, externalId: "event-future", occurredAt: "2026-09-24T13:00:00.000Z", observedAt: "2026-09-24T13:00:00.000Z" };
+
+    const [finding] = detectProcessSlaBreaches(withEvents([late, future]));
+    expect(finding).toMatchObject({
+      status: "late",
+      completionEventId: "event-late",
+      evidenceEventIds: ["event-late"],
+      actualEvents: [{ externalId: "event-late" }],
+    });
+  });
+
   it("prefers the first valid completion over a later completion", () => {
     const onTime = { ...lateCompletion, externalId: "event-first", occurredAt: "2026-09-24T09:30:00.000Z" };
     const later = { ...lateCompletion, externalId: "event-later", occurredAt: "2026-09-24T11:00:00.000Z" };
@@ -127,5 +158,26 @@ describe("process SLA breach detector", () => {
       actualEvents: [{ externalId: lateCompletion.externalId }],
       traceability: { tenantId: workspaceId, sourceConnectionId },
     });
+  });
+
+  it("uses a stable candidate ID for the same conformance input", () => {
+    const firstId = detectProcessSlaBreaches(conformanceResult)[0].candidateId;
+    const secondId = detectProcessSlaBreaches(conformanceResult)[0].candidateId;
+
+    expect(isValidProcessSlaCandidateId(firstId)).toBe(true);
+    expect(secondId).toBe(firstId);
+  });
+
+  it("scopes candidate IDs to workspace, source connection, and opportunity", () => {
+    const originalId = detectProcessSlaBreaches(conformanceResult)[0].candidateId;
+    const variants = [
+      withIdentity({ workspaceId: "00000000-0000-4000-8000-000000000002", sourceConnectionId, opportunityReferenceId: "opp-001" }),
+      withIdentity({ workspaceId, sourceConnectionId: "conn-twenty-002", opportunityReferenceId: "opp-001" }),
+      withIdentity({ workspaceId, sourceConnectionId, opportunityReferenceId: "opp-002" }),
+    ];
+    const variantIds = variants.map((input) => detectProcessSlaBreaches(input)[0].candidateId);
+
+    expect(variantIds.every(isValidProcessSlaCandidateId)).toBe(true);
+    expect(new Set([originalId, ...variantIds]).size).toBe(4);
   });
 });
