@@ -3,11 +3,11 @@ import { defineFrontComponent } from "twenty-sdk/define";
 import { Button } from "twenty-ui/primitives/input";
 import { Tag, Status } from "twenty-ui/primitives/data-display";
 import { Card } from "twenty-ui/primitives/surfaces";
-import { Text } from "twenty-ui/primitives/typography";
 
 import {
   ASSURANCE_CASE_DETAIL_IDENTIFIERS,
   DISPOSITION_OPTIONS,
+  getEvidenceDrawerState,
   getDispositionControlState,
   selectEvidenceId,
   sortEvidenceTimeline,
@@ -190,7 +190,7 @@ export const AssuranceCaseDetail = ({
             <aside
               aria-label="Evidence detail drawer"
               className="assurance-case-detail__drawer"
-              data-state={selectedEvidence ? "open" : "closed"}
+              data-state={getEvidenceDrawerState(selectedEvidenceId)}
             >
               <Card className="assurance-case-detail__card">
                 {selectedEvidence ? (

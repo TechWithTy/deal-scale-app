@@ -67,6 +67,9 @@ export const selectEvidenceId = (
   evidence: readonly AssuranceCaseDetailEvidence[],
 ) => (evidence.some((item) => item.evidenceId === nextId) ? nextId : null);
 
+export const getEvidenceDrawerState = (selectedEvidenceId: string | null) =>
+  selectedEvidenceId ? "open" : "closed";
+
 export const getDispositionControlState = ({
   role,
   flags,

@@ -5,6 +5,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { FEATURE_FLAGS } from "../src/config/feature-flags";
 import {
   ASSURANCE_CASE_DETAIL_IDENTIFIERS,
+  getEvidenceDrawerState,
   getDispositionControlState,
   selectEvidenceId,
   sortEvidenceTimeline,
@@ -13,6 +14,7 @@ import { ASSURANCE_CASE_DETAIL_PREVIEW } from "../src/assurance-case-detail/fixt
 import frontComponent, {
   AssuranceCaseDetail,
 } from "../src/front-components/assurance-case-detail";
+import pageLayout from "../src/page-layouts/assurance-case-detail.page-layout";
 
 const isUuidV4 = (value: string) =>
   /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
@@ -72,5 +74,20 @@ describe("DS3-S6.04 assurance case detail contracts", () => {
     expect(markup).toContain("Unsaved preview");
     expect(markup).not.toContain("CRM pipeline");
     expect(frontComponent.success).toBe(true);
+  });
+
+  it("wires the standalone layout widget to the detail component", () => {
+    expect(pageLayout.success).toBe(true);
+    expect(pageLayout.config.type).toBe("STANDALONE_PAGE");
+    expect(pageLayout.config.tabs?.[0]?.widgets?.[0]?.configuration).toEqual({
+      configurationType: "FRONT_COMPONENT",
+      frontComponentUniversalIdentifier:
+        ASSURANCE_CASE_DETAIL_IDENTIFIERS.frontComponent,
+    });
+  });
+
+  it("keeps the evidence detail surface closed until an item is selected", () => {
+    expect(getEvidenceDrawerState(null)).toBe("closed");
+    expect(getEvidenceDrawerState("evidence-pricing-email")).toBe("open");
   });
 });
