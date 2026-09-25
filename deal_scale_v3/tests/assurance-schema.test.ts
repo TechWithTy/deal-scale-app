@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { FieldType } from "twenty-sdk/define";
 
+import { toTwentySelectValue } from "../src/assurance/common-fields";
 import {
   ASSURANCE_FIXTURES,
   ASSURANCE_OBJECT_DEFINITIONS,
@@ -168,7 +169,7 @@ describe("P0 assurance schema", () => {
     const caseStatusField = fieldByName.get("caseStatus");
     expect(caseStatusField).toMatchObject({ type: FieldType.SELECT });
     expect(caseStatusField?.options.map((option: { value: string }) => option.value)).toEqual(
-      REQUESTED_CASE_STATUSES,
+      REQUESTED_CASE_STATUSES.map(toTwentySelectValue),
     );
     const urgencyField = fieldByName.get("urgency");
     expect(urgencyField).toMatchObject({ type: FieldType.SELECT });
@@ -176,7 +177,7 @@ describe("P0 assurance schema", () => {
       "low",
       "medium",
       "high",
-    ]);
+    ].map(toTwentySelectValue));
     expect(fieldByName.get("deadline")).toMatchObject({
       type: FieldType.DATE_TIME,
       isNullable: true,
@@ -206,4 +207,3 @@ describe("P0 assurance schema", () => {
     ).toThrow();
   });
 });
-
