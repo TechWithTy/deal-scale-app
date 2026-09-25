@@ -5,6 +5,7 @@ import auditNavigation from "../src/navigation-menu-items/audit.navigation-menu-
 import evidenceNavigation from "../src/navigation-menu-items/integrations-evidence.navigation-menu-item";
 import auditResultsLayout from "../src/page-layouts/audit-results.page-layout";
 import evidenceReadinessLayout from "../src/page-layouts/evidence-readiness.page-layout";
+import { RESPONSIVE_SURFACE_GRID } from "../src/assurance-surfaces/ui";
 
 describe("assurance surface layout contracts", () => {
   it("places Audit Results in a standalone front-component page", () => {
@@ -46,5 +47,10 @@ describe("assurance surface layout contracts", () => {
     expect(evidenceNavigation.config.pageLayoutUniversalIdentifier).toBe(
       ASSURANCE_SURFACE_IDENTIFIERS.evidenceReadinessPageLayout,
     );
+  });
+
+  it("keeps surface grids usable below their preferred card width", () => {
+    expect(RESPONSIVE_SURFACE_GRID.gridTemplateColumns).toContain("min(100%");
+    expect(RESPONSIVE_SURFACE_GRID.gridTemplateColumns).toContain("auto-fit");
   });
 });

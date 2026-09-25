@@ -10,6 +10,8 @@ import {
   AUDIT_RESULTS_PREVIEW,
   EVIDENCE_READINESS_PREVIEW,
   calculateReadinessPercent,
+  createAuditResultsModel,
+  createEvidenceReadinessModel,
   summarizeAuditRun,
 } from "../src/assurance-surfaces/models";
 
@@ -59,5 +61,90 @@ describe("assurance surface models", () => {
     for (const identifier of Object.values(ASSURANCE_SURFACE_IDENTIFIERS)) {
       expect(identifier).toMatch(UUID_V4);
     }
+  });
+
+  it("does not expose audit data when its feature flag is disabled", () => {
+    const model = createAuditResultsModel({
+      role: "reviewer",
+      hasScope: true,
+    });
+
+    expect(model.state).toBe("disabled");
+    expect(model.canRenderData).toBe(false);
+    expect(model.remediationActions).toHaveLength(0);
+  });
+
+  it("requires both an in-scope workspace and an RBAC-readable role", () => {
+    const missingScope = createAuditResultsModel({
+      role: "reviewer",
+      featureFlags: { [FEATURE_FLAGS.detectorCandidates]: true },
+    });
+    const forbidden = createAuditResultsModel({
+      role: "evidenceIntegration",
+      hasScope: true,
+      featureFlags: { [FEATURE_FLAGS.detectorCandidates]: true },
+    });
+
+    expect(missingScope.state).toBe("missing-scope");
+    expect(forbidden.state).toBe("forbidden");
+    expect(forbidden.canRenderData).toBe(false);
+  });
+
+  it("preserves explicit loading, error, and empty states without inventing counts", () => {
+    const context = {
+      role: "reviewer" as const,
+      hasScope: true,
+      featureFlags: { [FEATURE_FLAGS.detectorCandidates]: true },
+    };
+
+    expect(createAuditResultsModel({ ...context, dataState: "loading" }).state).toBe("loading");
+    expect(
+      createAuditResultsModel({ ...context, dataState: "error", errorMessage: "Audit unavailable" }),
+    ).toMatchObject({ state: "error", message: "Audit unavailable" });
+    expect(createAuditResultsModel({ ...context, dataState: "empty" })).toMatchObject({
+      state: "empty",
+      remediationActions: [],
+    });
+  });
+
+  it("gates remediation actions by their feature flag and existing RBAC permissions", () => {
+    const reviewer = createAuditResultsModel({
+      role: "reviewer",
+      hasScope: true,
+      featureFlags: {
+        [FEATURE_FLAGS.detectorCandidates]: true,
+        [FEATURE_FLAGS.managerDisposition]: true,
+      },
+    });
+    const manager = createAuditResultsModel({
+      role: "manager",
+      hasScope: true,
+      featureFlags: {
+        [FEATURE_FLAGS.detectorCandidates]: true,
+        [FEATURE_FLAGS.managerDisposition]: true,
+      },
+    });
+
+    expect(reviewer.state).toBe("ready");
+    expect(reviewer.remediationActions.map((action) => action.id)).toEqual(["audit-action-2"]);
+    expect(manager.remediationActions.map((action) => action.id)).toContain("audit-action-1");
+    expect(manager.canSelectRemediation).toBe(true);
+  });
+
+  it("keeps evidence readiness actions unavailable to roles without write scope", () => {
+    const reviewer = createEvidenceReadinessModel({
+      role: "reviewer",
+      hasScope: true,
+      featureFlags: { [FEATURE_FLAGS.assuranceInbox]: true },
+    });
+    const integration = createEvidenceReadinessModel({
+      role: "evidenceIntegration",
+      hasScope: true,
+      featureFlags: { [FEATURE_FLAGS.assuranceInbox]: true },
+    });
+
+    expect(reviewer.state).toBe("ready");
+    expect(reviewer.remediationActions).toHaveLength(0);
+    expect(integration.remediationActions.length).toBeGreaterThan(0);
   });
 });

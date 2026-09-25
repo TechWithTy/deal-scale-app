@@ -1,7 +1,7 @@
 import type { CSSProperties, ReactNode } from "react";
 import { IconAlertTriangle, IconCheck, IconChevronRight, IconShield } from "twenty-ui/icon";
 
-import type { RemediationAction } from "src/assurance-surfaces/models";
+import type { RemediationAction, SurfaceState } from "src/assurance-surfaces/models";
 
 export type Tone = "good" | "warn" | "bad" | "neutral";
 
@@ -17,6 +17,78 @@ const cardStyle: CSSProperties = {
   borderRadius: "14px",
   background: "#FFFFFF",
   padding: "18px",
+};
+
+export const RESPONSIVE_SURFACE_GRID: CSSProperties = {
+  display: "grid",
+  gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 280px), 1fr))",
+  gap: "12px",
+};
+
+export const getSurfaceStatePresentation = (
+  state: Exclude<SurfaceState, "ready">,
+  message?: string,
+) => {
+  const presentation = {
+    disabled: {
+      label: "Unavailable",
+      tone: "neutral" as Tone,
+      message: "This assurance surface is not enabled for the current workspace.",
+    },
+    forbidden: {
+      label: "Restricted",
+      tone: "bad" as Tone,
+      message: "Your role does not have read access to this assurance surface.",
+    },
+    "missing-scope": {
+      label: "Scope required",
+      tone: "warn" as Tone,
+      message: "A workspace scope is required before assurance data can be shown.",
+    },
+    loading: {
+      label: "Loading",
+      tone: "neutral" as Tone,
+      message: "Loading the latest read-only assurance snapshot.",
+    },
+    error: {
+      label: "Unavailable",
+      tone: "bad" as Tone,
+      message: "The assurance snapshot could not be loaded.",
+    },
+    empty: {
+      label: "No data",
+      tone: "neutral" as Tone,
+      message: "No assurance snapshot is available for the current scope.",
+    },
+  } satisfies Record<Exclude<SurfaceState, "ready">, { label: string; tone: Tone; message: string }>;
+
+  return { ...presentation[state], ...(message ? { message } : {}) };
+};
+
+export const SurfaceStateNotice = ({
+  state,
+  message,
+}: {
+  state: Exclude<SurfaceState, "ready">;
+  message?: string;
+}) => {
+  const presentation = getSurfaceStatePresentation(state, message);
+  return (
+    <section
+      aria-live="polite"
+      style={{
+        ...cardStyle,
+        borderColor: `${tones[presentation.tone].accent}55`,
+        background: tones[presentation.tone].background,
+        color: tones[presentation.tone].text,
+      }}
+    >
+      <strong style={{ display: "block", fontSize: "13px" }}>{presentation.label}</strong>
+      <span style={{ display: "block", fontSize: "12px", lineHeight: 1.5, marginTop: "5px" }}>
+        {presentation.message}
+      </span>
+    </section>
+  );
 };
 
 export const SurfaceShell = ({
@@ -36,13 +108,13 @@ export const SurfaceShell = ({
     style={{
       boxSizing: "border-box",
       minHeight: "100%",
-      padding: "24px",
+      padding: "clamp(12px, 4vw, 24px)",
       background: "#FAFBFC",
       color: "#20242A",
       fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
     }}
   >
-    <div style={{ maxWidth: "1180px", margin: "0 auto" }}>
+    <div style={{ maxWidth: "1180px", minWidth: 0, margin: "0 auto" }}>
       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "16px", flexWrap: "wrap", marginBottom: "22px" }}>
         <div>
           <div style={{ color: "#7A8491", fontSize: "11px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase" }}>{eyebrow}</div>
@@ -58,7 +130,7 @@ export const SurfaceShell = ({
 );
 
 export const SurfaceCard = ({ title, detail, children }: { title: string; detail?: string; children: ReactNode }) => (
-  <section style={cardStyle}>
+  <section style={{ ...cardStyle, minWidth: 0 }}>
     <div style={{ display: "flex", justifyContent: "space-between", gap: "10px", alignItems: "baseline", marginBottom: "15px" }}>
       <h2 style={{ fontSize: "14px", margin: 0, letterSpacing: "-0.01em" }}>{title}</h2>
       {detail ? <span style={{ color: "#8B949E", fontSize: "11px" }}>{detail}</span> : null}
@@ -94,8 +166,8 @@ export const GapRow = ({ label, count, detail }: { label: string; count: number;
   </div>
 );
 
-export const RemediationRow = ({ action, selected, onSelect }: { action: RemediationAction; selected: boolean; onSelect: () => void }) => (
-  <button type="button" onClick={onSelect} style={{ display: "flex", width: "100%", alignItems: "center", gap: "10px", textAlign: "left", cursor: "pointer", border: selected ? "1px solid #A8C7B4" : "1px solid #EEF0F2", borderRadius: "10px", background: selected ? "#F4FBF6" : "#FFFFFF", padding: "11px", marginBottom: "8px" }}>
+export const RemediationRow = ({ action, selected, onSelect, disabled = false }: { action: RemediationAction; selected: boolean; onSelect: () => void; disabled?: boolean }) => (
+  <button type="button" disabled={disabled} aria-disabled={disabled} onClick={onSelect} style={{ display: "flex", width: "100%", alignItems: "center", gap: "10px", textAlign: "left", cursor: disabled ? "not-allowed" : "pointer", opacity: disabled ? 0.55 : 1, border: selected ? "1px solid #A8C7B4" : "1px solid #EEF0F2", borderRadius: "10px", background: selected ? "#F4FBF6" : "#FFFFFF", padding: "11px", marginBottom: "8px" }}>
     <IconChevronRight color={selected ? "#3B9B68" : "#A5ADB6"} size={16} />
     <span style={{ flex: 1 }}><span style={{ display: "block", fontSize: "12px", fontWeight: 650 }}>{action.label}</span><span style={{ display: "block", color: "#7A8491", fontSize: "11px", lineHeight: 1.4, marginTop: "3px" }}>{action.detail}</span></span>
     <StatusChip label={action.priority} tone={action.priority === "High" ? "bad" : "warn"} />

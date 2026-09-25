@@ -1,4 +1,30 @@
-import { FEATURE_FLAGS, type FeatureFlag } from "src/config/feature-flags";
+import {
+  FEATURE_FLAGS,
+  isFeatureEnabled,
+  type FeatureFlag,
+} from "src/config/feature-flags";
+import { type AssuranceObjectName } from "src/assurance/identifiers";
+import { RBAC_MATRIX, type AssuranceRole } from "src/security/rbac";
+
+export type SurfaceDataState = "loading" | "error" | "empty" | "ready";
+export type SurfaceState =
+  | "disabled"
+  | "forbidden"
+  | "missing-scope"
+  | SurfaceDataState;
+
+export type SurfaceAccessOptions = {
+  role?: AssuranceRole;
+  hasScope?: boolean;
+  featureFlags?: Partial<Record<FeatureFlag, boolean>>;
+  dataState?: SurfaceDataState;
+  errorMessage?: string;
+};
+
+export type SurfacePermission = {
+  objectName: AssuranceObjectName;
+  operation: "read" | "update";
+};
 
 export type AuditStatusCounts = {
   pass: number;
@@ -14,6 +40,7 @@ export type RemediationAction = {
   owner: string;
   priority: "High" | "Medium" | "Low";
   featureFlag: FeatureFlag;
+  permission: SurfacePermission;
 };
 
 export type ProvenanceGap = {
@@ -22,7 +49,7 @@ export type ProvenanceGap = {
   detail: string;
 };
 
-export type AuditResultsModel = {
+type AuditResultsPayload = {
   runLabel: string;
   runTime: string;
   status: "Pass" | "Needs review";
@@ -31,6 +58,22 @@ export type AuditResultsModel = {
   provenanceGaps: ProvenanceGap[];
   remediationActions: RemediationAction[];
 };
+
+type ReadyModel<T> = T & {
+  state: "ready";
+  canRenderData: true;
+  canSelectRemediation: boolean;
+};
+
+type BlockedModel = {
+  state: Exclude<SurfaceState, "ready">;
+  message: string;
+  remediationActions: [];
+  canRenderData: false;
+  canSelectRemediation: false;
+};
+
+export type AuditResultsModel = ReadyModel<AuditResultsPayload> | BlockedModel;
 
 export type SourceConnectionHealth = {
   provider: string;
@@ -47,7 +90,7 @@ export type EvidenceCoverage = {
   detail: string;
 };
 
-export type EvidenceReadinessModel = {
+type EvidenceReadinessPayload = {
   readinessPercent: number;
   coveredEvidence: number;
   totalEvidence: number;
@@ -56,6 +99,8 @@ export type EvidenceReadinessModel = {
   provenanceGaps: ProvenanceGap[];
   remediationActions: RemediationAction[];
 };
+
+export type EvidenceReadinessModel = ReadyModel<EvidenceReadinessPayload> | BlockedModel;
 
 export const summarizeAuditRun = ({
   pass,
@@ -74,7 +119,7 @@ export const calculateReadinessPercent = (covered: number, total: number) => {
   return Math.round((boundedCovered / total) * 100);
 };
 
-export const AUDIT_RESULTS_PREVIEW: AuditResultsModel = {
+export const AUDIT_RESULTS_PREVIEW: AuditResultsPayload = {
   runLabel: "Latest assurance run",
   runTime: "25 Sep 2026 · 09:42 UTC",
   status: "Needs review",
@@ -93,6 +138,7 @@ export const AUDIT_RESULTS_PREVIEW: AuditResultsModel = {
       owner: "Assurance Manager",
       priority: "High",
       featureFlag: FEATURE_FLAGS.managerDisposition,
+      permission: { objectName: "managerDisposition", operation: "update" },
     },
     {
       id: "audit-action-2",
@@ -101,11 +147,12 @@ export const AUDIT_RESULTS_PREVIEW: AuditResultsModel = {
       owner: "Evidence Integration",
       priority: "Medium",
       featureFlag: FEATURE_FLAGS.detectorCandidates,
+      permission: { objectName: "evidenceReference", operation: "read" },
     },
   ],
 };
 
-export const EVIDENCE_READINESS_PREVIEW: EvidenceReadinessModel = {
+export const EVIDENCE_READINESS_PREVIEW: EvidenceReadinessPayload = {
   coveredEvidence: 39,
   totalEvidence: 50,
   readinessPercent: calculateReadinessPercent(39, 50),
@@ -132,6 +179,7 @@ export const EVIDENCE_READINESS_PREVIEW: EvidenceReadinessModel = {
       owner: "Evidence Integration",
       priority: "High",
       featureFlag: FEATURE_FLAGS.assuranceInbox,
+      permission: { objectName: "sourceConnection", operation: "update" },
     },
     {
       id: "evidence-action-2",
@@ -140,6 +188,146 @@ export const EVIDENCE_READINESS_PREVIEW: EvidenceReadinessModel = {
       owner: "Evidence Integration",
       priority: "Medium",
       featureFlag: FEATURE_FLAGS.assuranceInbox,
+      permission: { objectName: "evidenceReference", operation: "update" },
     },
   ],
+};
+
+const SURFACE_POLICIES = {
+  audit: {
+    featureFlag: FEATURE_FLAGS.detectorCandidates,
+    readableObjects: [
+      "assuranceCase",
+      "detectorCandidate",
+      "evidenceReference",
+    ] as const,
+  },
+  evidence: {
+    featureFlag: FEATURE_FLAGS.assuranceInbox,
+    readableObjects: ["sourceConnection", "evidenceReference"] as const,
+  },
+} as const;
+
+const hasPermission = (
+  role: AssuranceRole,
+  permission: SurfacePermission,
+) =>
+  RBAC_MATRIX[role].permissions.some(
+    (entry) =>
+      entry.objectName === permission.objectName &&
+      (permission.operation === "read" || entry.canUpdateObjectRecords),
+  );
+
+const canReadSurface = (
+  role: AssuranceRole,
+  objects: readonly AssuranceObjectName[],
+) =>
+  objects.every((objectName) =>
+    hasPermission(role, { objectName, operation: "read" }),
+  );
+
+const resolveSurfaceState = ({
+  featureFlag,
+  readableObjects,
+  role,
+  hasScope = false,
+  featureFlags = {},
+  dataState = "ready",
+  errorMessage,
+}: SurfaceAccessOptions & {
+  featureFlag: FeatureFlag;
+  readableObjects: readonly AssuranceObjectName[];
+}): SurfaceState | { state: "error"; message: string } => {
+  if (!isFeatureEnabled(featureFlag, featureFlags)) return "disabled";
+  if (!hasScope) return "missing-scope";
+  if (!role || !canReadSurface(role, readableObjects)) return "forbidden";
+  if (dataState === "error") {
+    return { state: "error", message: errorMessage ?? "The assurance snapshot could not be loaded." };
+  }
+  return dataState;
+};
+
+const stateMessage = (state: Exclude<SurfaceState, "ready">) => {
+  switch (state) {
+    case "disabled":
+      return "This assurance surface is not enabled for the current workspace.";
+    case "forbidden":
+      return "Your role does not have read access to this assurance surface.";
+    case "missing-scope":
+      return "A workspace scope is required before assurance data can be shown.";
+    case "loading":
+      return "Loading the latest read-only assurance snapshot.";
+    case "empty":
+      return "No assurance snapshot is available for the current scope.";
+    case "error":
+      return "The assurance snapshot could not be loaded.";
+  }
+};
+
+const blockedModel = (result: Exclude<SurfaceState, "ready"> | { state: "error"; message: string }): BlockedModel => {
+  const state = typeof result === "string" ? result : result.state;
+  return {
+    state,
+    message: typeof result === "string" ? stateMessage(result) : result.message,
+    remediationActions: [],
+    canRenderData: false,
+    canSelectRemediation: false,
+  };
+};
+
+const permittedActions = (
+  actions: RemediationAction[],
+  role: AssuranceRole,
+  featureFlags: Partial<Record<FeatureFlag, boolean>>,
+) =>
+  actions.filter(
+    (action) =>
+      isFeatureEnabled(action.featureFlag, featureFlags) &&
+      hasPermission(role, action.permission),
+  );
+
+export const createAuditResultsModel = (
+  options: SurfaceAccessOptions,
+  data: AuditResultsPayload = AUDIT_RESULTS_PREVIEW,
+): AuditResultsModel => {
+  const result = resolveSurfaceState({
+    ...options,
+    featureFlag: SURFACE_POLICIES.audit.featureFlag,
+    readableObjects: SURFACE_POLICIES.audit.readableObjects,
+  });
+  if (result !== "ready") return blockedModel(result);
+
+  const remediationActions = options.role
+    ? permittedActions(data.remediationActions, options.role, options.featureFlags ?? {})
+    : [];
+  return {
+    ...data,
+    state: "ready",
+    canRenderData: true,
+    canSelectRemediation: remediationActions.length > 0,
+    remediationActions,
+  };
+};
+
+export const createEvidenceReadinessModel = (
+  options: SurfaceAccessOptions,
+  data: EvidenceReadinessPayload = EVIDENCE_READINESS_PREVIEW,
+): EvidenceReadinessModel => {
+  const result = resolveSurfaceState({
+    ...options,
+    featureFlag: SURFACE_POLICIES.evidence.featureFlag,
+    readableObjects: SURFACE_POLICIES.evidence.readableObjects,
+  });
+  if (result !== "ready") return blockedModel(result);
+
+  const remediationActions = options.role
+    ? permittedActions(data.remediationActions, options.role, options.featureFlags ?? {})
+    : [];
+  return {
+    ...data,
+    state: "ready",
+    canRenderData: true,
+    canSelectRemediation: remediationActions.length > 0,
+    remediationActions,
+  };
 };
