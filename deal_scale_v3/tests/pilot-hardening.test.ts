@@ -126,7 +126,7 @@ describe("pilot observability and trust metrics", () => {
       metric("extraction_correction", 1),
       metric("extraction_correction", 0),
       metric("case_review_latency_ms", 240),
-    ]);
+    ], workspaceId);
 
     expect(summary).toEqual({
       sampleSize: 9,
@@ -140,7 +140,7 @@ describe("pilot observability and trust metrics", () => {
   });
 
   it("uses null when a metric has no samples", () => {
-    expect(summarizeTrustMetrics([])).toEqual({
+    expect(summarizeTrustMetrics([], workspaceId)).toEqual({
       sampleSize: 0,
       syncLagMs: null,
       detectorLatencyMs: null,
@@ -149,6 +149,13 @@ describe("pilot observability and trust metrics", () => {
       evidenceCompleteness: null,
       caseReviewLatencyMs: null,
     });
+  });
+
+  it("rejects cross-workspace trust metric aggregation", () => {
+    expect(() => summarizeTrustMetrics([
+      metric("sync_lag_ms", 10),
+      { ...metric("sync_lag_ms", 20), workspaceId: otherWorkspaceId },
+    ], workspaceId)).toThrow("workspace");
   });
 
   it("creates the bounded funnel event with trace identity", () => {

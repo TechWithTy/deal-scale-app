@@ -194,9 +194,13 @@ export const calculateEvidenceReadiness = (input: EvidenceReadinessInput): Evide
 	const detectors = [...input.detectors].sort((a, b) => a.detectorType.localeCompare(b.detectorType)).map((requirement) => detectorReadiness(requirement, sources, asOf));
 	const sourceReadinesses = sources.map((source) => sourceReadiness(source, asOf));
 	const connectedEvidenceTypes = uniqueSorted(sources.filter((source) => source.connectionStatus === "connected").flatMap((source) => source.evidenceTypes));
-	const warnings = detectors.length === 0
-		? [warning("no_detector_coverage", "readiness", "No detector coverage is configured for this tenant.")]
-		: [];
+	const warnings = dedupeWarnings([
+		...sourceReadinesses.flatMap((source) => source.warnings),
+		...detectors.flatMap((detector) => detector.warnings),
+		...(detectors.length === 0
+			? [warning("no_detector_coverage", "readiness", "No detector coverage is configured for this tenant.")]
+			: []),
+	]);
 	const overallScore = Math.round(detectors.length
 		? detectors.reduce((total, detector) => total + detector.score, 0) / detectors.length
 		: 0);

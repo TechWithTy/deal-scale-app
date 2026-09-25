@@ -163,7 +163,7 @@ it("preserves_safe_trace_dimensions_and_summarizes_trust_metrics", () => {
     metric("case_review_latency_ms", 240),
   ];
 
-  expect(summarizeTrustMetrics(events)).toEqual(expect.objectContaining({
+  expect(summarizeTrustMetrics(events, workspaceId)).toEqual(expect.objectContaining({
     detectorLatencyMs: 120,
     detectorErrorRate: 0,
     evidenceCompleteness: 0.75,
@@ -203,7 +203,7 @@ export type TrustMetricSummary = {
   evidenceCompleteness: number | null;
   caseReviewLatencyMs: number | null;
 };
-export function summarizeTrustMetrics(events: readonly PilotMetricEvent[]): TrustMetricSummary;
+export function summarizeTrustMetrics(events: readonly PilotMetricEvent[], workspaceId: string): TrustMetricSummary;
 
 export function createFunnelEvent(input: {
   name: "audit_activated" | "case_review_started" | "case_review_completed";
@@ -216,6 +216,7 @@ export function createFunnelEvent(input: {
 Accept only finite metric values and non-future ISO timestamps, strip unsafe
 dimensions, preserve workspace/trace identity, and calculate rates using the
 event count for the relevant metric as denominator.
+Reject events from a different workspace before aggregation.
 
 - [ ] **Step 6: Document the pilot-hardening checklist**
 

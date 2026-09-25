@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import {
   calculateShadowPriority,
+  createAtomicCaseUpsert,
   runShadowMonitoring,
   runLiveShadowMonitoring,
   type ShadowDetector,
@@ -170,5 +171,62 @@ describe("live shadow monitoring", () => {
     expect(upsertCase).toHaveBeenCalledOnce();
     expect(result.createdCases).toEqual([]);
     expect(result.duplicateCaseKeys).toHaveLength(1);
+  });
+
+  it("rejects invalid and future evidence timestamps", async () => {
+    await expect(runShadowMonitoring({
+      workspaceId,
+      changedEvidence: [{ ...evidence("bad", "email"), observedAt: "not-a-date" }],
+      evidence: [],
+      detectors: [],
+    })).rejects.toThrow("observedAt");
+    await expect(runShadowMonitoring({
+      workspaceId,
+      changedEvidence: [{ ...evidence("future", "email"), observedAt: "2999-01-01T00:00:00.000Z" }],
+      evidence: [],
+      detectors: [],
+    })).rejects.toThrow("observedAt");
+  });
+
+  it("propagates degraded readiness into detector context and created cases", async () => {
+    let readinessStatus: string | undefined;
+    const result = await runShadowMonitoring({
+      workspaceId,
+      changedEvidence: [evidence("email-1", "email")],
+      evidence: [evidence("email-1", "email")],
+      detectors: [detector(async (context) => {
+        readinessStatus = context.readinessStatus;
+        return [{
+          findingKey: "degraded-finding",
+          summary: "Review with degraded evidence",
+          severity: 0.8,
+          urgency: 0.7,
+          evidenceCompleteness: 0.5,
+          evidenceIds: ["email-1"],
+        }];
+      }, { readinessStatus: "degraded" })],
+    });
+
+    expect(readinessStatus).toBe("degraded");
+    expect(result.createdCases[0].readinessStatus).toBe("degraded");
+  });
+
+  it("enforces one created result for concurrent duplicate upserts", async () => {
+    const upsert = createAtomicCaseUpsert();
+    const candidate = {
+      id: "case-1",
+      dedupeKey: "workspace|opportunity|detector|v1|finding",
+      workspaceId,
+      opportunityReferenceId,
+      detectorType: "promise-shadow",
+      detectorVersion: "promise-shadow.v1",
+      findingKey: "finding",
+      summary: "Review",
+      evidenceIds: ["email-1"],
+      readinessStatus: "ready" as const,
+      priority: calculateShadowPriority({ severity: 0.5, urgency: 0.5, evidenceCompleteness: 1 }),
+    };
+
+    await expect(Promise.all([upsert(candidate), upsert(candidate)])).resolves.toEqual(["created", "duplicate"]);
   });
 });

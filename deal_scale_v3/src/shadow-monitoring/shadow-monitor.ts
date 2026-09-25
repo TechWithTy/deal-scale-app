@@ -25,6 +25,7 @@ export type ShadowFinding = {
 
 export type ShadowDetectorContext = {
   workspaceId: string;
+  readinessStatus: "ready" | "degraded";
   changedEvidence: readonly ShadowEvidence[];
   evidence: readonly ShadowEvidence[];
 };
@@ -48,6 +49,7 @@ export type ShadowCase = {
   findingKey: string;
   summary: string;
   evidenceIds: readonly string[];
+  readinessStatus: "ready" | "degraded";
   priority: ShadowPriority;
 };
 
@@ -79,7 +81,14 @@ const deterministicUuidV4 = (seed: string) => {
 
 const observedAtMs = (evidence: ShadowEvidence) => {
   const timestamp = new Date(evidence.observedAt).getTime();
-  return Number.isNaN(timestamp) ? 0 : timestamp;
+  return timestamp;
+};
+
+const validateObservedAt = (evidence: ShadowEvidence) => {
+  const timestamp = new Date(evidence.observedAt);
+  if (!Number.isFinite(timestamp.getTime()) || timestamp.getTime() > Date.now()) {
+    throw new Error(`Evidence ${evidence.id} has an invalid or future observedAt timestamp`);
+  }
 };
 
 const sortEvidence = (changedIds: ReadonlySet<string>) =>
@@ -114,6 +123,7 @@ export const runShadowMonitoring = async ({
   const changed = dedupeEvidence(
     changedEvidence.filter((item) => item.workspaceId === workspaceId),
   ).sort(sortChangedEvidence).slice(0, changedLimit);
+  changed.forEach(validateObservedAt);
   const changedTypes = new Set(changed.map((item) => item.evidenceType));
   const changedIds = new Set(changed.map((item) => item.id));
   const opportunities = new Set(changed.map((item) => item.opportunityReferenceId));
@@ -122,6 +132,7 @@ export const runShadowMonitoring = async ({
       (item) => item.workspaceId === workspaceId && opportunities.has(item.opportunityReferenceId),
     ),
   ).sort(sortEvidence(changedIds));
+  candidates.forEach(validateObservedAt);
   const existingKeys = new Set(existingCases.map((item) => item.dedupeKey));
   const createdCases: ShadowCase[] = [];
   const duplicateCaseKeys: string[] = [];
@@ -137,13 +148,14 @@ export const runShadowMonitoring = async ({
     }
     const limit = validateRunLimit(detector.maxEvidencePerEvaluation, "maxEvidencePerEvaluation");
     const detectorChanged = changed.filter((item) => detector.evidenceTypes.includes(item.evidenceType));
+    const readinessStatus = detector.readinessStatus === "degraded" ? "degraded" : "ready";
     const opportunityIds = [...new Set(detectorChanged.map((item) => item.opportunityReferenceId))].sort();
     for (const opportunity of opportunityIds) {
       const opportunityChanged = detectorChanged.filter((item) => item.opportunityReferenceId === opportunity).slice(0, limit);
       const detectorEvidence = candidates
         .filter((item) => item.opportunityReferenceId === opportunity && detector.evidenceTypes.includes(item.evidenceType))
         .slice(0, limit);
-      const findings = await detector.evaluate({ workspaceId, changedEvidence: opportunityChanged, evidence: detectorEvidence });
+      const findings = await detector.evaluate({ workspaceId, readinessStatus, changedEvidence: opportunityChanged, evidence: detectorEvidence });
       if (!evaluatedDetectorTypes.includes(detector.detectorType)) evaluatedDetectorTypes.push(detector.detectorType);
 
       for (const finding of findings) {
@@ -168,6 +180,7 @@ export const runShadowMonitoring = async ({
           findingKey: finding.findingKey,
           summary: finding.summary,
           evidenceIds,
+          readinessStatus,
           priority: calculateShadowPriority(finding),
         });
       }

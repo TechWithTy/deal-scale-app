@@ -1,5 +1,5 @@
 export { calculateShadowPriority } from "./priority";
-export { runLiveShadowMonitoring } from "./live-shadow-monitor";
+export { createAtomicCaseUpsert, runLiveShadowMonitoring } from "./live-shadow-monitor";
 export type { LiveShadowMonitoringInput, ShadowMonitoringStore } from "./live-shadow-monitor";
 export { runShadowMonitoring } from "./shadow-monitor";
 export type {

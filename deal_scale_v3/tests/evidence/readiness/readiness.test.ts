@@ -195,6 +195,11 @@ describe("evidence readiness", () => {
 				expect.objectContaining({ code: "invalid_sync_timestamp" }),
 			]),
 		);
+		expect(result.warnings).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({ code: "invalid_sync_timestamp" }),
+			]),
+		);
 	});
 
 	it("never counts a future sync as fresh when it is the only required source", () => {

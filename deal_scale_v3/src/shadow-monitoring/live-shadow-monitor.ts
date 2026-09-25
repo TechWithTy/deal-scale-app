@@ -14,7 +14,17 @@ export type ShadowMonitoringStore = {
     limitPerOpportunity: number;
   }) => Promise<readonly ShadowEvidence[]>;
   loadDetectors: (input: { workspaceId: string }) => Promise<readonly ShadowDetector[]>;
+  /** Must be backed by a unique workspace/dedupe key and an atomic upsert in production. */
   upsertCase: (candidate: ShadowCase) => Promise<"created" | "duplicate">;
+};
+
+export const createAtomicCaseUpsert = (initialCases: readonly ShadowCase[] = []) => {
+  const cases = new Map(initialCases.map((candidate) => [candidate.dedupeKey, candidate]));
+  return async (candidate: ShadowCase): Promise<"created" | "duplicate"> => {
+    if (cases.has(candidate.dedupeKey)) return "duplicate";
+    cases.set(candidate.dedupeKey, candidate);
+    return "created";
+  };
 };
 
 export type LiveShadowMonitoringInput = {

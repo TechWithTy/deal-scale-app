@@ -10,9 +10,13 @@ export type TrustMetricSummary = {
   caseReviewLatencyMs: number | null;
 };
 
-export function summarizeTrustMetrics(events: readonly PilotMetricEvent[]): TrustMetricSummary {
+export function summarizeTrustMetrics(events: readonly PilotMetricEvent[], workspaceId: string): TrustMetricSummary {
+  if (!workspaceId) throw new Error("workspaceId is required");
   const groups = new Map<PilotMetricName, number[]>();
   for (const event of events) {
+    if (event.workspaceId !== workspaceId) {
+      throw new Error("Trust metrics must use one workspace");
+    }
     validateMetric(event);
     const values = groups.get(event.name) ?? [];
     values.push(event.value);
