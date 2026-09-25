@@ -104,12 +104,6 @@ export const domainFields: Record<AssuranceObjectName, (objectId: string) => Ass
     textField(objectId, 12, "expectedBehavior", "Expected Behavior"),
     textField(objectId, 13, "actualBehavior", "Actual Behavior"),
     textField(objectId, 14, "exactDivergence", "Exact Divergence"),
-    {
-      universalIdentifier: fieldId(objectId, 15),
-      type: FieldType.RAW_JSON,
-      name: "evidenceReferences",
-      label: "Evidence References",
-    },
     textField(objectId, 16, "actor", "Actor"),
     textField(objectId, 17, "system", "System"),
     dateTimeField(objectId, 18, "deadline", "Deadline", true),

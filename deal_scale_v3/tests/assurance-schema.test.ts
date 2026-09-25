@@ -12,6 +12,7 @@ import {
   evidenceReferenceSchema,
   sourceConnectionSchema,
 } from "../src/assurance/schema";
+import { ASSURANCE_OBJECTS, fieldId } from "../src/assurance/identifiers";
 import { assuranceFieldsFor } from "../src/assurance/fields";
 
 const REQUESTED_CASE_STATUSES = [
@@ -182,8 +183,17 @@ describe("P0 assurance schema", () => {
       type: FieldType.DATE_TIME,
       isNullable: true,
     });
-    expect(fields.find((field) => field.name === "evidenceReferences" && field.type === FieldType.RAW_JSON)).toMatchObject({
-      type: FieldType.RAW_JSON,
+    const evidenceReferenceFields = fields.filter(
+      (field) => field.name === "evidenceReferences",
+    );
+    expect(evidenceReferenceFields).toHaveLength(1);
+    expect(evidenceReferenceFields[0]).toMatchObject({
+      type: FieldType.RELATION,
+      relationTargetObjectMetadataUniversalIdentifier: ASSURANCE_OBJECTS.evidenceReference,
+      relationTargetFieldMetadataUniversalIdentifier: fieldId(
+        ASSURANCE_OBJECTS.evidenceReference,
+        100,
+      ),
     });
   });
 
