@@ -22,6 +22,8 @@ export const ASSURANCE_CASE_STATUS_VALUES = canonicalSelect([
 
 export const ASSURANCE_URGENCY_VALUES = canonicalSelect(["low", "medium", "high"] as const);
 
+export type AssuranceCaseStatus = (typeof ASSURANCE_CASE_STATUS_VALUES)[number];
+
 export const selectOptions = (values: readonly string[]) =>
   values.map((value, position) => ({
     position,

@@ -62,13 +62,6 @@ export const conformancePolicySchema = assuranceEntitySchema.extend({
   ruleSet: z.record(z.string(), z.unknown()),
 });
 
-export const detectorCandidateSchema = assuranceEntitySchema.extend({
-  conformancePolicyId: z.string().min(1),
-  sellerEventId: z.string().min(1).nullable(),
-  detectorType: z.string().min(1),
-  confidence: z.number().min(0).max(1),
-});
-
 const auditableEvidenceReferenceSchema = z
   .object({
     id: z.string().min(1),
@@ -78,13 +71,7 @@ const auditableEvidenceReferenceSchema = z
   })
   .passthrough();
 
-const assuranceCaseStatus = z.enum(ASSURANCE_CASE_STATUS_VALUES);
-const assuranceCaseUrgency = z.enum(ASSURANCE_URGENCY_VALUES);
-
-export const assuranceCaseSchema = assuranceEntitySchema.extend({
-  opportunityReferenceId: z.string().min(1),
-  detectorCandidateId: z.string().min(1),
-  caseStatus: assuranceCaseStatus,
+export const assuranceCaseProjectionSchema = z.object({
   sellerIdentityId: z.string().min(1),
   failureType: z.string().min(1),
   expectedBehavior: z.string().min(1),
@@ -95,12 +82,27 @@ export const assuranceCaseSchema = assuranceEntitySchema.extend({
   system: z.string().min(1),
   deadline: z.coerce.date().nullable(),
   confidence: z.number().min(0).max(1),
-  urgency: assuranceCaseUrgency,
+  urgency: canonicalSelect(["low", "medium", "high"]),
   recommendedHumanAction: z.string().min(1),
   detectorVersion: z.string().min(1),
   policyVersion: z.string().min(1),
   dedupeKey: z.string().min(1),
 });
+
+export const detectorCandidateSchema = assuranceEntitySchema.extend({
+  conformancePolicyId: z.string().min(1),
+  sellerEventId: z.string().min(1).nullable(),
+  detectorType: z.string().min(1),
+  confidence: z.number().min(0).max(1),
+}).extend(assuranceCaseProjectionSchema.partial().shape);
+
+const assuranceCaseStatus = z.enum(ASSURANCE_CASE_STATUS_VALUES);
+
+export const assuranceCaseSchema = assuranceEntitySchema.extend({
+  opportunityReferenceId: z.string().min(1),
+  detectorCandidateId: z.string().min(1),
+  caseStatus: assuranceCaseStatus,
+}).extend(assuranceCaseProjectionSchema.shape);
 
 export const evidenceReferenceSchema = assuranceEntitySchema.extend({
   assuranceCaseId: z.string().min(1),

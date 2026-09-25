@@ -2,6 +2,14 @@ import { ASSURANCE_OBJECTS, type AssuranceObjectName } from "src/assurance/ident
 
 export type AssuranceRole = "reviewer" | "manager" | "evidenceIntegration";
 
+export const canTransitionAssuranceCase = ({
+  role,
+}: {
+  role: AssuranceRole;
+  from?: string;
+  to?: string;
+}) => role === "manager";
+
 type Permission = {
   canReadObjectRecords: boolean;
   canUpdateObjectRecords: boolean;

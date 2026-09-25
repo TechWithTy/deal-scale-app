@@ -9,6 +9,7 @@ import {
   transitionAssuranceCase,
   type EvidenceObservationInput,
 } from "../src/assurance/case-engine";
+import { createAssuranceCaseStore } from "../src/assurance/case-store";
 
 const workspaceA = "00000000-0000-4000-8000-000000000001";
 const workspaceB = "00000000-0000-4000-8000-000000000002";
@@ -475,5 +476,32 @@ describe("assurance case engine", () => {
     });
 
     expect(first).toEqual(second);
+  });
+
+  it("upserts a case idempotently and appends each audit event once", () => {
+    const assembled = assembleAssuranceCase(candidate(), {
+      opportunityReferenceId: "opportunity-001",
+      opportunityReferenceWorkspaceId: workspaceA,
+      actualEvidence: [evidence()],
+    });
+    if (assembled.kind !== "case") throw new Error("expected case");
+
+    const store = createAssuranceCaseStore();
+    const first = store.upsert(assembled.case);
+    const repeated = store.upsert(assembled.case);
+    expect(repeated).toEqual(first);
+
+    const transition = transitionAtRuntime(assembled.case, "confirmed-failure", {
+      actorId: "manager-001",
+      role: "manager",
+    });
+    if (!transition.ok || !transition.case) throw new Error("expected transition");
+
+    const audit = transition.case.auditHistory[1];
+    const appended = store.appendAudit(assembled.case.id, audit);
+    const repeatedAudit = store.appendAudit(assembled.case.id, audit);
+
+    expect(repeatedAudit).toEqual(appended);
+    expect(store.getByDedupeKey(assembled.case.dedupeKey)?.auditHistory).toHaveLength(2);
   });
 });

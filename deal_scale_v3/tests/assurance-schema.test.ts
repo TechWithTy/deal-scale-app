@@ -186,15 +186,15 @@ describe("P0 assurance schema", () => {
     });
   });
 
-  it("keeps the detector candidate eventId contract required and nullable", () => {
+  it("keeps the detector candidate sellerEventId contract required and nullable", () => {
     expect(
       detectorCandidateSchema.parse({
         ...ASSURANCE_FIXTURES.assuranceCase,
         conformancePolicyId: "policy-001",
-        eventId: null,
+        sellerEventId: null,
         detectorType: "pricing-promise",
         confidence: 0.91,
-      }).eventId,
+      }).sellerEventId,
     ).toBeNull();
     expect(() =>
       detectorCandidateSchema.parse({
