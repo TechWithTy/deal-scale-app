@@ -1,3 +1,5 @@
+import type { ProcessSlaBreachInput } from "../../src/detectors/process-sla-breach";
+
 export const workspaceId = "00000000-0000-4000-8000-000000000001";
 export const sourceConnectionId = "conn-twenty-001";
 
@@ -29,3 +31,41 @@ export const lateCompletion = {
   sourceConnectionId,
   actorId: "rep-001",
 };
+
+export type ProcessSlaConformanceFixture = {
+  workspaceId: string;
+  sourceConnectionId: string;
+  opportunityReferenceId: string;
+  policy: {
+    policyId: string;
+    policyVersion: string;
+    trigger: string;
+    expectedAction: string;
+  };
+  deadline: { dueAt: string; graceWindowMs: number };
+  actualEvents: (typeof lateCompletion)[];
+  exceptionEvaluation: { evaluated: boolean; matched: boolean; reason: string | null };
+  evaluatedAt: string;
+};
+
+export const conformanceResult = {
+  workspaceId,
+  sourceConnectionId,
+  opportunityReferenceId: "opp-001",
+  policy: {
+    policyId: "policy-sla",
+    policyVersion: "v2",
+    trigger: "lead_assigned",
+    expectedAction: "contact_lead",
+  },
+  deadline: { dueAt: "2026-09-24T10:00:00.000Z", graceWindowMs: 0 },
+  actualEvents: [lateCompletion],
+  exceptionEvaluation: { evaluated: true, matched: false, reason: null },
+  evaluatedAt: "2026-09-24T12:00:00.000Z",
+  // Current detector input keeps the RED tests focused on behavior and result shape.
+  conformancePolicyId: "policy-sla",
+  asOf: "2026-09-24T12:00:00.000Z",
+  slaWindowMs: 0,
+  obligations: [obligation],
+  events: [lateCompletion],
+} satisfies ProcessSlaConformanceFixture & ProcessSlaBreachInput;
