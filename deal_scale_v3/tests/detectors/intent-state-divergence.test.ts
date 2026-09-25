@@ -73,7 +73,7 @@ describe("intent-state divergence detector", () => {
     expect(result.status).toBe("aligned");
     expect(result.reasonCode).toBe("intent_aligned");
     expect(result.evidence.intentEvidenceIds).toEqual(["transcript-001"]);
-    expect(result.evidence.stateEvidenceIds).toContain("event-offer-001");
+    expect(result.evidence.stateEvidenceIds).toEqual(["crm-offer-v1", "event-offer-001"]);
     expect(result.explanation).toContain("offer_request");
     expect(result.provenance.sourceConnectionId).toBe("conn-twenty-001");
     expect(result.confidence).toBe(0.96);
@@ -84,23 +84,20 @@ describe("intent-state divergence detector", () => {
 
     expect(result.status).toBe("divergent");
     expect(result.reasonCode).toBe("state_contradicts_intent");
-    expect(result.evidence.contradictingEvidenceIds).toContain("crm-callback-v1");
+    expect(result.evidence.contradictingEvidenceIds).toEqual(["crm-callback-v1"]);
     expect(result.coverage.missingEvidenceTypes).toEqual([]);
   });
 
   it("returns real source-backed contradiction evidence", () => {
     const result = detectIntentStateDivergence(callbackRequestInterpretation, callbackMissingState);
 
-    expect(result.evidence).toMatchObject({
-      contradictingEvidence: [{
-        evidenceId: "crm-callback-v1",
-        field: "callbackRequested",
-        value: false,
-        sourceConnectionId: "conn-twenty-001",
-        sourceVersion: "crm-v1",
-        provenanceRef: "twenty://opportunity/opp-001/field/callbackRequested",
-      }],
-    });
+    expect(result.evidence.contradictingEvidenceIds).toEqual([
+      callbackMissingState.stateEvidence[0].evidenceId,
+    ]);
+    expect(result.evidence).toHaveProperty(
+      "contradictingEvidence",
+      callbackMissingState.stateEvidence,
+    );
   });
 
   it("resolves a matching event against explicit contradictory CRM state", () => {
@@ -116,7 +113,7 @@ describe("intent-state divergence detector", () => {
 
     expect(result.status).toBe("divergent");
     expect(result.reasonCode).toBe("state_contradicts_intent");
-    expect(result.evidence.contradictingEvidenceIds).toContain("crm-callback-v1");
+    expect(result.evidence.contradictingEvidenceIds).toEqual(["crm-callback-v1"]);
   });
 
   it("covers appointment agreement and contradictory state interpretations", () => {
@@ -130,12 +127,14 @@ describe("intent-state divergence detector", () => {
     );
 
     expect(appointmentResult.status).toBe("aligned");
-    expect(appointmentResult.evidence.stateEvidenceIds).toContain("crm-appointment-v1");
+    expect(appointmentResult.evidence.stateEvidenceIds).toEqual(["crm-appointment-v1"]);
     expect(contradictoryResult.status).toBe("aligned");
     expect(contradictoryResult.reasonCode).toBe("contradictory_state_confirmed");
-    expect(contradictoryResult.evidence.stateEvidenceIds).toEqual(
-      expect.arrayContaining(["event-appointment-001", "event-appointment-002"]),
-    );
+    expect(contradictoryResult.evidence.stateEvidenceIds).toEqual([
+      "crm-contradictory-v1",
+      "event-appointment-001",
+      "event-appointment-002",
+    ]);
   });
 
   it("returns first-class insufficient evidence when the state cannot be evaluated", () => {
@@ -196,6 +195,23 @@ describe("intent-state divergence detector", () => {
         events: [],
       }),
     ).toThrow("Intent and CRM state must belong to the same opportunity");
+  });
+
+  it("rejects intent evidence from another opportunity even when top-level IDs match", () => {
+    expect(offerRequestInterpretation.opportunityReferenceId).toBe(
+      alignedOfferState.opportunityReferenceId,
+    );
+    expect(() =>
+      detectIntentStateDivergence(
+        {
+          ...offerRequestInterpretation,
+          evidence: [
+            { ...offerRequestInterpretation.evidence[0], opportunityReferenceId: "opp-002" },
+          ],
+        },
+        alignedOfferState,
+      ),
+    ).toThrow("Intent evidence must belong to the interpretation opportunity");
   });
 
   it("ignores unrelated events when deriving the candidate result", () => {
