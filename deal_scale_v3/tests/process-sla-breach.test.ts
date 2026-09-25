@@ -53,10 +53,22 @@ describe("process SLA breach detector", () => {
     expect(finding.reasonCode).toBe("missing_clock");
   });
 
-  it("does not use another tenant or source connection", () => {
+  it("rejects an event from another workspace", () => {
     const foreignEvent = { ...lateCompletion, workspaceId: "00000000-0000-4000-8000-000000000002" };
+
+    expect(() => detectProcessSlaBreaches(withEvents([foreignEvent]))).toThrow(ZodError);
+  });
+
+  it("rejects an event from another source connection", () => {
     const otherSourceEvent = { ...lateCompletion, sourceConnectionId: "conn-other" };
-    expect(detectProcessSlaBreaches(withEvents([foreignEvent, otherSourceEvent]))[0].status).toBe("late");
+
+    expect(() => detectProcessSlaBreaches(withEvents([otherSourceEvent]))).toThrow(ZodError);
+  });
+
+  it("rejects an event from another opportunity", () => {
+    const otherOpportunityEvent = { ...lateCompletion, opportunityReferenceId: "opp-002" };
+
+    expect(() => detectProcessSlaBreaches(withEvents([otherOpportunityEvent]))).toThrow(ZodError);
   });
 
   it("preserves versioned policy, deadline, event, and exception evidence", () => {
@@ -140,12 +152,8 @@ describe("process SLA breach detector", () => {
     });
   });
 
-  it("keeps completion evidence within workspace, connection, and opportunity identity", () => {
-    const otherWorkspace = { ...lateCompletion, externalId: "event-other-workspace", workspaceId: "00000000-0000-4000-8000-000000000002", occurredAt: "2026-09-24T09:00:00.000Z" };
-    const otherConnection = { ...lateCompletion, externalId: "event-other-connection", sourceConnectionId: "conn-other", occurredAt: "2026-09-24T09:00:00.000Z" };
-    const otherOpportunity = { ...lateCompletion, externalId: "event-other-opportunity", opportunityReferenceId: "opp-002", occurredAt: "2026-09-24T09:00:00.000Z" };
-
-    const [finding] = detectProcessSlaBreaches(withEvents([otherWorkspace, otherConnection, otherOpportunity, lateCompletion]));
+  it("keeps completion evidence within the validated event identity", () => {
+    const [finding] = detectProcessSlaBreaches(withEvents([lateCompletion]));
     expect(finding).toMatchObject({
       status: "late",
       opportunityReferenceId: "opp-001",

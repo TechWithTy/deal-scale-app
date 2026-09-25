@@ -18,31 +18,57 @@ const actualEventSchema = z.object({
   actorId: nonempty.optional(),
 });
 
-export const processSlaBreachInputSchema = z.object({
-  workspaceId: z.string().uuid(),
-  sourceConnectionId: nonempty,
-  opportunityReferenceId: nonempty,
-  obligationId: nonempty,
-  sourceVersion: nonempty,
-  completionEventTypes: z.array(nonempty).min(1),
-  policy: z.object({
-    policyId: nonempty,
-    policyVersion: nonempty,
-    trigger: nonempty,
-    expectedAction: nonempty,
-  }),
-  deadline: z.object({
-    dueAt: z.coerce.date().nullable(),
-    graceWindowMs: z.number().finite().nonnegative(),
-  }),
-  actualEvents: z.array(actualEventSchema),
-  exceptionEvaluation: z.object({
-    evaluated: z.boolean(),
-    matched: z.boolean(),
-    reason: z.string().nullable(),
-  }),
-  evaluatedAt: z.coerce.date(),
-});
+export const processSlaBreachInputSchema = z
+  .object({
+    workspaceId: z.string().uuid(),
+    sourceConnectionId: nonempty,
+    opportunityReferenceId: nonempty,
+    obligationId: nonempty,
+    sourceVersion: nonempty,
+    completionEventTypes: z.array(nonempty).min(1),
+    policy: z.object({
+      policyId: nonempty,
+      policyVersion: nonempty,
+      trigger: nonempty,
+      expectedAction: nonempty,
+    }),
+    deadline: z.object({
+      dueAt: z.coerce.date().nullable(),
+      graceWindowMs: z.number().finite().nonnegative(),
+    }),
+    actualEvents: z.array(actualEventSchema),
+    exceptionEvaluation: z.object({
+      evaluated: z.boolean(),
+      matched: z.boolean(),
+      reason: z.string().nullable(),
+    }),
+    evaluatedAt: z.coerce.date(),
+  })
+  .superRefine((input, ctx) => {
+    input.actualEvents.forEach((event, index) => {
+      if (event.workspaceId !== input.workspaceId) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["actualEvents", index, "workspaceId"],
+          message: "Event workspaceId must match the conformance workspaceId",
+        });
+      }
+      if (event.sourceConnectionId !== input.sourceConnectionId) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["actualEvents", index, "sourceConnectionId"],
+          message: "Event sourceConnectionId must match the conformance sourceConnectionId",
+        });
+      }
+      if (event.opportunityReferenceId !== input.opportunityReferenceId) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["actualEvents", index, "opportunityReferenceId"],
+          message: "Event opportunityReferenceId must match the conformance opportunityReferenceId",
+        });
+      }
+    });
+  });
 
 export type ProcessSlaBreachInput = z.input<typeof processSlaBreachInputSchema>;
 export type ProcessSlaStatus = "late" | "on_time" | "exception" | "insufficient_evidence";
