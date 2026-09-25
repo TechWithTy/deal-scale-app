@@ -86,7 +86,10 @@ const validateCase = (assuranceCase: CanonicalAssuranceCase): CanonicalAssurance
     throw new Error("assurance case externalId must equal its scoped dedupeKey");
   }
   const auditHistory = assuranceCase.auditHistory.map(normalizeAuditEvent);
+  const auditIds = new Set<string>();
   for (const event of auditHistory) {
+    if (auditIds.has(event.id)) throw new Error(`duplicate audit event ID ${event.id}`);
+    auditIds.add(event.id);
     if (event.caseId !== id) throw new Error("audit event must belong to the assurance case");
     if (event.workspaceId !== workspaceId) throw new Error("audit event workspace must match the assurance case");
   }

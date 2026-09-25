@@ -672,6 +672,49 @@ describe("assurance case engine", () => {
     );
   });
 
+  it("rejects repeated audit IDs within a first-write case even when contents match", () => {
+    const assembled = assembleAssuranceCase(candidate(), {
+      opportunityReferenceId: "opportunity-001",
+      opportunityReferenceWorkspaceId: workspaceA,
+      actualEvidence: [evidence()],
+    });
+    if (assembled.kind !== "case") throw new Error("expected case");
+
+    const store = createAssuranceCaseStore();
+    const duplicateHistory = [assembled.case.auditHistory[0], assembled.case.auditHistory[0]];
+
+    expect(() => store.upsert({ ...assembled.case, auditHistory: duplicateHistory })).toThrow(
+      "duplicate audit event ID",
+    );
+    expect(store.getByDedupeKey(assembled.case.dedupeKey)).toBeUndefined();
+  });
+
+  it("rejects conflicting repeated audit IDs within a first-write case", () => {
+    const assembled = assembleAssuranceCase(candidate(), {
+      opportunityReferenceId: "opportunity-001",
+      opportunityReferenceWorkspaceId: workspaceA,
+      actualEvidence: [evidence()],
+    });
+    if (assembled.kind !== "case") throw new Error("expected case");
+
+    const firstEvent = assembled.case.auditHistory[0];
+    const conflictingEvent = {
+      ...firstEvent,
+      next: "confirmed-failure" as const,
+      to: "confirmed-failure" as const,
+    };
+    const store = createAssuranceCaseStore();
+
+    expect(() =>
+      store.upsert({
+        ...assembled.case,
+        caseStatus: "confirmed-failure",
+        auditHistory: [firstEvent, conflictingEvent],
+      }),
+    ).toThrow("duplicate audit event ID");
+    expect(store.getByDedupeKey(assembled.case.dedupeKey)).toBeUndefined();
+  });
+
   it("validates audit UUIDs and tenant ownership before storing them", () => {
     const assembled = assembleAssuranceCase(candidate(), {
       opportunityReferenceId: "opportunity-001",
