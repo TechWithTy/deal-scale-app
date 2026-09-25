@@ -32,13 +32,26 @@ export type JourneyMilestone = {
   label: string;
   eventType: string;
   occurredAt: Date;
+  observedAt: Date;
+  provenanceState: "observed" | "inferred";
   sourceRef: string;
+};
+
+export type JourneyContext = {
+  name: string;
+  externalId: string;
+  stage?: string;
+  sourceRef: string;
+  observedAt: Date;
+  provenanceState: "observed" | "inferred";
 };
 
 export type SellerJourneyModel = {
   sellerName: string;
   opportunityName: string;
   stage: string;
+  sellerContext: JourneyContext;
+  opportunityContext: JourneyContext;
   milestones: JourneyMilestone[];
   promises: PromiseLedgerModel;
   evidenceLinks: EvidenceLink[];
@@ -55,7 +68,9 @@ export function buildSellerJourneyModel(
   input: SellerJourneyInput,
   asOf: Date,
 ): SellerJourneyModel {
-  const events = [...input.events].sort(
+  const events = input.events.filter(
+    (event) => event.opportunityReferenceId === input.opportunity.externalId,
+  ).sort(
     (left, right) => left.occurredAt.getTime() - right.occurredAt.getTime(),
   );
   const promises = buildPromiseLedgerModel(
@@ -82,11 +97,28 @@ export function buildSellerJourneyModel(
     sellerName: input.seller.displayName,
     opportunityName: input.opportunity.name,
     stage: input.opportunity.stage,
+    sellerContext: {
+      name: input.seller.displayName,
+      externalId: input.seller.externalId,
+      sourceRef: input.seller.provenanceRef,
+      observedAt: input.seller.observedAt,
+      provenanceState: input.seller.provenanceState,
+    },
+    opportunityContext: {
+      name: input.opportunity.name,
+      externalId: input.opportunity.externalId,
+      stage: input.opportunity.stage,
+      sourceRef: input.opportunity.provenanceRef,
+      observedAt: input.opportunity.observedAt,
+      provenanceState: input.opportunity.provenanceState,
+    },
     milestones: events.map((event) => ({
       id: event.externalId,
       label: event.name,
       eventType: event.eventType,
       occurredAt: event.occurredAt,
+      observedAt: event.observedAt,
+      provenanceState: event.provenanceState,
       sourceRef: event.provenanceRef,
     })),
     promises,

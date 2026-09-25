@@ -69,9 +69,14 @@ export const EvidenceList = ({ links }: { links: ReadonlyArray<EvidenceLink> }) 
       <span style={{ color: colors.muted, fontSize: "13px" }}>No evidence links in this snapshot.</span>
     ) : (
       links.map((link) => (
-        <a key={`${link.evidenceId}-${link.href}`} href={link.href} rel="noreferrer" style={{ color: colors.accent, fontSize: "13px", overflowWrap: "anywhere" }} target="_blank">
-          {link.label} · {link.evidenceId}
-        </a>
+        <div key={`${link.evidenceId}-${link.href}`} style={{ display: "grid", gap: "2px" }}>
+          <a href={link.href} rel="noreferrer" style={{ color: colors.accent, fontSize: "13px", overflowWrap: "anywhere" }} target="_blank">
+            {link.label} - {link.evidenceId}
+          </a>
+          <span style={{ color: colors.muted, fontSize: "11px" }}>
+            Source: {link.sourceType}/{link.sourceRecordId} - Observed: {link.observedAt.toISOString()}
+          </span>
+        </div>
       ))
     )}
   </div>

@@ -17,6 +17,21 @@ export const EMPTY_SELLER_JOURNEY_MODEL: SellerJourneyModel = {
   sellerName: "No seller selected",
   opportunityName: "No opportunity selected",
   stage: "Awaiting snapshot",
+  sellerContext: {
+    name: "No seller selected",
+    externalId: "missing",
+    sourceRef: "missing",
+    observedAt: new Date(0),
+    provenanceState: "inferred",
+  },
+  opportunityContext: {
+    name: "No opportunity selected",
+    externalId: "missing",
+    stage: "Awaiting snapshot",
+    sourceRef: "missing",
+    observedAt: new Date(0),
+    provenanceState: "inferred",
+  },
   milestones: [],
   promises: { items: [], counts: { total: 0, fulfilled: 0, unresolved: 0, atRisk: 0, dueSoon: 0 } },
   evidenceLinks: [],
@@ -35,6 +50,18 @@ export const SellerJourneysSurface = ({ model = EMPTY_SELLER_JOURNEY_MODEL }: { 
       <MetricCard label="Milestones" value={model.milestones.length} />
       <MetricCard label="Risk signals" value={model.risk.isAtRisk ? "Review" : "Clear"} accent={model.risk.isAtRisk ? colors.risk : colors.success} />
     </div>
+    <section style={{ background: colors.panel, border: `1px solid ${colors.line}`, borderRadius: "14px", display: "grid", gap: "12px", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", marginBottom: "16px", padding: "16px" }}>
+      <div>
+        <div style={{ color: colors.muted, fontSize: "11px", textTransform: "uppercase" }}>Seller context</div>
+        <strong>{model.sellerContext.name}</strong>
+        <div style={{ color: colors.muted, fontSize: "11px", marginTop: "4px" }}>Source: {model.sellerContext.sourceRef} - Observed: {model.sellerContext.observedAt.toISOString()}</div>
+      </div>
+      <div>
+        <div style={{ color: colors.muted, fontSize: "11px", textTransform: "uppercase" }}>Opportunity context</div>
+        <strong>{model.opportunityContext.name} - {model.opportunityContext.stage}</strong>
+        <div style={{ color: colors.muted, fontSize: "11px", marginTop: "4px" }}>Source: {model.opportunityContext.sourceRef} - Observed: {model.opportunityContext.observedAt.toISOString()}</div>
+      </div>
+    </section>
     {model.milestones.length === 0 && model.promises.items.length === 0 ? (
       <EmptySurface message="No contract snapshot available. Connect a read-only seller journey snapshot to populate milestones, promises, and assurance impact." />
     ) : (
@@ -42,13 +69,14 @@ export const SellerJourneysSurface = ({ model = EMPTY_SELLER_JOURNEY_MODEL }: { 
         <section style={{ border: `1px solid ${colors.line}`, borderRadius: "14px", padding: "20px" }}>
           <h2 style={{ fontSize: "17px", margin: "0 0 16px" }}>Journey progression</h2>
           <div style={{ display: "grid", gap: "14px" }}>
-            {model.milestones.map((milestone) => (
+            {model.milestones.length === 0 ? <EmptySurface message="No observed journey milestones in this snapshot." /> : model.milestones.map((milestone) => (
               <div key={milestone.id} style={{ borderLeft: `3px solid ${colors.accent}`, paddingLeft: "14px" }}>
                 <div style={{ alignItems: "center", display: "flex", gap: "8px", justifyContent: "space-between" }}>
                   <strong>{milestone.label}</strong>
                   <StatusPill label="observed" status="fulfilled" />
                 </div>
-                <div style={{ color: colors.muted, fontSize: "12px", marginTop: "4px" }}>{milestone.eventType} · {milestone.occurredAt.toISOString()}</div>
+                <div style={{ color: colors.muted, fontSize: "12px", marginTop: "4px" }}>{milestone.eventType} - Occurred: {milestone.occurredAt.toISOString()}</div>
+                <div style={{ color: colors.muted, fontSize: "11px", marginTop: "3px" }}>Source: {milestone.sourceRef} - Observed: {milestone.observedAt.toISOString()}</div>
               </div>
             ))}
           </div>

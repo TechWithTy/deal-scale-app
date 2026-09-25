@@ -100,10 +100,26 @@ describe("Seller Journeys surface model", () => {
     const model = buildSellerJourneyModel(baseInput, asOf);
 
     expect(model.stage).toBe("Proposal");
+    expect(model.sellerContext).toMatchObject({
+      name: "Jordan Lee",
+      sourceRef: "crm://seller/seller-001",
+      observedAt: new Date("2026-10-01T12:00:00Z"),
+    });
+    expect(model.opportunityContext).toMatchObject({
+      name: "Acme expansion",
+      stage: "Proposal",
+      sourceRef: "crm://opportunity/opp-001",
+      observedAt: new Date("2026-10-01T12:00:00Z"),
+    });
     expect(model.milestones.map((milestone) => milestone.eventType)).toEqual([
       "discovery_call",
       "proposal_shared",
     ]);
+    expect(model.milestones[0]).toMatchObject({
+      sourceRef: "crm://event/event-001",
+      observedAt: new Date("2026-10-01T12:00:00Z"),
+      provenanceState: "observed",
+    });
     expect(model.risk).toMatchObject({
       openCaseCount: 1,
       unresolvedPromiseCount: 1,

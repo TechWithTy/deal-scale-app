@@ -42,9 +42,26 @@ export const PromiseLedgerSurface = ({ model = EMPTY_PROMISE_LEDGER_MODEL }: { m
               <StatusPill status={item.status} />
             </div>
             <div style={{ color: colors.muted, display: "grid", fontSize: "13px", gap: "5px", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", marginTop: "14px" }}>
-              <span>Due window: <strong style={{ color: colors.ink }}>{item.dueLabel}</strong></span>
+              <span>Promise owner: <strong style={{ color: colors.ink }}>{item.owner}</strong></span>
+              <span>Due: <strong style={{ color: colors.ink }}>{item.dueLabel}</strong></span>
+              <span>SLA: <strong style={{ color: colors.ink }}>{item.sla.state}</strong></span>
+              <span>State: <strong style={{ color: colors.ink }}>{item.extractionStatus}</strong></span>
               <span>Confidence: <strong style={{ color: colors.ink }}>{Math.round(item.confidence * 100)}%</strong></span>
               <span>Assurance cases: <strong style={{ color: colors.ink }}>{item.assuranceImpact.caseCount}</strong></span>
+            </div>
+            <div style={{ borderTop: `1px solid ${colors.line}`, display: "grid", gap: "5px", marginTop: "14px", paddingTop: "12px" }}>
+              <div style={{ color: colors.muted, fontSize: "11px", textTransform: "uppercase" }}>Expected vs actual outcome</div>
+              <div style={{ fontSize: "13px" }}>
+                Expected: <strong>{item.outcome.expected}</strong> ({item.outcome.acceptableVariants.join(", ")})
+              </div>
+              <div style={{ color: item.outcome.state === "fulfilled" ? colors.success : colors.risk, fontSize: "13px" }}>
+                Actual: <strong>{item.outcome.actual ?? "Missing - no observed fulfillment event"}</strong>
+                {item.outcome.actualOccurredAt ? ` - ${item.outcome.actualOccurredAt.toISOString()}` : ""}
+              </div>
+              {item.outcome.state === "review-required" ? (
+                <div style={{ color: colors.risk, fontSize: "12px" }}>Unresolved: extraction requires review before fulfillment can be confirmed.</div>
+              ) : null}
+              <div style={{ color: colors.muted, fontSize: "11px" }}>Source snapshot: {item.sourceTimestamp.toISOString()}</div>
             </div>
             <div style={{ borderTop: `1px solid ${colors.line}`, marginTop: "14px", paddingTop: "12px" }}>
               <div style={{ color: colors.muted, fontSize: "11px", marginBottom: "7px", textTransform: "uppercase" }}>Evidence links</div>
