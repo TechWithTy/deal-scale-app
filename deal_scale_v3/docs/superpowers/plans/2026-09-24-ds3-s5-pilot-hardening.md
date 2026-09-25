@@ -32,6 +32,8 @@
 
 ### Task 1: DS3-S5-04 pilot hardening contracts and trust metrics
 
+**Status:** complete in integration commit `c9fc37f1`, with retention hardening in `c6278e28`.
+
 **Files:**
 - Create: `src/pilot-hardening/security.ts`
 - Create: `src/pilot-hardening/retention.ts`
@@ -252,6 +254,8 @@ git commit -m "feat(pilot): add security retention and trust metrics"
 
 ### Task 2: DS3-S5-05 calibration, golden pack, and falsification gates
 
+**Status:** complete in integration commit `5b1b0eb7`, with validation hardening in `c6278e28`.
+
 **Files:**
 - Create: `src/pilot-calibration/contracts.ts`
 - Create: `src/pilot-calibration/metrics.ts`
@@ -450,6 +454,8 @@ git commit -m "test(pilot): add calibration and falsification gates"
 
 ### Task 3: Master integration and delivery review
 
+**Status:** complete on `feat/ds3-s5-orchestration`; full repository verification remains dependency/capacity constrained.
+
 **Files:**
 - Modify: `docs/superpowers/plans/2026-09-24-ds3-s5-pilot-hardening.md`
 - Modify: `docs/superpowers/specs/2026-09-24-ds3-s5-pilot-hardening-design.md`
@@ -458,14 +464,14 @@ git commit -m "test(pilot): add calibration and falsification gates"
 - Consumes the two task commits and their verification evidence.
 - Produces an integration branch containing only the approved task commits and an evidence-backed handoff.
 
-- [ ] **Step 1: Review both task diffs**
+- [x] **Step 1: Review both task diffs**
 
 Confirm that S5-04 changes are limited to `src/pilot-hardening`, its docs, and
 its tests; S5-05 changes are limited to `src/pilot-calibration`, its docs, and
 its tests. Reject secrets, unsupported claims, CRM writes, and imports from
 unfinished S5-02/S5-03 branches.
 
-- [ ] **Step 2: Run the combined verification**
+- [x] **Step 2: Run the combined verification**
 
 Run from `deal_scale_v3` on the integration worktree:
 
@@ -480,13 +486,13 @@ Expected: all commands exit 0. If the full repository suite is blocked by the
 existing Twenty environment, record that blocker separately and retain the
 focused task evidence.
 
-- [ ] **Step 3: Record task status evidence**
+- [x] **Step 3: Record task status evidence**
 
 Record commit hashes, focused test output, combined verification output, and
 the remaining S5-02/S5-03 integration gaps in the handoff. Update the Notion
 task pages only after the corresponding commit and verification evidence exist.
 
-- [ ] **Step 4: Final review**
+- [x] **Step 4: Final review**
 
 Run a fresh review against the spec and plan. Any Important finding receives a
 single TDD fix pass; Minor findings are recorded as deferred rather than
