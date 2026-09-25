@@ -37,6 +37,7 @@ const detector = detectorCandidateSchema.parse({
   observedAt: "2026-09-24T16:20:00.000Z",
   conformancePolicyId: "policy-pricing-v3",
   eventId: "event-001",
+  sellerEventId: "event-001",
   detectorType: "pricing_promise_mismatch",
   confidence: 0.94,
 }) as AssuranceCaseDetailDetector;
@@ -53,6 +54,7 @@ const evidence = [
     observedAt: "2026-09-24T16:15:00.000Z",
     assuranceCaseId: "case-001",
     eventId: "event-001",
+    sellerEventId: "event-001",
     evidenceType: "seller_message",
     contentHash: "sha256:pricing-email-001",
   }),
@@ -67,6 +69,7 @@ const evidence = [
     observedAt: "2026-09-24T15:40:00.000Z",
     assuranceCaseId: "case-001",
     eventId: null,
+    sellerEventId: null,
     evidenceType: "stage_snapshot",
     contentHash: "sha256:stage-snapshot-001",
   }),
