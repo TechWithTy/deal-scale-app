@@ -33,7 +33,7 @@ const hasInvalidSyncTimestamp = (source: EvidenceSource, asOf: Date) => {
 
 const syncFreshness = (source: EvidenceSource, asOf: Date, maxAgeMs: number): SyncFreshness => {
 	const lastSyncedAt = asDate(source.lastSyncedAt);
-	if (!lastSyncedAt) return "never_synced";
+	if (!lastSyncedAt || lastSyncedAt.getTime() > asOf.getTime()) return "never_synced";
 	return asOf.getTime() - lastSyncedAt.getTime() <= maxAgeMs ? "fresh" : "stale";
 };
 

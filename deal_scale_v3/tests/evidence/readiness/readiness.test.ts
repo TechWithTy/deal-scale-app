@@ -197,6 +197,18 @@ describe("evidence readiness", () => {
 		);
 	});
 
+	it("never counts a future sync as fresh when it is the only required source", () => {
+		const result = calculateEvidenceReadiness(
+			input({
+				sources: [source({ evidenceTypes: ["crm_record"], lastSyncedAt: "2026-09-25T12:00:00.000Z" })],
+				detectors: [{ detectorType: "crm_only", requiredEvidenceTypes: ["crm_record"], maxSyncAgeMs: DAY_MS }],
+			}),
+		);
+
+		expect(result.detectors[0].freshEvidenceTypes).toEqual([]);
+		expect(result.detectors[0].status).toBe("degraded");
+	});
+
 	it("downgrades confirmed assessments when readiness is degraded", () => {
 		const result = calculateEvidenceReadiness(
 			input({
