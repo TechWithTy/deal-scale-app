@@ -1,0 +1,44 @@
+import { useState } from "react";
+import { defineFrontComponent } from "twenty-sdk/define";
+
+import { ASSURANCE_SURFACE_IDENTIFIERS } from "src/assurance-surfaces/identifiers";
+import { AUDIT_RESULTS_PREVIEW } from "src/assurance-surfaces/models";
+import { CheckIcon, GapRow, MetricCard, RemediationRow, StatusChip, SurfaceCard, SurfaceShell, ProgressBar } from "src/assurance-surfaces/ui";
+
+const AuditResults = () => {
+  const [selectedAction, setSelectedAction] = useState<string | null>(null);
+  const { statusBreakdown: summary } = AUDIT_RESULTS_PREVIEW;
+  const passPercent = Math.round((summary.pass / summary.total) * 100);
+
+  return (
+    <SurfaceShell eyebrow="Assurance / audit" title="Audit results" description={`${AUDIT_RESULTS_PREVIEW.runLabel} · ${AUDIT_RESULTS_PREVIEW.runTime} · ${AUDIT_RESULTS_PREVIEW.scopeLabel}`} status={{ label: AUDIT_RESULTS_PREVIEW.status, tone: "warn" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: "12px", marginBottom: "12px" }}>
+        <MetricCard label="Checks evaluated" value={summary.total} detail="Across current scope" />
+        <MetricCard label="Passed" value={summary.pass} detail={`${passPercent}% of checks`} tone="good" />
+        <MetricCard label="Failed" value={summary.fail} detail="Needs remediation" tone="bad" />
+        <MetricCard label="Needs review" value={summary.needsReview} detail="Manager disposition" tone="warn" />
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1.25fr) minmax(280px, 0.75fr)", gap: "12px", marginBottom: "12px" }}>
+        <SurfaceCard title="Run summary" detail={AUDIT_RESULTS_PREVIEW.runTime}>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "14px" }}><CheckIcon /><div style={{ flex: 1 }}><div style={{ fontSize: "12px", fontWeight: 650 }}>Evidence-backed checks are mostly passing</div><div style={{ color: "#7A8491", fontSize: "11px", marginTop: "3px" }}>The remaining findings are traceability or disposition gaps.</div></div><StatusChip label="24 checks" tone="neutral" /></div>
+          <ProgressBar value={passPercent} tone="good" />
+          <div style={{ display: "flex", justifyContent: "space-between", color: "#7A8491", fontSize: "11px", marginTop: "8px" }}><span>{summary.pass} passing</span><span>{summary.fail + summary.needsReview} to resolve</span></div>
+        </SurfaceCard>
+        <SurfaceCard title="Provenance gaps" detail="Traceability">
+          {AUDIT_RESULTS_PREVIEW.provenanceGaps.map((gap) => <GapRow key={gap.label} {...gap} />)}
+        </SurfaceCard>
+      </div>
+      <SurfaceCard title="Remediation actions" detail="Local-only guidance">
+        {AUDIT_RESULTS_PREVIEW.remediationActions.map((action) => <RemediationRow key={action.id} action={action} selected={selectedAction === action.id} onSelect={() => setSelectedAction(action.id)} />)}
+        {selectedAction ? <div style={{ color: "#21623E", background: "#EAF7EF", borderRadius: "8px", padding: "9px 11px", fontSize: "11px" }}>Next step selected locally. A manager or evidence integration owner can carry this into the existing Twenty workflow.</div> : null}
+      </SurfaceCard>
+    </SurfaceShell>
+  );
+};
+
+export default defineFrontComponent({
+  universalIdentifier: ASSURANCE_SURFACE_IDENTIFIERS.auditResultsFrontComponent,
+  name: "audit-results",
+  description: "Read-only audit run summary with evidence and provenance remediation guidance.",
+  component: AuditResults,
+});
