@@ -31,12 +31,16 @@ export function buildRetentionDeletionPlan(input: {
     throw new Error("workspaceId and sourceConnectionId are required");
   }
   const parsedDate = new Date(input.requestedAt);
-  if (!Number.isFinite(parsedDate.getTime()) || parsedDate.toISOString() !== input.requestedAt) {
+  if (
+    !Number.isFinite(parsedDate.getTime()) ||
+    parsedDate.toISOString() !== input.requestedAt ||
+    parsedDate.getTime() > Date.now()
+  ) {
     throw new Error("requestedAt must be an ISO timestamp");
   }
 
   const digest = createHash("sha256")
-    .update(JSON.stringify([input.workspaceId, input.sourceConnectionId, input.requestedAt]))
+    .update(JSON.stringify([input.workspaceId, input.sourceConnectionId]))
     .digest();
   const uuidBytes = Buffer.from(digest.subarray(0, 16));
   uuidBytes[6] = (uuidBytes[6] & 0x0f) | 0x40;

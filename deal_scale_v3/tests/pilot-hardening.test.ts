@@ -76,6 +76,12 @@ describe("pilot security and retention contracts", () => {
     expect(buildRetentionDeletionPlan({ ...input, workspaceId: otherWorkspaceId }).planId).not.toBe(
       first.planId,
     );
+    expect(buildRetentionDeletionPlan({ ...input, requestedAt: "2026-09-24T13:00:00.000Z" }).planId).toBe(
+      first.planId,
+    );
+    expect(() => buildRetentionDeletionPlan({ ...input, requestedAt: "2999-01-01T00:00:00.000Z" })).toThrow(
+      "requestedAt",
+    );
   });
 });
 

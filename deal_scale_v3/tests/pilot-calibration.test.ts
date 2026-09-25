@@ -44,6 +44,15 @@ describe("pilot calibration metrics", () => {
       nativeSystemObviousRate: 0.25,
     });
   });
+
+  it("rejects contradictory prediction and calibration labels", () => {
+    expect(() => calculateCalibrationMetrics([
+      scenario({ label: "true_positive", predictedFinding: false }),
+    ])).toThrow("predictedFinding");
+    expect(() => calculateCalibrationMetrics([
+      scenario({ label: "false_positive", predictedFinding: false }),
+    ])).toThrow("predictedFinding");
+  });
 });
 
 describe("golden calibration pack", () => {

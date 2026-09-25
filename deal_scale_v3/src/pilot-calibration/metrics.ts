@@ -6,6 +6,14 @@ const rate = (numerator: number, denominator: number) =>
 export const calculateCalibrationMetrics = (
   records: readonly CalibrationRecord[],
 ): CalibrationMetrics => {
+  for (const record of records) {
+    if (
+      (record.label === "true_positive" || record.label === "false_positive") &&
+      !record.predictedFinding
+    ) {
+      throw new Error(`predictedFinding must be true for ${record.label}`);
+    }
+  }
   const truePositives = records.filter(({ label }) => label === "true_positive").length;
   const falsePositives = records.filter(({ label }) => label === "false_positive").length;
   const predictedPositives = truePositives + falsePositives;
