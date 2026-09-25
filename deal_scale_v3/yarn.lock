@@ -1531,6 +1531,7 @@ __metadata:
     "@types/node": "npm:^24.7.2"
     "@types/react": "npm:^19.0.0"
     "@typescript/native-preview": "npm:^7.0.0-dev.20260116.1"
+    monaco-editor: "npm:0.52.2"
     oxlint: "npm:^0.16.0"
     react: "npm:^19.0.0"
     react-dom: "npm:^19.0.0"
@@ -2333,6 +2334,13 @@ __metadata:
   dependencies:
     minipass: "npm:^7.1.2"
   checksum: 10c0/5aad75ab0090b8266069c9aabe582c021ae53eb33c6c691054a13a45db3b4f91a7fb1bd79151e6b4e9e9a86727b522527c0a06ec7d45206b745d54cd3097bcec
+  languageName: node
+  linkType: hard
+
+"monaco-editor@npm:0.52.2":
+  version: 0.52.2
+  resolution: "monaco-editor@npm:0.52.2"
+  checksum: 10c0/5a92da64f1e2ab375c0ce99364137f794d057c97bed10ecc65a08d6e6846804b8ecbd377eacf01e498f7dfbe1b21e8be64f728256681448f0484df90e767b435
   languageName: node
   linkType: hard
 
