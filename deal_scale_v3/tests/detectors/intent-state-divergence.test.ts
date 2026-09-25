@@ -25,6 +25,10 @@ describe("intent-state divergence detector", () => {
     expect(parsed.schemaVersion).toBe("intent-state-divergence.v1");
     expect(parsed.intent).toBe("offer_request");
     expect(parsed.confidence).toBe(0.96);
+    expect(parsed).toMatchObject({
+      opportunityReferenceId: "opp-001",
+      evidence: [{ opportunityReferenceId: "opp-001" }],
+    });
     expect(() =>
       intentInterpretationSchema.parse({ ...offerRequestInterpretation, schemaVersion: "v0" }),
     ).toThrow();
@@ -35,6 +39,32 @@ describe("intent-state divergence detector", () => {
 
     expect(parsed.events[0]?.eventType).toBe("offer_requested");
     expect(parsed.events[0]?.workspaceId).toBe(alignedOfferState.workspaceId);
+    expect(parsed).toMatchObject({
+      stateEvidence: [{
+        evidenceId: "crm-offer-v1",
+        field: "offerRequested",
+        value: true,
+        sourceConnectionId: "conn-twenty-001",
+        sourceVersion: "crm-v1",
+        provenanceRef: "twenty://opportunity/opp-001/field/offerRequested",
+      }],
+    });
+  });
+
+  it("keeps callback and appointment calibration excerpts distinct", () => {
+    const callback = intentInterpretationSchema.parse(callbackRequestInterpretation);
+    const appointment = intentInterpretationSchema.parse(appointmentAgreementInterpretation);
+
+    expect(callback.evidence[0]).toMatchObject({
+      evidenceId: "msg-callback",
+      excerpt: "Please call me after lunch",
+      opportunityReferenceId: "opp-001",
+    });
+    expect(appointment.evidence[0]).toMatchObject({
+      evidenceId: "msg-appointment",
+      excerpt: "Tuesday at 2pm works for the showing",
+      opportunityReferenceId: "opp-001",
+    });
   });
 
   it("reports an aligned offer request with traceable evidence", () => {
@@ -54,8 +84,39 @@ describe("intent-state divergence detector", () => {
 
     expect(result.status).toBe("divergent");
     expect(result.reasonCode).toBe("state_contradicts_intent");
-    expect(result.evidence.contradictingEvidenceIds).toContain("crm:callbackRequested");
+    expect(result.evidence.contradictingEvidenceIds).toContain("crm-callback-v1");
     expect(result.coverage.missingEvidenceTypes).toEqual([]);
+  });
+
+  it("returns real source-backed contradiction evidence", () => {
+    const result = detectIntentStateDivergence(callbackRequestInterpretation, callbackMissingState);
+
+    expect(result.evidence).toMatchObject({
+      contradictingEvidence: [{
+        evidenceId: "crm-callback-v1",
+        field: "callbackRequested",
+        value: false,
+        sourceConnectionId: "conn-twenty-001",
+        sourceVersion: "crm-v1",
+        provenanceRef: "twenty://opportunity/opp-001/field/callbackRequested",
+      }],
+    });
+  });
+
+  it("resolves a matching event against explicit contradictory CRM state", () => {
+    const result = detectIntentStateDivergence(callbackRequestInterpretation, {
+      ...callbackMissingState,
+      events: [{
+        ...alignedOfferState.events[0],
+        name: "Callback requested",
+        externalId: "event-callback-001",
+        eventType: "callback_requested",
+      }],
+    });
+
+    expect(result.status).toBe("divergent");
+    expect(result.reasonCode).toBe("state_contradicts_intent");
+    expect(result.evidence.contradictingEvidenceIds).toContain("crm-callback-v1");
   });
 
   it("covers appointment agreement and contradictory state interpretations", () => {
@@ -69,7 +130,7 @@ describe("intent-state divergence detector", () => {
     );
 
     expect(appointmentResult.status).toBe("aligned");
-    expect(appointmentResult.evidence.stateEvidenceIds).toContain("crm:appointmentAgreed");
+    expect(appointmentResult.evidence.stateEvidenceIds).toContain("crm-appointment-v1");
     expect(contradictoryResult.status).toBe("aligned");
     expect(contradictoryResult.reasonCode).toBe("contradictory_state_confirmed");
     expect(contradictoryResult.evidence.stateEvidenceIds).toEqual(
@@ -88,6 +149,7 @@ describe("intent-state divergence detector", () => {
           appointmentAgreed: null,
           contradictory: false,
         },
+        stateEvidence: [],
         events: [],
       },
     );
@@ -107,6 +169,7 @@ describe("intent-state divergence detector", () => {
         appointmentAgreed: null,
         contradictory: false,
       },
+      stateEvidence: [],
       events: [crossTenantOfferEvent],
     });
 
@@ -122,6 +185,46 @@ describe("intent-state divergence detector", () => {
         workspaceId: "00000000-0000-4000-8000-000000000002",
       }),
     ).toThrow("same tenant");
+  });
+
+  it("does not compare intent from another opportunity", () => {
+    expect(() =>
+      detectIntentStateDivergence(offerRequestInterpretation, {
+        ...alignedOfferState,
+        opportunityReferenceId: "opp-002",
+        stateEvidence: [],
+        events: [],
+      }),
+    ).toThrow("Intent and CRM state must belong to the same opportunity");
+  });
+
+  it("ignores unrelated events when deriving the candidate result", () => {
+    const unrelatedEvent = {
+      ...alignedOfferState.events[0],
+      name: "Appointment agreed",
+      externalId: "event-appointment-unrelated",
+      eventType: "appointment_agreed",
+    };
+    const withUnrelatedEvent = detectIntentStateDivergence(offerRequestInterpretation, {
+      ...alignedOfferState,
+      events: [unrelatedEvent, ...alignedOfferState.events],
+    });
+    const withoutUnrelatedEvent = detectIntentStateDivergence(
+      offerRequestInterpretation,
+      alignedOfferState,
+    );
+
+    expect(withUnrelatedEvent).toEqual(withoutUnrelatedEvent);
+  });
+
+  it("normalizes relevant event order for stable candidate identity", () => {
+    const first = detectIntentStateDivergence(contradictoryStateInterpretation, contradictoryState);
+    const reversed = detectIntentStateDivergence(contradictoryStateInterpretation, {
+      ...contradictoryState,
+      events: [...contradictoryState.events].reverse(),
+    });
+
+    expect(reversed.candidateId).toBe(first.candidateId);
   });
 
   it("is deterministic and emits a valid UUID v4 candidate id", () => {

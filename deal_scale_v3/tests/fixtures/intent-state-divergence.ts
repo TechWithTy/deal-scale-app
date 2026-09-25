@@ -1,4 +1,5 @@
 const workspaceId = "00000000-0000-4000-8000-000000000001";
+const opportunityReferenceId = "opp-001";
 
 const baseMetadata = {
   workspaceId,
@@ -12,6 +13,31 @@ export const intentEvidence = {
   evidenceId: "transcript-001",
   evidenceType: "transcript",
   excerpt: "Please send me the offer this afternoon.",
+  opportunityReferenceId,
+  ...baseMetadata,
+} as const;
+
+const callbackEvidence = {
+  evidenceId: "msg-callback",
+  evidenceType: "transcript",
+  excerpt: "Please call me after lunch",
+  opportunityReferenceId,
+  ...baseMetadata,
+} as const;
+
+const appointmentEvidence = {
+  evidenceId: "msg-appointment",
+  evidenceType: "transcript",
+  excerpt: "Tuesday at 2pm works for the showing",
+  opportunityReferenceId,
+  ...baseMetadata,
+} as const;
+
+const contradictoryEvidence = {
+  evidenceId: "msg-contradiction",
+  evidenceType: "transcript",
+  excerpt: "The appointment was confirmed, then cancelled.",
+  opportunityReferenceId,
   ...baseMetadata,
 } as const;
 
@@ -20,6 +46,7 @@ export const offerRequestInterpretation = {
   intent: "offer_request",
   confidence: 0.96,
   evidence: [intentEvidence],
+  opportunityReferenceId,
   ...baseMetadata,
 } as const;
 
@@ -27,29 +54,42 @@ export const callbackRequestInterpretation = {
   ...offerRequestInterpretation,
   intent: "callback_request",
   confidence: 0.91,
+  evidence: [callbackEvidence],
 } as const;
 
 export const appointmentAgreementInterpretation = {
   ...offerRequestInterpretation,
   intent: "appointment_agreement",
   confidence: 0.94,
+  evidence: [appointmentEvidence],
 } as const;
 
 export const contradictoryStateInterpretation = {
   ...offerRequestInterpretation,
   intent: "contradictory_state",
   confidence: 0.88,
+  evidence: [contradictoryEvidence],
 } as const;
+
+const stateEvidence = (field: string, value: boolean, evidenceId: string) => ({
+  evidenceId,
+  field,
+  value,
+  sourceConnectionId: baseMetadata.sourceConnectionId,
+  sourceVersion: "crm-v1",
+  provenanceRef: `twenty://opportunity/${opportunityReferenceId}/field/${field}`,
+});
 
 export const alignedOfferState = {
   schemaVersion: "crm-event-state.v1",
-  opportunityReferenceId: "opp-001",
+  opportunityReferenceId,
   crm: {
     offerRequested: true,
     callbackRequested: null,
     appointmentAgreed: null,
     contradictory: false,
   },
+  stateEvidence: [stateEvidence("offerRequested", true, "crm-offer-v1")],
   events: [
     {
       name: "Offer request recorded",
@@ -72,6 +112,7 @@ export const callbackMissingState = {
     appointmentAgreed: null,
     contradictory: false,
   },
+  stateEvidence: [stateEvidence("callbackRequested", false, "crm-callback-v1")],
   events: [],
 } as const;
 
@@ -83,6 +124,7 @@ export const appointmentAgreementState = {
     appointmentAgreed: true,
     contradictory: false,
   },
+  stateEvidence: [stateEvidence("appointmentAgreed", true, "crm-appointment-v1")],
   events: [],
 } as const;
 
@@ -94,6 +136,7 @@ export const contradictoryState = {
     appointmentAgreed: null,
     contradictory: true,
   },
+  stateEvidence: [stateEvidence("contradictory", true, "crm-contradictory-v1")],
   events: [
     {
       name: "Appointment agreed",
