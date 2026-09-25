@@ -1,4 +1,6 @@
 import { describe, expect, it } from "vitest";
+import { createElement } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
 
 import { FEATURE_FLAGS } from "../src/config/feature-flags";
 import {
@@ -8,6 +10,9 @@ import {
   sortEvidenceTimeline,
 } from "../src/assurance-case-detail/contract";
 import { ASSURANCE_CASE_DETAIL_PREVIEW } from "../src/assurance-case-detail/fixture";
+import frontComponent, {
+  AssuranceCaseDetail,
+} from "../src/front-components/assurance-case-detail";
 
 const isUuidV4 = (value: string) =>
   /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
@@ -53,5 +58,19 @@ describe("DS3-S6.04 assurance case detail contracts", () => {
     );
     expect(ASSURANCE_CASE_DETAIL_PREVIEW.detector.sourceVersion).toBe("detector-v1");
     expect(ASSURANCE_CASE_DETAIL_PREVIEW.persistence).toBe("ui-only");
+  });
+
+  it("renders the case, finding, evidence, provenance, and local disposition landmarks", () => {
+    const markup = renderToStaticMarkup(createElement(AssuranceCaseDetail));
+
+    expect(markup).toContain("Assurance case");
+    expect(markup).toContain("Pricing promise review");
+    expect(markup).toContain("Detector finding");
+    expect(markup).toContain("Evidence timeline");
+    expect(markup).toContain("Provenance");
+    expect(markup).toContain("Disposition");
+    expect(markup).toContain("Unsaved preview");
+    expect(markup).not.toContain("CRM pipeline");
+    expect(frontComponent.success).toBe(true);
   });
 });
