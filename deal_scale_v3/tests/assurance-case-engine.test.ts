@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import * as caseEngine from "../src/assurance/case-engine";
 import {
+  VALID_REVIEW_TRANSITIONS,
   assembleAssuranceCase,
   assembleAssuranceCases,
   canonicalizeDetectorCandidate,
@@ -12,6 +12,32 @@ import {
 
 const workspaceA = "00000000-0000-4000-8000-000000000001";
 const workspaceB = "00000000-0000-4000-8000-000000000002";
+const REQUESTED_CASE_STATUSES = [
+  "needs-review",
+  "confirmed-failure",
+  "expected-behavior",
+  "insufficient-evidence",
+  "false-positive",
+  "resolved",
+  "outcome",
+] as const;
+
+type RuntimeCase = Parameters<typeof transitionAssuranceCase>[0];
+type RuntimeTransitionResult = {
+  ok: boolean;
+  case?: RuntimeCase;
+  reason?: string;
+  from?: string;
+  to?: string;
+  allowed?: readonly string[];
+};
+
+const transitionAtRuntime = (
+  current: RuntimeCase,
+  to: string,
+  options: { actorId: string; occurredAt?: string; role?: string },
+) =>
+  Reflect.apply(transitionAssuranceCase, undefined, [current, to, options]) as RuntimeTransitionResult;
 
 const candidate = (overrides: Record<string, unknown> = {}) => ({
   name: "Pricing promise candidate",
@@ -104,6 +130,45 @@ describe("assurance case engine", () => {
     expect(forward).toEqual(reversed);
     expect(forward.candidates[0].id).toBe(candidateA.id);
     expect(forward.duplicates.map((item) => item.id)).toEqual([candidateB.id]);
+  });
+
+  it("keeps dedupe keys distinct across workspace, candidate, and opportunity collisions", () => {
+    const assembleCase = (
+      candidateInput: ReturnType<typeof candidate>,
+      opportunityReferenceId: string,
+      opportunityReferenceWorkspaceId: string,
+      evidenceWorkspaceId: string,
+    ) => {
+      const result = assembleAssuranceCase(candidateInput, {
+        opportunityReferenceId,
+        opportunityReferenceWorkspaceId,
+        actualEvidence: [evidence({ workspaceId: evidenceWorkspaceId })],
+      });
+      if (result.kind !== "case") throw new Error("expected case");
+      return result.case;
+    };
+
+    const base = assembleCase(candidate(), "opportunity-001", workspaceA, workspaceA);
+    const workspaceVariant = assembleCase(
+      candidate({ workspaceId: workspaceB }),
+      "opportunity-001",
+      workspaceB,
+      workspaceB,
+    );
+    const candidateVariant = assembleCase(
+      candidate({ externalId: "candidate-002" }),
+      "opportunity-001",
+      workspaceA,
+      workspaceA,
+    );
+    const opportunityVariant = assembleCase(candidate(), "opportunity-002", workspaceA, workspaceA);
+
+    for (const assuranceCase of [base, workspaceVariant, candidateVariant, opportunityVariant]) {
+      expect(assuranceCase.dedupeKey).toBe(
+        `case:${assuranceCase.workspaceId}:${assuranceCase.detectorCandidateId}:${assuranceCase.opportunityReferenceId}`,
+      );
+    }
+    expect(new Set([base.dedupeKey, workspaceVariant.dedupeKey, candidateVariant.dedupeKey, opportunityVariant.dedupeKey]).size).toBe(4);
   });
 
   it("assembles a complete auditable case projection", () => {
@@ -229,6 +294,25 @@ describe("assurance case engine", () => {
     ).toThrow("opportunityReferenceWorkspaceId");
   });
 
+  it("rejects a foreign opportunity owner even when candidate evidence stays in its workspace", () => {
+    expect(() =>
+      assembleAssuranceCase(candidate(), {
+        opportunityReferenceId: "opportunity-owned-by-workspace-b",
+        opportunityReferenceWorkspaceId: workspaceB,
+        actualEvidence: [evidence({ workspaceId: workspaceA })],
+      }),
+    ).toThrow("opportunityReferenceWorkspaceId");
+  });
+
+  it("defines a runtime transition contract entry for every requested case state", () => {
+    const transitionTable = VALID_REVIEW_TRANSITIONS as unknown as Record<string, readonly string[]>;
+
+    expect(Object.keys(transitionTable).sort()).toEqual([...REQUESTED_CASE_STATUSES].sort());
+    for (const status of REQUESTED_CASE_STATUSES) {
+      expect(transitionTable[status]).toEqual(expect.any(Array));
+    }
+  });
+
   it("applies only valid review transitions and appends audit history", () => {
     const assembled = assembleAssuranceCase(candidate(), {
       opportunityReferenceId: "opportunity-001",
@@ -237,24 +321,24 @@ describe("assurance case engine", () => {
     });
     if (assembled.kind !== "case") throw new Error("expected case");
 
-    const accepted = transitionAssuranceCase(assembled.case, "confirmed-failure" as never, {
+    const accepted = transitionAtRuntime(assembled.case, "confirmed-failure", {
       actorId: "manager-001",
       occurredAt: "2026-09-24T12:03:00.000Z",
       role: "manager",
-    } as never);
+    });
     expect(accepted.ok).toBe(true);
-    if (!accepted.ok) return;
+    if (!accepted.ok || !accepted.case) return;
     expect(accepted.case.caseStatus).toBe("confirmed-failure");
     expect(accepted.case.auditHistory).toHaveLength(2);
     expect(accepted.case.auditHistory[1].from).toBe("needs-review");
     expect(accepted.case.auditHistory[1].to).toBe("confirmed-failure");
     expect(assembled.case.caseStatus).toBe("needs-review");
 
-    const invalid = transitionAssuranceCase(accepted.case, "needs-review" as never, {
+    const invalid = transitionAtRuntime(accepted.case, "needs-review", {
       actorId: "manager-001",
       occurredAt: "2026-09-24T12:04:00.000Z",
       role: "manager",
-    } as never);
+    });
     expect(invalid).toEqual({
       ok: false,
       reason: "invalid_transition",
@@ -272,14 +356,8 @@ describe("assurance case engine", () => {
     });
     if (assembled.kind !== "case") throw new Error("expected case");
 
-    const transition = transitionAssuranceCase as unknown as (
-      current: typeof assembled.case,
-      to: string,
-      options: { actorId: string; role: "reviewer" | "manager" },
-    ) => unknown;
-
     expect(() =>
-      transition(assembled.case, "confirmed-failure", {
+      transitionAtRuntime(assembled.case, "confirmed-failure", {
         actorId: "viewer-001",
         role: "reviewer",
       }),
@@ -309,15 +387,73 @@ describe("assurance case engine", () => {
       },
     ]);
 
-    const caseDedupeKey = (caseEngine as typeof caseEngine & {
-      caseDedupeKey?: (record: typeof first.case) => string;
-    }).caseDedupeKey;
-    expect(caseDedupeKey).toBeTypeOf("function");
-    if (!caseDedupeKey) return;
-
-    expect(caseDedupeKey(first.case)).toBe(
+    expect(first.case.dedupeKey).toBe(
       `case:${workspaceA}:${first.case.detectorCandidateId}:opportunity-001`,
     );
+  });
+
+  it("appends ordered audit history with actors, observed timestamps, and UUID v4 ids", () => {
+    const assembled = assembleAssuranceCase(candidate(), {
+      opportunityReferenceId: "opportunity-001",
+      opportunityReferenceWorkspaceId: workspaceA,
+      actualEvidence: [evidence()],
+      observedAt: "2026-09-24T12:02:00.000Z",
+    });
+    if (assembled.kind !== "case") throw new Error("expected case");
+
+    const confirmed = transitionAtRuntime(assembled.case, "confirmed-failure", {
+      actorId: "manager-001",
+      occurredAt: "2026-09-24T12:03:00.000Z",
+      role: "manager",
+    });
+    if (!confirmed.ok || !confirmed.case) throw new Error("expected confirmed-failure transition");
+
+    const resolved = transitionAtRuntime(confirmed.case, "resolved", {
+      actorId: "manager-002",
+      occurredAt: "2026-09-24T12:04:00.000Z",
+      role: "manager",
+    });
+    if (!resolved.ok || !resolved.case) throw new Error("expected resolved transition");
+
+    const outcome = transitionAtRuntime(resolved.case, "outcome", {
+      actorId: "system-001",
+      occurredAt: "2026-09-24T12:05:00.000Z",
+      role: "manager",
+    });
+    expect(outcome.ok).toBe(true);
+    if (!outcome.ok || !outcome.case) return;
+
+    expect(outcome.case.auditHistory.map((event) => event.to)).toEqual([
+      "needs-review",
+      "confirmed-failure",
+      "resolved",
+      "outcome",
+    ]);
+    expect(outcome.case.auditHistory.map((event) => event.from)).toEqual([
+      null,
+      "needs-review",
+      "confirmed-failure",
+      "resolved",
+    ]);
+    expect(outcome.case.auditHistory.map((event) => event.actorId)).toEqual([
+      "case-engine",
+      "manager-001",
+      "manager-002",
+      "system-001",
+    ]);
+    expect(outcome.case.auditHistory.map((event) => event.occurredAt)).toEqual([
+      new Date("2026-09-24T12:02:00.000Z"),
+      new Date("2026-09-24T12:03:00.000Z"),
+      new Date("2026-09-24T12:04:00.000Z"),
+      new Date("2026-09-24T12:05:00.000Z"),
+    ]);
+    for (const event of outcome.case.auditHistory) {
+      expect(event.id).toMatch(
+        /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
+      );
+    }
+    expect(assembled.case.auditHistory).toHaveLength(1);
+    expect(outcome.case.auditHistory).toHaveLength(4);
   });
 
   it("uses the case observation time for deterministic default audit events", () => {
@@ -329,14 +465,14 @@ describe("assurance case engine", () => {
     });
     if (assembled.kind !== "case") throw new Error("expected case");
 
-    const first = transitionAssuranceCase(assembled.case, "confirmed-failure" as never, {
+    const first = transitionAtRuntime(assembled.case, "confirmed-failure", {
       actorId: "manager-001",
       role: "manager",
-    } as never);
-    const second = transitionAssuranceCase(assembled.case, "confirmed-failure" as never, {
+    });
+    const second = transitionAtRuntime(assembled.case, "confirmed-failure", {
       actorId: "manager-001",
       role: "manager",
-    } as never);
+    });
 
     expect(first).toEqual(second);
   });

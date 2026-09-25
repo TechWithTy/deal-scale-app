@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { FieldType } from "twenty-sdk/define";
 
 import {
   ASSURANCE_FIXTURES,
@@ -124,11 +125,20 @@ describe("P0 assurance schema", () => {
       deadline: new Date(COMPLETE_CASE_FIELDS.deadline),
     });
     expect(parsed.deadline).toEqual(new Date(COMPLETE_CASE_FIELDS.deadline));
+    expect(
+      assuranceCaseSchema.parse({
+        ...ASSURANCE_FIXTURES.assuranceCase,
+        ...COMPLETE_CASE_FIELDS,
+        caseStatus: "needs-review",
+        deadline: null,
+      }).deadline,
+    ).toBeNull();
   });
 
   it("projects the auditable contract to the Twenty assurance case object", () => {
     const fields = assuranceFieldsFor("assuranceCase");
     const fieldNames = fields.map((field) => field.name);
+    const fieldByName = new Map(fields.map((field) => [field.name, field]));
 
     expect(fieldNames).toEqual(
       expect.arrayContaining([
@@ -152,7 +162,27 @@ describe("P0 assurance schema", () => {
     );
 
     expect(fields.find((field) => field.name === "dedupeKey")).toMatchObject({
+      type: FieldType.TEXT,
       isUnique: true,
+    });
+    const caseStatusField = fieldByName.get("caseStatus");
+    expect(caseStatusField).toMatchObject({ type: FieldType.SELECT });
+    expect(caseStatusField?.options.map((option: { value: string }) => option.value)).toEqual(
+      REQUESTED_CASE_STATUSES,
+    );
+    const urgencyField = fieldByName.get("urgency");
+    expect(urgencyField).toMatchObject({ type: FieldType.SELECT });
+    expect(urgencyField?.options.map((option: { value: string }) => option.value)).toEqual([
+      "low",
+      "medium",
+      "high",
+    ]);
+    expect(fieldByName.get("deadline")).toMatchObject({
+      type: FieldType.DATE_TIME,
+      isNullable: true,
+    });
+    expect(fields.find((field) => field.name === "evidenceReferences" && field.type === FieldType.RAW_JSON)).toMatchObject({
+      type: FieldType.RAW_JSON,
     });
   });
 
