@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { assuranceCaseSchema, detectorCandidateSchema, sellerIdentitySchema } from "../src/assurance/schema";
+import * as publicAssuranceQuery from "../src/assurance-query";
 import { adaptAssuranceCases, adaptDetectorCandidates, adaptReadinessCoverage, adaptSellerIdentities, normalizeAssuranceFilters, type AssuranceScope } from "../src/assurance-query";
 import type { EvidenceReadinessScorecard } from "../src/evidence/readiness";
 
@@ -21,6 +22,10 @@ const third = candidate("c", "broken_commitment", 0.7);
 const records = [first, second, third];
 
 describe("public assurance query consumer boundary", () => {
+  it("does not expose raw pagination over canonical records", () => {
+    expect(publicAssuranceQuery).not.toHaveProperty("paginateAndSort");
+  });
+
   it("normalizes optional filter text without mutating caller input", () => {
     const input = Object.freeze({ detector: " Broken_Commitment ", rep: " Jordan Lee ", confidence: 0.7 });
     expect(normalizeAssuranceFilters(input)).toEqual({ detector: "broken_commitment", rep: "jordan lee", confidence: 0.7 });

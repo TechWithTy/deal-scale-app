@@ -1,4 +1,4 @@
-export { scopeReadableRecords, paginateAndSort } from "./access";
+export { scopeReadableRecords } from "./access";
 export {
   adaptAssuranceCases,
   adaptDetectorCandidates,
