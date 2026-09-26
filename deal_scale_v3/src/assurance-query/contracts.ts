@@ -19,14 +19,19 @@ export type AssuranceQueryFilters = {
   date?: string;
 };
 
+export type AssuranceFilterValues = Omit<AssuranceQueryFilters, "date"> & {
+  date?: Date | string;
+};
+
 export type AssuranceSort = { field: string; direction: "asc" | "desc" };
 export type AssurancePage = { limit: number; cursor?: string };
 export type AssuranceScope = { actorWorkspaceId: string; role: AssuranceRole };
 
-export type AssuranceQuery = {
+export type AssuranceQuery<T = unknown> = {
   filters?: AssuranceQueryFilters;
   sort?: AssuranceSort;
   page?: AssurancePage;
   state?: "loading" | "error";
   error?: string;
+  filterValues?: (record: T) => AssuranceFilterValues;
 };
