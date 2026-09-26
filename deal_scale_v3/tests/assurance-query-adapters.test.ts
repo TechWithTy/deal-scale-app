@@ -129,15 +129,41 @@ describe("scoped assurance adapters", () => {
     }
   });
 
-  it("retains provenance and distinguishes expected promises, missing proof, and confirmed review", () => {
+  it("retains provenance and distinguishes expected promises, unassessed fulfillment, and confirmed review", () => {
     expect(adaptDetectorCandidates([detector], scope).items[0]).toMatchObject({ provenanceState: "inferred", confidence: 0.95 });
     expect(adaptEvidenceReferences([evidence, { ...evidence, name: "Inference", provenanceState: "inferred" }], scope).items).toMatchObject([
       { provenanceState: "observed" }, { provenanceState: "inferred" },
     ]);
-    expect(adaptPromises([promise], scope).items[0]).toMatchObject({ expectationState: "expected", fulfillmentEvidenceState: "missing" });
+    expect(adaptPromises([promise], scope).items[0]).toMatchObject({ expectationState: "expected", fulfillmentEvidenceState: "unassessed" });
     expect(adaptManagerDispositions([disposition], scope).items[0]).toMatchObject({ confirmationState: "confirmed" });
     expect(adaptManagerDispositions([{ ...disposition, provenanceState: "inferred" }], scope).items[0]).toMatchObject({ confirmationState: "inferred" });
     expect(adaptOutcomes([{ ...outcome, provenanceState: "inferred" }], scope).items[0]).toMatchObject({ provenanceState: "inferred" });
+  });
+
+  it("does not share projected dates with canonical records", () => {
+    const datePairs: [Date, Date][] = [
+      [caseRecord.observedAt, adaptAssuranceCases([caseRecord], scope).items[0].observedAt],
+      [detector.observedAt, adaptDetectorCandidates([detector], scope).items[0].observedAt],
+      [evidence.observedAt, adaptEvidenceReferences([evidence], scope).items[0].observedAt],
+      [seller.observedAt, adaptSellerIdentities([seller], scope).items[0].observedAt],
+      [opportunity.observedAt, adaptOpportunityReferences([opportunity], scope).items[0].observedAt],
+      [event.observedAt, adaptEvents([event], scope).items[0].observedAt],
+      [promise.observedAt, adaptPromises([promise], scope).items[0].observedAt],
+      [policy.observedAt, adaptConformancePolicies([policy], scope).items[0].observedAt],
+      [disposition.observedAt, adaptManagerDispositions([disposition], scope).items[0].observedAt],
+      [outcome.observedAt, adaptOutcomes([outcome], scope).items[0].observedAt],
+      [event.occurredAt, adaptEvents([event], scope).items[0].occurredAt],
+      [promise.dueAt!, adaptPromises([promise], scope).items[0].dueAt!],
+      [outcome.outcomeAt, adaptOutcomes([outcome], scope).items[0].outcomeAt],
+    ];
+    for (const [source, projected] of datePairs) {
+      const originalTime = source.getTime();
+      expect(projected).not.toBe(source);
+      expect(projected.getTime()).toBe(originalTime);
+      projected.setTime(originalTime + 60_000);
+      expect(source.getTime()).toBe(originalTime);
+    }
+    expect(adaptPromises([{ ...promise, dueAt: null }], scope).items[0].dueAt).toBeNull();
   });
 
   it("enforces object-specific RBAC and workspace scope before projecting", () => {

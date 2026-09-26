@@ -26,7 +26,7 @@ export type OpportunityReferenceViewModel = ViewModel<"opportunityReference", Pi
 export type EventViewModel = ViewModel<"event", Pick<z.infer<typeof eventSchema>, "eventType" | "occurredAt">>;
 export type PromiseViewModel = ViewModel<"promise", Pick<z.infer<typeof promiseSchema>, "promiseType" | "dueAt"> & {
   expectationState: "expected";
-  fulfillmentEvidenceState: "missing";
+  fulfillmentEvidenceState: "unassessed";
 }>;
 export type ConformancePolicyViewModel = ViewModel<"conformancePolicy", Pick<z.infer<typeof conformancePolicySchema>, "policyVersion" | "policyStatus">>;
 export type ManagerDispositionViewModel = ViewModel<"managerDisposition", Pick<z.infer<typeof managerDispositionSchema>, "disposition"> & {

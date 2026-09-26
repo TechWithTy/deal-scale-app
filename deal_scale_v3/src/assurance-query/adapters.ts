@@ -36,7 +36,7 @@ type Entity = z.infer<typeof assuranceEntitySchema>;
 const publicEntity = (record: Entity) => ({
   name: record.name,
   provenanceState: record.provenanceState,
-  observedAt: record.observedAt,
+  observedAt: new Date(record.observedAt.getTime()),
 });
 
 const adaptRecords = <T extends Entity, V extends object>(
@@ -80,14 +80,15 @@ export const adaptOpportunityReferences = (
 export const adaptEvents = (
   records: readonly z.infer<typeof eventSchema>[], scope: AssuranceScope,
 ): AssuranceQueryResult<EventViewModel> => adaptRecords(records, scope, "event", (record) => ({
-  ...publicEntity(record), kind: "event", eventType: record.eventType, occurredAt: record.occurredAt,
+  ...publicEntity(record), kind: "event", eventType: record.eventType, occurredAt: new Date(record.occurredAt.getTime()),
 }));
 
 export const adaptPromises = (
   records: readonly z.infer<typeof promiseSchema>[], scope: AssuranceScope,
 ): AssuranceQueryResult<PromiseViewModel> => adaptRecords(records, scope, "promise", (record) => ({
-  ...publicEntity(record), kind: "promise", promiseType: record.promiseType, dueAt: record.dueAt,
-  expectationState: "expected", fulfillmentEvidenceState: "missing",
+  ...publicEntity(record), kind: "promise", promiseType: record.promiseType,
+  dueAt: record.dueAt === null ? null : new Date(record.dueAt.getTime()),
+  expectationState: "expected", fulfillmentEvidenceState: "unassessed",
 }));
 
 export const adaptConformancePolicies = (
@@ -106,7 +107,7 @@ export const adaptManagerDispositions = (
 export const adaptOutcomes = (
   records: readonly z.infer<typeof outcomeSchema>[], scope: AssuranceScope,
 ): AssuranceQueryResult<OutcomeViewModel> => adaptRecords(records, scope, "outcome", (record) => ({
-  ...publicEntity(record), kind: "outcome", outcomeType: record.outcomeType, outcomeAt: record.outcomeAt,
+  ...publicEntity(record), kind: "outcome", outcomeType: record.outcomeType, outcomeAt: new Date(record.outcomeAt.getTime()),
 }));
 
 export const adaptReadinessCoverage = (
