@@ -31,6 +31,13 @@ const compareValues = (left: unknown, right: unknown): number => {
   return firstText < secondText ? -1 : firstText > secondText ? 1 : 0;
 };
 
+const stableSortKey = (record: object): string | null => {
+  const { externalId, id } = record as { externalId?: unknown; id?: unknown };
+  if (typeof externalId === "string" && externalId.trim()) return `externalId:${externalId}`;
+  if (typeof id === "string" && id.trim()) return `id:${id}`;
+  return null;
+};
+
 export const paginateAndSort = <T extends object>(
   records: readonly T[],
   query: AssuranceQuery,
@@ -52,14 +59,22 @@ export const paginateAndSort = <T extends object>(
 
   const ordered = records.map((record, index) => ({ record, index }));
   if (sort) {
+    if (records.some((record) => !Object.prototype.hasOwnProperty.call(record, sort.field))) {
+      return { state: "error", items: [], nextCursor: null, error: "Invalid sort field" };
+    }
+    const keys = records.map(stableSortKey);
+    if (keys.includes(null)) {
+      return { state: "error", items: [], nextCursor: null, error: "Missing sort key" };
+    }
+    if (new Set(keys).size !== keys.length) {
+      return { state: "error", items: [], nextCursor: null, error: "Duplicate sort key" };
+    }
     ordered.sort((left, right) => {
       const first = (left.record as Record<string, unknown>)[sort.field];
       const second = (right.record as Record<string, unknown>)[sort.field];
       const difference = compareValues(first, second);
       if (difference) return sort.direction === "asc" ? difference : -difference;
-      const leftId = (left.record as { id?: string }).id;
-      const rightId = (right.record as { id?: string }).id;
-      return leftId && rightId ? compareValues(leftId, rightId) : left.index - right.index;
+      return compareValues(keys[left.index], keys[right.index]);
     });
   }
 

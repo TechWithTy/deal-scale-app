@@ -72,6 +72,48 @@ describe("shared assurance query contracts", () => {
       .map((item) => item.id)).toEqual(["case-a", "case-b", "case-c"]);
   });
 
+  it("keeps canonical externalId ordering stable across reordered tied pages", () => {
+    const alpha = { externalId: "case-a", workspaceId: "workspace-a", score: 2 };
+    const beta = { externalId: "case-b", workspaceId: "workspace-a", score: 2 };
+    const gamma = { externalId: "case-c", workspaceId: "workspace-a", score: 2 };
+    const query = { sort: { field: "score", direction: "asc" as const }, page: { limit: 2 } };
+
+    for (const input of [[beta, gamma, alpha], [gamma, alpha, beta]]) {
+      const first = paginateAndSort(input, query);
+      const second = paginateAndSort(input, {
+        ...query, page: { limit: 2, cursor: first.nextCursor ?? undefined },
+      });
+      expect(first.items.map((item) => item.externalId)).toEqual(["case-a", "case-b"]);
+      expect(second.items.map((item) => item.externalId)).toEqual(["case-c"]);
+    }
+  });
+
+  it("rejects sorted records without a unique externalId or id", () => {
+    expect(paginateAndSort([{ score: 1 }], {
+      sort: { field: "score", direction: "asc" },
+    })).toEqual({ state: "error", items: [], nextCursor: null, error: "Missing sort key" });
+    expect(paginateAndSort([
+      { externalId: "same", score: 1 }, { externalId: "same", score: 1 },
+    ], { sort: { field: "score", direction: "asc" } })).toEqual({
+      state: "error", items: [], nextCursor: null, error: "Duplicate sort key",
+    });
+  });
+
+  it.each(["missing", "__proto__"])("rejects unknown sort field %s", (field) => {
+    expect(paginateAndSort(records, { sort: { field, direction: "asc" } })).toEqual({
+      state: "error", items: [], nextCursor: null, error: "Invalid sort field",
+    });
+  });
+
+  it("rejects a sort field missing from any record", () => {
+    expect(paginateAndSort([
+      { externalId: "case-a", score: 1 },
+      { externalId: "case-b" },
+    ], { sort: { field: "score", direction: "asc" } })).toEqual({
+      state: "error", items: [], nextCursor: null, error: "Invalid sort field",
+    });
+  });
+
   it.each(["bad", "-1", "1.5", "99", "01"])(
     "returns an explicit error for invalid cursor %s",
     (cursor) => {
