@@ -26,6 +26,10 @@ describe("public assurance query consumer boundary", () => {
     expect(publicAssuranceQuery).not.toHaveProperty("paginateAndSort");
   });
 
+  it("does not expose raw scope filtering over canonical records", () => {
+    expect(publicAssuranceQuery).not.toHaveProperty("scopeReadableRecords");
+  });
+
   it("normalizes optional filter text without mutating caller input", () => {
     const input = Object.freeze({ detector: " Broken_Commitment ", rep: " Jordan Lee ", confidence: 0.7 });
     expect(normalizeAssuranceFilters(input)).toEqual({ detector: "broken_commitment", rep: "jordan lee", confidence: 0.7 });

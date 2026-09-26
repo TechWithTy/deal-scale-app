@@ -1,4 +1,3 @@
-export { scopeReadableRecords } from "./access";
 export {
   adaptAssuranceCases,
   adaptDetectorCandidates,
