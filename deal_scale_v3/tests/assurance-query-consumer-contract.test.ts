@@ -63,6 +63,15 @@ describe("public assurance query consumer boundary", () => {
     expect(adaptDetectorCandidates(records, scope, { filters: { aiInvolvement: false } }).state).toBe("empty");
   });
 
+  it("returns a fixed public error when domain filter enrichment throws private data", () => {
+    const result = adaptDetectorCandidates([first], scope, {
+      filters: { severity: "high" },
+      filterValues: (record) => { throw new Error(`lookup failed for ${record.provenanceRef}`); },
+    });
+    expect(result).toEqual({ state: "error", items: [], nextCursor: null, error: "Invalid filter" });
+    expect(JSON.stringify(result)).not.toContain(first.provenanceRef);
+  });
+
   it.each([
     [{ severity: "high" }, { severity: "high" }, { severity: "low" }],
     [{ source: "crm" }, { source: "crm" }, { source: "calendar" }],
@@ -99,6 +108,36 @@ describe("public assurance query consumer boundary", () => {
       .toMatchObject({ overallStatus: "insufficient_evidence", detectors: [], coverageGaps: [] });
   });
 
+  it("returns a fixed public error when readiness filter enrichment throws private data", () => {
+    const scorecard: EvidenceReadinessScorecard = {
+      tenantId: workspaceId, asOf: "2026-09-24T12:00:00Z", overallScore: 0,
+      overallStatus: "insufficient_evidence", connectedEvidenceTypes: [], warnings: [], sources: [], detectors: [],
+    };
+    const result = adaptReadinessCoverage([scorecard], scope, {
+      filters: { severity: "high" },
+      filterValues: (record) => { throw new Error(`lookup failed for ${record.tenantId}`); },
+    });
+    expect(result).toEqual({ state: "error", items: [], nextCursor: null, error: "Invalid filter" });
+    expect(JSON.stringify(result)).not.toContain(workspaceId);
+  });
+
+  it.each(["provenanceRef", "sourceVersion", "externalId"])("rejects private domain sort field %s", (field) => {
+    const result = adaptDetectorCandidates([first, { ...second, provenanceRef: "private://other" }], scope, {
+      sort: { field, direction: "asc" }, page: { limit: 1 },
+    });
+    expect(result).toEqual({ state: "error", items: [], nextCursor: null, error: "Invalid sort field" });
+    expect(JSON.stringify(result)).not.toMatch(/private:\/\/|sourceVersion|externalId/);
+  });
+
+  it("rejects private readiness sort fields", () => {
+    const scorecard: EvidenceReadinessScorecard = {
+      tenantId: workspaceId, asOf: "2026-09-24T12:00:00Z", overallScore: 0,
+      overallStatus: "insufficient_evidence", connectedEvidenceTypes: [], warnings: [], sources: [], detectors: [],
+    };
+    expect(adaptReadinessCoverage([scorecard], scope, { sort: { field: "tenantId", direction: "asc" } }))
+      .toEqual({ state: "error", items: [], nextCursor: null, error: "Invalid sort field" });
+  });
+
   it("checks object RBAC and workspace before enrichment or projection", () => {
     const seen: string[] = [];
     const foreign = { ...first, workspaceId: "00000000-0000-4000-8000-000000000002" };
@@ -126,7 +165,7 @@ describe("public assurance query consumer boundary", () => {
   });
 
   it("paginates filtered canonical records with deterministic sort and explicit invalid input", () => {
-    const query = { filters: { detector: "broken_commitment" }, sort: { field: "externalId", direction: "desc" as const }, page: { limit: 1 } };
+    const query = { filters: { detector: "broken_commitment" }, sort: { field: "name", direction: "desc" as const }, page: { limit: 1 } };
     const firstPage = adaptDetectorCandidates(Object.freeze([...records]), scope, query);
     expect(firstPage.items.map((item) => item.name)).toEqual(["c"]);
     expect(firstPage.nextCursor).toBe("1");

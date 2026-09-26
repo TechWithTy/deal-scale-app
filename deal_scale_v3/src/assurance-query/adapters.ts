@@ -34,6 +34,23 @@ import type {
 } from "./view-models";
 
 type Entity = z.infer<typeof assuranceEntitySchema>;
+const commonSortFields = ["name", "provenanceState", "observedAt"];
+const domainSortFields: Partial<Record<AssuranceObjectName, readonly string[]>> = {
+  assuranceCase: ["caseStatus"],
+  detectorCandidate: ["detectorType", "confidence"],
+  evidenceReference: ["evidenceType"],
+  sellerIdentity: ["displayName"],
+  opportunityReference: ["stage"],
+  event: ["eventType", "occurredAt"],
+  promise: ["promiseType", "dueAt"],
+  conformancePolicy: ["policyVersion", "policyStatus"],
+  managerDisposition: ["disposition"],
+  outcome: ["outcomeType", "outcomeAt"],
+};
+const readinessSortFields = ["asOf", "overallScore", "overallStatus"];
+const invalidSortResult = (): { state: "error"; items: []; nextCursor: null; error: string } => ({
+  state: "error", items: [], nextCursor: null, error: "Invalid sort field",
+});
 const publicEntity = (record: Entity) => ({
   name: record.name,
   provenanceState: record.provenanceState,
@@ -49,12 +66,14 @@ const adaptRecords = <T extends Entity, V extends object>(
 ): AssuranceQueryResult<V> => {
   const pageQuery = { state: query.state, error: query.error, sort: query.sort, page: query.page };
   if (query.state) return paginateAndSort([], pageQuery);
+  if (query.sort && !commonSortFields.includes(query.sort.field) &&
+    !domainSortFields[objectName]?.includes(query.sort.field)) return invalidSortResult();
   let filtered: T[];
   try {
     filtered = filterAssuranceRecords(scopeReadableRecords(records, scope, objectName), query.filters,
       (record) => ({ ...query.filterValues?.(record), ...canonicalFilterValues(record) }));
-  } catch (error) {
-    return { state: "error", items: [], nextCursor: null, error: error instanceof Error ? error.message : "Invalid filter" };
+  } catch {
+    return { state: "error", items: [], nextCursor: null, error: "Invalid filter" };
   }
   const result = paginateAndSort(filtered, pageQuery);
   if (result.state !== "success") return result;
@@ -143,6 +162,7 @@ export const adaptReadinessCoverage = (
   }
   const pageQuery = { state: query.state, error: query.error, sort: query.sort, page: query.page };
   if (query.state) return paginateAndSort([], pageQuery);
+  if (query.sort && !readinessSortFields.includes(query.sort.field)) return invalidSortResult();
   const scoped = scopeReadableRecords(
     scorecards.map((scorecard) => ({ workspaceId: scorecard.tenantId, scorecard })),
     scope,
@@ -153,8 +173,8 @@ export const adaptReadinessCoverage = (
   try {
     filtered = filterAssuranceRecords(readable.map(({ scorecard }) => scorecard), query.filters,
       (scorecard) => ({ ...query.filterValues?.(scorecard), status: scorecard.overallStatus, date: scorecard.asOf }));
-  } catch (error) {
-    return { state: "error", items: [], nextCursor: null, error: error instanceof Error ? error.message : "Invalid filter" };
+  } catch {
+    return { state: "error", items: [], nextCursor: null, error: "Invalid filter" };
   }
   const result = paginateAndSort(filtered.map((scorecard) => ({
     ...scorecard, externalId: `${scorecard.tenantId}:${scorecard.asOf}`,
