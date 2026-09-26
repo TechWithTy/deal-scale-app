@@ -29,8 +29,8 @@ describe("shared assurance query contracts", () => {
       state: "loading", items: [], nextCursor: null,
     });
     expect(paginateAndSort([], {})).toEqual({ state: "empty", items: [], nextCursor: null });
-    expect(paginateAndSort(records, { state: "error", error: "Source unavailable" })).toEqual({
-      state: "error", items: [], nextCursor: null, error: "Source unavailable",
+    expect(paginateAndSort(records, { state: "error", error: "private://ref workspace-a token=secret" })).toEqual({
+      state: "error", items: [], nextCursor: null, error: "Query failed",
     });
     expect(paginateAndSort(records, {})).toMatchObject({ state: "success", items: records });
   });
@@ -86,6 +86,27 @@ describe("shared assurance query contracts", () => {
       expect(first.items.map((item) => item.externalId)).toEqual(["case-a", "case-b"]);
       expect(second.items.map((item) => item.externalId)).toEqual(["case-c"]);
     }
+  });
+
+  it("paginates unsorted records consistently across reordered inputs without mutating them", () => {
+    const alpha = { externalId: "case-a" };
+    const beta = { externalId: "case-b" };
+    const gamma = { externalId: "case-c" };
+    const firstInput = Object.freeze([beta, gamma, alpha]);
+    const secondInput = Object.freeze([gamma, alpha, beta]);
+
+    expect(paginateAndSort(firstInput, { page: { limit: 2 } }).items).toEqual([alpha, beta]);
+    expect(paginateAndSort(secondInput, { page: { limit: 2, cursor: "2" } }).items).toEqual([gamma]);
+    expect(firstInput).toEqual([beta, gamma, alpha]);
+    expect(secondInput).toEqual([gamma, alpha, beta]);
+  });
+
+  it("uses id for unsorted pages when externalId is absent and rejects missing keys", () => {
+    expect(paginateAndSort([{ id: "b" }, { id: "a" }], { page: { limit: 1 } }).items)
+      .toEqual([{ id: "a" }]);
+    expect(paginateAndSort([{ title: "private://ref" }], { page: { limit: 1 } })).toEqual({
+      state: "error", items: [], nextCursor: null, error: "Missing sort key",
+    });
   });
 
   it("rejects sorted records without a unique externalId or id", () => {

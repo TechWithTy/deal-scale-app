@@ -53,7 +53,8 @@ export const matchesAssuranceFilters = (
   }
   if (filters.aiInvolvement !== undefined && values.aiInvolvement !== filters.aiInvolvement) return false;
   if (filters.confidence !== undefined &&
-    (typeof values.confidence !== "number" || values.confidence < filters.confidence)) return false;
+    (typeof values.confidence !== "number" || !Number.isFinite(values.confidence) ||
+      values.confidence < 0 || values.confidence > 1 || values.confidence < filters.confidence)) return false;
   if (filters.date !== undefined) {
     const date = values.date instanceof Date ? values.date : typeof values.date === "string" ? new Date(values.date) : null;
     if (!date || Number.isNaN(date.getTime()) || date.toISOString().slice(0, 10) !== filters.date) return false;

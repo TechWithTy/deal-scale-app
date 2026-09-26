@@ -44,7 +44,7 @@ export const paginateAndSort = <T extends object>(
 ): AssuranceQueryResult<T> => {
   if (query.state === "loading") return { state: "loading", items: [], nextCursor: null };
   if (query.state === "error") {
-    return { state: "error", items: [], nextCursor: null, error: query.error ?? "Query failed" };
+    return { state: "error", items: [], nextCursor: null, error: "Query failed" };
   }
 
   const { page, sort } = query;
@@ -58,8 +58,8 @@ export const paginateAndSort = <T extends object>(
   }
 
   const ordered = records.map((record, index) => ({ record, index }));
-  if (sort) {
-    if (records.some((record) => !Object.prototype.hasOwnProperty.call(record, sort.field))) {
+  if (sort || page) {
+    if (sort && records.some((record) => !Object.prototype.hasOwnProperty.call(record, sort.field))) {
       return { state: "error", items: [], nextCursor: null, error: "Invalid sort field" };
     }
     const keys = records.map(stableSortKey);
@@ -70,10 +70,12 @@ export const paginateAndSort = <T extends object>(
       return { state: "error", items: [], nextCursor: null, error: "Duplicate sort key" };
     }
     ordered.sort((left, right) => {
-      const first = (left.record as Record<string, unknown>)[sort.field];
-      const second = (right.record as Record<string, unknown>)[sort.field];
-      const difference = compareValues(first, second);
-      if (difference) return sort.direction === "asc" ? difference : -difference;
+      if (sort) {
+        const first = (left.record as Record<string, unknown>)[sort.field];
+        const second = (right.record as Record<string, unknown>)[sort.field];
+        const difference = compareValues(first, second);
+        if (difference) return sort.direction === "asc" ? difference : -difference;
+      }
       return compareValues(keys[left.index], keys[right.index]);
     });
   }

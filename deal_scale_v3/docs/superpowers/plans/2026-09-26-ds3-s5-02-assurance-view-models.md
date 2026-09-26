@@ -84,4 +84,3 @@
 - [ ] Review the branch diff for secrets, persistence duplication, and unrelated changes.
 - [ ] Create a PR with the Notion task and Stitch project links, exact test evidence, and the known no-duplicate-persistence boundary.
 - [ ] Request independent QA review before moving DS3-S5.02 to Done.
-

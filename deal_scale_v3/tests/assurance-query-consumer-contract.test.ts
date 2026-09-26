@@ -169,9 +169,39 @@ describe("public assurance query consumer boundary", () => {
     expect(adaptAssuranceCases([caseRecord], scope, { filters: { status: "closed" } }).state).toBe("empty");
     expect(adaptAssuranceCases([caseRecord], scope, { state: "loading" })).toEqual({ state: "loading", items: [], nextCursor: null });
     expect(adaptAssuranceCases([caseRecord], scope, { state: "error", error: "Twenty unavailable" })).toEqual({
-      state: "error", items: [], nextCursor: null, error: "Twenty unavailable",
+      state: "error", items: [], nextCursor: null, error: "Query failed",
     });
   });
+
+  it("keeps source failure details out of domain and readiness results", () => {
+    const privateError = `private://ref ${workspaceId} password=secret`;
+    const scorecard: EvidenceReadinessScorecard = {
+      tenantId: workspaceId, asOf: "2026-09-24T12:00:00Z", overallScore: 0,
+      overallStatus: "insufficient_evidence", connectedEvidenceTypes: [], warnings: [], sources: [], detectors: [],
+    };
+    for (const result of [
+      adaptDetectorCandidates([first], scope, { state: "error", error: privateError }),
+      adaptReadinessCoverage([scorecard], scope, { state: "error", error: privateError }),
+    ]) {
+      expect(result).toEqual({ state: "error", items: [], nextCursor: null, error: "Query failed" });
+      expect(JSON.stringify(result)).not.toContain(privateError);
+    }
+  });
+
+  it.each([NaN, Infinity, -Infinity, -0.1, 1.1])(
+    "does not match invalid enriched confidence %s",
+    (confidence) => {
+      const caseRecord = assuranceCaseSchema.parse({
+        ...base, name: "Case", externalId: "case-1", opportunityReferenceId: "opp-1",
+        detectorCandidateId: "candidate-1", caseStatus: "open",
+      });
+      const result = adaptAssuranceCases([caseRecord], scope, {
+        filters: { confidence: 0.7 }, filterValues: () => ({ confidence }),
+      });
+      expect(result).toEqual({ state: "empty", items: [], nextCursor: null });
+      expect(JSON.stringify(result)).not.toContain(base.provenanceRef);
+    },
+  );
 
   it("paginates filtered canonical records with deterministic sort and explicit invalid input", () => {
     const query = { filters: { detector: "broken_commitment" }, sort: { field: "name", direction: "desc" as const }, page: { limit: 1 } };
